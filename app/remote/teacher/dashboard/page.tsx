@@ -36,9 +36,10 @@ export default async function RemoteTeacherDashboardPage() {
 
   const studentsCount = teacher.students.length
 
-  const reportsCount = teacher.students.reduce((total, student) => {
-    return total + student.reports.length
-  }, 0)
+  const reportsCount = teacher.students.reduce(
+  (total: number, student) => total + student.reports.length,
+  0
+)
 
   const latestZoomLink = teacher.zoomLinks[0]?.url || null
 
