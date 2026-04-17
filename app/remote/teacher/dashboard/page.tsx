@@ -1,6 +1,14 @@
 import Link from "next/link"
 import { prisma } from "@/lib/prisma"
 
+type StudentWithReports = {
+  id: string
+  fullName: string
+  reports: Array<{
+    id: string
+  }>
+}
+
 export default async function RemoteTeacherDashboardPage() {
   const teacherEmail = "teacher@test.com"
 
@@ -34,12 +42,14 @@ export default async function RemoteTeacherDashboardPage() {
     )
   }
 
-  const studentsCount = teacher.students.length
+  const students = teacher.students as StudentWithReports[]
 
-  const reportsCount = teacher.students.reduce(
-  (total: number, student) => total + student.reports.length,
-  0
-)
+  const studentsCount = students.length
+
+  const reportsCount = students.reduce(
+    (total: number, student: StudentWithReports) => total + student.reports.length,
+    0
+  )
 
   const latestZoomLink = teacher.zoomLinks[0]?.url || null
 
@@ -96,13 +106,13 @@ export default async function RemoteTeacherDashboardPage() {
             <span className="text-sm text-gray-500">{studentsCount} طالب</span>
           </div>
 
-          {teacher.students.length === 0 ? (
+          {students.length === 0 ? (
             <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
               لا يوجد طلاب حتى الآن
             </div>
           ) : (
             <div className="space-y-3">
-              {teacher.students.map((student) => (
+              {students.map((student: StudentWithReports) => (
                 <div
                   key={student.id}
                   className="flex items-center justify-between rounded-xl border border-gray-200 p-4"
