@@ -28,9 +28,10 @@ function whatsAppUrl(phone: string, message: string) {
 }
 
 function whatsAppBusinessUrl(phone: string, message: string) {
-  return `intent://send?phone=${phone}&text=${encodeURIComponent(
-    message
-  )}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;end`;
+  const encodedMessage = encodeURIComponent(message);
+  const fallbackUrl = encodeURIComponent(whatsAppUrl(phone, message));
+
+  return `intent://send/?phone=${phone}&text=${encodedMessage}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=${fallbackUrl};end`;
 }
 
 export default async function OnsiteAdminAbsencesPage() {
