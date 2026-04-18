@@ -16,6 +16,11 @@ export default function OnsiteAdminTeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
+  const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null)
+  const [editData, setEditData] = useState({
+    fullName: "",
+    email: "",
+  })
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -97,6 +102,84 @@ export default function OnsiteAdminTeachersPage() {
     } catch (error) {
       console.error("CREATE ONSITE TEACHER SUBMIT ERROR =>", error)
       alert("حدث خطأ أثناء إضافة المعلم")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const startEdit = (teacher: Teacher) => {
+    setEditingTeacherId(teacher.id)
+    setEditData({
+      fullName: teacher.fullName,
+      email: teacher.email,
+    })
+  }
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setEditData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleUpdateTeacher = async (teacherId: string) => {
+    try {
+      setSubmitting(true)
+
+      const res = await fetch("/api/teachers", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          teacherId,
+          fullName: editData.fullName,
+          email: editData.email,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "تعذر تحديث بيانات المعلم")
+        return
+      }
+
+      setEditingTeacherId(null)
+      await fetchTeachers()
+    } catch (error) {
+      console.error("UPDATE ONSITE TEACHER ERROR =>", error)
+      alert("حدث خطأ أثناء تحديث بيانات المعلم")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteTeacher = async (teacher: Teacher) => {
+    const confirmed = window.confirm(
+      `هل تريد حذف المعلم ${teacher.fullName}؟ لا يمكن حذف المعلم إذا كان مرتبطا بطلاب أو حلقات.`
+    )
+
+    if (!confirmed) return
+
+    try {
+      setSubmitting(true)
+
+      const res = await fetch("/api/teachers", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ teacherId: teacher.id }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        alert(data.error || "تعذر حذف المعلم")
+        return
+      }
+
+      await fetchTeachers()
+    } catch (error) {
+      console.error("DELETE ONSITE TEACHER ERROR =>", error)
+      alert("حدث خطأ أثناء حذف المعلم")
     } finally {
       setSubmitting(false)
     }
@@ -209,6 +292,7 @@ export default function OnsiteAdminTeachersPage() {
                       <th className="px-4 py-3 font-black">الاسم</th>
                       <th className="px-4 py-3 font-black">البريد</th>
                       <th className="px-4 py-3 font-black">الحالة</th>
+                      <th className="px-4 py-3 font-black">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -218,10 +302,30 @@ export default function OnsiteAdminTeachersPage() {
                         className="border-b border-[#d9c8ad]/30 text-sm"
                       >
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
-                          {teacher.fullName}
+                          {editingTeacherId === teacher.id ? (
+                            <input
+                              type="text"
+                              name="fullName"
+                              value={editData.fullName}
+                              onChange={handleEditChange}
+                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            />
+                          ) : (
+                            teacher.fullName
+                          )}
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
-                          {teacher.email}
+                          {editingTeacherId === teacher.id ? (
+                            <input
+                              type="email"
+                              name="email"
+                              value={editData.email}
+                              onChange={handleEditChange}
+                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            />
+                          ) : (
+                            teacher.email
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           {teacher.isActive ? (
@@ -232,6 +336,46 @@ export default function OnsiteAdminTeachersPage() {
                             <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-black text-red-700">
                               غير نشط
                             </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {editingTeacherId === teacher.id ? (
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                disabled={submitting}
+                                onClick={() => handleUpdateTeacher(teacher.id)}
+                                className="rounded-xl bg-[#1f6358] px-3 py-2 text-xs font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+                              >
+                                حفظ
+                              </button>
+                              <button
+                                type="button"
+                                disabled={submitting}
+                                onClick={() => setEditingTeacherId(null)}
+                                className="rounded-xl bg-white px-3 py-2 text-xs font-black text-[#1c2d31] ring-1 ring-[#d9c8ad] disabled:opacity-60"
+                              >
+                                إلغاء
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(teacher)}
+                                className="rounded-xl bg-amber-100 px-3 py-2 text-xs font-black text-amber-800 transition hover:bg-amber-200"
+                              >
+                                تعديل
+                              </button>
+                              <button
+                                type="button"
+                                disabled={submitting}
+                                onClick={() => handleDeleteTeacher(teacher)}
+                                className="rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-200 transition hover:bg-red-100 disabled:opacity-60"
+                              >
+                                حذف
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>

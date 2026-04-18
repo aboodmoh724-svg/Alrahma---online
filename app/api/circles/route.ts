@@ -199,3 +199,59 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const circleId = String(body.circleId || "").trim();
+
+    if (!circleId) {
+      return NextResponse.json({ error: "الحلقة مطلوبة" }, { status: 400 });
+    }
+
+    const circle = await prisma.circle.findUnique({
+      where: {
+        id: circleId,
+      },
+      select: {
+        id: true,
+        _count: {
+          select: {
+            students: true,
+          },
+        },
+      },
+    });
+
+    if (!circle) {
+      return NextResponse.json({ error: "الحلقة غير موجودة" }, { status: 404 });
+    }
+
+    if (circle._count.students > 0) {
+      return NextResponse.json(
+        {
+          error:
+            "لا يمكن حذف هذه الحلقة لأنها تحتوي على طلاب. انقل الطلاب إلى حلقة أخرى أولا.",
+        },
+        { status: 400 }
+      );
+    }
+
+    await prisma.circle.delete({
+      where: {
+        id: circle.id,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+    });
+  } catch (error) {
+    console.error("DELETE CIRCLE ERROR =>", error);
+
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف الحلقة" },
+      { status: 500 }
+    );
+  }
+}

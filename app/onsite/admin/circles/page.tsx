@@ -145,6 +145,28 @@ export default function OnsiteAdminCirclesPage() {
     await fetchData();
   };
 
+  const handleDeleteCircle = async (circle: Circle) => {
+    const confirmed = window.confirm(
+      `هل تريد حذف الحلقة ${circle.name}؟ لا يمكن حذف الحلقة إذا كان فيها طلاب.`
+    );
+
+    if (!confirmed) return;
+
+    const res = await fetch("/api/circles", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ circleId: circle.id }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || "تعذر حذف الحلقة");
+      return;
+    }
+
+    await fetchData();
+  };
+
   const trackLabel = (track: string | null) => {
     if (track === "HIJAA") return "مسار الهجاء";
     if (track === "RUBAI") return "المسار الرباعي";
@@ -283,6 +305,7 @@ export default function OnsiteAdminCirclesPage() {
                       <th className="px-4 py-3 font-black">المسار</th>
                       <th className="px-4 py-3 font-black">المعلم</th>
                       <th className="px-4 py-3 font-black">الطلاب</th>
+                      <th className="px-4 py-3 font-black">الإجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -327,6 +350,15 @@ export default function OnsiteAdminCirclesPage() {
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
                           {circle._count.students}
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCircle(circle)}
+                            className="rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
+                          >
+                            حذف الحلقة
+                          </button>
                         </td>
                       </tr>
                     ))}
