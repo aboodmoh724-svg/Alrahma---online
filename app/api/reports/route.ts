@@ -2,9 +2,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
+  attendanceTemplateConfig,
   dailyAttendanceWhatsAppMessage,
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
+  sendWhatsAppTemplate,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
@@ -154,9 +156,23 @@ export async function POST(req: Request) {
         whatsappResult = { attempted: true, sent: false, error: "" };
 
         try {
-          if (report.status === "ABSENT") {
-            // رسالة الغياب المخصصة
-            const customMessage = `السلام عليكم ورحمة الله وبركاته\n\nنفيدكم أن ابنكم الكريم / ${student.fullName}\nغائب عن التحفيظ اليوم بدون عذر\n\nنرجوا منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي\n\nنشكر لكم حرصكم تفهمكم\n\n🔸 هذه الرسالة ترسل بشكل تلقائي للطلاب الغائيبين\n\nإدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
+          const template = attendanceTemplateConfig(report.status);
+
+          if (template) {
+            await sendWhatsAppTemplate({
+              to: normalized,
+              templateName: template.templateName,
+              languageCode: template.languageCode,
+              bodyVariables: [
+                student.fullName,
+                report.createdAt.toLocaleDateString("ar-EG"),
+                report.lessonName,
+                report.nextHomework || "غير محدد",
+                report.note || "لا توجد ملاحظات",
+              ],
+            });
+          } else if (report.status === "ABSENT") {
+            const customMessage = `السلام عليكم ورحمة الله وبركاته\n\nنفيدكم أن ابنكم الكريم / ${student.fullName}\nغائب عن التحفيظ اليوم بدون عذر.\n\nنرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\nنشكر لكم حرصكم وتفهمكم.\n\nهذه الرسالة ترسل بشكل تلقائي للطلاب الغائبين.\n\nإدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
             await sendWhatsAppText({ to: normalized, body: customMessage });
           } else {
             const messageBody = dailyAttendanceWhatsAppMessage({

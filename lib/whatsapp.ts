@@ -26,6 +26,19 @@ export function isWhatsAppTemplateConfigured() {
   );
 }
 
+export function attendanceTemplateConfig(status: "PRESENT" | "ABSENT") {
+  const prefix =
+    status === "ABSENT" ? "WHATSAPP_ABSENCE_TEMPLATE" : "WHATSAPP_PRESENT_TEMPLATE";
+  const templateName = String(process.env[`${prefix}_NAME`] || "").trim();
+  const languageCode = String(process.env[`${prefix}_LANG`] || "").trim();
+
+  if (!templateName || !languageCode) {
+    return null;
+  }
+
+  return { templateName, languageCode };
+}
+
 export function normalizeWhatsAppNumber(raw: string) {
   const digits = String(raw || "")
     .trim()
