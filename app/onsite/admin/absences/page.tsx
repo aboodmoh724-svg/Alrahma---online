@@ -27,6 +27,12 @@ function whatsAppUrl(phone: string, message: string) {
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
+function whatsAppBusinessUrl(phone: string, message: string) {
+  return `intent://send?phone=${phone}&text=${encodeURIComponent(
+    message
+  )}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;end`;
+}
+
 export default async function OnsiteAdminAbsencesPage() {
   const cookieStore = await cookies();
   const adminId = cookieStore.get("alrahma_user_id")?.value;
@@ -219,14 +225,22 @@ export default async function OnsiteAdminAbsencesPage() {
 
                     <div className="flex min-w-56 flex-col gap-2">
                       {phone ? (
-                        <a
-                          href={whatsAppUrl(phone, message)}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="rounded-2xl bg-[#1f6358] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#173d42]"
-                        >
-                          فتح رسالة واتساب
-                        </a>
+                        <>
+                          <a
+                            href={whatsAppUrl(phone, message)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-2xl bg-[#1f6358] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#173d42]"
+                          >
+                            فتح رسالة واتساب
+                          </a>
+                          <a
+                            href={whatsAppBusinessUrl(phone, message)}
+                            className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+                          >
+                            فتح واتساب بزنس
+                          </a>
+                        </>
                       ) : (
                         <div className="rounded-2xl bg-red-50 px-5 py-3 text-center text-sm font-black text-red-700 ring-1 ring-red-200">
                           لا يوجد رقم ولي أمر
