@@ -1,16 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-
-function getTodayRange() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-
-  return { start, end };
-}
+import { formatIstanbulDateEnglish, getIstanbulDayRange } from "@/lib/school-day";
 
 function normalizeWhatsAppNumber(raw: string | null) {
   const digits = String(raw || "").replace(/\D/g, "");
@@ -82,7 +73,7 @@ export default async function OnsiteAdminAbsencesPage() {
     );
   }
 
-  const { start, end } = getTodayRange();
+  const { start, end } = getIstanbulDayRange();
   const todayReports = await prisma.report.findMany({
     where: {
       createdAt: {
@@ -134,7 +125,7 @@ export default async function OnsiteAdminAbsencesPage() {
   const absences = Array.from(latestByStudent.values()).filter(
     (report) => report.status === "ABSENT"
   );
-  const reportDate = start.toLocaleDateString("en-US");
+  const reportDate = formatIstanbulDateEnglish(start);
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">

@@ -27,6 +27,12 @@ const sections = [
     tone: "bg-amber-600 text-white",
   },
   {
+    href: "/onsite/admin/absence-statistics",
+    title: "إحصائيات الغائبين",
+    description: "معرفة عدد مرات غياب كل طالب والأيام التي غاب فيها.",
+    tone: "bg-[#8a6335] text-white",
+  },
+  {
     href: "/onsite/admin/import",
     title: "استيراد Excel",
     description: "رفع ملف الطلاب من Excel (قريبًا) لإنشاء الطلاب دفعة واحدة.",

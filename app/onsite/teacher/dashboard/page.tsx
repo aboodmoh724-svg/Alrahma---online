@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import QuickAttendanceButtons from "@/components/reports/QuickAttendanceButtons";
 import { prisma } from "@/lib/prisma";
+import { getIstanbulDayRange } from "@/lib/school-day";
 import { createSignedStorageUrl } from "@/lib/supabase-storage";
 
 type TodayReport = {
@@ -40,16 +41,6 @@ type TeacherDashboardProps = {
   }>;
 };
 
-function getTodayRange() {
-  const start = new Date();
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(start);
-  end.setDate(end.getDate() + 1);
-
-  return { start, end };
-}
-
 function trackLabel(track: string | null) {
   if (track === "HIJAA") return "مسار الهجاء";
   if (track === "RUBAI") return "المسار الرباعي";
@@ -65,7 +56,7 @@ export default async function OnsiteTeacherDashboardPage({
   const teacherId = cookieStore.get("alrahma_user_id")?.value;
   const params = await searchParams;
   const selectedCircleId = params?.circleId || "";
-  const { start, end } = getTodayRange();
+  const { start, end } = getIstanbulDayRange();
 
   if (!teacherId) {
     return (
