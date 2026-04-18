@@ -1,75 +1,92 @@
-import Link from "next/link"
-import { prisma } from "@/lib/prisma"
+import Link from "next/link";
 
-export default async function RemoteAdminDashboardPage() {
-  const teachersCount = await prisma.user.count({
-    where: { role: "TEACHER" },
-  })
+const sections = [
+  {
+    href: "/remote/admin/statistics",
+    title: "الإحصائيات",
+    description: "أعداد المعلمين والطلاب والحلقات وإجمالي التقارير والطلاب بلا حلقة.",
+    tone: "bg-[#173d42] text-white",
+  },
+  {
+    href: "/remote/admin/students",
+    title: "إدارة الطلاب",
+    description: "إضافة الطلاب، عرض أرقامهم، ونقلهم بين الحلقات.",
+    tone: "bg-[#1f6358] text-white",
+  },
+  {
+    href: "/remote/admin/circles",
+    title: "الحلقات والمسارات",
+    description: "إنشاء الحلقات، تحديد المسار، تعيين المعلمين، وروابط الزوم.",
+    tone: "bg-[#c39a62] text-white",
+  },
+  {
+    href: "/remote/admin/teachers",
+    title: "إدارة المعلمين",
+    description: "إضافة حسابات المعلمين ومتابعة بياناتهم الأساسية.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
+    href: "/remote/admin/reports",
+    title: "قسم التقارير",
+    description: "البحث عن طالب بالاسم أو الرقم وعرض ملخص مستواه.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
+    href: "/remote/admin/registrations",
+    title: "طلبات التسجيل",
+    description: "مراجعة طلبات التسجيل الجديدة وقبول الطالب في الحلقة المناسبة.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
+    href: "/remote/admin/resources",
+    title: "ملفات المسارات",
+    description: "رفع ملفات آلية سير الحلقة وملفات المسارات للمعلمين.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
+    href: "/remote/admin/statistics#unassigned-students",
+    title: "طلاب بلا حلقة",
+    description: "قسم مهم لمتابعة الطلاب الذين لم يتم ربطهم بحلقة بعد.",
+    tone: "bg-[#fffaf2] text-[#9b7039]",
+  },
+];
 
-  const studentsCount = await prisma.student.count()
-  const reportsCount = await prisma.report.count()
-
+export default function RemoteAdminDashboardPage() {
   return (
-    <div className="min-h-screen bg-[#F8F8F8] flex items-center justify-center px-4">
-      <div className="w-full max-w-5xl space-y-10">
-        <div className="text-center">
-          <div className="mb-4 text-5xl font-bold text-[#24363D]">ALRAHMA</div>
-
-          <h1 className="text-3xl font-bold text-[#24363D]">
-            لوحة تحكم الإداري
-          </h1>
-
-          <p className="mt-2 text-[#24363D]/70">
-            تحفيظ الرحمة للقرآن الكريم
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          <div className="rounded-2xl border border-[#C2A27A]/20 bg-white p-6 text-center shadow-sm">
-            <p className="text-sm text-gray-500">عدد المعلمين</p>
-            <p className="mt-3 text-4xl font-bold text-[#24363D]">
-              {teachersCount}
+    <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+          <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
+          <div className="relative max-w-3xl">
+            <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              لوحة الإدارة
+            </p>
+            <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
+              اختر القسم الذي تريد إدارته.
+            </h1>
+            <p className="mt-4 text-sm leading-8 text-white/72">
+              بدل عرض الأرقام مباشرة هنا، جعلنا كل قسم يقودك إلى تفاصيله حتى تبقى الواجهة هادئة وواضحة.
             </p>
           </div>
+        </section>
 
-          <div className="rounded-2xl border border-[#C2A27A]/20 bg-white p-6 text-center shadow-sm">
-            <p className="text-sm text-gray-500">عدد الطلاب</p>
-            <p className="mt-3 text-4xl font-bold text-[#24363D]">
-              {studentsCount}
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-[#C2A27A]/20 bg-white p-6 text-center shadow-sm">
-            <p className="text-sm text-gray-500">عدد التقارير</p>
-            <p className="mt-3 text-4xl font-bold text-[#24363D]">
-              {reportsCount}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-          <Link
-            href="/remote/admin/students"
-            className="rounded-2xl bg-[#24363D] p-5 text-center font-medium text-white transition hover:opacity-90"
-          >
-            إدارة الطلاب
-          </Link>
-
-          <Link
-            href="/remote/admin/teachers"
-            className="rounded-2xl bg-[#C2A27A] p-5 text-center font-medium text-white transition hover:opacity-90"
-          >
-            إدارة المعلمين
-          </Link>
-
-          <Link
-            href="/remote/admin/reports"
-            className="rounded-2xl border border-[#24363D] p-5 text-center font-medium text-[#24363D] transition hover:bg-[#24363D] hover:text-white"
-          >
-            عرض التقارير
-          </Link>
-        </div>
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {sections.map((section) => (
+            <Link
+              key={section.href}
+              href={section.href}
+              className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
+            >
+              <h2 className="text-2xl font-black">{section.title}</h2>
+              <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
+              <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
+                فتح القسم
+              </span>
+            </Link>
+          ))}
+        </section>
       </div>
-    </div>
-  )
+    </main>
+  );
 }

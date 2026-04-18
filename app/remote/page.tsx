@@ -1,54 +1,72 @@
 import Link from "next/link";
 
+const entries = [
+  {
+    href: "/remote/admin/login",
+    title: "دخول الإدارة",
+    description: "إدارة المعلمين، الطلاب، الحلقات، والروابط.",
+    icon: "إ",
+    tone: "bg-[#173d42] text-white",
+  },
+  {
+    href: "/remote/teacher/login",
+    title: "دخول المعلم",
+    description: "إضافة التقارير اليومية ومتابعة سجل الطلاب.",
+    icon: "م",
+    tone: "bg-[#f3eadc] text-[#8a6335]",
+  },
+];
+
 export default function RemotePage() {
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/remote-hero.jpg')" }}
-      />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#143b46]/45 via-[#102a33]/50 to-[#0b1c22]/65" />
-
-      <div className="relative z-10 min-h-screen px-6 py-10">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-10 flex items-center justify-between">
-            <Link
-              href="/"
-              className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/15"
-            >
-              ← الرئيسية
-            </Link>
-
-            <div className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur-md">
-              التعليم عن بعد
-            </div>
-          </div>
-
-          <div className="flex min-h-[80vh] items-center justify-center">
-            <div className="w-full max-w-3xl rounded-[2.5rem] border border-white/15 bg-white/12 p-8 text-center text-white shadow-[0_25px_80px_rgba(0,0,0,0.25)] backdrop-blur-lg md:p-12">
-              <h1 className="text-4xl font-extrabold md:text-5xl">مرحبًا بك</h1>
-              <p className="mt-4 text-base text-white/85 md:text-lg">
-                اختر طريقة الدخول
-              </p>
-
-              <div className="mt-12 flex flex-col gap-4">
-                <Link
-                  href="/remote/admin/login"
-                  className="rounded-2xl bg-[#0f5c60] py-5 text-lg font-bold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-[#0c4c4f]"
-                >
-                  دخول الإدارة
-                </Link>
-
-                <Link
-                  href="/remote/teacher/login"
-                  className="rounded-2xl bg-[#c49a64] py-5 text-lg font-bold text-white shadow-lg transition duration-300 hover:-translate-y-1 hover:bg-[#b18753]"
-                >
-                  دخول المعلم
-                </Link>
-              </div>
-            </div>
-          </div>
+    <main className="rahma-shell min-h-screen px-5 py-6">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-6 flex items-center justify-between">
+          <Link href="/" className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#c39a62]/15">
+            الرئيسية
+          </Link>
+          <span className="rounded-full bg-[#1f6358]/12 px-4 py-2 text-sm font-bold text-[#1f6358]">
+            تعليم عن بعد
+          </span>
         </div>
+
+        <section className="rahma-card grid overflow-hidden rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="rahma-muted-pattern relative min-h-[360px] overflow-hidden bg-[#173d42] lg:min-h-[680px]">
+            <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-[#c39a62]/20" />
+            <div className="absolute bottom-16 right-10 h-96 w-96 rounded-full bg-white/10" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#112a30] via-[#173d42]/70 to-[#1f6358]/35" />
+            <div className="absolute bottom-8 right-8 max-w-md text-white">
+              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/12 text-3xl font-black text-[#f1d39d] backdrop-blur">
+                ر
+              </div>
+              <h1 className="text-4xl font-black">كيف تريد الدخول؟</h1>
+              <p className="mt-3 text-sm leading-7 text-white/78">اختر نوع حسابك للمتابعة إلى لوحة التحكم المناسبة.</p>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-center p-6 md:p-12">
+            <div className="w-full max-w-xl space-y-5">
+              {entries.map((entry) => (
+                <Link
+                  key={entry.href}
+                  href={entry.href}
+                  className={`group flex items-center justify-between rounded-3xl p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 ${entry.tone}`}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-xl font-black text-[#1f6358]">
+                      {entry.icon}
+                    </span>
+                    <div>
+                      <h2 className="text-xl font-black">{entry.title}</h2>
+                      <p className="mt-1 text-sm opacity-75">{entry.description}</p>
+                    </div>
+                  </div>
+                  <span className="text-2xl transition group-hover:-translate-x-1">←</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

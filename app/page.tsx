@@ -1,57 +1,97 @@
 import Link from "next/link";
 
+const modes = [
+  {
+    href: "/remote",
+    label: "التعليم عن بعد",
+    description: "حلقات مباشرة، روابط زوم، وتقارير يومية للمعلمين.",
+    badge: "Online",
+    tone: "from-[#1f6358] to-[#163f43]",
+  },
+  {
+    href: "/onsite",
+    label: "التعليم الحضوري",
+    description: "إدارة الحلقات والطلاب داخل المركز بنفس قاعدة البيانات.",
+    badge: "Center",
+    tone: "from-[#c39a62] to-[#9b7039]",
+  },
+];
+
 export default function HomePage() {
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url('/images/home-hero.jpg')" }}
-      />
+    <main className="rahma-shell min-h-screen overflow-hidden px-5 py-6">
+      <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl flex-col">
+        <header className="flex items-center justify-between rounded-full bg-white px-5 py-3 shadow-sm ring-1 ring-[#c39a62]/15">
+          <div className="flex items-center gap-3">
+            <img src="/logo.webp" alt="شعار تحفيظ الرحمة" width={40} height={40} className="object-contain" />
+            <div>
+              <p className="text-sm font-bold text-[#1c2d31]">تحفيظ الرحمة للقرآن الكريم</p>
+              <p className="text-xs text-[#1c2d31]/55">منصة التقارير والحلقات</p>
+            </div>
+          </div>
+          <span className="hidden rounded-full bg-[#1f6358]/10 px-4 py-2 text-xs font-semibold text-[#1f6358] sm:inline-flex">
+            مجموعة القرآن
+          </span>
+        </header>
 
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f2f38]/55 via-[#143b46]/45 to-[#0d2027]/65" />
+        <section className="grid flex-1 items-center gap-8 py-10 lg:grid-cols-[1.05fr_0.95fr]">
+          <div className="order-2 space-y-8 lg:order-1">
+            <div className="space-y-4">
+              <span className="inline-flex rounded-full bg-[#c39a62]/15 px-4 py-2 text-sm font-semibold text-[#9b7039]">
+                مرحبًا بك
+              </span>
+              <h1 className="max-w-2xl text-5xl font-black leading-tight text-[#1c2d31] md:text-7xl">
+                اختر نوع التعليم
+              </h1>
+              <p className="max-w-xl text-lg leading-8 text-[#1c2d31]/68">
+                إدارة حلقات القرآن للمعلمين والإدارة، بتقارير يومية وسجل مختصر لكل طالب.
+              </p>
+            </div>
 
-      <div className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
-        <div className="w-full max-w-6xl text-center text-white">
-          <div className="mx-auto mb-6 inline-flex rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm font-semibold backdrop-blur-md">
-            منصة الرحمة لتعليم القرآن الكريم
+            <div className="grid gap-4 md:grid-cols-2">
+              {modes.map((mode) => (
+                <Link
+                  key={mode.href}
+                  href={mode.href}
+                  className="group rahma-card relative overflow-hidden rounded-[2rem] p-6 transition duration-200 hover:-translate-y-0.5"
+                >
+                  <div className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${mode.tone} text-white`}>
+                    <span className="text-2xl">◆</span>
+                  </div>
+                  <span className="mb-3 inline-flex rounded-full bg-white/70 px-3 py-1 text-xs font-bold text-[#1f6358]">
+                    {mode.badge}
+                  </span>
+                  <h2 className="text-2xl font-extrabold text-[#1c2d31]">{mode.label}</h2>
+                  <p className="mt-3 min-h-14 text-sm leading-7 text-[#1c2d31]/62">{mode.description}</p>
+                  <div className="mt-6 rounded-2xl bg-[#1c2d31] px-4 py-3 text-center text-sm font-bold text-white transition group-hover:bg-[#1f6358]">
+                    الدخول
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <h1 className="text-4xl font-extrabold md:text-6xl">مرحبًا بك</h1>
-
-          <p className="mx-auto mt-5 max-w-3xl text-base leading-8 text-white/90 md:text-xl">
-            وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ
-            <br />
-            وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي
-          </p>
-
-          <div className="mx-auto mt-14 grid max-w-3xl gap-5 md:grid-cols-2">
-            <Link
-              href="/remote"
-              className="group rounded-[2rem] border border-white/25 bg-white/12 px-8 py-8 text-right shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-lg transition duration-300 hover:-translate-y-1 hover:border-[#D6B68A] hover:bg-white/18"
-            >
-              <div className="mb-4 text-sm font-medium text-white/80">
-                النظام الأول
+          <div className="order-1 lg:order-2">
+            <div className="rahma-card rahma-muted-pattern relative min-h-[380px] overflow-hidden rounded-[2.5rem] p-8 md:min-h-[560px]">
+              <div className="absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#1f6358]/10" />
+              <div className="absolute -bottom-20 -right-20 h-80 w-80 rounded-full bg-[#c39a62]/16" />
+              <div className="relative flex h-full min-h-[320px] flex-col justify-between rounded-[2rem] border border-white bg-white/72 p-8">
+                <div className="flex items-center justify-between">
+                  <span className="rounded-full bg-[#1f6358]/10 px-4 py-2 text-sm font-bold text-[#1f6358]">
+                    منصة الرحمة
+                  </span>
+                  <img src="/logo.webp" alt="" width={72} height={72} className="object-contain" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-[#9b7039]">حلقات القرآن الكريم</p>
+                  <p className="mt-3 max-w-md text-4xl font-black leading-tight text-[#1c2d31]">
+                    متابعة يومية تحفظ الجهد وتوضح الإنجاز.
+                  </p>
+                </div>
               </div>
-              <h2 className="text-2xl font-bold text-white">التعليم عن بعد</h2>
-              <div className="mt-6 text-sm font-semibold text-[#E9D2AE]">
-                الدخول ←
-              </div>
-            </Link>
-
-            <Link
-              href="/onsite"
-              className="group rounded-[2rem] border border-white/25 bg-white/12 px-8 py-8 text-right shadow-[0_20px_60px_rgba(0,0,0,0.18)] backdrop-blur-lg transition duration-300 hover:-translate-y-1 hover:border-[#D6B68A] hover:bg-white/18"
-            >
-              <div className="mb-4 text-sm font-medium text-white/80">
-                النظام الثاني
-              </div>
-              <h2 className="text-2xl font-bold text-white">التعليم الحضوري</h2>
-              <div className="mt-6 text-sm font-semibold text-[#E9D2AE]">
-                الدخول ←
-              </div>
-            </Link>
+            </div>
           </div>
-        </div>
+        </section>
       </div>
     </main>
   );

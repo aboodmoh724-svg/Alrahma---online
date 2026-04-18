@@ -1,84 +1,34 @@
 import Link from "next/link";
+import LoginForm from "@/components/login/LoginForm";
 
 export default function RemoteTeacherLoginPage() {
   return (
-    <main className="min-h-screen bg-[#f3eee6]">
-      <div className="mx-auto flex min-h-screen max-w-7xl items-center px-6 py-10">
-        <div className="grid w-full overflow-hidden rounded-[2.5rem] bg-white shadow-[0_25px_80px_rgba(36,54,61,0.14)] lg:grid-cols-2">
-          <div
-            className="relative hidden min-h-[720px] bg-cover bg-center lg:block"
-            style={{ backgroundImage: "url('/images/login-teacher.jpg')" }}
-          >
-            <div className="absolute inset-0 bg-gradient-to-t from-[#143b46]/30 to-transparent" />
-          </div>
-
-          <div className="flex items-center justify-center p-8 md:p-12">
-            <div className="w-full max-w-md">
-              <div className="mb-8 flex items-center justify-between">
-                <Link
-                  href="/remote"
-                  className="text-sm font-semibold text-[#24363D]/70 transition hover:text-[#24363D]"
-                >
-                  ← رجوع
-                </Link>
-
-                <div className="rounded-full bg-[#c49a64]/15 px-4 py-1.5 text-xs font-semibold text-[#a87d45]">
-                  المعلم
-                </div>
-              </div>
-
-              <div className="mb-8 text-right">
-                <div className="mb-3 inline-flex rounded-full bg-[#c49a64]/12 px-4 py-1.5 text-sm font-semibold text-[#a87d45]">
-                  منصة الرحمة
-                </div>
-                <h1 className="text-3xl font-extrabold text-[#24363D] md:text-4xl">
-                  تسجيل دخول المعلم
-                </h1>
-              </div>
-
-              <form className="space-y-5">
-                <div className="text-right">
-                  <label
-                    htmlFor="username"
-                    className="mb-2 block text-sm font-semibold text-[#24363D]"
-                  >
-                    اسم المستخدم
-                  </label>
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    placeholder="أدخل اسم المستخدم"
-                    className="w-full rounded-2xl border border-[#e7ded0] bg-[#faf7f3] px-4 py-4 text-right text-sm text-[#24363D] outline-none transition placeholder:text-[#24363D]/35 focus:border-[#c49a64] focus:bg-white"
-                  />
-                </div>
-
-                <div className="text-right">
-                  <label
-                    htmlFor="password"
-                    className="mb-2 block text-sm font-semibold text-[#24363D]"
-                  >
-                    كلمة المرور
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="أدخل كلمة المرور"
-                    className="w-full rounded-2xl border border-[#e7ded0] bg-[#faf7f3] px-4 py-4 text-right text-sm text-[#24363D] outline-none transition placeholder:text-[#24363D]/35 focus:border-[#c49a64] focus:bg-white"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full rounded-2xl bg-[#0f6a67] py-4 text-base font-bold text-white shadow-md transition duration-300 hover:-translate-y-0.5 hover:bg-[#0c5755]"
-                >
-                  تسجيل الدخول
-                </button>
-              </form>
+    <main className="rahma-shell min-h-screen px-5 py-6">
+      <div className="mx-auto max-w-7xl">
+        <section className="rahma-card grid min-h-[calc(100vh-3rem)] overflow-hidden rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="rahma-muted-pattern relative hidden overflow-hidden bg-[#1f6358] lg:block">
+            <div className="absolute -left-28 top-24 h-96 w-96 rounded-full bg-white/12" />
+            <div className="absolute bottom-16 right-12 h-80 w-80 rounded-full bg-[#c39a62]/24" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#102a33] via-[#1f6358]/70 to-[#f3eadc]/20" />
+            <Link href="/remote" className="absolute right-8 top-8 rounded-full bg-white/15 px-4 py-2 text-sm font-bold text-white">
+              رجوع
+            </Link>
+            <div className="absolute bottom-10 right-10 text-white">
+              <p className="rounded-full bg-white/18 px-4 py-2 text-sm font-bold text-[#f1d39d]">المعلم</p>
+              <h2 className="mt-4 text-4xl font-black">تقارير الطلاب اليومية</h2>
             </div>
           </div>
-        </div>
+
+          <div className="flex items-center justify-center p-8 md:p-14">
+            <div className="w-full max-w-md">
+              <div className="mb-10 flex items-center justify-between lg:hidden">
+                <Link href="/remote" className="text-sm font-bold text-[#1c2d31]/65">رجوع</Link>
+                <span className="rounded-full bg-[#c39a62]/15 px-4 py-2 text-xs font-bold text-[#9b7039]">المعلم</span>
+              </div>
+              <LoginForm title="تسجيل دخول المعلم" subtitle="أدخل بياناتك لإدارة طلابك وتقارير اليوم." />
+            </div>
+          </div>
+        </section>
       </div>
     </main>
   );

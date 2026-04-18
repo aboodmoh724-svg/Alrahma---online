@@ -1,77 +1,129 @@
-import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+function optionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const numberValue = Number(value);
+  return Number.isFinite(numberValue) ? numberValue : null;
+}
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-
-    console.log("REPORT BODY RECEIVED =>", body)
+    const cookieStore = await cookies();
+    const teacherId = cookieStore.get("alrahma_user_id")?.value;
+    const body = await req.json();
 
     const {
       studentId,
       lessonName,
+      lessonSurah,
+      lessonMemorized,
+      lastFiveMemorized,
       review,
+      reviewSurah,
+      reviewFrom,
+      reviewTo,
+      reviewPagesCount,
+      reviewMemorized,
+      pageFrom,
+      pageTo,
+      pagesCount,
       homework,
+      nextHomework,
+      nextLessonHomework,
+      nextReviewHomework,
       note,
       status,
-    } = body
+    } = body;
 
-    console.log("REPORT FIELDS =>", {
-      studentId,
-      lessonName,
-      review,
-      homework,
-      note,
-      status,
-    })
+    const isAbsent = status === "ABSENT";
+
+    if (!teacherId) {
+      return NextResponse.json(
+        { error: "الرجاء تسجيل الدخول أولًا" },
+        { status: 401 }
+      );
+    }
 
     if (!studentId || typeof studentId !== "string" || !studentId.trim()) {
-      return NextResponse.json(
-        { error: "الطالب مطلوب" },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: "الطالب مطلوب" }, { status: 400 });
     }
 
-    if (!lessonName || typeof lessonName !== "string" || !lessonName.trim()) {
-      return NextResponse.json(
-        { error: "الدرس مطلوب" },
-        { status: 400 }
-      )
+    if (!isAbsent && (!lessonName || typeof lessonName !== "string" || !lessonName.trim())) {
+      return NextResponse.json({ error: "الدرس مطلوب" }, { status: 400 });
     }
 
-    if (!homework || typeof homework !== "string" || !homework.trim()) {
+    if (!isAbsent && (!lessonSurah || typeof lessonSurah !== "string" || !lessonSurah.trim())) {
+      return NextResponse.json({ error: "اسم السورة في الدرس الجديد مطلوب" }, { status: 400 });
+    }
+
+    const student = await prisma.student.findFirst({
+      where: {
+        id: studentId.trim(),
+        teacherId,
+        isActive: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!student) {
       return NextResponse.json(
-        { error: "الواجب مطلوب" },
-        { status: 400 }
-      )
+        { error: "لا يمكنك إضافة تقرير لهذا الطالب" },
+        { status: 403 }
+      );
     }
 
     const report = await prisma.report.create({
       data: {
-        studentId: studentId.trim(),
-        lessonName: lessonName.trim(),
+        studentId: student.id,
+        teacherId,
+        lessonName: isAbsent ? "غياب" : lessonName.trim(),
+        lessonSurah:
+          typeof lessonSurah === "string" ? lessonSurah.trim() : null,
+        lessonMemorized:
+          typeof lessonMemorized === "boolean" ? lessonMemorized : null,
+        lastFiveMemorized:
+          typeof lastFiveMemorized === "boolean" ? lastFiveMemorized : null,
         review: typeof review === "string" ? review.trim() : "",
-        homework: homework.trim(),
+        reviewSurah:
+          typeof reviewSurah === "string" ? reviewSurah.trim() : null,
+        reviewFrom: optionalNumber(reviewFrom),
+        reviewTo: optionalNumber(reviewTo),
+        reviewPagesCount: optionalNumber(reviewPagesCount),
+        reviewMemorized:
+          typeof reviewMemorized === "boolean" ? reviewMemorized : null,
+        pageFrom: optionalNumber(pageFrom),
+        pageTo: optionalNumber(pageTo),
+        pagesCount: optionalNumber(pagesCount),
+        homework:
+          typeof homework === "string" && homework.trim() ? homework.trim() : "-",
+        nextHomework:
+          typeof nextHomework === "string" ? nextHomework.trim() : "",
+        nextLessonHomework:
+          typeof nextLessonHomework === "string" ? nextLessonHomework.trim() : "",
+        nextReviewHomework:
+          typeof nextReviewHomework === "string" ? nextReviewHomework.trim() : "",
         note: typeof note === "string" ? note.trim() : "",
-        status:
-          status === "ABSENT" || status === "PRESENT"
-            ? status
-            : "PRESENT",
+        status: isAbsent ? "ABSENT" : "PRESENT",
       },
-    })
-
-    console.log("REPORT CREATED =>", report)
+    });
 
     return NextResponse.json({
       success: true,
       report,
-    })
+    });
   } catch (error) {
-    console.error("CREATE REPORT ERROR =>", error)
+    console.error("CREATE REPORT ERROR =>", error);
 
     return NextResponse.json(
       { error: "حدث خطأ أثناء حفظ التقرير" },
       { status: 500 }
-    )
+    );
   }
 }

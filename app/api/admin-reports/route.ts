@@ -11,8 +11,16 @@ export async function GET() {
         student: {
           select: {
             id: true,
+            studentCode: true,
             fullName: true,
             studyMode: true,
+            circle: {
+              select: {
+                id: true,
+                name: true,
+                track: true,
+              },
+            },
             teacher: {
               select: {
                 id: true,

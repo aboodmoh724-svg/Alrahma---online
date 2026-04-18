@@ -1,0 +1,19 @@
+ALTER TABLE "Report" ADD COLUMN IF NOT EXISTS "teacherId" TEXT;
+ALTER TABLE "Report" ADD COLUMN IF NOT EXISTS "pageFrom" INTEGER;
+ALTER TABLE "Report" ADD COLUMN IF NOT EXISTS "pageTo" INTEGER;
+ALTER TABLE "Report" ADD COLUMN IF NOT EXISTS "pagesCount" INTEGER;
+ALTER TABLE "Report" ADD COLUMN IF NOT EXISTS "sentToParent" BOOLEAN NOT NULL DEFAULT false;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'Report_teacherId_fkey'
+  ) THEN
+    ALTER TABLE "Report"
+      ADD CONSTRAINT "Report_teacherId_fkey"
+      FOREIGN KEY ("teacherId") REFERENCES "User"("id")
+      ON DELETE SET NULL ON UPDATE CASCADE;
+  END IF;
+END $$;

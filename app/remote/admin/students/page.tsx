@@ -1,85 +1,93 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
+import { useEffect, useState } from "react";
+import Link from "next/link";
 
 type Teacher = {
-  id: string
-  fullName: string
-  email: string
-}
+  id: string;
+  fullName: string;
+  email: string;
+};
+
+type Circle = {
+  id: string;
+  name: string;
+  studyMode: "REMOTE" | "ONSITE";
+  teacher: Teacher | null;
+};
 
 type Student = {
-  id: string
-  fullName: string
-  studyMode: "REMOTE" | "ONSITE"
-  isActive: boolean
-  createdAt: string
-  teacher: {
-    id: string
-    fullName: string
-    email: string
-  }
-}
+  id: string;
+  studentCode: string | null;
+  fullName: string;
+  studyMode: "REMOTE" | "ONSITE";
+  isActive: boolean;
+  createdAt: string;
+  teacher: Teacher;
+  circle: Circle | null;
+};
 
 export default function RemoteAdminStudentsPage() {
-  const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [students, setStudents] = useState<Student[]>([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [circles, setCircles] = useState<Circle[]>([]);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
     teacherId: "",
+    circleId: "",
     studyMode: "REMOTE",
-  })
+  });
 
   const fetchData = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
 
-      const [teachersRes, studentsRes] = await Promise.all([
+      const [teachersRes, studentsRes, circlesRes] = await Promise.all([
         fetch("/api/teachers", { cache: "no-store" }),
         fetch("/api/students", { cache: "no-store" }),
-      ])
+        fetch("/api/circles", { cache: "no-store" }),
+      ]);
 
-      const teachersData = await teachersRes.json()
-      const studentsData = await studentsRes.json()
+      const teachersData = await teachersRes.json();
+      const studentsData = await studentsRes.json();
+      const circlesData = await circlesRes.json();
 
-      console.log("TEACHERS DATA =>", teachersData)
-      console.log("STUDENTS DATA =>", studentsData)
-
-      setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : [])
-      setStudents(Array.isArray(studentsData.students) ? studentsData.students : [])
+      setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
+      setStudents(Array.isArray(studentsData.students) ? studentsData.students : []);
+      setCircles(Array.isArray(circlesData.circles) ? circlesData.circles : []);
     } catch (error) {
-      console.error("FETCH PAGE DATA ERROR =>", error)
-      setTeachers([])
-      setStudents([])
+      console.error("FETCH PAGE DATA ERROR =>", error);
+      setTeachers([]);
+      setStudents([]);
+      setCircles([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
 
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     try {
-      setSubmitting(true)
+      setSubmitting(true);
 
       const res = await fetch("/api/students", {
         method: "POST",
@@ -87,33 +95,54 @@ export default function RemoteAdminStudentsPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
-      const data = await res.json()
-
-      console.log("CREATE STUDENT RESPONSE =>", data)
+      const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "حدث خطأ أثناء إضافة الطالب")
-        return
+        alert(data.error || "حدث خطأ أثناء إضافة الطالب");
+        return;
       }
 
-      alert("تمت إضافة الطالب بنجاح")
+      alert("تمت إضافة الطالب بنجاح");
 
       setFormData({
         fullName: "",
         teacherId: "",
+        circleId: "",
         studyMode: "REMOTE",
-      })
+      });
 
-      await fetchData()
+      await fetchData();
     } catch (error) {
-      console.error("CREATE STUDENT SUBMIT ERROR =>", error)
-      alert("حدث خطأ أثناء إضافة الطالب")
+      console.error("CREATE STUDENT SUBMIT ERROR =>", error);
+      alert("حدث خطأ أثناء إضافة الطالب");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
+
+  const handleTransferStudent = async (studentId: string, circleId: string) => {
+    if (!circleId) {
+      return;
+    }
+
+    const res = await fetch(`/api/students/${studentId}/circle`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ circleId }),
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      alert(data.error || "تعذر نقل الطالب إلى الحلقة");
+      return;
+    }
+
+    await fetchData();
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -122,7 +151,7 @@ export default function RemoteAdminStudentsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">إدارة الطلاب</h1>
             <p className="mt-1 text-sm text-gray-600">
-              إضافة الطلاب وعرض جميع الطلاب المسجلين
+              إضافة الطلاب، ربطهم بالحلقات، ونقلهم بين الحلقات
             </p>
           </div>
 
@@ -159,6 +188,28 @@ export default function RemoteAdminStudentsPage() {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-gray-700">
+                    الحلقة
+                  </label>
+                  <select
+                    name="circleId"
+                    value={formData.circleId}
+                    onChange={handleChange}
+                    className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                  >
+                    <option value="">بدون حلقة</option>
+                    {circles.map((circle) => (
+                      <option key={circle.id} value={circle.id}>
+                        {circle.name}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-xs text-gray-500">
+                    عند اختيار حلقة، يتم تعيين معلم الطالب تلقائيًا من معلم الحلقة.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
                     المعلم
                   </label>
                   <select
@@ -166,7 +217,7 @@ export default function RemoteAdminStudentsPage() {
                     value={formData.teacherId}
                     onChange={handleChange}
                     className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
-                    required
+                    required={!formData.circleId}
                   >
                     <option value="">اختر المعلم</option>
                     {teachers.map((teacher) => (
@@ -197,7 +248,7 @@ export default function RemoteAdminStudentsPage() {
                   disabled={submitting}
                   className="w-full rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {submitting ? "جارٍ الإضافة..." : "إضافة الطالب"}
+                  {submitting ? "جاري الإضافة..." : "إضافة الطالب"}
                 </button>
               </form>
             </div>
@@ -227,8 +278,10 @@ export default function RemoteAdminStudentsPage() {
                   <table className="min-w-full overflow-hidden rounded-xl">
                     <thead>
                       <tr className="bg-gray-100 text-right text-sm text-gray-600">
+                        <th className="px-4 py-3 font-medium">رقم الطالب</th>
                         <th className="px-4 py-3 font-medium">اسم الطالب</th>
                         <th className="px-4 py-3 font-medium">المعلم</th>
+                        <th className="px-4 py-3 font-medium">الحلقة</th>
                         <th className="px-4 py-3 font-medium">نوع الدراسة</th>
                         <th className="px-4 py-3 font-medium">الحالة</th>
                       </tr>
@@ -239,11 +292,30 @@ export default function RemoteAdminStudentsPage() {
                           key={student.id}
                           className="border-b border-gray-100 text-sm"
                         >
+                          <td className="px-4 py-3 font-bold text-[#1f6358]">
+                            {student.studentCode || "-"}
+                          </td>
                           <td className="px-4 py-3 font-medium text-gray-900">
                             {student.fullName}
                           </td>
                           <td className="px-4 py-3 text-gray-700">
                             {student.teacher?.fullName || "-"}
+                          </td>
+                          <td className="px-4 py-3 text-gray-700">
+                            <select
+                              value={student.circle?.id || ""}
+                              onChange={(event) =>
+                                handleTransferStudent(student.id, event.target.value)
+                              }
+                              className="rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                            >
+                              <option value="">بدون حلقة</option>
+                              {circles.map((circle) => (
+                                <option key={circle.id} value={circle.id}>
+                                  {circle.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="px-4 py-3 text-gray-700">
                             {student.studyMode === "REMOTE" ? "عن بعد" : "حضوري"}
@@ -270,5 +342,5 @@ export default function RemoteAdminStudentsPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

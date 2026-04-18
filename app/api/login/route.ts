@@ -1,19 +1,15 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+const userCookieName = "alrahma_user_id";
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "").trim();
 
-    console.log("=== LOGIN DEBUG START ===");
-    console.log("email from request:", email);
-
     if (!email || !password) {
-      console.log("missing email or password");
-      console.log("=== LOGIN DEBUG END ===");
-
       return NextResponse.json(
         { success: false, message: "الرجاء إدخال البريد الإلكتروني وكلمة المرور" },
         { status: 400 }
@@ -24,25 +20,14 @@ export async function POST(request: Request) {
       where: { email },
     });
 
-    console.log("user found:", user);
-
-    if (!user) {
-      console.log("user not found");
-      console.log("=== LOGIN DEBUG END ===");
-
+    if (!user || !user.isActive) {
       return NextResponse.json(
-        { success: false, message: "المستخدم غير موجود" },
+        { success: false, message: "المستخدم غير موجود أو غير مفعل" },
         { status: 404 }
       );
     }
 
-    console.log("password from request:", password);
-    console.log("password from db:", user.password);
-
     if (user.password !== password) {
-      console.log("password mismatch");
-      console.log("=== LOGIN DEBUG END ===");
-
       return NextResponse.json(
         { success: false, message: "كلمة المرور غير صحيحة" },
         { status: 401 }
@@ -61,17 +46,7 @@ export async function POST(request: Request) {
       redirectTo = "/onsite/admin/dashboard";
     }
 
-    console.log("login success for:", {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-      studyMode: user.studyMode,
-      redirectTo,
-    });
-    console.log("=== LOGIN DEBUG END ===");
-
-    return NextResponse.json({
+    const response = NextResponse.json({
       success: true,
       message: "تم تسجيل الدخول بنجاح",
       redirectTo,
@@ -83,6 +58,16 @@ export async function POST(request: Request) {
         studyMode: user.studyMode,
       },
     });
+
+    response.cookies.set(userCookieName, user.id, {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
   } catch (error) {
     console.error("LOGIN API ERROR:", error);
 

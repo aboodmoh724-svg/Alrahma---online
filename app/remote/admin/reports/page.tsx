@@ -1,157 +1,344 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import Link from "next/link"
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type ReportItem = {
-  id: string
-  lessonName: string
-  review: string | null
-  homework: string
-  note: string | null
-  status: "PRESENT" | "ABSENT"
-  createdAt: string
+  id: string;
+  lessonName: string;
+  lessonMemorized: boolean | null;
+  lastFiveMemorized: boolean | null;
+  reviewMemorized: boolean | null;
+  pagesCount: number | null;
+  reviewPagesCount: number | null;
+  status: "PRESENT" | "ABSENT";
+  sentToParent: boolean;
+  createdAt: string;
   student: {
-    id: string
-    fullName: string
-    studyMode: "REMOTE" | "ONSITE"
+    id: string;
+    studentCode: string | null;
+    fullName: string;
+    studyMode: "REMOTE" | "ONSITE";
+    circle: {
+      id: string;
+      name: string;
+      track: string | null;
+    } | null;
     teacher: {
-      id: string
-      fullName: string
-      email: string
-    }
+      id: string;
+      fullName: string;
+      email: string;
+    };
+  };
+};
+
+type StudentSummary = {
+  id: string;
+  studentCode: string;
+  fullName: string;
+  teacherName: string;
+  circleName: string;
+  reports: ReportItem[];
+  presentCount: number;
+  absentCount: number;
+  memorizedCount: number;
+  notMemorizedCount: number;
+  pagesTotal: number;
+  sentToParentCount: number;
+};
+
+function getStudentLevel(summary: StudentSummary) {
+  const totalChecked = summary.memorizedCount + summary.notMemorizedCount;
+
+  if (summary.reports.length === 0) {
+    return "لا توجد تقارير";
   }
+
+  if (totalChecked === 0) {
+    return "بحاجة بيانات أكثر";
+  }
+
+  const successRate = summary.memorizedCount / totalChecked;
+
+  if (successRate >= 0.8 && summary.absentCount <= 1) {
+    return "مستوى حافظ ومطمئن";
+  }
+
+  if (successRate >= 0.55) {
+    return "مستوى متوسط يحتاج متابعة";
+  }
+
+  return "بحاجة متابعة قوية";
+}
+
+function buildSummaries(reports: ReportItem[]) {
+  const summaries = new Map<string, StudentSummary>();
+
+  for (const report of reports) {
+    const studentId = report.student.id;
+    const current = summaries.get(studentId) || {
+      id: studentId,
+      studentCode: report.student.studentCode || "-",
+      fullName: report.student.fullName,
+      teacherName: report.student.teacher?.fullName || "-",
+      circleName: report.student.circle?.name || "غير محددة",
+      reports: [],
+      presentCount: 0,
+      absentCount: 0,
+      memorizedCount: 0,
+      notMemorizedCount: 0,
+      pagesTotal: 0,
+      sentToParentCount: 0,
+    };
+
+    current.reports.push(report);
+
+    if (report.status === "ABSENT") {
+      current.absentCount += 1;
+    } else {
+      current.presentCount += 1;
+    }
+
+    const memorizedValues = [
+      report.lessonMemorized,
+      report.lastFiveMemorized,
+      report.reviewMemorized,
+    ];
+
+    for (const value of memorizedValues) {
+      if (value === true) {
+        current.memorizedCount += 1;
+      }
+
+      if (value === false) {
+        current.notMemorizedCount += 1;
+      }
+    }
+
+    current.pagesTotal += report.pagesCount || 0;
+    current.pagesTotal += report.reviewPagesCount || 0;
+
+    if (report.sentToParent) {
+      current.sentToParentCount += 1;
+    }
+
+    summaries.set(studentId, current);
+  }
+
+  return Array.from(summaries.values()).sort(
+    (a, b) => b.reports.length - a.reports.length
+  );
 }
 
 export default function RemoteAdminReportsPage() {
-  const [reports, setReports] = useState<ReportItem[]>([])
-  const [loading, setLoading] = useState(true)
+  const [reports, setReports] = useState<ReportItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
   const fetchReports = async () => {
     try {
-      setLoading(true)
-
-      const res = await fetch("/api/admin-reports", {
-        cache: "no-store",
-      })
-
-      const data = await res.json()
-
-      console.log("ADMIN REPORTS DATA =>", data)
-
-      setReports(Array.isArray(data.reports) ? data.reports : [])
+      setLoading(true);
+      const res = await fetch("/api/admin-reports", { cache: "no-store" });
+      const data = await res.json();
+      setReports(Array.isArray(data.reports) ? data.reports : []);
     } catch (error) {
-      console.error("FETCH ADMIN REPORTS ERROR =>", error)
-      setReports([])
+      console.error("FETCH ADMIN REPORTS ERROR =>", error);
+      setReports([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchReports()
-  }, [])
+    fetchReports();
+  }, []);
+
+  const summaries = useMemo(() => buildSummaries(reports), [reports]);
+  const filteredSummaries = useMemo(() => {
+    const term = search.trim().toLowerCase();
+
+    if (!term) {
+      return summaries;
+    }
+
+    return summaries.filter((summary) => {
+      return (
+        summary.fullName.toLowerCase().includes(term) ||
+        summary.studentCode.toLowerCase().includes(term)
+      );
+    });
+  }, [search, summaries]);
+
+  const selectedSummary = filteredSummaries[0] || null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">عرض التقارير</h1>
-            <p className="mt-1 text-sm text-gray-600">
-              جميع التقارير المحفوظة في النظام
+            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <h1 className="text-4xl font-black text-[#1c2d31]">قسم التقارير</h1>
+            <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
+              ابحث باسم الطالب أو رقم الطالب لعرض ملخص مستواه بدل تصفح قائمة طويلة من التقارير.
             </p>
           </div>
-
           <Link
             href="/remote/admin/dashboard"
-            className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
+            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
-            الرجوع للداشبورد
+            الرجوع للوحة الإدارة
           </Link>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-gray-900">
-              قائمة التقارير
-            </h2>
-            <span className="text-sm text-gray-500">
-              {reports.length} تقرير
-            </span>
-          </div>
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+            البحث عن طالب
+          </label>
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="اكتب اسم الطالب أو رقمه مثل ST-1001"
+            className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+          />
+        </section>
 
-          {loading ? (
-            <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
-              جاري التحميل...
-            </div>
-          ) : reports.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-gray-300 p-6 text-center text-sm text-gray-500">
-              لا توجد تقارير حتى الآن
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full overflow-hidden rounded-xl">
-                <thead>
-                  <tr className="bg-gray-100 text-right text-sm text-gray-600">
-                    <th className="px-4 py-3 font-medium">الطالب</th>
-                    <th className="px-4 py-3 font-medium">المعلم</th>
-                    <th className="px-4 py-3 font-medium">الدرس</th>
-                    <th className="px-4 py-3 font-medium">الواجب</th>
-                    <th className="px-4 py-3 font-medium">الحالة</th>
-                    <th className="px-4 py-3 font-medium">التاريخ</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {reports.map((report) => (
-                    <tr
-                      key={report.id}
-                      className="border-b border-gray-100 text-sm align-top"
+        {loading ? (
+          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
+            جاري تحميل ملخصات الطلاب...
+          </div>
+        ) : summaries.length === 0 ? (
+          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
+            لا توجد تقارير حتى الآن.
+          </div>
+        ) : (
+          <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
+            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="font-black text-[#1c2d31]">الطلاب</h2>
+                <span className="text-sm font-bold text-[#1c2d31]/55">
+                  {filteredSummaries.length}
+                </span>
+              </div>
+
+              <div className="max-h-[640px] space-y-2 overflow-y-auto pl-1">
+                {filteredSummaries.length === 0 ? (
+                  <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                    لا يوجد طالب مطابق للبحث.
+                  </p>
+                ) : (
+                  filteredSummaries.map((summary) => (
+                    <button
+                      key={summary.id}
+                      type="button"
+                      onClick={() => setSearch(summary.studentCode)}
+                      className={`w-full rounded-2xl p-4 text-right transition ${
+                        selectedSummary?.id === summary.id
+                          ? "bg-[#1f6358] text-white"
+                          : "bg-[#fffaf2] text-[#1c2d31] hover:bg-white"
+                      }`}
                     >
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {report.student.fullName}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700">
-                        {report.student.teacher?.fullName || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700">
-                        <div>{report.lessonName}</div>
-                        {report.review ? (
-                          <div className="mt-1 text-xs text-gray-500">
-                            مراجعة: {report.review}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700">
-                        <div>{report.homework}</div>
-                        {report.note ? (
-                          <div className="mt-1 text-xs text-gray-500">
-                            ملاحظة: {report.note}
-                          </div>
-                        ) : null}
-                      </td>
-                      <td className="px-4 py-3">
-                        {report.status === "PRESENT" ? (
-                          <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-700">
-                            حاضر
+                      <span className="block font-black">{summary.fullName}</span>
+                      <span className="mt-1 block text-sm opacity-70">
+                        رقم الطالب: {summary.studentCode}
+                      </span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </section>
+
+            {selectedSummary ? (
+              <section className="space-y-5">
+                <div className="rounded-[2rem] bg-[#173d42] p-6 text-white shadow-lg">
+                  <p className="text-sm font-bold text-[#f1d39d]">
+                    {selectedSummary.studentCode}
+                  </p>
+                  <h2 className="mt-2 text-3xl font-black">
+                    {selectedSummary.fullName}
+                  </h2>
+                  <p className="mt-3 text-sm leading-7 text-white/72">
+                    المعلم: {selectedSummary.teacherName} - الحلقة: {selectedSummary.circleName}
+                  </p>
+                  <div className="mt-5 inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+                    {getStudentLevel(selectedSummary)}
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-3">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <p className="text-sm font-bold text-[#1c2d31]/55">أيام حافظ</p>
+                    <p className="mt-2 text-4xl font-black text-[#1f6358]">
+                      {selectedSummary.memorizedCount}
+                    </p>
+                  </div>
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <p className="text-sm font-bold text-[#1c2d31]/55">أيام غير حافظ</p>
+                    <p className="mt-2 text-4xl font-black text-[#c39a62]">
+                      {selectedSummary.notMemorizedCount}
+                    </p>
+                  </div>
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <p className="text-sm font-bold text-[#1c2d31]/55">أيام غياب</p>
+                    <p className="mt-2 text-4xl font-black text-[#173d42]">
+                      {selectedSummary.absentCount}
+                    </p>
+                  </div>
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <p className="text-sm font-bold text-[#1c2d31]/55">أيام حضور</p>
+                    <p className="mt-2 text-4xl font-black text-[#1f6358]">
+                      {selectedSummary.presentCount}
+                    </p>
+                  </div>
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <p className="text-sm font-bold text-[#1c2d31]/55">إجمالي الصفحات</p>
+                    <p className="mt-2 text-4xl font-black text-[#173d42]">
+                      {selectedSummary.pagesTotal}
+                    </p>
+                  </div>
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <p className="text-sm font-bold text-[#1c2d31]/55">عدد التقارير</p>
+                    <p className="mt-2 text-4xl font-black text-[#c39a62]">
+                      {selectedSummary.reports.length}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <h3 className="mb-4 text-xl font-black text-[#1c2d31]">
+                    آخر التقارير المختصرة
+                  </h3>
+                  <div className="space-y-3">
+                    {selectedSummary.reports.slice(0, 8).map((report) => (
+                      <div
+                        key={report.id}
+                        className="rounded-2xl border border-[#d9c8ad]/70 bg-[#fffaf2] p-4"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-black text-[#1c2d31]">
+                            {new Date(report.createdAt).toLocaleDateString("ar-EG")}
+                          </p>
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-black ${
+                              report.status === "PRESENT"
+                                ? "bg-emerald-100 text-emerald-800"
+                                : "bg-amber-100 text-amber-800"
+                            }`}
+                          >
+                            {report.status === "PRESENT" ? "حاضر" : "غائب"}
                           </span>
-                        ) : (
-                          <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-medium text-red-700">
-                            غائب
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700">
-                        {new Date(report.createdAt).toLocaleDateString("ar-EG")}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                        </div>
+                        <p className="mt-2 text-sm leading-7 text-[#1c2d31]/62">
+                          {report.lessonName}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+            ) : null}
+          </div>
+        )}
       </div>
-    </div>
-  )
+    </main>
+  );
 }
