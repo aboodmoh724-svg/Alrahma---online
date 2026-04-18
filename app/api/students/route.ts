@@ -101,9 +101,30 @@ export async function POST(req: Request) {
     }
 
     const teacherId = circle?.teacherId || teacherIdFromBody;
+    let resolvedCircleId = circle?.id || null;
+    let resolvedStudyMode = circle?.studyMode || studyMode;
 
     if (!teacherId) {
       return NextResponse.json({ error: "المعلم مطلوب" }, { status: 400 });
+    }
+
+    if (!resolvedCircleId && teacherIdFromBody) {
+      const teacherCircles = await prisma.circle.findMany({
+        where: {
+          teacherId: teacherIdFromBody,
+          studyMode,
+        },
+        select: {
+          id: true,
+          studyMode: true,
+        },
+        take: 2,
+      });
+
+      if (teacherCircles.length === 1) {
+        resolvedCircleId = teacherCircles[0].id;
+        resolvedStudyMode = teacherCircles[0].studyMode;
+      }
     }
 
     const studentCode = await generateStudentCode();
@@ -113,8 +134,8 @@ export async function POST(req: Request) {
         studentCode,
         fullName,
         teacherId,
-        circleId: circle?.id || null,
-        studyMode: circle?.studyMode || studyMode,
+        circleId: resolvedCircleId,
+        studyMode: resolvedStudyMode,
         isActive: true,
       },
       include: {

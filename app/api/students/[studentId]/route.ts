@@ -14,6 +14,10 @@ function normalizeString(value: unknown) {
   return s || null;
 }
 
+function hasOwn(object: Record<string, unknown>, key: string) {
+  return Object.prototype.hasOwnProperty.call(object, key);
+}
+
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const cookieStore = await cookies();
@@ -45,14 +49,31 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const { studentId } = await context.params;
     const body = await request.json();
+    const hasParentWhatsapp = hasOwn(body, "parentWhatsapp");
+    const hasParentEmail = hasOwn(body, "parentEmail");
+    const hasTeacherId = hasOwn(body, "teacherId");
+    const hasCircleId = hasOwn(body, "circleId");
 
-    const parentWhatsapp =
-      body.parentWhatsapp === null ? null : normalizeString(body.parentWhatsapp);
-    const parentEmail =
-      body.parentEmail === null ? null : normalizeString(body.parentEmail);
-    const teacherId =
-      body.teacherId === null ? null : normalizeString(body.teacherId);
-    const circleId = body.circleId === null ? null : normalizeString(body.circleId);
+    const parentWhatsapp = hasParentWhatsapp
+      ? body.parentWhatsapp === null
+        ? null
+        : normalizeString(body.parentWhatsapp)
+      : undefined;
+    const parentEmail = hasParentEmail
+      ? body.parentEmail === null
+        ? null
+        : normalizeString(body.parentEmail)
+      : undefined;
+    const teacherId = hasTeacherId
+      ? body.teacherId === null
+        ? null
+        : normalizeString(body.teacherId)
+      : undefined;
+    const circleId = hasCircleId
+      ? body.circleId === null
+        ? null
+        : normalizeString(body.circleId)
+      : undefined;
 
     const student = await prisma.student.findFirst({
       where: {
@@ -66,7 +87,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "الطالب غير موجود" }, { status: 404 });
     }
 
-    if (circleId) {
+    if (hasCircleId && circleId) {
       const circle = await prisma.circle.findFirst({
         where: { id: circleId, studyMode: "ONSITE" },
         select: { id: true, teacherId: true, studyMode: true },
@@ -99,7 +120,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ success: true, student: updated });
     }
 
-    if (teacherId) {
+    let inferredCircleId: string | null | undefined;
+
+    if (hasTeacherId && teacherId) {
       const teacher = await prisma.user.findFirst({
         where: {
           id: teacherId,
@@ -115,13 +138,29 @@ export async function PATCH(request: Request, context: RouteContext) {
           { status: 400 }
         );
       }
+
+      const teacherCircles = await prisma.circle.findMany({
+        where: {
+          teacherId,
+          studyMode: "ONSITE",
+        },
+        select: {
+          id: true,
+        },
+        take: 2,
+      });
+
+      if (!hasCircleId && teacherCircles.length === 1) {
+        inferredCircleId = teacherCircles[0].id;
+      }
     }
 
     const updateData: Prisma.StudentUncheckedUpdateInput = {
       ...(parentWhatsapp !== undefined ? { parentWhatsapp } : {}),
       ...(parentEmail !== undefined ? { parentEmail } : {}),
       ...(teacherId ? { teacherId } : {}),
-      ...(circleId !== undefined ? { circleId } : {}),
+      ...(hasCircleId ? { circleId } : {}),
+      ...(inferredCircleId !== undefined ? { circleId: inferredCircleId } : {}),
       studyMode: "ONSITE",
     };
 

@@ -88,6 +88,14 @@ export default function OnsiteAdminStudentsPage() {
     fetchData();
   }, []);
 
+  const findOnlyTeacherCircle = (teacherId: string) => {
+    const teacherCircles = circles.filter(
+      (circle) => circle.teacher?.id === teacherId
+    );
+
+    return teacherCircles.length === 1 ? teacherCircles[0] : null;
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -96,6 +104,18 @@ export default function OnsiteAdminStudentsPage() {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+      ...(name === "circleId"
+        ? {
+            teacherId:
+              circles.find((circle) => circle.id === value)?.teacher?.id ||
+              prev.teacherId,
+          }
+        : {}),
+      ...(name === "teacherId"
+        ? {
+            circleId: findOnlyTeacherCircle(value)?.id || prev.circleId,
+          }
+        : {}),
     }));
   };
 
@@ -158,7 +178,7 @@ export default function OnsiteAdminStudentsPage() {
     studentId: string,
     patch: Partial<Pick<Student, "parentWhatsapp" | "parentEmail">> & {
       teacherId?: string;
-      circleId?: string;
+      circleId?: string | null;
     }
   ) => {
     const res = await fetch(`/api/students/${studentId}`, {
@@ -342,9 +362,12 @@ export default function OnsiteAdminStudentsPage() {
                         <td className="px-4 py-3 text-[#1c2d31]/70">
                           <select
                             value={student.circle?.id || ""}
-                            onChange={(event) =>
-                              handleTransferStudent(student.id, event.target.value)
-                            }
+                            onChange={async (event) => {
+                              const ok = await updateStudent(student.id, {
+                                circleId: event.target.value || null,
+                              });
+                              if (ok) await fetchData();
+                            }}
                             className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
                           >
                             <option value="">بدون حلقة</option>
