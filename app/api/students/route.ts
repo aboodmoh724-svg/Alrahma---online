@@ -1,33 +1,15 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-
-async function generateStudentCode() {
-  const studentsCount = await prisma.student.count();
-
-  for (let offset = 1; offset < 1000; offset += 1) {
-    const code = `ST-${1000 + studentsCount + offset}`;
-    const existingStudent = await prisma.student.findUnique({
-      where: {
-        studentCode: code,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!existingStudent) {
-      return code;
-    }
-  }
-
-  return `ST-${Date.now()}`;
-}
+import { generateStudentCode } from "@/lib/student-code";
 
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const circleId = url.searchParams.get("circleId") || "";
+    const rawStudyMode = url.searchParams.get("studyMode") || "";
+    const studyMode =
+      rawStudyMode === "REMOTE" || rawStudyMode === "ONSITE" ? rawStudyMode : "";
     const cookieStore = await cookies();
     const userId = cookieStore.get("alrahma_user_id")?.value;
     const user = userId
@@ -43,6 +25,7 @@ export async function GET(req: Request) {
           ? {
               teacherId: user.id,
               ...(circleId ? { circleId } : {}),
+              ...(studyMode ? { studyMode } : {}),
               isActive: true,
             }
           : undefined,

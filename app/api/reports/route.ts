@@ -1,6 +1,12 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import {
+  dailyAttendanceWhatsAppMessage,
+  isWhatsAppConfigured,
+  normalizeWhatsAppNumber,
+  sendWhatsAppText,
+} from "@/lib/whatsapp";
 
 function optionalNumber(value: unknown) {
   if (value === null || value === undefined || value === "") {
@@ -19,6 +25,7 @@ export async function POST(req: Request) {
 
     const {
       studentId,
+      attendanceOnly,
       lessonName,
       lessonSurah,
       lessonMemorized,
@@ -41,6 +48,7 @@ export async function POST(req: Request) {
     } = body;
 
     const isAbsent = status === "ABSENT";
+    const isAttendanceOnly = Boolean(attendanceOnly);
 
     if (!teacherId) {
       return NextResponse.json(
@@ -53,11 +61,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "الطالب مطلوب" }, { status: 400 });
     }
 
-    if (!isAbsent && (!lessonName || typeof lessonName !== "string" || !lessonName.trim())) {
+    if (
+      !isAbsent &&
+      (!lessonName || typeof lessonName !== "string" || !lessonName.trim())
+    ) {
       return NextResponse.json({ error: "الدرس مطلوب" }, { status: 400 });
     }
 
-    if (!isAbsent && (!lessonSurah || typeof lessonSurah !== "string" || !lessonSurah.trim())) {
+    if (
+      !isAbsent &&
+      !isAttendanceOnly &&
+      (!lessonSurah ||
+        typeof lessonSurah !== "string" ||
+        !lessonSurah.trim())
+    ) {
       return NextResponse.json({ error: "اسم السورة في الدرس الجديد مطلوب" }, { status: 400 });
     }
 
@@ -69,6 +86,9 @@ export async function POST(req: Request) {
       },
       select: {
         id: true,
+        fullName: true,
+        parentWhatsapp: true,
+        studyMode: true,
       },
     });
 
@@ -85,7 +105,11 @@ export async function POST(req: Request) {
         teacherId,
         lessonName: isAbsent ? "غياب" : lessonName.trim(),
         lessonSurah:
-          typeof lessonSurah === "string" ? lessonSurah.trim() : null,
+          isAttendanceOnly
+            ? null
+            : typeof lessonSurah === "string"
+              ? lessonSurah.trim()
+              : null,
         lessonMemorized:
           typeof lessonMemorized === "boolean" ? lessonMemorized : null,
         lastFiveMemorized:
@@ -114,9 +138,73 @@ export async function POST(req: Request) {
       },
     });
 
+    let whatsappResult:
+      | { attempted: false }
+      | { attempted: true; sent: true }
+      | { attempted: true; sent: false; error: string } = { attempted: false };
+
+    if (
+      student.studyMode === "ONSITE"
+    ) {
+      const normalized = student.parentWhatsapp
+        ? normalizeWhatsAppNumber(student.parentWhatsapp)
+        : null;
+
+      if (normalized && isWhatsAppConfigured()) {
+        whatsappResult = { attempted: true, sent: false, error: "" };
+
+        try {
+          if (report.status === "ABSENT") {
+            // رسالة الغياب المخصصة
+            const customMessage = `السلام عليكم ورحمة الله وبركاته\n\nنفيدكم أن ابنكم الكريم / ${student.fullName}\nغائب عن التحفيظ اليوم بدون عذر\n\nنرجوا منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي\n\nنشكر لكم حرصكم تفهمكم\n\n🔸 هذه الرسالة ترسل بشكل تلقائي للطلاب الغائيبين\n\nإدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
+            await sendWhatsAppText({ to: normalized, body: customMessage });
+          } else {
+            const messageBody = dailyAttendanceWhatsAppMessage({
+              studentName: student.fullName,
+              reportDate: report.createdAt.toLocaleDateString("ar-EG"),
+              status: report.status,
+              lessonName: report.lessonName,
+              nextHomework: report.nextHomework,
+              note: report.note,
+            });
+            await sendWhatsAppText({ to: normalized, body: messageBody });
+          }
+
+          await prisma.report.update({
+            where: { id: report.id },
+            data: {
+              sentToParent: true,
+              parentSentAt: new Date(),
+              parentSentChannel: "WHATSAPP",
+              parentSentError: null,
+            },
+          });
+          whatsappResult = { attempted: true, sent: true };
+        } catch (whatsAppError) {
+          const message =
+            whatsAppError instanceof Error
+              ? whatsAppError.message
+              : "تعذر إرسال رسالة واتساب لولي الأمر";
+
+          await prisma.report.update({
+            where: { id: report.id },
+            data: {
+              sentToParent: false,
+              parentSentAt: null,
+              parentSentChannel: null,
+              parentSentError: message,
+            },
+          });
+
+          whatsappResult = { attempted: true, sent: false, error: message };
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       report,
+      whatsapp: whatsappResult,
     });
   } catch (error) {
     console.error("CREATE REPORT ERROR =>", error);

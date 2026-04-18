@@ -13,6 +13,10 @@ export async function GET(_request: Request, context: RouteContext) {
     const cookieStore = await cookies();
     const teacherId = cookieStore.get("alrahma_user_id")?.value;
     const { studentId } = await context.params;
+    const url = new URL(_request.url);
+    const rawStudyMode = url.searchParams.get("studyMode") || "";
+    const studyMode =
+      rawStudyMode === "REMOTE" || rawStudyMode === "ONSITE" ? rawStudyMode : "";
 
     if (!teacherId) {
       return NextResponse.json(
@@ -25,6 +29,7 @@ export async function GET(_request: Request, context: RouteContext) {
       where: {
         id: studentId,
         teacherId,
+        ...(studyMode ? { studyMode } : {}),
         isActive: true,
       },
       select: {
