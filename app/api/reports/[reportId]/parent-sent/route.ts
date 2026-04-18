@@ -72,7 +72,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!isEmailConfigured()) {
       return NextResponse.json(
-        { error: "خدمة الإيميل غير مفعلة بعد. أضف RESEND_API_KEY في إعدادات Vercel." },
+        { error: "خدمة الإيميل غير مفعلة بعد. أضف BREVO_API_KEY في إعدادات Vercel." },
         { status: 503 }
       );
     }

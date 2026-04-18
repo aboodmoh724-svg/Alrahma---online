@@ -5,23 +5,82 @@ type SendEmailInput = {
 };
 
 const defaultFrom = "منصة الرحمة <onboarding@resend.dev>";
+const defaultSenderName = "منصة الرحمة";
+
+function parseSender(sender: string) {
+  const match = sender.match(/^(.*?)\s*<([^>]+)>$/);
+
+  if (match) {
+    return {
+      name: match[1].trim().replace(/^"|"$/g, "") || defaultSenderName,
+      email: match[2].trim(),
+    };
+  }
+
+  return {
+    name: defaultSenderName,
+    email: sender.trim(),
+  };
+}
+
+async function parseEmailError(response: Response) {
+  const message = await response.text();
+
+  try {
+    const parsed = JSON.parse(message) as {
+      message?: string;
+      code?: string;
+      error?: string;
+    };
+
+    return parsed.message || parsed.error || message;
+  } catch {
+    return message;
+  }
+}
 
 export function isEmailConfigured() {
-  return Boolean(process.env.RESEND_API_KEY);
+  return Boolean(process.env.BREVO_API_KEY || process.env.RESEND_API_KEY);
 }
 
 export async function sendEmail({ to, subject, text }: SendEmailInput) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const brevoApiKey = process.env.BREVO_API_KEY;
 
-  if (!apiKey) {
-    console.warn("RESEND_API_KEY is not set. Email skipped:", subject);
+  if (brevoApiKey) {
+    const sender = parseSender(process.env.EMAIL_FROM || defaultFrom);
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "api-key": brevoApiKey,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        sender,
+        to: [{ email: to }],
+        subject,
+        textContent: text,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(await parseEmailError(response));
+    }
+
+    return response.json();
+  }
+
+  const resendApiKey = process.env.RESEND_API_KEY;
+
+  if (!resendApiKey) {
+    console.warn("No email provider API key is set. Email skipped:", subject);
     return { skipped: true };
   }
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${resendApiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -33,17 +92,7 @@ export async function sendEmail({ to, subject, text }: SendEmailInput) {
   });
 
   if (!response.ok) {
-    const message = await response.text();
-    let parsedMessage = message;
-
-    try {
-      const parsed = JSON.parse(message) as { message?: string };
-      parsedMessage = parsed.message || message;
-    } catch {
-      parsedMessage = message;
-    }
-
-    throw new Error(parsedMessage);
+    throw new Error(await parseEmailError(response));
   }
 
   return response.json();
