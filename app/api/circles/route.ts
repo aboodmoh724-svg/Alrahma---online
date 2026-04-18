@@ -7,7 +7,7 @@ function normalizeStudyMode(value: unknown) {
 
 function normalizeTrack(value: unknown) {
   const track = String(value || "").trim();
-  const allowedTracks = ["HIJAA", "RUBAI", "FARDI", "TILAWA"];
+  const allowedTracks = ["HIJAA", "RUBAI", "FARDI", "TILAWA", "ONSITE_ALL"];
 
   return allowedTracks.includes(track) ? track : null;
 }

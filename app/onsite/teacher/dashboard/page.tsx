@@ -42,6 +42,7 @@ type TeacherDashboardProps = {
 };
 
 function trackLabel(track: string | null) {
+  if (track === "ONSITE_ALL") return "حضوري للكل";
   if (track === "HIJAA") return "مسار الهجاء";
   if (track === "RUBAI") return "المسار الرباعي";
   if (track === "FARDI") return "المسار الفردي";
@@ -199,11 +200,9 @@ export default async function OnsiteTeacherDashboardPage({
   const latestCircleLink =
     activeCircle?.zoomUrl || teacher.zoomLinks[0]?.url || null;
   const storedTrackResources = await prisma.trackResource.findMany({
-    where: activeCircle?.track
-      ? {
-          OR: [{ track: activeCircle.track }, { track: null }],
-        }
-      : { track: null },
+    where: {
+      track: activeCircle?.track || "ONSITE_ALL",
+    },
     orderBy: {
       createdAt: "desc",
     },

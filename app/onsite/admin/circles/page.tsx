@@ -30,7 +30,7 @@ export default function OnsiteAdminCirclesPage() {
   const [formData, setFormData] = useState({
     name: "",
     teacherId: "",
-    track: "",
+    track: "ONSITE_ALL",
     studyMode: "ONSITE",
     zoomUrl: "",
   });
@@ -100,7 +100,7 @@ export default function OnsiteAdminCirclesPage() {
       setFormData({
         name: "",
         teacherId: "",
-        track: "",
+        track: "ONSITE_ALL",
         studyMode: "ONSITE",
         zoomUrl: "",
       });
@@ -168,6 +168,7 @@ export default function OnsiteAdminCirclesPage() {
   };
 
   const trackLabel = (track: string | null) => {
+    if (track === "ONSITE_ALL") return "حضوري للكل";
     if (track === "HIJAA") return "مسار الهجاء";
     if (track === "RUBAI") return "المسار الرباعي";
     if (track === "FARDI") return "المسار الفردي";
@@ -248,11 +249,7 @@ export default function OnsiteAdminCirclesPage() {
                   onChange={handleChange}
                   className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
                 >
-                  <option value="">اختر المسار</option>
-                  <option value="HIJAA">مسار الهجاء</option>
-                  <option value="RUBAI">المسار الرباعي</option>
-                  <option value="FARDI">المسار الفردي</option>
-                  <option value="TILAWA">مسار التلاوة</option>
+                  <option value="ONSITE_ALL">حضوري للكل</option>
                 </select>
               </div>
 
@@ -325,11 +322,7 @@ export default function OnsiteAdminCirclesPage() {
                             }
                             className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
                           >
-                            <option value="">{trackLabel(null)}</option>
-                            <option value="HIJAA">مسار الهجاء</option>
-                            <option value="RUBAI">المسار الرباعي</option>
-                            <option value="FARDI">المسار الفردي</option>
-                            <option value="TILAWA">مسار التلاوة</option>
+                            <option value="ONSITE_ALL">حضوري للكل</option>
                           </select>
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
