@@ -48,6 +48,7 @@ model Student {
   studentCode String?    @unique
   fullName   String
   parentWhatsapp String?
+  parentEmail String?
   teacherId  String
   circleId   String?
   studyMode  StudyMode

@@ -1,5 +1,6 @@
 import path from "path";
 import { NextResponse } from "next/server";
+import { registrationReceivedEmail, sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
 
@@ -213,6 +214,21 @@ export async function POST(req: Request) {
       },
     });
 
+    const parentEmail = getString(formData, "parentEmail");
+
+    if (parentEmail) {
+      try {
+        const emailContent = registrationReceivedEmail(studentName);
+        await sendEmail({
+          to: parentEmail,
+          subject: emailContent.subject,
+          text: emailContent.text,
+        });
+      } catch (emailError) {
+        console.error("REGISTRATION EMAIL ERROR =>", emailError);
+      }
+    }
+
     return NextResponse.json({
       success: true,
       request,
@@ -285,6 +301,7 @@ export async function PATCH(req: Request) {
         studentCode,
         fullName: request.studentName,
         parentWhatsapp: request.parentWhatsapp,
+        parentEmail: request.parentEmail,
         teacherId,
         circleId: circle?.id || null,
         studyMode: circle?.studyMode || "REMOTE",

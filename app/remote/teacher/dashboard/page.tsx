@@ -19,6 +19,7 @@ type StudentWithTodayReports = {
   id: string;
   fullName: string;
   parentWhatsapp: string | null;
+  parentEmail: string | null;
   reports: TodayReport[];
 };
 
@@ -436,15 +437,7 @@ export default async function RemoteTeacherDashboardPage({
                           <ParentReportCheckbox
                             reportId={todayReport.id}
                             initialChecked={todayReport.sentToParent}
-                            parentWhatsapp={student.parentWhatsapp}
-                            studentName={student.fullName}
-                            reportSummary={`${todayReport.lessonName}${
-                              isAbsent
-                                ? " - الطالب غائب"
-                                : todayReport.pageFrom && todayReport.pageTo
-                                  ? ` - الصفحات من ${todayReport.pageFrom} إلى ${todayReport.pageTo}`
-                                  : ""
-                            }`}
+                            parentEmail={student.parentEmail}
                           />
                         ) : null}
 

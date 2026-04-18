@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { dailyReportEmail, sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
@@ -31,6 +32,20 @@ export async function PATCH(request: Request, context: RouteContext) {
       select: {
         id: true,
         sentToParent: true,
+        lessonName: true,
+        pageFrom: true,
+        pageTo: true,
+        pagesCount: true,
+        nextHomework: true,
+        note: true,
+        status: true,
+        createdAt: true,
+        student: {
+          select: {
+            fullName: true,
+            parentEmail: true,
+          },
+        },
       },
     });
 
@@ -47,6 +62,31 @@ export async function PATCH(request: Request, context: RouteContext) {
         report,
       });
     }
+
+    if (!report.student.parentEmail) {
+      return NextResponse.json(
+        { error: "لا يوجد بريد إلكتروني مسجل لولي الأمر" },
+        { status: 400 }
+      );
+    }
+
+    const emailContent = dailyReportEmail({
+      studentName: report.student.fullName,
+      reportDate: report.createdAt.toLocaleDateString("ar-EG"),
+      lessonName: report.lessonName,
+      status: report.status,
+      pageFrom: report.pageFrom,
+      pageTo: report.pageTo,
+      pagesCount: report.pagesCount,
+      nextHomework: report.nextHomework,
+      note: report.note,
+    });
+
+    await sendEmail({
+      to: report.student.parentEmail,
+      subject: emailContent.subject,
+      text: emailContent.text,
+    });
 
     const updatedReport = await prisma.report.update({
       where: {

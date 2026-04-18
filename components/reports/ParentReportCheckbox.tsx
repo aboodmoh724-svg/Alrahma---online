@@ -5,28 +5,24 @@ import { useState } from "react";
 type ParentReportCheckboxProps = {
   reportId: string;
   initialChecked: boolean;
-  parentWhatsapp?: string | null;
-  studentName: string;
-  reportSummary: string;
+  parentEmail?: string | null;
 };
 
 export default function ParentReportCheckbox({
   reportId,
   initialChecked,
-  parentWhatsapp,
-  studentName,
-  reportSummary,
+  parentEmail,
 }: ParentReportCheckboxProps) {
   const [checked, setChecked] = useState(initialChecked);
   const [saving, setSaving] = useState(false);
 
-  const handleChange = async (nextChecked: boolean) => {
-    if (checked || !nextChecked) {
+  const handleSendEmail = async () => {
+    if (checked || saving) {
       return;
     }
 
     const previousChecked = checked;
-    setChecked(nextChecked);
+    setChecked(true);
     setSaving(true);
 
     try {
@@ -39,56 +35,50 @@ export default function ParentReportCheckbox({
           sentToParent: true,
         }),
       });
+      const data = await response.json();
 
       if (!response.ok) {
         setChecked(previousChecked);
-        alert("تعذر تحديث حالة إرسال التقرير");
+        alert(data.error || "تعذر إرسال التقرير عبر الإيميل");
       }
     } catch (error) {
       console.error("PARENT REPORT CHECKBOX ERROR =>", error);
       setChecked(previousChecked);
-      alert("حدث خطأ أثناء تحديث حالة إرسال التقرير");
+      alert("حدث خطأ أثناء إرسال التقرير عبر الإيميل");
     } finally {
       setSaving(false);
     }
   };
 
-  const normalizedPhone = (parentWhatsapp || "").replace(/[^\d]/g, "");
-  const whatsappMessage = `السلام عليكم ورحمة الله وبركاته\nتقرير الطالب: ${studentName}\n${reportSummary}\nمنصة الرحمة لتعليم القرآن الكريم`;
-  const whatsappHref = normalizedPhone
-    ? `https://wa.me/${normalizedPhone}?text=${encodeURIComponent(whatsappMessage)}`
-    : null;
-
   return (
     <div className="space-y-2">
-      {whatsappHref ? (
-        <a
-          href={whatsappHref}
-          target="_blank"
-          rel="noreferrer"
-          className="block rounded-xl bg-[#1f6358] px-3 py-2 text-center text-sm font-black text-white transition hover:bg-[#173d42]"
+      {parentEmail ? (
+        <button
+          type="button"
+          onClick={handleSendEmail}
+          disabled={saving || checked}
+          className="block w-full rounded-xl bg-[#1f6358] px-3 py-2 text-center text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          فتح رسالة واتساب
-        </a>
+          {checked ? "تم إرسال الإيميل" : saving ? "جاري الإرسال..." : "إرسال التقرير بالإيميل"}
+        </button>
       ) : (
         <p className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800">
-          لا يوجد رقم ولي أمر
+          لا يوجد إيميل لولي الأمر
         </p>
       )}
-      <label className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
+      <div className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
         checked
           ? "cursor-default border-emerald-200 bg-emerald-50 text-emerald-800"
-          : "cursor-pointer border-[#d9c8ad] text-[#1c2d31] hover:bg-white"
+          : "border-[#d9c8ad] text-[#1c2d31]"
       }`}>
         <input
           type="checkbox"
           checked={checked}
-          disabled={saving || checked}
-          onChange={(event) => handleChange(event.target.checked)}
+          readOnly
           className="h-4 w-4 rounded border-[#d9c8ad] text-[#1f6358]"
         />
-        <span>{checked ? "تم إرسال التقرير" : "تأكيد الإرسال لولي الأمر"}</span>
-      </label>
+        <span>{checked ? "تم إرسال التقرير" : "لم يتم إرسال التقرير بعد"}</span>
+      </div>
     </div>
   );
 }
