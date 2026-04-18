@@ -1,5 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import {
+  isMakeAttendanceWebhookConfigured,
+  sendAttendanceToMake,
+} from "@/lib/make-attendance";
 import { prisma } from "@/lib/prisma";
 import {
   attendanceTemplateConfig,
@@ -17,6 +21,28 @@ function optionalNumber(value: unknown) {
 
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : null;
+}
+
+function attendanceMessage(input: {
+  studentName: string;
+  reportDate: string;
+  status: "PRESENT" | "ABSENT";
+  lessonName: string;
+  nextHomework: string;
+  note: string;
+}) {
+  if (input.status === "ABSENT") {
+    return `السلام عليكم ورحمة الله وبركاته\n\nنفيدكم أن ابنكم الكريم / ${input.studentName}\nغائب عن التحفيظ اليوم بدون عذر.\n\nنرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\nنشكر لكم حرصكم وتفهمكم.\n\nهذه الرسالة ترسل بشكل تلقائي للطلاب الغائبين.\n\nإدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
+  }
+
+  return dailyAttendanceWhatsAppMessage({
+    studentName: input.studentName,
+    reportDate: input.reportDate,
+    status: input.status,
+    lessonName: input.lessonName,
+    nextHomework: input.nextHomework,
+    note: input.note,
+  });
 }
 
 export async function POST(req: Request) {
@@ -152,38 +178,56 @@ export async function POST(req: Request) {
         ? normalizeWhatsAppNumber(student.parentWhatsapp)
         : null;
 
-      if (normalized && isWhatsAppConfigured()) {
+      if (
+        normalized &&
+        (isMakeAttendanceWebhookConfigured() || isWhatsAppConfigured())
+      ) {
         whatsappResult = { attempted: true, sent: false, error: "" };
 
         try {
-          const template = attendanceTemplateConfig(report.status);
+          const reportDate = report.createdAt.toLocaleDateString("ar-EG");
+          const nextHomeworkValue = report.nextHomework || "غير محدد";
+          const noteValue = report.note || "لا توجد ملاحظات";
+          const messageBody = attendanceMessage({
+            studentName: student.fullName,
+            reportDate,
+            status: report.status,
+            lessonName: report.lessonName,
+            nextHomework: nextHomeworkValue,
+            note: noteValue,
+          });
 
-          if (template) {
-            await sendWhatsAppTemplate({
-              to: normalized,
-              templateName: template.templateName,
-              languageCode: template.languageCode,
-              bodyVariables: [
-                student.fullName,
-                report.createdAt.toLocaleDateString("ar-EG"),
-                report.lessonName,
-                report.nextHomework || "غير محدد",
-                report.note || "لا توجد ملاحظات",
-              ],
-            });
-          } else if (report.status === "ABSENT") {
-            const customMessage = `السلام عليكم ورحمة الله وبركاته\n\nنفيدكم أن ابنكم الكريم / ${student.fullName}\nغائب عن التحفيظ اليوم بدون عذر.\n\nنرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\nنشكر لكم حرصكم وتفهمكم.\n\nهذه الرسالة ترسل بشكل تلقائي للطلاب الغائبين.\n\nإدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
-            await sendWhatsAppText({ to: normalized, body: customMessage });
-          } else {
-            const messageBody = dailyAttendanceWhatsAppMessage({
+          if (isMakeAttendanceWebhookConfigured()) {
+            await sendAttendanceToMake({
+              reportId: report.id,
               studentName: student.fullName,
-              reportDate: report.createdAt.toLocaleDateString("ar-EG"),
+              parentWhatsapp: normalized,
               status: report.status,
+              reportDate,
               lessonName: report.lessonName,
-              nextHomework: report.nextHomework,
-              note: report.note,
+              nextHomework: nextHomeworkValue,
+              note: noteValue,
+              messageBody,
             });
-            await sendWhatsAppText({ to: normalized, body: messageBody });
+          } else {
+            const template = attendanceTemplateConfig(report.status);
+
+            if (template) {
+              await sendWhatsAppTemplate({
+                to: normalized,
+                templateName: template.templateName,
+                languageCode: template.languageCode,
+                bodyVariables: [
+                  student.fullName,
+                  reportDate,
+                  report.lessonName,
+                  nextHomeworkValue,
+                  noteValue,
+                ],
+              });
+            } else {
+              await sendWhatsAppText({ to: normalized, body: messageBody });
+            }
           }
 
           await prisma.report.update({
