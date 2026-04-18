@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import LogoutButton from "@/components/auth/LogoutButton";
 import ParentReportCheckbox from "@/components/reports/ParentReportCheckbox";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl } from "@/lib/supabase-storage";
@@ -219,7 +220,10 @@ export default async function RemoteTeacherDashboardPage({
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[300px_1fr]">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
           <section className="rounded-[2rem] bg-[#173d42] p-5 text-white shadow-lg">
-            <p className="text-sm font-bold text-[#f1d39d]">لوحة المعلم</p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-bold text-[#f1d39d]">لوحة المعلم</p>
+              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
+            </div>
             <h2 className="mt-2 text-2xl font-black">{teacher.fullName}</h2>
             <p className="mt-2 text-sm leading-7 text-white/70">
               اختر الحلقة التي تريد العمل عليها ثم أضف تقارير طلابها.
