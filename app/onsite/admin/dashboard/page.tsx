@@ -21,6 +21,12 @@ const sections = [
     tone: "bg-[#c39a62] text-white",
   },
   {
+    href: "/onsite/admin/absences",
+    title: "غياب اليوم",
+    description: "عرض الطلاب الغائبين وفتح رسائل واتساب جاهزة لأولياء الأمور.",
+    tone: "bg-amber-600 text-white",
+  },
+  {
     href: "/onsite/admin/import",
     title: "استيراد Excel",
     description: "رفع ملف الطلاب من Excel (قريبًا) لإنشاء الطلاب دفعة واحدة.",
