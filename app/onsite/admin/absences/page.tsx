@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import { WhatsAppBusinessButton } from "@/components/admin/WhatsAppBusinessButton";
 import { prisma } from "@/lib/prisma";
 import { formatIstanbulDateEnglish, getIstanbulDayRange } from "@/lib/school-day";
 
@@ -25,13 +26,6 @@ function absenceMessage(input: { studentName: string; reportDate: string }) {
 
 function whatsAppUrl(phone: string, message: string) {
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-}
-
-function whatsAppBusinessUrl(phone: string, message: string) {
-  const encodedMessage = encodeURIComponent(message);
-  const fallbackUrl = encodeURIComponent(whatsAppUrl(phone, message));
-
-  return `intent://send/?phone=${phone}&text=${encodedMessage}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=${fallbackUrl};end`;
 }
 
 export default async function OnsiteAdminAbsencesPage() {
@@ -235,12 +229,11 @@ export default async function OnsiteAdminAbsencesPage() {
                           >
                             فتح رسالة واتساب
                           </a>
-                          <a
-                            href={whatsAppBusinessUrl(phone, message)}
-                            className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
-                          >
-                            فتح واتساب بزنس
-                          </a>
+                          <WhatsAppBusinessButton
+                            phone={phone}
+                            message={message}
+                            fallbackUrl={whatsAppUrl(phone, message)}
+                          />
                         </>
                       ) : (
                         <div className="rounded-2xl bg-red-50 px-5 py-3 text-center text-sm font-black text-red-700 ring-1 ring-red-200">
