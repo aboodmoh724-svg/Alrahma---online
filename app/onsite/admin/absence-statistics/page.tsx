@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { DeleteAbsencesButton } from "@/components/admin/DeleteAbsencesButton";
 import { prisma } from "@/lib/prisma";
 import {
   formatIstanbulDateEnglish,
@@ -16,6 +18,55 @@ type AbsenceSummary = {
   absenceDates: string[];
   lastAbsenceAt: Date;
 };
+
+async function deleteStudentAbsences(formData: FormData) {
+  "use server";
+
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const studentId = String(formData.get("studentId") || "");
+
+  if (!adminId || !studentId) {
+    return;
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) {
+    return;
+  }
+
+  const student = await prisma.student.findFirst({
+    where: {
+      id: studentId,
+      studyMode: "ONSITE",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!student) {
+    return;
+  }
+
+  await prisma.report.deleteMany({
+    where: {
+      studentId: student.id,
+      status: "ABSENT",
+    },
+  });
+
+  revalidatePath("/onsite/admin/absence-statistics");
+  revalidatePath("/onsite/admin/absences");
+}
 
 export default async function OnsiteAbsenceStatisticsPage() {
   const cookieStore = await cookies();
@@ -229,8 +280,20 @@ export default async function OnsiteAbsenceStatisticsPage() {
                         <p>ولي الأمر: {summary.parentWhatsapp || "-"}</p>
                       </div>
                     </div>
-                    <div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#173d42] ring-1 ring-[#d9c8ad]">
-                      آخر غياب: {formatIstanbulDateEnglish(summary.lastAbsenceAt)}
+                    <div className="flex flex-col gap-2">
+                      <div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#173d42] ring-1 ring-[#d9c8ad]">
+                        آخر غياب: {formatIstanbulDateEnglish(summary.lastAbsenceAt)}
+                      </div>
+                      <form action={deleteStudentAbsences}>
+                        <input
+                          type="hidden"
+                          name="studentId"
+                          value={summary.studentId}
+                        />
+                        <DeleteAbsencesButton
+                          studentName={summary.studentName}
+                        />
+                      </form>
                     </div>
                   </div>
 
