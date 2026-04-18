@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 function trackLabel(track: string | null) {
   if (track === "HIJAA") return "مسار الهجاء";
   if (track === "RUBAI") return "المسار الرباعي";

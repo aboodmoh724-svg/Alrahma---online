@@ -19,9 +19,9 @@ const entries = [
 
 export default function RemotePage() {
   return (
-    <main className="rahma-shell min-h-screen px-5 py-6">
+    <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between sm:mb-6">
           <Link href="/" className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#c39a62]/15">
             الرئيسية
           </Link>
@@ -30,8 +30,8 @@ export default function RemotePage() {
           </span>
         </div>
 
-        <section className="rahma-card grid overflow-hidden rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rahma-muted-pattern relative min-h-[360px] overflow-hidden bg-[#173d42] lg:min-h-[680px]">
+        <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
+          <div className="rahma-muted-pattern relative hidden min-h-[360px] overflow-hidden bg-[#173d42] lg:block lg:min-h-[680px]">
             <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-[#c39a62]/20" />
             <div className="absolute bottom-16 right-10 h-96 w-96 rounded-full bg-white/10" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#112a30] via-[#173d42]/70 to-[#1f6358]/35" />
@@ -44,21 +44,26 @@ export default function RemotePage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center p-6 md:p-12">
-            <div className="w-full max-w-xl space-y-5">
+          <div className="flex items-center justify-center p-4 sm:p-6 md:p-12">
+            <div className="w-full max-w-xl space-y-3 sm:space-y-5">
+              <div className="mb-2 rounded-3xl bg-[#173d42] p-5 text-white lg:hidden">
+                <p className="text-sm font-bold text-[#f1d39d]">تعليم عن بعد</p>
+                <h1 className="mt-2 text-2xl font-black">كيف تريد الدخول؟</h1>
+                <p className="mt-2 text-sm leading-6 text-white/75">اختر حساب الإدارة أو المعلم للمتابعة.</p>
+              </div>
               {entries.map((entry) => (
                 <Link
                   key={entry.href}
                   href={entry.href}
-                  className={`group flex items-center justify-between rounded-3xl p-6 shadow-sm transition duration-200 hover:-translate-y-0.5 ${entry.tone}`}
+                  className={`group flex items-center justify-between rounded-3xl p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 sm:p-6 ${entry.tone}`}
                 >
                   <div className="flex items-center gap-4">
-                    <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 text-xl font-black text-[#1f6358]">
+                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/90 text-lg font-black text-[#1f6358] sm:h-14 sm:w-14 sm:text-xl">
                       {entry.icon}
                     </span>
                     <div>
-                      <h2 className="text-xl font-black">{entry.title}</h2>
-                      <p className="mt-1 text-sm opacity-75">{entry.description}</p>
+                      <h2 className="text-lg font-black sm:text-xl">{entry.title}</h2>
+                      <p className="mt-1 text-xs leading-6 opacity-75 sm:text-sm">{entry.description}</p>
                     </div>
                   </div>
                   <span className="text-2xl transition group-hover:-translate-x-1">←</span>

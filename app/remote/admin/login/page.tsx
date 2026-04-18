@@ -3,9 +3,9 @@ import LoginForm from "@/components/login/LoginForm";
 
 export default function RemoteAdminLoginPage() {
   return (
-    <main className="rahma-shell min-h-screen px-5 py-6">
+    <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6">
       <div className="mx-auto max-w-7xl">
-        <section className="rahma-card grid min-h-[calc(100vh-3rem)] overflow-hidden rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
+        <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:min-h-[calc(100vh-3rem)] lg:grid-cols-[0.95fr_1.05fr]">
           <div className="rahma-muted-pattern relative hidden overflow-hidden bg-[#102a33] lg:block">
             <div className="absolute -left-24 top-20 h-96 w-96 rounded-full bg-[#c39a62]/20" />
             <div className="absolute bottom-20 right-10 h-80 w-80 rounded-full bg-white/10" />
@@ -19,9 +19,9 @@ export default function RemoteAdminLoginPage() {
             </div>
           </div>
 
-          <div className="flex items-center justify-center p-8 md:p-14">
+          <div className="flex items-center justify-center p-5 sm:p-8 md:p-14">
             <div className="w-full max-w-md">
-              <div className="mb-10 flex items-center justify-between lg:hidden">
+              <div className="mb-5 flex items-center justify-between lg:hidden">
                 <Link href="/remote" className="text-sm font-bold text-[#1c2d31]/65">رجوع</Link>
                 <span className="rounded-full bg-[#173d42]/10 px-4 py-2 text-xs font-bold text-[#173d42]">الإدارة</span>
               </div>

@@ -112,15 +112,15 @@ export default function LoginForm({
 
   return (
     <div className="w-full">
-      <div className="mb-8 text-right">
-        <div className="mb-4 inline-flex rounded-full bg-[#1f6358]/10 px-4 py-2 text-xs font-bold text-[#1f6358]">
+      <div className="mb-5 text-right sm:mb-8">
+        <div className="mb-3 inline-flex rounded-full bg-[#1f6358]/10 px-4 py-2 text-xs font-bold text-[#1f6358] sm:mb-4">
           منصة الرحمة
         </div>
-        <h1 className="text-4xl font-black text-[#1c2d31]">{title}</h1>
-        <p className="mt-3 text-sm leading-7 text-[#1c2d31]/60">{subtitle}</p>
+        <h1 className="text-3xl font-black text-[#1c2d31] sm:text-4xl">{title}</h1>
+        <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60 sm:mt-3">{subtitle}</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
+      <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
         <div>
           <label className="mb-2 block text-sm font-bold text-[#1c2d31]">
             البريد الإلكتروني
@@ -130,7 +130,7 @@ export default function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@email.com"
-            className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fbf8f2] px-4 py-4 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#1f6358] focus:bg-white"
+            className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fbf8f2] px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#1f6358] focus:bg-white sm:py-4"
             required
           />
         </div>
@@ -144,7 +144,7 @@ export default function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="********"
-            className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fbf8f2] px-4 py-4 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#1f6358] focus:bg-white"
+            className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fbf8f2] px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#1f6358] focus:bg-white sm:py-4"
             required
           />
         </div>
@@ -168,7 +168,7 @@ export default function LoginForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-2xl bg-[#1f6358] px-4 py-4 text-base font-black text-white shadow-md transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-70"
+          className="w-full rounded-2xl bg-[#1f6358] px-4 py-3 text-base font-black text-white shadow-md transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-70 sm:py-4"
         >
           {loading ? "جاري تسجيل الدخول..." : buttonLabel}
         </button>

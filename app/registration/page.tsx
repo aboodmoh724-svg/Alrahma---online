@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 const inputClass =
-  "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10";
+  "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-2.5 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10 sm:py-3";
 
 const periods = [
   "الفترة الصباحية 9:00 - 12:00",
@@ -151,19 +151,19 @@ export default function RegistrationPage() {
   }
 
   return (
-    <main className="rahma-shell min-h-screen px-4 py-8" dir="rtl">
+    <main className="rahma-shell min-h-screen px-3 py-4 sm:px-4 sm:py-8" dir="rtl">
       <div className="mx-auto max-w-4xl">
-        <section className="mb-6 rounded-[2.5rem] bg-[#173d42] p-7 text-white shadow-xl">
+        <section className="mb-4 rounded-[1.75rem] bg-[#173d42] p-5 text-white shadow-xl sm:mb-6 sm:rounded-[2.5rem] sm:p-7">
           <p className="text-sm font-bold text-[#f1d39d]">منصة الرحمة لتعليم القرآن الكريم</p>
-          <h1 className="mt-3 text-4xl font-black">استمارة تسجيل الطالب</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-8 text-white/72">
+          <h1 className="mt-2 text-3xl font-black sm:mt-3 sm:text-4xl">استمارة تسجيل الطالب</h1>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/72 sm:mt-4 sm:leading-8">
             فضلا أدخل بيانات الطالب وولي الأمر بدقة، وستراجع الإدارة الطلب قبل اعتماد الطالب في إحدى الحلقات.
           </p>
         </section>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-            <h2 className="mb-4 text-xl font-black text-[#1c2d31]">بيانات الطالب</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+            <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">بيانات الطالب</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">اسم الطالب كاملا *</label>
@@ -254,8 +254,8 @@ export default function RegistrationPage() {
             </div>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-            <h2 className="mb-4 text-xl font-black text-[#1c2d31]">بيانات ولي الأمر والفترة</h2>
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+            <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">بيانات ولي الأمر والفترة</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">رقم هاتف ولي الأمر *</label>
@@ -277,8 +277,8 @@ export default function RegistrationPage() {
             </div>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-            <h2 className="mb-4 text-xl font-black text-[#1c2d31]">التعليمات والتوجيهات</h2>
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+            <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">التعليمات والتوجيهات</h2>
             <p className="mb-4 text-sm leading-7 text-[#1c2d31]/60">
               فضلا اقرأ ملف التعليمات والتوجيهات جيدا قبل إرسال طلب التسجيل، فهو يحتوي على ما يحتاجه الطالب وولي الأمر.
             </p>
@@ -306,8 +306,8 @@ export default function RegistrationPage() {
             </label>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-            <h2 className="mb-4 text-xl font-black text-[#1c2d31]">مستوى الطالب والمسار</h2>
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+            <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">مستوى الطالب والمسار</h2>
             <div>
               <label className="mb-2 block text-sm font-black text-[#1c2d31]">هل سبق للطالب دراسة أحد هذه الكتب؟</label>
               <div className="grid gap-3 md:grid-cols-2">
@@ -356,8 +356,8 @@ export default function RegistrationPage() {
             </div>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-            <h2 className="mb-4 text-xl font-black text-[#1c2d31]">التسجيل الصوتي والملاحظات</h2>
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+            <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">التسجيل الصوتي والملاحظات</h2>
             <div className="mb-4">
               <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                 تسجيل الطالب بصوته لآية الكرسي *
