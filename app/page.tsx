@@ -36,7 +36,7 @@ export default function HomePage() {
 
         <section className="grid flex-1 items-center gap-5 py-5 sm:gap-8 sm:py-10 lg:grid-cols-[1.05fr_0.95fr]">
           <div className="space-y-5 sm:space-y-8">
-            <div className="space-y-3 sm:space-y-4">
+            <div className="rounded-[1.75rem] bg-white/86 p-5 shadow-sm ring-1 ring-[#d9c8ad]/70 sm:bg-transparent sm:p-0 sm:shadow-none sm:ring-0">
               <span className="inline-flex rounded-full bg-[#c39a62]/15 px-4 py-2 text-sm font-semibold text-[#9b7039]">
                 مرحبًا بك
               </span>
@@ -63,7 +63,7 @@ export default function HomePage() {
                   </span>
                   <h2 className="text-xl font-extrabold text-[#1c2d31] sm:text-2xl">{mode.label}</h2>
                   <p className="mt-2 text-sm leading-6 text-[#1c2d31]/62 sm:mt-3 sm:min-h-14 sm:leading-7">{mode.description}</p>
-                  <div className="mt-4 rounded-2xl bg-[#1c2d31] px-4 py-3 text-center text-sm font-bold text-white transition group-hover:bg-[#1f6358] sm:mt-6">
+                  <div className="mt-4 rounded-2xl bg-[#1f6358] px-4 py-3 text-center text-sm font-bold text-white transition group-hover:bg-[#173d42] sm:mt-6">
                     الدخول
                   </div>
                 </Link>

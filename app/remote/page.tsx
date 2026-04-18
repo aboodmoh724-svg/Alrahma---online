@@ -46,10 +46,10 @@ export default function RemotePage() {
 
           <div className="flex items-center justify-center p-4 sm:p-6 md:p-12">
             <div className="w-full max-w-xl space-y-3 sm:space-y-5">
-              <div className="mb-2 rounded-3xl bg-[#173d42] p-5 text-white lg:hidden">
-                <p className="text-sm font-bold text-[#f1d39d]">تعليم عن بعد</p>
+              <div className="mb-2 rounded-3xl bg-[#fffaf2] p-5 text-[#1c2d31] ring-1 ring-[#d9c8ad] lg:hidden">
+                <p className="text-sm font-bold text-[#9b7039]">تعليم عن بعد</p>
                 <h1 className="mt-2 text-2xl font-black">كيف تريد الدخول؟</h1>
-                <p className="mt-2 text-sm leading-6 text-white/75">اختر حساب الإدارة أو المعلم للمتابعة.</p>
+                <p className="mt-2 text-sm leading-6 text-[#1c2d31]/65">اختر حساب الإدارة أو المعلم للمتابعة.</p>
               </div>
               {entries.map((entry) => (
                 <Link

@@ -153,10 +153,10 @@ export default function RegistrationPage() {
   return (
     <main className="rahma-shell min-h-screen px-3 py-4 sm:px-4 sm:py-8" dir="rtl">
       <div className="mx-auto max-w-4xl">
-        <section className="mb-4 rounded-[1.75rem] bg-[#173d42] p-5 text-white shadow-xl sm:mb-6 sm:rounded-[2.5rem] sm:p-7">
-          <p className="text-sm font-bold text-[#f1d39d]">منصة الرحمة لتعليم القرآن الكريم</p>
+        <section className="mb-4 rounded-[1.75rem] bg-[#fffaf2] p-5 text-[#1c2d31] shadow-sm ring-1 ring-[#d9c8ad] sm:mb-6 sm:rounded-[2.5rem] sm:bg-[#173d42] sm:p-7 sm:text-white sm:shadow-xl sm:ring-0">
+          <p className="text-sm font-bold text-[#9b7039] sm:text-[#f1d39d]">منصة الرحمة لتعليم القرآن الكريم</p>
           <h1 className="mt-2 text-3xl font-black sm:mt-3 sm:text-4xl">استمارة تسجيل الطالب</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-white/72 sm:mt-4 sm:leading-8">
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#1c2d31]/65 sm:mt-4 sm:leading-8 sm:text-white/72">
             فضلا أدخل بيانات الطالب وولي الأمر بدقة، وستراجع الإدارة الطلب قبل اعتماد الطالب في إحدى الحلقات.
           </p>
         </section>

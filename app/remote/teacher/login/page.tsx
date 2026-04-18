@@ -23,7 +23,7 @@ export default function RemoteTeacherLoginPage() {
             <div className="w-full max-w-md">
               <div className="mb-5 flex items-center justify-between lg:hidden">
                 <Link href="/remote" className="text-sm font-bold text-[#1c2d31]/65">رجوع</Link>
-                <span className="rounded-full bg-[#c39a62]/15 px-4 py-2 text-xs font-bold text-[#9b7039]">المعلم</span>
+                <span className="rounded-full bg-[#fffaf2] px-4 py-2 text-xs font-bold text-[#9b7039] ring-1 ring-[#d9c8ad]">المعلم</span>
               </div>
               <LoginForm title="تسجيل دخول المعلم" subtitle="أدخل بياناتك لإدارة طلابك وتقارير اليوم." />
             </div>

@@ -23,7 +23,7 @@ export default function RemoteAdminLoginPage() {
             <div className="w-full max-w-md">
               <div className="mb-5 flex items-center justify-between lg:hidden">
                 <Link href="/remote" className="text-sm font-bold text-[#1c2d31]/65">رجوع</Link>
-                <span className="rounded-full bg-[#173d42]/10 px-4 py-2 text-xs font-bold text-[#173d42]">الإدارة</span>
+                <span className="rounded-full bg-[#fffaf2] px-4 py-2 text-xs font-bold text-[#9b7039] ring-1 ring-[#d9c8ad]">الإدارة</span>
               </div>
               <LoginForm title="تسجيل دخول الإدارة" subtitle="أدخل بيانات الإدارة للوصول إلى لوحة التحكم." />
             </div>
