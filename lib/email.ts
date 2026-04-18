@@ -34,7 +34,16 @@ export async function sendEmail({ to, subject, text }: SendEmailInput) {
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(`Email send failed: ${message}`);
+    let parsedMessage = message;
+
+    try {
+      const parsed = JSON.parse(message) as { message?: string };
+      parsedMessage = parsed.message || message;
+    } catch {
+      parsedMessage = message;
+    }
+
+    throw new Error(parsedMessage);
   }
 
   return response.json();

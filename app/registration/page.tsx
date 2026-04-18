@@ -10,10 +10,10 @@ const maxIdImageSize = 1 * 1024 * 1024;
 
 const periods = [
   "الفترة الصباحية 9:00 - 12:00",
-  "الفترة المسائية الأولى 11:00 - 2:00",
-  "الفترة المسائية الثانية 2:00 - 5:00",
-  "الفترة المسائية الثالثة 3:00 - 6:00",
-  "الفترة المسائية الرابعة 7:00 - 10:00",
+  "الفترة المسائية الأولى 3:00 - 6:00 مساء",
+  "الفترة المسائية الثانية 7:00 - 10:00 مساء",
+  "الفترة المسائية الثالثة 11:00 مساء - 2:00 ليلا",
+  "الفترة المسائية الرابعة 3:00 - 6:00 فجرا",
 ];
 
 const tracks = [
@@ -43,6 +43,7 @@ const trackFiles = [
 export default function RegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submissionWarning, setSubmissionWarning] = useState("");
   const [selectedTracks, setSelectedTracks] = useState<string[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -60,6 +61,7 @@ export default function RegistrationPage() {
     fatherEducation: "",
     motherEducation: "",
     preferredPeriod: "",
+    parentCountryCode: "+90",
     parentWhatsapp: "",
     parentEmail: "",
     memorizedAmount: "",
@@ -112,10 +114,17 @@ export default function RegistrationPage() {
 
     try {
       setSubmitting(true);
+      setSubmissionWarning("");
       const payload = new FormData();
 
       for (const [key, value] of Object.entries(formData)) {
-        payload.append(key, value);
+        if (key === "parentWhatsapp") {
+          const cleanCountryCode = formData.parentCountryCode.replace(/[^\d+]/g, "");
+          const cleanPhone = formData.parentWhatsapp.replace(/[^\d]/g, "");
+          payload.append("parentWhatsapp", `${cleanCountryCode}${cleanPhone}`);
+        } else if (key !== "parentCountryCode") {
+          payload.append(key, value);
+        }
       }
 
       for (const track of selectedTracks) {
@@ -145,6 +154,7 @@ export default function RegistrationPage() {
         return;
       }
 
+      setSubmissionWarning(data?.emailWarning || "");
       setSubmitted(true);
     } catch (error) {
       console.error("REGISTRATION SUBMIT ERROR =>", error);
@@ -163,6 +173,11 @@ export default function RegistrationPage() {
           <p className="mt-4 leading-8 text-white/75">
             تم إرسال طلب التسجيل بنجاح. ستراجع الإدارة البيانات ثم تتواصل معكم عبر رقم ولي الأمر.
           </p>
+          {submissionWarning ? (
+            <p className="mt-4 rounded-2xl bg-[#f1d39d]/15 p-4 text-sm leading-7 text-[#f1d39d]">
+              {submissionWarning}
+            </p>
+          ) : null}
         </section>
       </main>
     );
@@ -277,7 +292,25 @@ export default function RegistrationPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">رقم هاتف ولي الأمر *</label>
-                <input value={formData.parentWhatsapp} onChange={(e) => setField("parentWhatsapp", e.target.value)} placeholder="+90..." className={inputClass} required />
+                <div className="grid grid-cols-[96px_1fr] gap-2">
+                  <input
+                    value={formData.parentCountryCode}
+                    onChange={(e) => setField("parentCountryCode", e.target.value)}
+                    placeholder="+90"
+                    className={inputClass}
+                    dir="ltr"
+                    required
+                  />
+                  <input
+                    value={formData.parentWhatsapp}
+                    onChange={(e) => setField("parentWhatsapp", e.target.value)}
+                    placeholder="5xxxxxxxxx"
+                    className={inputClass}
+                    dir="ltr"
+                    required
+                  />
+                </div>
+                <p className="mt-2 text-xs text-[#1c2d31]/55">اكتب رمز الدولة في الخانة الأولى، ثم رقم الهاتف بدون رمز الدولة.</p>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">الإيميل الخاص بولي الأمر</label>

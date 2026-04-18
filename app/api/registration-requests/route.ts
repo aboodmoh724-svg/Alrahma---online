@@ -215,6 +215,8 @@ export async function POST(req: Request) {
     });
 
     const parentEmail = getString(formData, "parentEmail");
+    let emailSent = false;
+    let emailWarning: string | null = null;
 
     if (parentEmail) {
       try {
@@ -224,14 +226,18 @@ export async function POST(req: Request) {
           subject: emailContent.subject,
           text: emailContent.text,
         });
+        emailSent = true;
       } catch (emailError) {
         console.error("REGISTRATION EMAIL ERROR =>", emailError);
+        emailWarning = "تم استلام الطلب، لكن لم يتم إرسال رسالة التأكيد عبر الإيميل حاليا.";
       }
     }
 
     return NextResponse.json({
       success: true,
       request,
+      emailSent,
+      emailWarning,
     });
   } catch (error) {
     console.error("CREATE REGISTRATION REQUEST ERROR =>", error);

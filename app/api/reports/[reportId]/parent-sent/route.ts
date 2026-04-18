@@ -89,11 +89,23 @@ export async function PATCH(request: Request, context: RouteContext) {
       note: report.note,
     });
 
-    await sendEmail({
-      to: report.student.parentEmail,
-      subject: emailContent.subject,
-      text: emailContent.text,
-    });
+    try {
+      await sendEmail({
+        to: report.student.parentEmail,
+        subject: emailContent.subject,
+        text: emailContent.text,
+      });
+    } catch (emailError) {
+      const message =
+        emailError instanceof Error
+          ? emailError.message
+          : "تعذر إرسال التقرير عبر الإيميل";
+
+      return NextResponse.json(
+        { error: message },
+        { status: 502 }
+      );
+    }
 
     const updatedReport = await prisma.report.update({
       where: {
