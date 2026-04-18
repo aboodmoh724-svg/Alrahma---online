@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { dailyReportEmail, sendEmail } from "@/lib/email";
+import { dailyReportEmail, isEmailConfigured, sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
@@ -67,6 +67,13 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json(
         { error: "لا يوجد بريد إلكتروني مسجل لولي الأمر" },
         { status: 400 }
+      );
+    }
+
+    if (!isEmailConfigured()) {
+      return NextResponse.json(
+        { error: "خدمة الإيميل غير مفعلة بعد. أضف RESEND_API_KEY في إعدادات Vercel." },
+        { status: 503 }
       );
     }
 
