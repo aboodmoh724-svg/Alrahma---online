@@ -4,8 +4,8 @@ import { registrationReceivedEmail, sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
 
-const MAX_AUDIO_SIZE = 20 * 1024 * 1024;
-const MAX_ID_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_AUDIO_SIZE = 3 * 1024 * 1024;
+const MAX_ID_FILE_SIZE = 1 * 1024 * 1024;
 const ALLOWED_AUDIO_TYPES = ["audio/", "video/"];
 const ALLOWED_ID_TYPES = ["image/", "application/pdf"];
 
