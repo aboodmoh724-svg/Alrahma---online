@@ -27,7 +27,9 @@ function absenceMessage(input: { studentName: string; reportDate: string }) {
 
 نشكر لكم حرصكم وتفهمكم.
 
-إدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
+🔴 هذه رسالة تلقائية ترسل للطلاب الغائبين.
+
+إدارة تحفيظ الرحمن للقرآن الكريم - أفيون`;
 }
 
 function whatsAppUrl(phone: string, message: string) {
@@ -132,7 +134,7 @@ export default async function OnsiteAdminAbsencesPage() {
   const absences = Array.from(latestByStudent.values()).filter(
     (report) => report.status === "ABSENT"
   );
-  const reportDate = start.toLocaleDateString("ar-EG");
+  const reportDate = start.toLocaleDateString("en-US");
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
