@@ -47,6 +47,8 @@ export async function sendAttendanceToMake(input: SendAttendanceWebhookInput) {
       body: JSON.stringify({
         source: "alrahma-reports",
         event: "onsite_attendance",
+        parentWhatsappDigits: input.parentWhatsapp,
+        parentWhatsappInternational: `+${input.parentWhatsapp}`,
         ...input,
       }),
       signal: controller.signal,
