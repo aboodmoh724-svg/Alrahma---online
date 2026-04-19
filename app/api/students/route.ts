@@ -28,7 +28,10 @@ export async function GET(req: Request) {
               ...(studyMode ? { studyMode } : {}),
               isActive: true,
             }
-          : undefined,
+          : {
+              ...(circleId ? { circleId } : {}),
+              ...(studyMode ? { studyMode } : {}),
+            },
       orderBy: {
         createdAt: "desc",
       },

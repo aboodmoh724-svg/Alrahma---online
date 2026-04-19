@@ -12,9 +12,14 @@ function normalizeTrack(value: unknown) {
   return allowedTracks.includes(track) ? track : null;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url);
+    const studyMode = normalizeStudyMode(url.searchParams.get("studyMode"));
     const circles = await prisma.circle.findMany({
+      where: {
+        ...(studyMode ? { studyMode } : {}),
+      },
       orderBy: {
         createdAt: "desc",
       },

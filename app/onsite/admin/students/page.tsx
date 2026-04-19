@@ -50,9 +50,9 @@ export default function OnsiteAdminStudentsPage() {
       setLoading(true);
 
       const [teachersRes, studentsRes, circlesRes] = await Promise.all([
-        fetch("/api/teachers", { cache: "no-store" }),
+        fetch("/api/teachers?studyMode=ONSITE", { cache: "no-store" }),
         fetch("/api/students?studyMode=ONSITE", { cache: "no-store" }),
-        fetch("/api/circles", { cache: "no-store" }),
+        fetch("/api/circles?studyMode=ONSITE", { cache: "no-store" }),
       ]);
 
       const teachersData = await teachersRes.json();

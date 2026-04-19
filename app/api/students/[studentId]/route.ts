@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import type { Prisma } from "@prisma/client";
+import type { Prisma, StudyMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 type RouteContext = {
@@ -18,42 +18,45 @@ function hasOwn(object: Record<string, unknown>, key: string) {
   return Object.prototype.hasOwnProperty.call(object, key);
 }
 
+async function requireAdmin() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: "ADMIN",
+      isActive: true,
+    },
+    select: {
+      id: true,
+      studyMode: true,
+    },
+  });
+}
+
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const cookieStore = await cookies();
-    const userId = cookieStore.get("alrahma_user_id")?.value;
-
-    if (!userId) {
-      return NextResponse.json(
-        { error: "الرجاء تسجيل الدخول أولًا" },
-        { status: 401 }
-      );
-    }
-
-    const admin = await prisma.user.findFirst({
-      where: {
-        id: userId,
-        role: "ADMIN",
-        studyMode: "ONSITE",
-        isActive: true,
-      },
-      select: { id: true },
-    });
+    const admin = await requireAdmin();
 
     if (!admin) {
       return NextResponse.json(
-        { error: "لا تملك صلاحية تعديل الطالب" },
-        { status: 403 }
+        { error: "الرجاء تسجيل الدخول بحساب إداري أولا" },
+        { status: 401 }
       );
     }
 
     const { studentId } = await context.params;
     const body = await request.json();
+    const hasFullName = hasOwn(body, "fullName");
     const hasParentWhatsapp = hasOwn(body, "parentWhatsapp");
     const hasParentEmail = hasOwn(body, "parentEmail");
     const hasTeacherId = hasOwn(body, "teacherId");
     const hasCircleId = hasOwn(body, "circleId");
 
+    const fullName = hasFullName ? normalizeString(body.fullName) : undefined;
     const parentWhatsapp = hasParentWhatsapp
       ? body.parentWhatsapp === null
         ? null
@@ -75,26 +78,35 @@ export async function PATCH(request: Request, context: RouteContext) {
         : normalizeString(body.circleId)
       : undefined;
 
+    if (hasFullName && !fullName) {
+      return NextResponse.json({ error: "اسم الطالب مطلوب" }, { status: 400 });
+    }
+
     const student = await prisma.student.findFirst({
       where: {
         id: studentId,
-        studyMode: "ONSITE",
+        studyMode: admin.studyMode,
       },
-      select: { id: true },
+      select: {
+        id: true,
+        studyMode: true,
+      },
     });
 
     if (!student) {
-      return NextResponse.json({ error: "الطالب غير موجود" }, { status: 404 });
+      return NextResponse.json({ error: "الطالب غير موجود في هذا القسم" }, { status: 404 });
     }
 
     if (hasCircleId && circleId) {
       const circle = await prisma.circle.findFirst({
-        where: { id: circleId, studyMode: "ONSITE" },
+        where: { id: circleId, studyMode: student.studyMode },
         select: { id: true, teacherId: true, studyMode: true },
       });
+
       if (!circle) {
-        return NextResponse.json({ error: "الحلقة غير موجودة" }, { status: 400 });
+        return NextResponse.json({ error: "الحلقة غير موجودة في هذا القسم" }, { status: 400 });
       }
+
       if (!circle.teacherId) {
         return NextResponse.json(
           { error: "يجب تعيين معلم للحلقة قبل ربط الطالب بها" },
@@ -105,6 +117,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       const updated = await prisma.student.update({
         where: { id: student.id },
         data: {
+          ...(fullName ? { fullName } : {}),
           ...(parentWhatsapp !== undefined ? { parentWhatsapp } : {}),
           ...(parentEmail !== undefined ? { parentEmail } : {}),
           circleId: circle.id,
@@ -127,14 +140,15 @@ export async function PATCH(request: Request, context: RouteContext) {
         where: {
           id: teacherId,
           role: "TEACHER",
-          studyMode: "ONSITE",
+          studyMode: student.studyMode,
           isActive: true,
         },
         select: { id: true },
       });
+
       if (!teacher) {
         return NextResponse.json(
-          { error: "المعلم غير موجود أو غير مفعل" },
+          { error: "المعلم غير موجود أو غير مفعل في هذا القسم" },
           { status: 400 }
         );
       }
@@ -142,7 +156,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       const teacherCircles = await prisma.circle.findMany({
         where: {
           teacherId,
-          studyMode: "ONSITE",
+          studyMode: student.studyMode,
         },
         select: {
           id: true,
@@ -156,12 +170,13 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
 
     const updateData: Prisma.StudentUncheckedUpdateInput = {
+      ...(fullName ? { fullName } : {}),
       ...(parentWhatsapp !== undefined ? { parentWhatsapp } : {}),
       ...(parentEmail !== undefined ? { parentEmail } : {}),
       ...(teacherId ? { teacherId } : {}),
       ...(hasCircleId ? { circleId } : {}),
       ...(inferredCircleId !== undefined ? { circleId: inferredCircleId } : {}),
-      studyMode: "ONSITE",
+      studyMode: student.studyMode as StudyMode,
     };
 
     const updated = await prisma.student.update({
@@ -178,6 +193,47 @@ export async function PATCH(request: Request, context: RouteContext) {
     console.error("UPDATE STUDENT ERROR =>", error);
     return NextResponse.json(
       { error: "حدث خطأ أثناء تحديث الطالب" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  try {
+    const admin = await requireAdmin();
+
+    if (!admin) {
+      return NextResponse.json(
+        { error: "الرجاء تسجيل الدخول بحساب إداري أولا" },
+        { status: 401 }
+      );
+    }
+
+    const { studentId } = await context.params;
+    const student = await prisma.student.findFirst({
+      where: {
+        id: studentId,
+        studyMode: admin.studyMode,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!student) {
+      return NextResponse.json({ error: "الطالب غير موجود في هذا القسم" }, { status: 404 });
+    }
+
+    await prisma.student.update({
+      where: { id: student.id },
+      data: { isActive: false },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE STUDENT ERROR =>", error);
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف الطالب" },
       { status: 500 }
     );
   }

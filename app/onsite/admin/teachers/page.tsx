@@ -33,7 +33,7 @@ export default function OnsiteAdminTeachersPage() {
     try {
       setLoading(true)
 
-      const res = await fetch("/api/teachers", {
+      const res = await fetch("/api/teachers?studyMode=ONSITE", {
         cache: "no-store",
       })
 
@@ -133,6 +133,7 @@ export default function OnsiteAdminTeachersPage() {
           teacherId,
           fullName: editData.fullName,
           email: editData.email,
+          studyMode: "ONSITE",
         }),
       })
 
@@ -167,7 +168,7 @@ export default function OnsiteAdminTeachersPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ teacherId: teacher.id }),
+        body: JSON.stringify({ teacherId: teacher.id, studyMode: "ONSITE" }),
       })
 
       const data = await res.json()

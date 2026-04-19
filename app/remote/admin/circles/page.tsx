@@ -40,8 +40,8 @@ export default function RemoteAdminCirclesPage() {
       setLoading(true);
 
       const [teachersRes, circlesRes] = await Promise.all([
-        fetch("/api/teachers", { cache: "no-store" }),
-        fetch("/api/circles", { cache: "no-store" }),
+        fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
       ]);
 
       const teachersData = await teachersRes.json();
@@ -84,7 +84,7 @@ export default function RemoteAdminCirclesPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, studyMode: "REMOTE" }),
       });
 
       const data = await res.json();
@@ -231,21 +231,6 @@ export default function RemoteAdminCirclesPage() {
                     <option value="RUBAI">المسار الرباعي</option>
                     <option value="FARDI">المسار الفردي</option>
                     <option value="TILAWA">مسار التلاوة</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-gray-700">
-                    نوع الدراسة
-                  </label>
-                  <select
-                    name="studyMode"
-                    value={formData.studyMode}
-                    onChange={handleChange}
-                    className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
-                  >
-                    <option value="REMOTE">عن بعد</option>
-                    <option value="ONSITE">حضوري</option>
                   </select>
                 </div>
 

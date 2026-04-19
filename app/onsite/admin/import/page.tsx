@@ -125,7 +125,7 @@ export default function OnsiteAdminImportPage() {
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
-        const res = await fetch("/api/teachers", { cache: "no-store" });
+        const res = await fetch("/api/teachers?studyMode=ONSITE", { cache: "no-store" });
         const data = await res.json();
         const list = Array.isArray(data.teachers) ? (data.teachers as Teacher[]) : [];
         const onsite = list.filter((t) => t.studyMode === "ONSITE" && t.isActive);

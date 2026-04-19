@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET() {
+function normalizeStudyMode(value: unknown) {
+  return value === "REMOTE" || value === "ONSITE" ? value : undefined
+}
+
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url)
+    const studyMode = normalizeStudyMode(url.searchParams.get("studyMode"))
     const teachers = await prisma.user.findMany({
       where: {
         role: "TEACHER",
+        ...(studyMode ? { studyMode } : {}),
       },
       orderBy: {
         createdAt: "desc",
@@ -124,6 +131,7 @@ export async function PATCH(req: Request) {
     const teacherId = String(body.teacherId || "").trim()
     const fullName = String(body.fullName || "").trim()
     const email = String(body.email || "").trim().toLowerCase()
+    const studyMode = normalizeStudyMode(body.studyMode)
 
     if (!teacherId) {
       return NextResponse.json(
@@ -150,6 +158,7 @@ export async function PATCH(req: Request) {
       where: {
         id: teacherId,
         role: "TEACHER",
+        ...(studyMode ? { studyMode } : {}),
       },
       select: {
         id: true,
@@ -215,6 +224,7 @@ export async function DELETE(req: Request) {
   try {
     const body = await req.json()
     const teacherId = String(body.teacherId || "").trim()
+    const studyMode = normalizeStudyMode(body.studyMode)
 
     if (!teacherId) {
       return NextResponse.json(
@@ -227,6 +237,7 @@ export async function DELETE(req: Request) {
       where: {
         id: teacherId,
         role: "TEACHER",
+        ...(studyMode ? { studyMode } : {}),
       },
       select: {
         id: true,

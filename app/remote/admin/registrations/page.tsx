@@ -62,8 +62,8 @@ export default function RemoteAdminRegistrationsPage() {
       setLoading(true);
       const [requestsRes, teachersRes, circlesRes] = await Promise.all([
         fetch("/api/registration-requests", { cache: "no-store" }),
-        fetch("/api/teachers", { cache: "no-store" }),
-        fetch("/api/circles", { cache: "no-store" }),
+        fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
       ]);
       const [requestsData, teachersData, circlesData] = await Promise.all([
         requestsRes.json(),
