@@ -26,6 +26,11 @@ export default function OnsiteAdminCirclesPage() {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editingCircleId, setEditingCircleId] = useState<string | null>(null);
+  const [editData, setEditData] = useState({
+    name: "",
+    zoomUrl: "",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -117,7 +122,7 @@ export default function OnsiteAdminCirclesPage() {
     const res = await fetch("/api/circles", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ circleId, teacherId }),
+      body: JSON.stringify({ circleId, teacherId, studyMode: "ONSITE" }),
     });
 
     if (!res.ok) {
@@ -133,7 +138,7 @@ export default function OnsiteAdminCirclesPage() {
     const res = await fetch("/api/circles", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ circleId, track }),
+      body: JSON.stringify({ circleId, track, studyMode: "ONSITE" }),
     });
 
     if (!res.ok) {
@@ -143,6 +148,45 @@ export default function OnsiteAdminCirclesPage() {
     }
 
     await fetchData();
+  };
+
+  const startEdit = (circle: Circle) => {
+    setEditingCircleId(circle.id);
+    setEditData({
+      name: circle.name,
+      zoomUrl: circle.zoomUrl || "",
+    });
+  };
+
+  const handleUpdateCircle = async (circleId: string) => {
+    try {
+      setSubmitting(true);
+
+      const res = await fetch("/api/circles", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          circleId,
+          name: editData.name,
+          zoomUrl: editData.zoomUrl,
+          studyMode: "ONSITE",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "تعذر تحديث بيانات الحلقة");
+        return;
+      }
+
+      setEditingCircleId(null);
+      await fetchData();
+    } catch (error) {
+      console.error("UPDATE ONSITE CIRCLE ERROR =>", error);
+      alert("حدث خطأ أثناء تحديث بيانات الحلقة");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleDeleteCircle = async (circle: Circle) => {
@@ -155,7 +199,7 @@ export default function OnsiteAdminCirclesPage() {
     const res = await fetch("/api/circles", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ circleId: circle.id }),
+      body: JSON.stringify({ circleId: circle.id, studyMode: "ONSITE" }),
     });
 
     const data = await res.json();
@@ -312,7 +356,20 @@ export default function OnsiteAdminCirclesPage() {
                         className="border-b border-[#d9c8ad]/30 text-sm"
                       >
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
-                          {circle.name}
+                          {editingCircleId === circle.id ? (
+                            <input
+                              value={editData.name}
+                              onChange={(event) =>
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  name: event.target.value,
+                                }))
+                              }
+                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            />
+                          ) : (
+                            circle.name
+                          )}
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
                           <select
@@ -345,13 +402,57 @@ export default function OnsiteAdminCirclesPage() {
                           {circle._count.students}
                         </td>
                         <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteCircle(circle)}
-                            className="rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-200 transition hover:bg-red-100"
-                          >
-                            حذف الحلقة
-                          </button>
+                          {editingCircleId === circle.id ? (
+                            <div className="flex flex-wrap gap-2">
+                              <input
+                                type="url"
+                                value={editData.zoomUrl}
+                                onChange={(event) =>
+                                  setEditData((prev) => ({
+                                    ...prev,
+                                    zoomUrl: event.target.value,
+                                  }))
+                                }
+                                placeholder="رابط الحلقة"
+                                className="w-48 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                              />
+                              <button
+                                type="button"
+                                disabled={submitting}
+                                onClick={() => handleUpdateCircle(circle.id)}
+                                className="rounded-xl bg-[#1f6358] px-3 py-2 text-xs font-black text-white disabled:opacity-60"
+                              >
+                                حفظ
+                              </button>
+                              <button
+                                type="button"
+                                disabled={submitting}
+                                onClick={() => setEditingCircleId(null)}
+                                className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs font-black text-[#1c2d31] disabled:opacity-60"
+                              >
+                                إلغاء
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEdit(circle)}
+                                className="rounded-xl bg-amber-100 px-3 py-2 text-xs font-black text-amber-800"
+                              >
+                                تعديل
+                              </button>
+                              <button
+                                type="button"
+                                disabled={submitting || circle._count.students > 0}
+                                onClick={() => handleDeleteCircle(circle)}
+                                className="rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-200 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-45"
+                                title={circle._count.students > 0 ? "انقل الطلاب أولا قبل حذف الحلقة" : "حذف الحلقة"}
+                              >
+                                حذف الحلقة
+                              </button>
+                            </div>
+                          )}
                         </td>
                       </tr>
                     ))}

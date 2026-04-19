@@ -3,6 +3,14 @@ import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
+const tracks = [
+  { value: "", label: "كل المسارات" },
+  { value: "HIJAA", label: "مسار الهجاء" },
+  { value: "RUBAI", label: "المسار الرباعي" },
+  { value: "FARDI", label: "المسار الفردي" },
+  { value: "TILAWA", label: "مسار التلاوة" },
+];
+
 function trackLabel(track: string | null) {
   if (track === "HIJAA") return "مسار الهجاء";
   if (track === "RUBAI") return "المسار الرباعي";
@@ -11,7 +19,31 @@ function trackLabel(track: string | null) {
   return "غير محدد";
 }
 
-export default async function RemoteAdminStatisticsPage() {
+function normalizeTrack(value: unknown) {
+  const track = String(value || "").trim();
+  return tracks.some((item) => item.value === track && track)
+    ? track
+    : "";
+}
+
+type PageProps = {
+  searchParams?: Promise<{ track?: string }> | { track?: string };
+};
+
+export default async function RemoteAdminStatisticsPage({ searchParams }: PageProps) {
+  const resolvedSearchParams = await searchParams;
+  const selectedTrack = normalizeTrack(resolvedSearchParams?.track);
+  const selectedTrackLabel = selectedTrack ? trackLabel(selectedTrack) : "كل المسارات";
+  const circleWhere = {
+    studyMode: "REMOTE" as const,
+    ...(selectedTrack ? { track: selectedTrack } : {}),
+  };
+  const studentWhere = {
+    studyMode: "REMOTE" as const,
+    isActive: true,
+    ...(selectedTrack ? { circle: { track: selectedTrack } } : {}),
+  };
+
   const [
     teachersCount,
     studentsCount,
@@ -21,20 +53,30 @@ export default async function RemoteAdminStatisticsPage() {
     circlesByTrack,
   ] = await Promise.all([
     prisma.user.count({
-      where: { role: "TEACHER", studyMode: "REMOTE" },
+      where: {
+        role: "TEACHER",
+        studyMode: "REMOTE",
+        ...(selectedTrack ? { circles: { some: circleWhere } } : {}),
+      },
     }),
     prisma.student.count({
-      where: { studyMode: "REMOTE", isActive: true },
+      where: studentWhere,
     }),
     prisma.circle.count({
-      where: { studyMode: "REMOTE" },
+      where: circleWhere,
     }),
-    prisma.report.count(),
+    prisma.report.count({
+      where: {
+        student: studentWhere,
+      },
+    }),
     prisma.student.count({
       where: {
         studyMode: "REMOTE",
         isActive: true,
-        circleId: null,
+        ...(selectedTrack
+          ? { circle: { track: selectedTrack } }
+          : { circleId: null }),
       },
     }),
     prisma.circle.groupBy({
@@ -51,7 +93,11 @@ export default async function RemoteAdminStatisticsPage() {
     { label: "عدد الطلاب", value: studentsCount },
     { label: "عدد الحلقات", value: circlesCount },
     { label: "إجمالي التقارير", value: reportsCount },
-    { label: "طلاب بلا حلقة", value: unassignedStudentsCount, id: "unassigned-students" },
+    {
+      label: selectedTrack ? "طلاب هذا المسار" : "طلاب بلا حلقة",
+      value: unassignedStudentsCount,
+      id: "unassigned-students",
+    },
   ];
 
   return (
@@ -61,6 +107,9 @@ export default async function RemoteAdminStatisticsPage() {
           <div>
             <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">الإحصائيات</h1>
+            <p className="mt-2 text-sm font-bold text-[#1c2d31]/60">
+              المعروض الآن: {selectedTrackLabel}
+            </p>
           </div>
           <Link
             href="/remote/admin/dashboard"
@@ -69,6 +118,29 @@ export default async function RemoteAdminStatisticsPage() {
             الرجوع للوحة الإدارة
           </Link>
         </div>
+
+        <section className="flex flex-wrap gap-2 rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+          {tracks.map((track) => {
+            const active = selectedTrack === track.value;
+            return (
+              <Link
+                key={track.value || "all"}
+                href={
+                  track.value
+                    ? `/remote/admin/statistics?track=${track.value}`
+                    : "/remote/admin/statistics"
+                }
+                className={`rounded-2xl px-4 py-2 text-sm font-black transition ${
+                  active
+                    ? "bg-[#173d42] text-white"
+                    : "bg-[#fffaf2] text-[#1c2d31] hover:bg-white"
+                }`}
+              >
+                {track.label}
+              </Link>
+            );
+          })}
+        </section>
 
         <section className="grid gap-4 md:grid-cols-5">
           {stats.map((stat) => (

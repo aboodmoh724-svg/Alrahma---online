@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 function normalizeStudyMode(value: unknown) {
-  return value === "ONSITE" ? "ONSITE" : "REMOTE";
+  if (value === "REMOTE" || value === "ONSITE") return value;
+  return undefined;
 }
 
 function normalizeTrack(value: unknown) {
@@ -59,7 +60,7 @@ export async function POST(req: Request) {
     const name = String(body.name || "").trim();
     const teacherId = String(body.teacherId || "").trim();
     const zoomUrl = String(body.zoomUrl || "").trim();
-    const studyMode = normalizeStudyMode(body.studyMode);
+    const studyMode = normalizeStudyMode(body.studyMode) || "REMOTE";
     const track = normalizeTrack(body.track);
 
     if (!name) {
@@ -71,6 +72,7 @@ export async function POST(req: Request) {
           where: {
             id: teacherId,
             role: "TEACHER",
+            studyMode,
             isActive: true,
           },
           select: {
@@ -151,6 +153,7 @@ export async function PATCH(req: Request) {
           where: {
             id: teacherId,
             role: "TEACHER",
+            ...(studyMode ? { studyMode } : {}),
             isActive: true,
           },
           select: {
@@ -166,14 +169,28 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const circle = await prisma.circle.update({
+    const existingCircle = await prisma.circle.findFirst({
       where: {
         id: circleId,
+        ...(studyMode ? { studyMode } : {}),
+      },
+      select: {
+        id: true,
+        studyMode: true,
+      },
+    });
+
+    if (!existingCircle) {
+      return NextResponse.json({ error: "الحلقة غير موجودة في هذا القسم" }, { status: 404 });
+    }
+
+    const circle = await prisma.circle.update({
+      where: {
+        id: existingCircle.id,
       },
       data: {
         ...(name ? { name } : {}),
         ...(track !== undefined ? { track } : {}),
-        ...(studyMode ? { studyMode } : {}),
         ...(teacherId !== undefined ? { teacherId: teacher?.id || null } : {}),
         ...(zoomUrl !== undefined ? { zoomUrl: zoomUrl || null } : {}),
       },
@@ -182,7 +199,7 @@ export async function PATCH(req: Request) {
     if (teacher?.id) {
       await prisma.student.updateMany({
         where: {
-          circleId,
+          circleId: existingCircle.id,
         },
         data: {
           teacherId: teacher.id,
@@ -209,14 +226,16 @@ export async function DELETE(req: Request) {
   try {
     const body = await req.json();
     const circleId = String(body.circleId || "").trim();
+    const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!circleId) {
       return NextResponse.json({ error: "الحلقة مطلوبة" }, { status: 400 });
     }
 
-    const circle = await prisma.circle.findUnique({
+    const circle = await prisma.circle.findFirst({
       where: {
         id: circleId,
+        ...(studyMode ? { studyMode } : {}),
       },
       select: {
         id: true,

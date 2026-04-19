@@ -26,6 +26,11 @@ export default function RemoteAdminCirclesPage() {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [editingCircleId, setEditingCircleId] = useState<string | null>(null);
+  const [editData, setEditData] = useState({
+    name: "",
+    zoomUrl: "",
+  });
 
   const [formData, setFormData] = useState({
     name: "",
@@ -48,7 +53,11 @@ export default function RemoteAdminCirclesPage() {
       const circlesData = await circlesRes.json();
 
       setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
-      setCircles(Array.isArray(circlesData.circles) ? circlesData.circles : []);
+      setCircles(
+        Array.isArray(circlesData.circles)
+          ? circlesData.circles.filter((circle: Circle) => circle.studyMode === "REMOTE")
+          : []
+      );
     } catch (error) {
       console.error("FETCH CIRCLES PAGE DATA ERROR =>", error);
       setTeachers([]);
@@ -117,7 +126,7 @@ export default function RemoteAdminCirclesPage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ circleId, teacherId }),
+      body: JSON.stringify({ circleId, teacherId, studyMode: "REMOTE" }),
     });
 
     if (!res.ok) {
@@ -135,7 +144,7 @@ export default function RemoteAdminCirclesPage() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ circleId, track }),
+      body: JSON.stringify({ circleId, track, studyMode: "REMOTE" }),
     });
 
     if (!res.ok) {
@@ -145,6 +154,78 @@ export default function RemoteAdminCirclesPage() {
     }
 
     await fetchData();
+  };
+
+  const startEdit = (circle: Circle) => {
+    setEditingCircleId(circle.id);
+    setEditData({
+      name: circle.name,
+      zoomUrl: circle.zoomUrl || "",
+    });
+  };
+
+  const handleUpdateCircle = async (circleId: string) => {
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/circles", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          circleId,
+          name: editData.name,
+          zoomUrl: editData.zoomUrl,
+          studyMode: "REMOTE",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "تعذر تحديث بيانات الحلقة");
+        return;
+      }
+
+      setEditingCircleId(null);
+      await fetchData();
+    } catch (error) {
+      console.error("UPDATE REMOTE CIRCLE ERROR =>", error);
+      alert("حدث خطأ أثناء تحديث بيانات الحلقة");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteCircle = async (circle: Circle) => {
+    const confirmed = window.confirm(
+      `هل تريد حذف الحلقة ${circle.name}؟ لا يمكن حذف الحلقة إذا كان فيها طلاب.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setSubmitting(true);
+      const res = await fetch("/api/circles", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ circleId: circle.id, studyMode: "REMOTE" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "تعذر حذف الحلقة");
+        return;
+      }
+
+      await fetchData();
+    } catch (error) {
+      console.error("DELETE REMOTE CIRCLE ERROR =>", error);
+      alert("حدث خطأ أثناء حذف الحلقة");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const trackLabel = (track: string | null) => {
@@ -289,6 +370,7 @@ export default function RemoteAdminCirclesPage() {
                         <th className="px-4 py-3 font-medium">نوع الدراسة</th>
                         <th className="px-4 py-3 font-medium">الطلاب</th>
                         <th className="px-4 py-3 font-medium">الرابط</th>
+                        <th className="px-4 py-3 font-medium">الإجراءات</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -298,7 +380,20 @@ export default function RemoteAdminCirclesPage() {
                           className="border-b border-gray-100 text-sm"
                         >
                           <td className="px-4 py-3 font-medium text-gray-900">
-                            {circle.name}
+                            {editingCircleId === circle.id ? (
+                              <input
+                                value={editData.name}
+                                onChange={(event) =>
+                                  setEditData((prev) => ({
+                                    ...prev,
+                                    name: event.target.value,
+                                  }))
+                                }
+                                className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                              />
+                            ) : (
+                              circle.name
+                            )}
                           </td>
                           <td className="px-4 py-3 text-gray-700">
                             <select
@@ -338,7 +433,20 @@ export default function RemoteAdminCirclesPage() {
                             {circle._count.students}
                           </td>
                           <td className="px-4 py-3 text-gray-700">
-                            {circle.zoomUrl ? (
+                            {editingCircleId === circle.id ? (
+                              <input
+                                type="url"
+                                value={editData.zoomUrl}
+                                onChange={(event) =>
+                                  setEditData((prev) => ({
+                                    ...prev,
+                                    zoomUrl: event.target.value,
+                                  }))
+                                }
+                                placeholder="https://zoom.us/..."
+                                className="w-56 rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                              />
+                            ) : circle.zoomUrl ? (
                               <a
                                 href={circle.zoomUrl}
                                 target="_blank"
@@ -349,6 +457,47 @@ export default function RemoteAdminCirclesPage() {
                               </a>
                             ) : (
                               "-"
+                            )}
+                          </td>
+                          <td className="px-4 py-3">
+                            {editingCircleId === circle.id ? (
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  disabled={submitting}
+                                  onClick={() => handleUpdateCircle(circle.id)}
+                                  className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                                >
+                                  حفظ
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={submitting}
+                                  onClick={() => setEditingCircleId(null)}
+                                  className="rounded-lg border border-gray-300 px-3 py-2 text-xs font-bold text-gray-700 disabled:opacity-60"
+                                >
+                                  إلغاء
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-wrap gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => startEdit(circle)}
+                                  className="rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-800"
+                                >
+                                  تعديل
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={submitting || circle._count.students > 0}
+                                  onClick={() => handleDeleteCircle(circle)}
+                                  className="rounded-lg bg-red-50 px-3 py-2 text-xs font-bold text-red-700 ring-1 ring-red-200 disabled:cursor-not-allowed disabled:opacity-45"
+                                  title={circle._count.students > 0 ? "انقل الطلاب أولا قبل حذف الحلقة" : "حذف الحلقة"}
+                                >
+                                  حذف
+                                </button>
+                              </div>
                             )}
                           </td>
                         </tr>
