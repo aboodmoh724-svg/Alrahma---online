@@ -8,7 +8,6 @@ type ManualWhatsAppSentButtonProps = {
   phone: string;
   message: string;
   fallbackUrl: string;
-  mode?: "regular" | "business";
 };
 
 export function ManualWhatsAppSentButton({
@@ -16,10 +15,10 @@ export function ManualWhatsAppSentButton({
   phone,
   message,
   fallbackUrl,
-  mode = "regular",
 }: ManualWhatsAppSentButtonProps) {
   const router = useRouter();
-  const [submitting, setSubmitting] = useState(false);
+  const [opening, setOpening] = useState<"regular" | "business" | null>(null);
+  const [markingSent, setMarkingSent] = useState(false);
 
   const markSent = async () => {
     const response = await fetch(`/api/reports/${reportId}/manual-whatsapp-sent`, {
@@ -32,10 +31,10 @@ export function ManualWhatsAppSentButton({
     }
   };
 
-  const openWhatsApp = async () => {
-    if (submitting) return;
+  const openWhatsApp = async (mode: "regular" | "business") => {
+    if (opening || markingSent) return;
 
-    setSubmitting(true);
+    setOpening(mode);
     const encodedMessage = encodeURIComponent(message);
     const encodedFallbackUrl = encodeURIComponent(fallbackUrl);
 
@@ -59,32 +58,55 @@ export function ManualWhatsAppSentButton({
       window.open(fallbackUrl, "_blank", "noopener,noreferrer");
     }
 
+    window.setTimeout(() => setOpening(null), 900);
+  };
+
+  const confirmSent = async () => {
+    if (opening || markingSent) return;
+
+    const confirmed = window.confirm(
+      "هل تم إرسال رسالة الواتساب لولي الأمر بالفعل؟\n\nلن يختفي الطالب من القائمة إلا بعد تأكيدك هنا."
+    );
+
+    if (!confirmed) return;
+
     try {
+      setMarkingSent(true);
       await markSent();
       router.refresh();
     } catch (error) {
       alert(error instanceof Error ? error.message : "تعذر تسجيل إرسال الواتساب");
     } finally {
-      setSubmitting(false);
+      setMarkingSent(false);
     }
   };
 
   return (
-    <button
-      type="button"
-      onClick={openWhatsApp}
-      disabled={submitting}
-      className={
-        mode === "business"
-          ? "rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358] disabled:cursor-not-allowed disabled:opacity-60"
-          : "rounded-2xl bg-[#1f6358] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
-      }
-    >
-      {submitting
-        ? "جاري التسجيل..."
-        : mode === "business"
-          ? "فتح واتساب بزنس وتسجيل الإرسال"
-          : "فتح واتساب وتسجيل الإرسال"}
-    </button>
+    <div className="grid gap-2">
+      <button
+        type="button"
+        onClick={() => openWhatsApp("regular")}
+        disabled={Boolean(opening) || markingSent}
+        className="rounded-2xl bg-[#1f6358] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {opening === "regular" ? "جاري فتح واتساب..." : "فتح واتساب"}
+      </button>
+      <button
+        type="button"
+        onClick={() => openWhatsApp("business")}
+        disabled={Boolean(opening) || markingSent}
+        className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358] disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {opening === "business" ? "جاري فتح واتساب بزنس..." : "فتح واتساب بزنس"}
+      </button>
+      <button
+        type="button"
+        onClick={confirmSent}
+        disabled={Boolean(opening) || markingSent}
+        className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-center text-sm font-black text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {markingSent ? "جاري تسجيل الإرسال..." : "تم إرسال الرسالة"}
+      </button>
+    </div>
   );
 }

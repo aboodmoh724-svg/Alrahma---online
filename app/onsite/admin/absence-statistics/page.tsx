@@ -24,6 +24,7 @@ type DailyAttendanceSummary = {
   dateLabel: string;
   presentStudents: string[];
   absentStudents: string[];
+  notRecordedStudents: string[];
 };
 
 async function deleteStudentAbsences(formData: FormData) {
@@ -121,7 +122,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
     );
   }
 
-  const [absenceReports, attendanceReports] = await Promise.all([
+  const [absenceReports, attendanceReports, activeStudents] = await Promise.all([
     prisma.report.findMany({
       where: {
         status: "ABSENT",
@@ -184,6 +185,29 @@ export default async function OnsiteAbsenceStatisticsPage() {
               fullName: true,
               },
             },
+          },
+        },
+      },
+    }),
+    prisma.student.findMany({
+      where: {
+        studyMode: "ONSITE",
+        isActive: true,
+      },
+      orderBy: {
+        fullName: "asc",
+      },
+      select: {
+        id: true,
+        fullName: true,
+        circle: {
+          select: {
+            name: true,
+          },
+        },
+        teacher: {
+          select: {
+            fullName: true,
           },
         },
       },
@@ -255,7 +279,15 @@ export default async function OnsiteAbsenceStatisticsPage() {
     }
   }
 
-  const dailySummariesMap = new Map<string, DailyAttendanceSummary>();
+  const dailySummariesMap = new Map<
+    string,
+    DailyAttendanceSummary & { recordedStudentIds: Set<string> }
+  >();
+
+  const activeStudentLine = (student: (typeof activeStudents)[number]) =>
+    `${student.fullName} - ${student.circle?.name || "غير محدد"} - ${
+      student.teacher?.fullName || "غير محدد"
+    }`;
 
   for (const report of latestReportByStudentDay.values()) {
     const dateKey = getIstanbulDateKey(report.createdAt);
@@ -266,10 +298,14 @@ export default async function OnsiteAbsenceStatisticsPage() {
         dateLabel: formatIstanbulDateEnglish(report.createdAt),
         presentStudents: [],
         absentStudents: [],
-      } satisfies DailyAttendanceSummary);
+        notRecordedStudents: [],
+        recordedStudentIds: new Set<string>(),
+      } satisfies DailyAttendanceSummary & { recordedStudentIds: Set<string> });
     const studentLine = `${report.student.fullName} - ${
       report.student.circle?.name || "غير محدد"
     } - ${report.student.teacher?.fullName || "غير محدد"}`;
+
+    summary.recordedStudentIds.add(report.student.id);
 
     if (report.status === "ABSENT") {
       summary.absentStudents.push(studentLine);
@@ -280,9 +316,17 @@ export default async function OnsiteAbsenceStatisticsPage() {
     dailySummariesMap.set(dateKey, summary);
   }
 
-  const dailySummaries = Array.from(dailySummariesMap.values()).sort((a, b) =>
-    b.dateKey.localeCompare(a.dateKey)
-  );
+  const dailySummaries = Array.from(dailySummariesMap.values())
+    .map((summary) => ({
+      dateKey: summary.dateKey,
+      dateLabel: summary.dateLabel,
+      presentStudents: summary.presentStudents,
+      absentStudents: summary.absentStudents,
+      notRecordedStudents: activeStudents
+        .filter((student) => !summary.recordedStudentIds.has(student.id))
+        .map(activeStudentLine),
+    }))
+    .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -364,11 +408,14 @@ export default async function OnsiteAbsenceStatisticsPage() {
                         <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-800">
                           غياب: {day.absentStudents.length}
                         </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                          لم يسجل لهم: {day.notRecordedStudents.length}
+                        </span>
                       </div>
                     </div>
                   </summary>
 
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div className="mt-4 grid gap-4 lg:grid-cols-3">
                     <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
                       <h4 className="font-black text-emerald-800">الحاضرون</h4>
                       {day.presentStudents.length === 0 ? (
@@ -388,6 +435,18 @@ export default async function OnsiteAbsenceStatisticsPage() {
                       ) : (
                         <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
                           {day.absentStudents.map((student) => (
+                            <li key={student}>{student}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+                      <h4 className="font-black text-slate-700">لم يسجل لهم حضور أو غياب</h4>
+                      {day.notRecordedStudents.length === 0 ? (
+                        <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
+                      ) : (
+                        <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
+                          {day.notRecordedStudents.map((student) => (
                             <li key={student}>{student}</li>
                           ))}
                         </ul>

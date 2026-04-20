@@ -381,13 +381,6 @@ export default async function OnsiteAdminAbsencesPage() {
                             message={message}
                             fallbackUrl={whatsAppUrl(phone, message)}
                           />
-                          <ManualWhatsAppSentButton
-                            reportId={report.id}
-                            phone={phone}
-                            message={message}
-                            fallbackUrl={whatsAppUrl(phone, message)}
-                            mode="business"
-                          />
                         </>
                       ) : (
                         <div className="rounded-2xl bg-red-50 px-5 py-3 text-center text-sm font-black text-red-700 ring-1 ring-red-200">
