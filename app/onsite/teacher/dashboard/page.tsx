@@ -394,6 +394,7 @@ export default async function OnsiteTeacherDashboardPage({
                 </h2>
                 <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
                   تظهر هنا تقارير اليوم للطلاب داخل الحلقة المختارة فقط.
+                  بعد تسجيل حاضر أو غائب ينتقل التعديل إلى واجهة الإدارة فقط.
                 </p>
               </div>
               <span className="rounded-full bg-[#1f6358]/10 px-4 py-2 text-sm font-black text-[#1f6358]">

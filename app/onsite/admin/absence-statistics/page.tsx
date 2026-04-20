@@ -19,6 +19,13 @@ type AbsenceSummary = {
   lastAbsenceAt: Date;
 };
 
+type DailyAttendanceSummary = {
+  dateKey: string;
+  dateLabel: string;
+  presentStudents: string[];
+  absentStudents: string[];
+};
+
 async function deleteStudentAbsences(formData: FormData) {
   "use server";
 
@@ -114,40 +121,74 @@ export default async function OnsiteAbsenceStatisticsPage() {
     );
   }
 
-  const absenceReports = await prisma.report.findMany({
-    where: {
-      status: "ABSENT",
-      student: {
-        studyMode: "ONSITE",
-        isActive: true,
+  const [absenceReports, attendanceReports] = await Promise.all([
+    prisma.report.findMany({
+      where: {
+        status: "ABSENT",
+        student: {
+          studyMode: "ONSITE",
+          isActive: true,
+        },
       },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    select: {
-      id: true,
-      createdAt: true,
-      student: {
-        select: {
-          id: true,
-          studentCode: true,
-          fullName: true,
-          parentWhatsapp: true,
-          circle: {
-            select: {
-              name: true,
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        student: {
+          select: {
+            id: true,
+            studentCode: true,
+            fullName: true,
+            parentWhatsapp: true,
+            circle: {
+              select: {
+                name: true,
+              },
             },
-          },
-          teacher: {
-            select: {
-              fullName: true,
+            teacher: {
+              select: {
+                fullName: true,
+              },
             },
           },
         },
       },
-    },
-  });
+    }),
+    prisma.report.findMany({
+      where: {
+        student: {
+          studyMode: "ONSITE",
+          isActive: true,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        status: true,
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+            circle: {
+              select: {
+              name: true,
+              },
+            },
+            teacher: {
+              select: {
+              fullName: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
 
   const summaries = new Map<string, AbsenceSummary & { dateKeys: Set<string> }>();
 
@@ -203,6 +244,45 @@ export default async function OnsiteAbsenceStatisticsPage() {
     (sum, summary) => sum + summary.absenceDates.length,
     0
   );
+  const latestReportByStudentDay = new Map<string, (typeof attendanceReports)[number]>();
+
+  for (const report of attendanceReports) {
+    const dateKey = getIstanbulDateKey(report.createdAt);
+    const key = `${dateKey}:${report.student.id}`;
+
+    if (!latestReportByStudentDay.has(key)) {
+      latestReportByStudentDay.set(key, report);
+    }
+  }
+
+  const dailySummariesMap = new Map<string, DailyAttendanceSummary>();
+
+  for (const report of latestReportByStudentDay.values()) {
+    const dateKey = getIstanbulDateKey(report.createdAt);
+    const summary =
+      dailySummariesMap.get(dateKey) ||
+      ({
+        dateKey,
+        dateLabel: formatIstanbulDateEnglish(report.createdAt),
+        presentStudents: [],
+        absentStudents: [],
+      } satisfies DailyAttendanceSummary);
+    const studentLine = `${report.student.fullName} - ${
+      report.student.circle?.name || "غير محدد"
+    } - ${report.student.teacher?.fullName || "غير محدد"}`;
+
+    if (report.status === "ABSENT") {
+      summary.absentStudents.push(studentLine);
+    } else {
+      summary.presentStudents.push(studentLine);
+    }
+
+    dailySummariesMap.set(dateKey, summary);
+  }
+
+  const dailySummaries = Array.from(dailySummariesMap.values()).sort((a, b) =>
+    b.dateKey.localeCompare(a.dateKey)
+  );
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -249,6 +329,75 @@ export default async function OnsiteAbsenceStatisticsPage() {
               يحتسب غياب الطالب مرة واحدة لكل يوم بتوقيت تركيا.
             </p>
           </div>
+        </section>
+
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="mb-5">
+            <h2 className="text-2xl font-black text-[#1c2d31]">
+              الإحصائيات حسب الأيام
+            </h2>
+            <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
+              كل يوم يظهر عدد الحضور والغياب، ومن هم الحاضرون والغائبون.
+            </p>
+          </div>
+
+          {dailySummaries.length === 0 ? (
+            <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+              لا توجد سجلات حضور أو غياب حتى الآن.
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {dailySummaries.map((day) => (
+                <details
+                  key={day.dateKey}
+                  className="rounded-[1.8rem] border border-[#d9c8ad]/75 bg-[#fffaf2] p-4"
+                >
+                  <summary className="cursor-pointer list-none">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="text-xl font-black text-[#1c2d31]">
+                        {day.dateLabel}
+                      </h3>
+                      <div className="flex flex-wrap gap-2 text-sm font-black">
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
+                          حضور: {day.presentStudents.length}
+                        </span>
+                        <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-800">
+                          غياب: {day.absentStudents.length}
+                        </span>
+                      </div>
+                    </div>
+                  </summary>
+
+                  <div className="mt-4 grid gap-4 md:grid-cols-2">
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+                      <h4 className="font-black text-emerald-800">الحاضرون</h4>
+                      {day.presentStudents.length === 0 ? (
+                        <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
+                      ) : (
+                        <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
+                          {day.presentStudents.map((student) => (
+                            <li key={student}>{student}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+                      <h4 className="font-black text-amber-800">الغائبون</h4>
+                      {day.absentStudents.length === 0 ? (
+                        <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
+                      ) : (
+                        <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
+                          {day.absentStudents.map((student) => (
+                            <li key={student}>{student}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">

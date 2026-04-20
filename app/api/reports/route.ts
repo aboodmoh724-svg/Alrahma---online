@@ -171,9 +171,7 @@ export async function POST(req: Request) {
       | { attempted: true; sent: true }
       | { attempted: true; sent: false; error: string } = { attempted: false };
 
-    if (
-      student.studyMode === "ONSITE"
-    ) {
+    if (student.studyMode === "ONSITE" && !isAttendanceOnly) {
       const normalized = student.parentWhatsapp
         ? normalizeWhatsAppNumber(student.parentWhatsapp)
         : null;

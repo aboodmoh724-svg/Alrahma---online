@@ -16,6 +16,11 @@ export default function QuickAttendanceButtons({
   const submit = async (status: "PRESENT" | "ABSENT") => {
     if (submitting) return;
 
+    const statusLabel = status === "PRESENT" ? "حاضر" : "غائب";
+    const confirmed = window.confirm(`هل أنت متأكد أن الطالب ${statusLabel}؟`);
+
+    if (!confirmed) return;
+
     setSubmitting(status);
 
     try {
@@ -47,6 +52,10 @@ export default function QuickAttendanceButtons({
           `تم حفظ التحضير لكن تعذر إرسال واتساب تلقائيًا.\nالسبب: ${
             data.whatsapp.error || "غير معروف"
           }`
+        );
+      } else {
+        alert(
+          "تم إرسال تسجيل الحضور والغياب إلى واجهة الإدارة.\nملاحظة: تعديل الحضور والغياب يكون فقط من واجهة الإدارة."
         );
       }
 
