@@ -466,19 +466,9 @@ export default async function OnsiteTeacherDashboardPage({
 
                       <div className="flex flex-col gap-2 md:min-w-48">
                         {todayReport ? (
-                          todayReport.sentToParent ? (
-                            <div className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-black text-emerald-800 ring-1 ring-emerald-200">
-                              تم إرسال واتساب{todayReport.parentSentAt ? ` - ${new Date(todayReport.parentSentAt).toLocaleTimeString("ar-EG")}` : ""}
-                            </div>
-                          ) : student.parentWhatsapp ? (
-                            <div className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-black text-amber-800 ring-1 ring-amber-200">
-                              لم يتم الإرسال بعد{todayReport.parentSentError ? ` - ${todayReport.parentSentError}` : ""}
-                            </div>
-                          ) : (
-                            <div className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-black text-red-700 ring-1 ring-red-200">
-                              لا يوجد رقم واتساب لولي الأمر
-                            </div>
-                          )
+                          <div className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-black text-emerald-800 ring-1 ring-emerald-200">
+                            تم تسجيل حضور / غياب الطالب وإرساله للإدارة
+                          </div>
                         ) : null}
 
                         {!todayReport ? (
