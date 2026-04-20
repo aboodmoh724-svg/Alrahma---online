@@ -455,11 +455,26 @@ export default function OnsiteAdminStudentsPage() {
                               className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#1f6358]"
                               onBlur={async (e) => {
                                 const next = e.target.value.trim();
-                                if ((student.parentWhatsapp || "") === next) return;
+                                const previous = student.parentWhatsapp || "";
+                                if (previous === next) return;
+
+                                const confirmed = window.confirm(
+                                  `هل تريد حفظ تغيير رقم ولي الأمر للطالب ${student.fullName}؟\n\nالرقم الحالي: ${previous || "لا يوجد"}\nالرقم الجديد: ${next || "حذف الرقم"}`
+                                );
+
+                                if (!confirmed) {
+                                  e.target.value = previous;
+                                  return;
+                                }
+
                                 const ok = await updateStudent(student.id, {
                                   parentWhatsapp: next || null,
                                 });
-                                if (ok) await fetchData();
+                                if (ok) {
+                                  await fetchData();
+                                } else {
+                                  e.target.value = previous;
+                                }
                               }}
                             />
                             <input
