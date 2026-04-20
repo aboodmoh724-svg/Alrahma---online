@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AdminStudentSearchBox } from "@/components/admin/AdminStudentSearchBox";
 import LogoutButton from "@/components/auth/LogoutButton";
 
 const sections = [
@@ -12,8 +11,14 @@ const sections = [
   {
     href: "/onsite/admin/students",
     title: "الطلاب",
-    description: "إضافة الطلاب وتحديث بيانات أولياء الأمور ونقلهم بين الحلقات.",
+    description: "عرض الطلاب ونقلهم بين الحلقات وتحديث أرقام وإيميلات أولياء الأمور.",
     tone: "bg-[#1f6358] text-white",
+  },
+  {
+    href: "/onsite/admin/student-details",
+    title: "بيانات الطلاب التفصيلية",
+    description: "بحث باسم الطالب وعرض بياناته المهمة، حلقته، معلمه، وملخص أيام الغياب.",
+    tone: "bg-white text-[#173d42]",
   },
   {
     href: "/onsite/admin/circles",
@@ -67,7 +72,6 @@ export default function OnsiteAdminDashboardPage() {
             <p className="mt-4 text-sm leading-8 text-white/72">
               هذه لوحة حضوري مخصصة لإدارة طلاب المركز والمعلمين والحلقات.
             </p>
-            <AdminStudentSearchBox targetPath="/onsite/admin/students" />
           </div>
         </section>
 

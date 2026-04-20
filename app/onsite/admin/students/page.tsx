@@ -37,9 +37,6 @@ export default function OnsiteAdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -88,9 +85,6 @@ export default function OnsiteAdminStudentsPage() {
   };
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const query = params.get("q");
-    if (query) setSearchTerm(query);
     fetchData();
   }, []);
 
@@ -183,7 +177,6 @@ export default function OnsiteAdminStudentsPage() {
   const updateStudent = async (
     studentId: string,
     patch: Partial<Pick<Student, "parentWhatsapp" | "parentEmail">> & {
-      fullName?: string;
       teacherId?: string;
       circleId?: string | null;
     }
@@ -207,38 +200,6 @@ export default function OnsiteAdminStudentsPage() {
     () => students.filter((s) => !s.circle?.id).length,
     [students]
   );
-  const filteredStudents = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return students;
-
-    return students.filter((student) => {
-      const haystack = [
-        student.fullName,
-        student.studentCode || "",
-        student.teacher?.fullName || "",
-        student.circle?.name || "",
-        student.parentWhatsapp || "",
-        student.parentEmail || "",
-      ]
-        .join(" ")
-        .toLowerCase();
-
-      return haystack.includes(query);
-    });
-  }, [searchTerm, students]);
-
-  const startEditName = (student: Student) => {
-    setEditingStudentId(student.id);
-    setEditName(student.fullName);
-  };
-
-  const saveStudentName = async (studentId: string) => {
-    const ok = await updateStudent(studentId, { fullName: editName.trim() });
-    if (ok) {
-      setEditingStudentId(null);
-      await fetchData();
-    }
-  };
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -345,21 +306,13 @@ export default function OnsiteAdminStudentsPage() {
               <div>
                 <h2 className="text-lg font-black text-[#1c2d31]">قائمة الطلاب</h2>
                 <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                  ابحث باسم الطالب ثم عدل بياناته من نفس الجدول.
+                  هذه الصفحة للتشغيل السريع: نقل الطالب بين الحلقات وتحديث بيانات ولي الأمر.
                 </p>
               </div>
               <span className="text-sm font-bold text-[#1c2d31]/60">
-                {filteredStudents.length} / {students.length} طالب
+                {students.length} طالب
               </span>
             </div>
-
-            <input
-              type="search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="بحث باسم الطالب أو رقم الطالب أو الحلقة أو المعلم"
-              className="mb-4 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#1f6358]"
-            />
 
             {loading ? (
               <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
@@ -368,10 +321,6 @@ export default function OnsiteAdminStudentsPage() {
             ) : students.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
                 لا يوجد طلاب حضوريين حتى الآن
-              </div>
-            ) : filteredStudents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
-                لا توجد نتائج مطابقة للبحث.
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -386,7 +335,7 @@ export default function OnsiteAdminStudentsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredStudents.map((student) => (
+                    {students.map((student) => (
                       <tr
                         key={student.id}
                         className="border-b border-[#d9c8ad]/30 text-sm"
@@ -395,40 +344,7 @@ export default function OnsiteAdminStudentsPage() {
                           {student.studentCode || "-"}
                         </td>
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
-                          {editingStudentId === student.id ? (
-                            <div className="flex min-w-56 flex-wrap gap-2">
-                              <input
-                                value={editName}
-                                onChange={(event) => setEditName(event.target.value)}
-                                className="min-w-40 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm font-bold outline-none focus:border-[#1f6358]"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => saveStudentName(student.id)}
-                                className="rounded-xl bg-[#1f6358] px-3 py-2 text-xs font-black text-white"
-                              >
-                                حفظ
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => setEditingStudentId(null)}
-                                className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs font-black text-[#1c2d31]"
-                              >
-                                إلغاء
-                              </button>
-                            </div>
-                          ) : (
-                            <div className="flex min-w-48 items-center gap-2">
-                              <span>{student.fullName}</span>
-                              <button
-                                type="button"
-                                onClick={() => startEditName(student)}
-                                className="rounded-lg bg-amber-100 px-2 py-1 text-xs font-black text-amber-800"
-                              >
-                                تعديل
-                              </button>
-                            </div>
-                          )}
+                          {student.fullName}
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
                           <select
