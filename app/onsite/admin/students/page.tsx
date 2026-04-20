@@ -38,6 +38,7 @@ export default function OnsiteAdminStudentsPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -73,7 +74,9 @@ export default function OnsiteAdminStudentsPage() {
       setTeachers(
         teachersList.filter((t) => t.studyMode === "ONSITE" && t.isActive !== false)
       );
-      setStudents(studentsList.filter((s) => s.studyMode === "ONSITE"));
+      setStudents(
+        studentsList.filter((s) => s.studyMode === "ONSITE" && s.isActive)
+      );
       setCircles(circlesList.filter((c) => c.studyMode === "ONSITE"));
     } catch (error) {
       console.error("FETCH ONSITE STUDENTS PAGE DATA ERROR =>", error);
@@ -195,6 +198,36 @@ export default function OnsiteAdminStudentsPage() {
     }
 
     return true;
+  };
+
+  const deleteStudent = async (student: Student) => {
+    const confirmed = window.confirm(
+      `هل أنت متأكد من حذف الطالب ${student.fullName}؟\n\nسيتم إخفاؤه من قوائم الحضوري، ويمكن استرجاعه لاحقًا من قاعدة البيانات عند الحاجة.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeletingStudentId(student.id);
+
+      const res = await fetch(`/api/students/${student.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "تعذر حذف الطالب");
+        return;
+      }
+
+      alert("تم حذف الطالب بنجاح");
+      await fetchData();
+    } catch (error) {
+      console.error("DELETE ONSITE STUDENT ERROR =>", error);
+      alert("حدث خطأ أثناء حذف الطالب");
+    } finally {
+      setDeletingStudentId(null);
+    }
   };
 
   const unassignedCount = useMemo(
@@ -362,6 +395,7 @@ export default function OnsiteAdminStudentsPage() {
                       <th className="px-4 py-3 font-black">المعلم</th>
                       <th className="px-4 py-3 font-black">الحلقة</th>
                       <th className="px-4 py-3 font-black">ولي الأمر</th>
+                      <th className="px-4 py-3 font-black">إجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -442,6 +476,18 @@ export default function OnsiteAdminStudentsPage() {
                               }}
                             />
                           </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <button
+                            type="button"
+                            disabled={deletingStudentId === student.id}
+                            onClick={() => deleteStudent(student)}
+                            className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {deletingStudentId === student.id
+                              ? "جار الحذف..."
+                              : "حذف"}
+                          </button>
                         </td>
                       </tr>
                     ))}
