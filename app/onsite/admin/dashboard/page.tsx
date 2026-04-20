@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AdminStudentSearchBox } from "@/components/admin/AdminStudentSearchBox";
 import LogoutButton from "@/components/auth/LogoutButton";
 
 const sections = [
@@ -66,6 +67,7 @@ export default function OnsiteAdminDashboardPage() {
             <p className="mt-4 text-sm leading-8 text-white/72">
               هذه لوحة حضوري مخصصة لإدارة طلاب المركز والمعلمين والحلقات.
             </p>
+            <AdminStudentSearchBox targetPath="/onsite/admin/students" />
           </div>
         </section>
 

@@ -88,6 +88,9 @@ export default function OnsiteAdminStudentsPage() {
   };
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
+    if (query) setSearchTerm(query);
     fetchData();
   }, []);
 
