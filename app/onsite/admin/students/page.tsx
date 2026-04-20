@@ -37,6 +37,7 @@ export default function OnsiteAdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -201,6 +202,26 @@ export default function OnsiteAdminStudentsPage() {
     [students]
   );
 
+  const filteredStudents = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return students;
+
+    return students.filter((student) => {
+      const haystack = [
+        student.fullName,
+        student.studentCode || "",
+        student.parentWhatsapp || "",
+        student.parentEmail || "",
+        student.teacher?.fullName || "",
+        student.circle?.name || "",
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(query);
+    });
+  }, [searchTerm, students]);
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -302,25 +323,34 @@ export default function OnsiteAdminStudentsPage() {
           </section>
 
           <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-2">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h2 className="text-lg font-black text-[#1c2d31]">قائمة الطلاب</h2>
                 <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
                   هذه الصفحة للتشغيل السريع: نقل الطالب بين الحلقات وتحديث بيانات ولي الأمر.
                 </p>
               </div>
-              <span className="text-sm font-bold text-[#1c2d31]/60">
-                {students.length} طالب
-              </span>
+              <div className="w-full max-w-md space-y-2">
+                <input
+                  type="search"
+                  value={searchTerm}
+                  onChange={(event) => setSearchTerm(event.target.value)}
+                  placeholder="ابحث باسم الطالب أو رقمه أو الحلقة أو ولي الأمر..."
+                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:bg-white"
+                />
+                <p className="text-xs font-bold text-[#1c2d31]/55">
+                  {filteredStudents.length} من {students.length} طالب
+                </p>
+              </div>
             </div>
 
             {loading ? (
               <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
-            ) : students.length === 0 ? (
+            ) : filteredStudents.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
-                لا يوجد طلاب حضوريين حتى الآن
+                لا توجد نتائج مطابقة للبحث.
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -335,7 +365,7 @@ export default function OnsiteAdminStudentsPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {students.map((student) => (
+                    {filteredStudents.map((student) => (
                       <tr
                         key={student.id}
                         className="border-b border-[#d9c8ad]/30 text-sm"
