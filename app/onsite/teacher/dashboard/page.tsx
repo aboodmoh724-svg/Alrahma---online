@@ -283,10 +283,10 @@ export default async function OnsiteTeacherDashboardPage({
                 بيانات المعلم
               </a>
               <a
-                href="#students-details"
+                href="#students-list"
                 className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white"
               >
-                بيانات الطلاب التفصيلية
+                طلاب الحلقة
               </a>
               <a
                 href="#important-files"
@@ -384,7 +384,7 @@ export default async function OnsiteTeacherDashboardPage({
           </section>
 
           <section
-            id="students-details"
+            id="students-list"
             className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
           >
             <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">

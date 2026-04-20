@@ -15,12 +15,6 @@ const sections = [
     tone: "bg-[#1f6358] text-white",
   },
   {
-    href: "/onsite/admin/student-details",
-    title: "بيانات الطلاب التفصيلية",
-    description: "بحث باسم الطالب وعرض بياناته المهمة، حلقته، معلمه، وملخص أيام الغياب.",
-    tone: "bg-white text-[#173d42]",
-  },
-  {
     href: "/onsite/admin/circles",
     title: "الحلقات",
     description: "إنشاء الحلقات وتعيين المعلمين وربط الطلاب.",
