@@ -102,6 +102,7 @@ export default async function OnsiteAdminStudentDetailsPage({
             createdAt: true,
           },
         },
+        detail: true,
       },
     }),
     prisma.report.findMany({
@@ -208,9 +209,9 @@ export default async function OnsiteAdminStudentDetailsPage({
             </p>
           </div>
           <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-            <p className="text-sm font-bold text-[#1c2d31]/55">مصدر البيانات التفصيلية</p>
+            <p className="text-sm font-bold text-[#1c2d31]/55">بيانات تفصيلية مربوطة</p>
             <p className="mt-2 text-sm font-black leading-7 text-[#9b7039]">
-              هذه الصفحة جاهزة لاستقبال ملف الإكسل التفصيلي وربطه لاحقا بكل طالب.
+              {students.filter((student) => student.detail).length} طالب لديهم بيانات من ملفات التسجيل.
             </p>
           </div>
         </section>
@@ -267,8 +268,17 @@ export default async function OnsiteAdminStudentDetailsPage({
                       <div className="mt-4 grid gap-3 text-sm leading-7 text-[#1c2d31]/70 md:grid-cols-2">
                         <p>الحلقة: {student.circle?.name || "غير محددة"}</p>
                         <p>المعلم: {student.teacher?.fullName || "غير محدد"}</p>
-                        <p>واتساب ولي الأمر: {student.parentWhatsapp || "-"}</p>
+                        <p>رقم ولي الأمر: {student.detail?.guardianPhone || student.parentWhatsapp || "-"}</p>
+                        <p>منطقة التجمع: {student.detail?.gatheringArea || "-"}</p>
+                        <p>مع من يسكن: {student.detail?.livingWith || "-"}</p>
+                        <p>
+                          يتيم الأب / الأم:{" "}
+                          {student.detail
+                            ? `الأب: ${student.detail.fatherAlive || "-"} - الأم: ${student.detail.motherAlive || "-"}`
+                            : "-"}
+                        </p>
                         <p>إيميل ولي الأمر: {student.parentEmail || "-"}</p>
+                        <p>المدرسة: {student.detail?.schoolName || "-"}</p>
                       </div>
                     </div>
 
@@ -312,6 +322,41 @@ export default async function OnsiteAdminStudentDetailsPage({
                       تعديل الحلقة وولي الأمر
                     </Link>
                   </div>
+
+                  <details className="mt-5 rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#d9c8ad]">
+                    <summary className="cursor-pointer text-sm font-black text-[#173d42]">
+                      عرض البيانات التفصيلية كاملة
+                    </summary>
+                    {student.detail ? (
+                      <div className="mt-4 grid gap-3 text-sm leading-7 text-[#1c2d31]/75 md:grid-cols-2">
+                        <p>المصدر: {student.detail.source}</p>
+                        <p>الاسم في الملف: {student.detail.matchedName}</p>
+                        <p>رابط الهوية/الإقامة: {student.detail.idImageUrl || "-"}</p>
+                        <p>تاريخ الميلاد: {student.detail.birthDate || "-"}</p>
+                        <p>مكان الميلاد: {student.detail.birthPlace || "-"}</p>
+                        <p>الجنسية: {student.detail.nationality || "-"}</p>
+                        <p>مستوى الطالب العام: {student.detail.generalLevel || "-"}</p>
+                        <p>الصف الدراسي: {student.detail.grade || "-"}</p>
+                        <p>اسم المدرسة: {student.detail.schoolName || "-"}</p>
+                        <p>جوال الأب: {student.detail.fatherPhone || "-"}</p>
+                        <p>جوال الأم: {student.detail.motherPhone || "-"}</p>
+                        <p>رقم التواصل: {student.detail.guardianPhone || "-"}</p>
+                        <p>هل الأب على قيد الحياة: {student.detail.fatherAlive || "-"}</p>
+                        <p>هل الأم على قيد الحياة: {student.detail.motherAlive || "-"}</p>
+                        <p>مستوى تعليم الأب: {student.detail.fatherEducation || "-"}</p>
+                        <p>مستوى تعليم الأم: {student.detail.motherEducation || "-"}</p>
+                        <p>مصدر دخل الأسرة: {student.detail.hasIncome || "-"}</p>
+                        <p>دخل الأسرة الشهري: {student.detail.monthlyIncome || "-"}</p>
+                        <p>موقع البيت: {student.detail.homeLocation || "-"}</p>
+                        <p>منطقة التجمع: {student.detail.gatheringArea || "-"}</p>
+                        <p className="md:col-span-2">الملاحظات: {student.detail.notes || "-"}</p>
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-sm font-bold text-[#1c2d31]/60">
+                        لم يتم ربط بيانات تفصيلية لهذا الطالب بعد.
+                      </p>
+                    )}
+                  </details>
                 </article>
               );
             })

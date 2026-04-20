@@ -6,6 +6,177 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id        String     @id @default(cuid())
+  fullName  String
+  email     String     @unique
+  password  String
+  role      UserRole
+  studyMode StudyMode
+  isActive  Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  circles   Circle[]   @relation("CircleTeacher")
+  reports   Report[]
+  students  Student[]
+  zoomLinks ZoomLink[]
+}
+
+model Student {
+  id             String    @id @default(cuid())
+  fullName       String
+  studyMode      StudyMode
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  teacherId      String
+  circleId       String?
+  studentCode    String?   @unique
+  parentWhatsapp String?
+  parentEmail    String?
+  detail         StudentDetail?
+  reports        Report[]
+  circle         Circle?   @relation(fields: [circleId], references: [id])
+  teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model StudentDetail {
+  id              String   @id @default(cuid())
+  studentId       String   @unique
+  source          String
+  sourceStudentNo String?
+  matchedName     String
+  idImageUrl      String?
+  birthDate       String?
+  birthPlace      String?
+  nationality     String?
+  generalLevel    String?
+  livingWith      String?
+  grade           String?
+  schoolName      String?
+  fatherPhone     String?
+  motherPhone     String?
+  guardianPhone   String?
+  fatherAlive     String?
+  motherAlive     String?
+  fatherEducation String?
+  motherEducation String?
+  hasIncome       String?
+  monthlyIncome   String?
+  homeLocation    String?
+  gatheringArea   String?
+  notes           String?
+  rawData         Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  student         Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+}
+
+model Circle {
+  id        String    @id @default(cuid())
+  name      String
+  studyMode StudyMode
+  zoomUrl   String?
+  teacherId String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  track     String?
+  teacher   User?     @relation("CircleTeacher", fields: [teacherId], references: [id])
+  students  Student[]
+}
+
+model TrackResource {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  track       String?
+  fileUrl     String
+  fileName    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model RegistrationRequest {
+  id                 String             @id @default(cuid())
+  studentName        String
+  previousStudent    Boolean            @default(false)
+  birthDate          DateTime?
+  grade              String?
+  gender             String?
+  country            String?
+  preferredPeriod    String?
+  parentWhatsapp     String
+  parentEmail        String?
+  previousStudy      String?
+  memorizedAmount    String?
+  hasLearningIssues  Boolean            @default(false)
+  learningIssuesNote String?
+  hasDevice          Boolean            @default(false)
+  requestedTracks    String?
+  notes              String?
+  status             RegistrationStatus @default(PENDING)
+  createdStudentId   String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  readingLevel       String?
+  tajweedLevel       String?
+  readGuidelines     Boolean            @default(false)
+  audioUrl           String?
+  audioFileName      String?
+  nationality        String?
+  fatherAlive        Boolean?
+  motherAlive        Boolean?
+  livingWith         String?
+  fatherEducation    String?
+  motherEducation    String?
+  idImageUrl         String?
+  idImageFileName    String?
+}
+
+model Report {
+  id                 String             @id @default(cuid())
+  lessonName         String
+  review             String?
+  homework           String
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  studentId          String
+  note               String?
+  status             ReportStatus       @default(PRESENT)
+  teacherId          String?
+  pageFrom           Int?
+  pageTo             Int?
+  pagesCount         Int?
+  sentToParent       Boolean            @default(false)
+  nextHomework       String?
+  lessonSurah        String?
+  lessonMemorized    Boolean?
+  lastFiveMemorized  Boolean?
+  reviewSurah        String?
+  reviewFrom         Int?
+  reviewTo           Int?
+  reviewPagesCount   Int?
+  reviewMemorized    Boolean?
+  nextLessonHomework String?
+  nextReviewHomework String?
+  parentSentAt       DateTime?
+  parentSentChannel  ParentSentChannel?
+  parentSentError    String?
+  student            Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher            User?              @relation(fields: [teacherId], references: [id])
+}
+
+model ZoomLink {
+  id        String    @id @default(cuid())
+  title     String?
+  url       String
+  studyMode StudyMode
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String?
+  user      User?     @relation(fields: [userId], references: [id])
+}
+
 enum UserRole {
   ADMIN
   TEACHER
@@ -30,142 +201,4 @@ enum RegistrationStatus {
 enum ParentSentChannel {
   EMAIL
   WHATSAPP
-}
-
-model User {
-  id         String     @id @default(cuid())
-  fullName   String
-  email      String     @unique
-  password   String
-  role       UserRole
-  studyMode  StudyMode
-  isActive   Boolean    @default(true)
-  students   Student[]
-  reports    Report[]
-  zoomLinks  ZoomLink[]
-  circles    Circle[]   @relation("CircleTeacher")
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-}
-
-model Student {
-  id         String      @id @default(cuid())
-  studentCode String?    @unique
-  fullName   String
-  parentWhatsapp String?
-  parentEmail String?
-  teacherId  String
-  circleId   String?
-  studyMode  StudyMode
-  isActive   Boolean     @default(true)
-  teacher    User        @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  circle     Circle?     @relation(fields: [circleId], references: [id], onDelete: SetNull)
-  reports    Report[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-}
-
-model Circle {
-  id         String     @id @default(cuid())
-  name       String
-  track      String?
-  studyMode  StudyMode
-  zoomUrl    String?
-  teacherId  String?
-  teacher    User?      @relation("CircleTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
-  students   Student[]
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
-}
-
-model TrackResource {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  track       String?
-  fileUrl     String
-  fileName    String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-}
-
-model RegistrationRequest {
-  id                 String             @id @default(cuid())
-  studentName        String
-  previousStudent    Boolean            @default(false)
-  birthDate          DateTime?
-  grade              String?
-  gender             String?
-  nationality        String?
-  country            String?
-  fatherAlive        Boolean?
-  motherAlive        Boolean?
-  livingWith         String?
-  fatherEducation    String?
-  motherEducation    String?
-  idImageUrl         String?
-  idImageFileName    String?
-  preferredPeriod    String?
-  parentWhatsapp     String
-  parentEmail        String?
-  previousStudy      String?
-  memorizedAmount    String?
-  readingLevel       String?
-  tajweedLevel       String?
-  hasLearningIssues  Boolean            @default(false)
-  learningIssuesNote String?
-  hasDevice          Boolean            @default(false)
-  requestedTracks    String?
-  readGuidelines     Boolean            @default(false)
-  audioUrl           String?
-  audioFileName      String?
-  notes              String?
-  status             RegistrationStatus @default(PENDING)
-  createdStudentId   String?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-}
-
-model Report {
-  id          String       @id @default(cuid())
-  studentId   String
-  teacherId   String?
-  lessonName  String
-  lessonSurah String?
-  lessonMemorized Boolean?
-  lastFiveMemorized Boolean?
-  review      String?
-  reviewSurah String?
-  reviewFrom  Int?
-  reviewTo    Int?
-  reviewPagesCount Int?
-  reviewMemorized Boolean?
-  pageFrom    Int?
-  pageTo      Int?
-  pagesCount  Int?
-  homework    String
-  nextHomework String?
-  nextLessonHomework String?
-  nextReviewHomework String?
-  note        String?
-  status      ReportStatus @default(PRESENT)
-  sentToParent Boolean     @default(false)
-  parentSentAt DateTime?
-  parentSentChannel ParentSentChannel?
-  parentSentError String?
-  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  teacher     User?        @relation(fields: [teacherId], references: [id], onDelete: SetNull)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-}
-
-model ZoomLink {
-  id         String     @id @default(cuid())
-  title      String?
-  url        String
-  studyMode  StudyMode
-  userId     String?
-  user       User?      @relation(fields: [userId], references: [id], onDelete: SetNull)
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
 }
