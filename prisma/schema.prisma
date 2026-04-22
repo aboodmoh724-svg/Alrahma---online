@@ -22,6 +22,7 @@ model User {
   zoomLinks ZoomLink[]
   compensationRule TeacherCompensationRule?
   teacherPayouts TeacherPayout[]
+  teacherAttendances TeacherAttendance[]
 }
 
 model Student {
@@ -115,6 +116,20 @@ model TeacherPayout {
 
   @@index([teacherId, periodMonth])
   @@index([paidAt])
+}
+
+model TeacherAttendance {
+  id        String                  @id @default(cuid())
+  teacherId String
+  dateKey   String
+  status    TeacherAttendanceStatus
+  note      String?
+  createdAt DateTime                @default(now())
+  updatedAt DateTime                @updatedAt
+  teacher   User                    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([teacherId, dateKey])
+  @@index([dateKey])
 }
 
 model StudentDetail {
@@ -278,4 +293,10 @@ enum RegistrationStatus {
 enum ParentSentChannel {
   EMAIL
   WHATSAPP
+}
+
+enum TeacherAttendanceStatus {
+  PRESENT
+  ABSENT
+  EXCUSED
 }

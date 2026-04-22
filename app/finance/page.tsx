@@ -42,8 +42,40 @@ function getMonthRange(monthKey: string) {
   };
 }
 
+function getMonthDateKeys(monthKey: string) {
+  const { start, end } = getMonthRange(monthKey);
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const dateKeys: string[] = [];
+  const cursor = new Date(start);
+
+  while (cursor < end) {
+    const dateKey = cursor.toISOString().slice(0, 10);
+    if (dateKey > todayKey) break;
+    dateKeys.push(dateKey);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  return dateKeys;
+}
+
 function formatMoney(amount: number, currency = defaultCurrency) {
   return `${amount.toFixed(2)} ${currency}`;
+}
+
+function getTeacherAttendanceLabel(status: string | null, hasReport: boolean) {
+  if (status === "PRESENT") return "حاضر مؤكد";
+  if (status === "ABSENT") return "غائب";
+  if (status === "EXCUSED") return "عذر";
+  if (hasReport) return "مقترح حاضر";
+  return "لم يثبت";
+}
+
+function getTeacherAttendanceClass(status: string | null, hasReport: boolean) {
+  if (status === "PRESENT") return "bg-emerald-50 text-emerald-800 ring-emerald-200";
+  if (status === "ABSENT") return "bg-red-50 text-red-800 ring-red-200";
+  if (status === "EXCUSED") return "bg-sky-50 text-sky-800 ring-sky-200";
+  if (hasReport) return "bg-amber-50 text-amber-800 ring-amber-200";
+  return "bg-stone-50 text-stone-600 ring-stone-200";
 }
 
 function getPaymentStatus(required: number, paid: number) {
@@ -238,6 +270,51 @@ async function addTeacherPayout(formData: FormData) {
   revalidatePath("/finance");
 }
 
+async function updateTeacherAttendance(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const teacherId = String(formData.get("teacherId") || "");
+  const dateKey = String(formData.get("dateKey") || "");
+  const status = String(formData.get("status") || "");
+  const note = String(formData.get("note") || "").trim() || null;
+
+  if (!teacherId || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) return;
+
+  const isValidStatus = status === "PRESENT" || status === "ABSENT" || status === "EXCUSED";
+
+  if (!isValidStatus) {
+    await prisma.teacherAttendance.deleteMany({
+      where: { teacherId, dateKey },
+    });
+    revalidatePath("/finance");
+    return;
+  }
+
+  await prisma.teacherAttendance.upsert({
+    where: {
+      teacherId_dateKey: {
+        teacherId,
+        dateKey,
+      },
+    },
+    create: {
+      teacherId,
+      dateKey,
+      status,
+      note,
+    },
+    update: {
+      status,
+      note,
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
 export default async function FinancePage() {
   const admin = await requireFinanceAdmin();
 
@@ -257,6 +334,7 @@ export default async function FinancePage() {
 
   const currentMonth = getCurrentMonthKey();
   const monthRange = getMonthRange(currentMonth);
+  const monthDateKeys = getMonthDateKeys(currentMonth);
 
   const [students, expenses, teachers] = await Promise.all([
     prisma.student.findMany({
@@ -289,6 +367,15 @@ export default async function FinancePage() {
         teacherPayouts: {
           where: { periodMonth: currentMonth },
           orderBy: { paidAt: "desc" },
+        },
+        teacherAttendances: {
+          where: {
+            dateKey: {
+              gte: monthDateKeys[0] || `${currentMonth}-01`,
+              lte: monthDateKeys[monthDateKeys.length - 1] || `${currentMonth}-31`,
+            },
+          },
+          orderBy: { dateKey: "asc" },
         },
         reports: {
           where: {
@@ -337,11 +424,19 @@ export default async function FinancePage() {
     const expectedMonthlyHours = toNumber(teacher.compensationRule?.expectedMonthlyHours);
     const expectedMonthlyWorkDays = toNumber(teacher.compensationRule?.expectedMonthlyWorkDays) || 20;
     const paid = teacher.teacherPayouts.reduce((sum, payout) => sum + toNumber(payout.amount), 0);
-    const workDays = new Set(teacher.reports.map((report) => report.createdAt.toISOString().slice(0, 10))).size;
+    const reportDateSet = new Set(teacher.reports.map((report) => report.createdAt.toISOString().slice(0, 10)));
+    const attendanceByDate = new Map(
+      teacher.teacherAttendances.map((attendance) => [attendance.dateKey, attendance])
+    );
+    const presentDays = teacher.teacherAttendances.filter((attendance) => attendance.status === "PRESENT").length;
+    const excusedDays = teacher.teacherAttendances.filter((attendance) => attendance.status === "EXCUSED").length;
+    const absentDays = teacher.teacherAttendances.filter((attendance) => attendance.status === "ABSENT").length;
+    const suggestedDays = monthDateKeys.filter((dateKey) => reportDateSet.has(dateKey) && !attendanceByDate.has(dateKey)).length;
+    const payableDays = presentDays + excusedDays;
     const presentReports = teacher.reports.filter((report) => report.status === "PRESENT").length;
     const absentReports = teacher.reports.filter((report) => report.status === "ABSENT").length;
     const hourlyRate = expectedMonthlyHours > 0 ? monthlyAmount / expectedMonthlyHours : 0;
-    const workRatio = expectedMonthlyWorkDays > 0 ? Math.min(workDays / expectedMonthlyWorkDays, 1) : 0;
+    const workRatio = expectedMonthlyWorkDays > 0 ? Math.min(payableDays / expectedMonthlyWorkDays, 1) : 0;
     const estimatedDue = monthlyAmount * workRatio;
     const estimatedHours = expectedMonthlyHours * workRatio;
     const remaining = Math.max(estimatedDue - paid, 0);
@@ -354,7 +449,11 @@ export default async function FinancePage() {
       expectedMonthlyWorkDays,
       hourlyRate,
       estimatedHours,
-      workDays,
+      presentDays,
+      excusedDays,
+      absentDays,
+      suggestedDays,
+      payableDays,
       workRatio,
       presentReports,
       absentReports,
@@ -362,6 +461,8 @@ export default async function FinancePage() {
       remaining,
       estimatedDue,
       currency,
+      attendanceByDate,
+      reportDateSet,
     };
   });
 
@@ -575,9 +676,16 @@ export default async function FinancePage() {
                           ? row.teacher.circles.map((circle) => circle.name).join("، ")
                           : "-"}
                       </td>
-                      <td className="p-4">{row.workDays} / {row.expectedMonthlyWorkDays}</td>
+                      <td className="p-4">{row.payableDays} / {row.expectedMonthlyWorkDays}</td>
                       <td className="p-4">{Math.round(row.workRatio * 100)}%</td>
-                      <td className="p-4">{row.presentReports} / {row.absentReports}</td>
+                      <td className="p-4">
+                        {row.presentReports} / {row.absentReports}
+                        {row.suggestedDays > 0 ? (
+                          <span className="mr-2 rounded-full bg-amber-50 px-2 py-1 text-xs font-black text-amber-800">
+                            {row.suggestedDays} مقترح
+                          </span>
+                        ) : null}
+                      </td>
                       <td className="p-4">{formatMoney(row.monthlyAmount, row.currency)}</td>
                       <td className="p-4">{formatMoney(row.estimatedDue, row.currency)}</td>
                       <td className="p-4">{formatMoney(row.hourlyRate, row.currency)}</td>
@@ -589,6 +697,102 @@ export default async function FinancePage() {
                 </tbody>
               </table>
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-black">حضور المعلمين المعتمد للحسابات</h2>
+              <p className="mt-2 text-sm leading-7 text-[#173d42]/60">
+                إذا وجد تقرير في يوم معيّن يظهر اليوم كمقترح حضور، لكن الحساب المالي يعتمد فقط على الحالات التي تحفظها الإدارة هنا.
+              </p>
+            </div>
+            <p className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#8a6335]">
+              الشهر: {currentMonth}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-4 xl:grid-cols-2">
+            {teacherRows.map((row) => (
+              <article key={row.teacher.id} className="rounded-[1.5rem] border border-[#eadcc6] bg-[#fffaf2]/50 p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <h3 className="text-xl font-black">{row.teacher.fullName}</h3>
+                    <p className="mt-1 text-xs leading-6 text-[#173d42]/60">
+                      الحلقات: {row.teacher.circles.length > 0 ? row.teacher.circles.map((circle) => circle.name).join("، ") : "-"}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs md:min-w-64">
+                    <p className="rounded-2xl bg-white p-3 font-black text-emerald-800">حاضر: {row.presentDays}</p>
+                    <p className="rounded-2xl bg-white p-3 font-black text-sky-800">عذر: {row.excusedDays}</p>
+                    <p className="rounded-2xl bg-white p-3 font-black text-red-800">غائب: {row.absentDays}</p>
+                    <p className="rounded-2xl bg-white p-3 font-black text-amber-800">مقترح: {row.suggestedDays}</p>
+                  </div>
+                </div>
+
+                <div className="mt-4 max-h-80 overflow-auto rounded-2xl border border-[#eadcc6] bg-white">
+                  <table className="w-full min-w-[620px] text-right text-xs">
+                    <thead className="sticky top-0 bg-[#173d42] text-white">
+                      <tr>
+                        <th className="p-3">اليوم</th>
+                        <th className="p-3">الحالة الحالية</th>
+                        <th className="p-3">تأكيد الإدارة</th>
+                        <th className="p-3">حفظ</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthDateKeys.map((dateKey) => {
+                        const attendance = row.attendanceByDate.get(dateKey);
+                        const status = attendance?.status || null;
+                        const hasReport = row.reportDateSet.has(dateKey);
+
+                        return (
+                          <tr key={`${row.teacher.id}-${dateKey}`} className="border-t border-[#f0e3cf]">
+                            <td className="p-3 font-black">{dateKey}</td>
+                            <td className="p-3">
+                              <span className={`inline-flex rounded-full px-3 py-1 font-black ring-1 ${getTeacherAttendanceClass(status, hasReport)}`}>
+                                {getTeacherAttendanceLabel(status, hasReport)}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <form id={`attendance-${row.teacher.id}-${dateKey}`} action={updateTeacherAttendance} className="flex flex-col gap-2">
+                                <input type="hidden" name="teacherId" value={row.teacher.id} />
+                                <input type="hidden" name="dateKey" value={dateKey} />
+                                <select
+                                  name="status"
+                                  defaultValue={status || (hasReport ? "PRESENT" : "")}
+                                  className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold"
+                                >
+                                  <option value="">بدون تأكيد</option>
+                                  <option value="PRESENT">حاضر</option>
+                                  <option value="ABSENT">غائب</option>
+                                  <option value="EXCUSED">عذر</option>
+                                </select>
+                                <input
+                                  name="note"
+                                  defaultValue={attendance?.note || ""}
+                                  placeholder="ملاحظة اختيارية"
+                                  className="rounded-xl border border-[#eadcc6] px-3 py-2 text-xs"
+                                />
+                              </form>
+                            </td>
+                            <td className="p-3">
+                              <button
+                                form={`attendance-${row.teacher.id}-${dateKey}`}
+                                className="rounded-xl bg-[#173d42] px-3 py-2 text-xs font-black text-white"
+                              >
+                                حفظ
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
 
