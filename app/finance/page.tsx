@@ -179,6 +179,7 @@ async function saveTeacherCompensationRule(formData: FormData) {
   const teacherId = String(formData.get("teacherId") || "");
   const monthlyAmount = parseAmount(formData.get("monthlyAmount"));
   const expectedMonthlyHours = parseAmount(formData.get("expectedMonthlyHours"));
+  const expectedMonthlyWorkDays = parseAmount(formData.get("expectedMonthlyWorkDays")) || 20;
   const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
   const notes = String(formData.get("notes") || "").trim() || null;
 
@@ -190,12 +191,14 @@ async function saveTeacherCompensationRule(formData: FormData) {
       teacherId,
       monthlyAmount,
       expectedMonthlyHours,
+      expectedMonthlyWorkDays,
       currency,
       notes,
     },
     update: {
       monthlyAmount,
       expectedMonthlyHours,
+      expectedMonthlyWorkDays,
       currency,
       notes,
     },
@@ -332,12 +335,15 @@ export default async function FinancePage() {
   const teacherRows = teachers.map((teacher) => {
     const monthlyAmount = toNumber(teacher.compensationRule?.monthlyAmount);
     const expectedMonthlyHours = toNumber(teacher.compensationRule?.expectedMonthlyHours);
+    const expectedMonthlyWorkDays = toNumber(teacher.compensationRule?.expectedMonthlyWorkDays) || 20;
     const paid = teacher.teacherPayouts.reduce((sum, payout) => sum + toNumber(payout.amount), 0);
     const workDays = new Set(teacher.reports.map((report) => report.createdAt.toISOString().slice(0, 10))).size;
     const presentReports = teacher.reports.filter((report) => report.status === "PRESENT").length;
     const absentReports = teacher.reports.filter((report) => report.status === "ABSENT").length;
     const hourlyRate = expectedMonthlyHours > 0 ? monthlyAmount / expectedMonthlyHours : 0;
-    const estimatedDue = monthlyAmount;
+    const workRatio = expectedMonthlyWorkDays > 0 ? Math.min(workDays / expectedMonthlyWorkDays, 1) : 0;
+    const estimatedDue = monthlyAmount * workRatio;
+    const estimatedHours = expectedMonthlyHours * workRatio;
     const remaining = Math.max(estimatedDue - paid, 0);
     const currency = teacher.compensationRule?.currency || teacher.teacherPayouts[0]?.currency || defaultCurrency;
 
@@ -345,8 +351,11 @@ export default async function FinancePage() {
       teacher,
       monthlyAmount,
       expectedMonthlyHours,
+      expectedMonthlyWorkDays,
       hourlyRate,
+      estimatedHours,
       workDays,
+      workRatio,
       presentReports,
       absentReports,
       paid,
@@ -358,9 +367,12 @@ export default async function FinancePage() {
 
   const platformExpensesTotal = expenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
   const teacherPayoutsTotal = teacherRows.reduce((sum, row) => sum + row.paid, 0);
+  const teacherEstimatedDueTotal = teacherRows.reduce((sum, row) => sum + row.estimatedDue, 0);
+  const teacherRemainingTotal = teacherRows.reduce((sum, row) => sum + row.remaining, 0);
   const totalExpenses = platformExpensesTotal + teacherPayoutsTotal;
   const currentBalance = receivedIncome - totalExpenses;
   const projectedBalance = expectedIncome - totalExpenses;
+  const balanceAfterTeacherDues = currentBalance - teacherRemainingTotal;
   const today = new Date().toISOString().slice(0, 10);
 
   const cards = [
@@ -370,6 +382,9 @@ export default async function FinancePage() {
     { label: "المصروفات المسجلة", value: totalExpenses, hint: "مصروفات المنصة ومكافآت المعلمين المدفوعة" },
     { label: "الرصيد الحالي", value: currentBalance, hint: "الدخل الفعلي ناقص المصروفات" },
     { label: "الرصيد المتوقع", value: projectedBalance, hint: "إذا تم تحصيل كل المتبقي" },
+    { label: "مستحقات المعلمين", value: teacherEstimatedDueTotal, hint: "تقدير هذا الشهر حسب أيام العمل" },
+    { label: "متبقي مكافآت المعلمين", value: teacherRemainingTotal, hint: "مستحقات لم يتم دفعها بعد" },
+    { label: "الرصيد بعد المستحقات", value: balanceAfterTeacherDues, hint: "الرصيد الحالي بعد احتساب المتبقي للمعلمين" },
   ];
 
   return (
@@ -479,7 +494,7 @@ export default async function FinancePage() {
           <form action={saveTeacherCompensationRule} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">إعداد مكافأة المعلم</h2>
             <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
-              ضع المبلغ الشهري والساعات الشهرية المتوقعة، وسيحسب النظام قيمة الساعة تقديرياً.
+              ضع المبلغ الشهري والساعات وأيام العمل المتوقعة، وسيحسب النظام المستحق حسب الأيام التي ظهر فيها عمل فعلي.
             </p>
             <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
               <option value="">اختر المعلم</option>
@@ -489,12 +504,13 @@ export default async function FinancePage() {
                 </option>
               ))}
             </select>
-            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
               <input name="monthlyAmount" type="number" step="0.01" min="0" placeholder="المبلغ الشهري" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <input name="expectedMonthlyHours" type="number" step="0.01" min="0" placeholder="الساعات الشهرية" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="expectedMonthlyWorkDays" type="number" step="0.01" min="0" defaultValue={20} placeholder="أيام العمل الشهرية" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
             </div>
-            <textarea name="notes" placeholder="مثال: المسار الرباعي، 60 ساعة شهرياً" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            <textarea name="notes" placeholder="مثال: المسار الرباعي، 60 ساعة شهرياً، 20 يوم عمل" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
             <button className="mt-3 w-full rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
               حفظ إعداد المكافأة
             </button>
@@ -530,7 +546,7 @@ export default async function FinancePage() {
             <div className="border-b border-[#eadcc6] p-5">
               <h2 className="text-xl font-black">مكافآت معلمي الأونلاين لهذا الشهر</h2>
               <p className="mt-1 text-sm text-[#173d42]/60">
-                الشهر الحالي: {currentMonth}. أيام العمل محسوبة من الأيام التي أدخل فيها المعلم تقارير.
+                الشهر الحالي: {currentMonth}. المستحق يحسب بنسبة أيام العمل الفعلية إلى أيام العمل المتوقعة.
               </p>
             </div>
             <div className="max-h-[430px] overflow-auto">
@@ -540,9 +556,12 @@ export default async function FinancePage() {
                     <th className="p-4">المعلم</th>
                     <th className="p-4">الحلقات</th>
                     <th className="p-4">أيام العمل</th>
+                    <th className="p-4">نسبة العمل</th>
                     <th className="p-4">تقارير/غياب</th>
                     <th className="p-4">المكافأة</th>
+                    <th className="p-4">المستحق</th>
                     <th className="p-4">قيمة الساعة</th>
+                    <th className="p-4">ساعات مقدرة</th>
                     <th className="p-4">المدفوع</th>
                     <th className="p-4">المتبقي</th>
                   </tr>
@@ -556,10 +575,13 @@ export default async function FinancePage() {
                           ? row.teacher.circles.map((circle) => circle.name).join("، ")
                           : "-"}
                       </td>
-                      <td className="p-4">{row.workDays}</td>
+                      <td className="p-4">{row.workDays} / {row.expectedMonthlyWorkDays}</td>
+                      <td className="p-4">{Math.round(row.workRatio * 100)}%</td>
                       <td className="p-4">{row.presentReports} / {row.absentReports}</td>
                       <td className="p-4">{formatMoney(row.monthlyAmount, row.currency)}</td>
+                      <td className="p-4">{formatMoney(row.estimatedDue, row.currency)}</td>
                       <td className="p-4">{formatMoney(row.hourlyRate, row.currency)}</td>
+                      <td className="p-4">{row.estimatedHours.toFixed(1)}</td>
                       <td className="p-4 text-[#1f6358]">{formatMoney(row.paid, row.currency)}</td>
                       <td className="p-4 text-[#8a6335]">{formatMoney(row.remaining, row.currency)}</td>
                     </tr>

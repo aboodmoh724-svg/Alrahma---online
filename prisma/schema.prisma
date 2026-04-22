@@ -93,6 +93,7 @@ model TeacherCompensationRule {
   teacherId            String   @unique
   monthlyAmount        Decimal  @default(0) @db.Decimal(10, 2)
   expectedMonthlyHours Decimal  @default(0) @db.Decimal(10, 2)
+  expectedMonthlyWorkDays Decimal @default(20) @db.Decimal(10, 2)
   currency             String   @default("USD")
   notes                String?
   createdAt            DateTime @default(now())
