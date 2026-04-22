@@ -1,15 +1,19 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { prisma } from "@/lib/prisma";
 
 const sections = [
   {
     href: "/finance",
+    requiresFinanceAccess: true,
     title: "الحسابات المالية",
     description: "متابعة دخل الطلاب، المصروفات، الرصيد، والفائض أو العجز.",
     tone: "bg-[#102f34] text-white",
   },
   {
     href: "/remote/admin/admins",
+    requiresFinanceAccess: true,
     title: "الإداريون والصلاحيات",
     description: "إضافة إداريين للأونلاين وتحديد من يستطيع دخول الحسابات المالية.",
     tone: "bg-[#8a6335] text-white",
@@ -64,7 +68,31 @@ const sections = [
   },
 ];
 
-export default function RemoteAdminDashboardPage() {
+async function getCurrentRemoteAdmin() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: "ADMIN",
+      studyMode: "REMOTE",
+      isActive: true,
+    },
+    select: {
+      canAccessFinance: true,
+    },
+  });
+}
+
+export default async function RemoteAdminDashboardPage() {
+  const currentAdmin = await getCurrentRemoteAdmin();
+  const visibleSections = sections.filter(
+    (section) => !section.requiresFinanceAccess || currentAdmin?.canAccessFinance
+  );
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -88,7 +116,7 @@ export default function RemoteAdminDashboardPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {sections.map((section) => (
+          {visibleSections.map((section) => (
             <Link
               key={section.href}
               href={section.href}

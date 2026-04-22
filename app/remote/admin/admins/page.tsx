@@ -15,6 +15,7 @@ async function requireRemoteAdmin() {
       id: userId,
       role: "ADMIN",
       studyMode: "REMOTE",
+      canAccessFinance: true,
       isActive: true,
     },
     select: {
