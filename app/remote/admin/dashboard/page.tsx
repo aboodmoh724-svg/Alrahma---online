@@ -9,6 +9,12 @@ const sections = [
     tone: "bg-[#102f34] text-white",
   },
   {
+    href: "/remote/admin/admins",
+    title: "الإداريون والصلاحيات",
+    description: "إضافة إداريين للأونلاين وتحديد من يستطيع دخول الحسابات المالية.",
+    tone: "bg-[#8a6335] text-white",
+  },
+  {
     href: "/remote/admin/statistics",
     title: "الإحصائيات",
     description: "أعداد المعلمين والطلاب والحلقات وإجمالي التقارير والطلاب بلا حلقة.",

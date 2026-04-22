@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { ConfirmSubmitButton } from "./ConfirmSubmitButton";
+import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
 
 const defaultCurrency = "USD";
 const financeTabs = [
