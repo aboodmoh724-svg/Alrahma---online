@@ -4,6 +4,15 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 
 const defaultCurrency = "USD";
+const financeTabs = [
+  { key: "summary", label: "الملخص المالي" },
+  { key: "students", label: "مدفوعات الطلاب" },
+  { key: "teachers", label: "مكافآت المعلمين" },
+  { key: "expenses", label: "مصروفات المنصة" },
+  { key: "reports", label: "التقارير المالية" },
+] as const;
+
+type FinanceTab = (typeof financeTabs)[number]["key"];
 
 function toNumber(value: unknown) {
   const number = Number(value || 0);
@@ -30,6 +39,11 @@ function getCurrentMonthKey() {
 function normalizeMonthKey(value: unknown) {
   const monthKey = String(value || "").trim();
   return /^\d{4}-\d{2}$/.test(monthKey) ? monthKey : getCurrentMonthKey();
+}
+
+function normalizeFinanceTab(value: unknown): FinanceTab {
+  const tab = String(value || "").trim();
+  return financeTabs.some((item) => item.key === tab) ? (tab as FinanceTab) : "summary";
 }
 
 function getMonthRange(monthKey: string) {
@@ -383,7 +397,7 @@ async function approveSuggestedTeacherAttendances(formData: FormData) {
 }
 
 type FinancePageProps = {
-  searchParams?: Promise<{ month?: string }> | { month?: string };
+  searchParams?: Promise<{ month?: string; tab?: string }> | { month?: string; tab?: string };
 };
 
 export default async function FinancePage({ searchParams }: FinancePageProps) {
@@ -405,6 +419,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
 
   const resolvedSearchParams = await searchParams;
   const currentMonth = normalizeMonthKey(resolvedSearchParams?.month);
+  const activeTab = normalizeFinanceTab(resolvedSearchParams?.tab);
   const monthRange = getMonthRange(currentMonth);
   const monthDateKeys = getMonthDateKeys(currentMonth);
 
@@ -590,6 +605,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                   defaultValue={currentMonth}
                   className="rounded-full border-0 bg-white px-3 py-1 text-sm font-black text-[#173d42]"
                 />
+                <input type="hidden" name="tab" value={activeTab} />
                 <button className="rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white">
                   عرض
                 </button>
@@ -601,6 +617,23 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           </div>
         </section>
 
+        <nav className="flex gap-2 overflow-x-auto rounded-[2rem] border border-[#d9c8ad] bg-white p-2 shadow-sm">
+          {financeTabs.map((tab) => (
+            <Link
+              key={tab.key}
+              href={`/finance?month=${currentMonth}&tab=${tab.key}`}
+              className={`whitespace-nowrap rounded-full px-5 py-3 text-sm font-black transition ${
+                activeTab === tab.key
+                  ? "bg-[#173d42] text-white"
+                  : "bg-[#fffaf2] text-[#173d42] hover:bg-[#f1d39d]/45"
+              }`}
+            >
+              {tab.label}
+            </Link>
+          ))}
+        </nav>
+
+        {activeTab === "summary" ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
             <article key={card.label} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
@@ -612,8 +645,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             </article>
           ))}
         </section>
+        ) : null}
 
+        {activeTab === "students" || activeTab === "expenses" ? (
         <section className="grid gap-4 xl:grid-cols-3">
+          {activeTab === "students" ? (
+          <>
           <form action={saveStudentFinanceAccount} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تحديد رسوم الطالب</h2>
             <p className="mt-2 text-sm leading-6 text-[#173d42]/60">ضع رسوم الفصل أو الخصم أو المنحة لكل طالب.</p>
@@ -658,7 +695,10 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               إضافة الدفعة
             </button>
           </form>
+          </>
+          ) : null}
 
+          {activeTab === "expenses" ? (
           <form action={addPlatformExpense} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تسجيل مصروف</h2>
             <p className="mt-2 text-sm leading-6 text-[#173d42]/60">مثل Zoom، الإعلام، الأنشطة، أو أي مصروف إداري.</p>
@@ -676,8 +716,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               إضافة المصروف
             </button>
           </form>
+          ) : null}
         </section>
+        ) : null}
 
+        {activeTab === "teachers" ? (
+        <>
         <section className="grid gap-4 xl:grid-cols-[1fr_1fr_1.6fr]">
           <form action={saveTeacherCompensationRule} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">إعداد مكافأة المعلم</h2>
@@ -909,8 +953,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             ))}
           </div>
         </section>
+        </>
+        ) : null}
 
+        {activeTab === "students" || activeTab === "expenses" ? (
         <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
+          {activeTab === "students" ? (
           <div className="overflow-hidden rounded-[2rem] border border-[#d9c8ad] bg-white shadow-sm">
             <div className="border-b border-[#eadcc6] p-5">
               <h2 className="text-xl font-black">حالة مدفوعات الطلاب</h2>
@@ -947,7 +995,9 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               </table>
             </div>
           </div>
+          ) : null}
 
+          {activeTab === "expenses" ? (
           <div className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">آخر المصروفات</h2>
             <div className="mt-4 space-y-3">
@@ -971,7 +1021,36 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               )}
             </div>
           </div>
+          ) : null}
         </section>
+        ) : null}
+
+        {activeTab === "reports" ? (
+        <section className="grid gap-4 lg:grid-cols-3">
+          <article className="rounded-[2rem] border border-[#d9c8ad] bg-white p-6 shadow-sm lg:col-span-2">
+            <p className="text-sm font-black text-[#9b7039]">تقرير الشهر</p>
+            <h2 className="mt-2 text-3xl font-black">ملخص مالي جاهز للمراجعة</h2>
+            <p className="mt-3 text-sm leading-7 text-[#173d42]/65">
+              هذا القسم يجمع أهم أرقام شهر {currentMonth}. في الخطوة القادمة نستطيع إضافة تصدير Excel أو PDF من هنا.
+            </p>
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">الدخل الفعلي: {formatMoney(receivedIncome)}</p>
+              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">المتبقي على الطلاب: {formatMoney(remainingIncome)}</p>
+              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">مصروفات مدفوعة: {formatMoney(totalExpenses)}</p>
+              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">متبقي المعلمين: {formatMoney(teacherRemainingTotal)}</p>
+              <p className="rounded-2xl bg-[#173d42] p-4 font-black text-white">الرصيد الحالي: {formatMoney(currentBalance)}</p>
+              <p className="rounded-2xl bg-[#8a6335] p-4 font-black text-white">بعد المستحقات: {formatMoney(balanceAfterTeacherDues)}</p>
+            </div>
+          </article>
+          <article className="rounded-[2rem] border border-[#d9c8ad] bg-[#173d42] p-6 text-white shadow-sm">
+            <p className="text-sm font-black text-[#f1d39d]">قريباً</p>
+            <h3 className="mt-2 text-2xl font-black">تصدير ومراجعة</h3>
+            <p className="mt-3 text-sm leading-7 text-white/70">
+              سنضيف لاحقاً تصدير Excel/PDF، وسجل العمليات المالية: من أضاف أو عدل، ومتى تم ذلك.
+            </p>
+          </article>
+        </section>
+        ) : null}
       </div>
     </main>
   );
