@@ -3,6 +3,12 @@ import LogoutButton from "@/components/auth/LogoutButton";
 
 const sections = [
   {
+    href: "/finance",
+    title: "الحسابات المالية",
+    description: "متابعة دخل الطلاب، المصروفات، الرصيد، والفائض أو العجز.",
+    tone: "bg-[#102f34] text-white",
+  },
+  {
     href: "/remote/admin/statistics",
     title: "الإحصائيات",
     description: "أعداد المعلمين والطلاب والحلقات وإجمالي التقارير والطلاب بلا حلقة.",
