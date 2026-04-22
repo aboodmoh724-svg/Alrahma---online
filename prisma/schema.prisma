@@ -13,6 +13,7 @@ model User {
   password  String
   role      UserRole
   studyMode StudyMode
+  canAccessFinance Boolean @default(false)
   isActive  Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt

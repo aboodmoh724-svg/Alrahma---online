@@ -123,12 +123,15 @@ async function requireFinanceAdmin() {
       id: userId,
       role: "ADMIN",
       studyMode: "REMOTE",
+      canAccessFinance: true,
       isActive: true,
     },
     select: {
       id: true,
       fullName: true,
+      email: true,
       studyMode: true,
+      canAccessFinance: true,
     },
   });
 }
@@ -1713,6 +1716,17 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             <p className="mt-3 text-sm leading-7 text-[#173d42]/65">
               هذا القسم يجمع أهم أرقام شهر {currentMonth}. في الخطوة القادمة نستطيع إضافة تصدير Excel أو PDF من هنا.
             </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <a
+                href={`/api/finance/export/monthly?month=${currentMonth}`}
+                className="rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1f6358]"
+              >
+                تصدير تقرير الشهر Excel
+              </a>
+              <span className="rounded-2xl bg-[#fffaf2] px-5 py-3 text-xs font-black leading-6 text-[#8a6335]">
+                التصدير متاح فقط لمن لديه صلاحية الحسابات المالية.
+              </span>
+            </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">الدخل الفعلي: {formatMoney(receivedIncome)}</p>
               <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">المتبقي على الطلاب: {formatMoney(remainingIncome)}</p>
@@ -1723,10 +1737,10 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             </div>
           </article>
           <article className="rounded-[2rem] border border-[#d9c8ad] bg-[#173d42] p-6 text-white shadow-sm">
-            <p className="text-sm font-black text-[#f1d39d]">قريباً</p>
-            <h3 className="mt-2 text-2xl font-black">تصدير ومراجعة</h3>
+            <p className="text-sm font-black text-[#f1d39d]">صلاحيات</p>
+            <h3 className="mt-2 text-2xl font-black">حماية الحسابات المالية</h3>
             <p className="mt-3 text-sm leading-7 text-white/70">
-              سنضيف لاحقاً تصدير Excel/PDF، ثم تعديل وحذف آمن لكل عملية مالية.
+              دخول هذه الصفحة والتصدير مرتبط الآن بصلاحية مالية خاصة داخل حساب الإداري، وليس بمجرد كونه إداري أونلاين.
             </p>
           </article>
 
