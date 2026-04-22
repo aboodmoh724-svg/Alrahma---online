@@ -27,6 +27,11 @@ function getCurrentMonthKey() {
   return new Date().toISOString().slice(0, 7);
 }
 
+function normalizeMonthKey(value: unknown) {
+  const monthKey = String(value || "").trim();
+  return /^\d{4}-\d{2}$/.test(monthKey) ? monthKey : getCurrentMonthKey();
+}
+
 function getMonthRange(monthKey: string) {
   const [yearText, monthText] = monthKey.split("-");
   const year = Number(yearText);
@@ -315,7 +320,73 @@ async function updateTeacherAttendance(formData: FormData) {
   revalidatePath("/finance");
 }
 
-export default async function FinancePage() {
+async function approveSuggestedTeacherAttendances(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const teacherId = String(formData.get("teacherId") || "");
+  const monthKey = normalizeMonthKey(formData.get("month"));
+  const monthRange = getMonthRange(monthKey);
+
+  if (!teacherId) return;
+
+  const [reports, existingAttendances] = await Promise.all([
+    prisma.report.findMany({
+      where: {
+        teacherId,
+        createdAt: {
+          gte: monthRange.start,
+          lt: monthRange.end,
+        },
+        student: {
+          studyMode: "REMOTE",
+        },
+      },
+      select: {
+        createdAt: true,
+      },
+    }),
+    prisma.teacherAttendance.findMany({
+      where: {
+        teacherId,
+        dateKey: {
+          gte: `${monthKey}-01`,
+          lte: `${monthKey}-31`,
+        },
+      },
+      select: {
+        dateKey: true,
+      },
+    }),
+  ]);
+
+  const existingDateKeys = new Set(existingAttendances.map((attendance) => attendance.dateKey));
+  const suggestedDateKeys = Array.from(
+    new Set(reports.map((report) => report.createdAt.toISOString().slice(0, 10)))
+  ).filter((dateKey) => !existingDateKeys.has(dateKey));
+
+  if (suggestedDateKeys.length > 0) {
+    await prisma.teacherAttendance.createMany({
+      data: suggestedDateKeys.map((dateKey) => ({
+        teacherId,
+        dateKey,
+        status: "PRESENT",
+        note: "اعتماد تلقائي من التقارير",
+      })),
+      skipDuplicates: true,
+    });
+  }
+
+  revalidatePath("/finance");
+}
+
+type FinancePageProps = {
+  searchParams?: Promise<{ month?: string }> | { month?: string };
+};
+
+export default async function FinancePage({ searchParams }: FinancePageProps) {
   const admin = await requireFinanceAdmin();
 
   if (!admin) {
@@ -332,7 +403,8 @@ export default async function FinancePage() {
     );
   }
 
-  const currentMonth = getCurrentMonthKey();
+  const resolvedSearchParams = await searchParams;
+  const currentMonth = normalizeMonthKey(resolvedSearchParams?.month);
   const monthRange = getMonthRange(currentMonth);
   const monthDateKeys = getMonthDateKeys(currentMonth);
 
@@ -507,6 +579,21 @@ export default async function FinancePage() {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
+              <form action="/finance" className="flex items-center gap-2 rounded-full bg-white/12 px-3 py-2">
+                <label htmlFor="finance-month" className="text-xs font-black text-white/75">
+                  الشهر
+                </label>
+                <input
+                  id="finance-month"
+                  name="month"
+                  type="month"
+                  defaultValue={currentMonth}
+                  className="rounded-full border-0 bg-white px-3 py-1 text-sm font-black text-[#173d42]"
+                />
+                <button className="rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white">
+                  عرض
+                </button>
+              </form>
               <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]">
                 لوحة الأونلاين
               </Link>
@@ -722,6 +809,33 @@ export default async function FinancePage() {
                     <p className="mt-1 text-xs leading-6 text-[#173d42]/60">
                       الحلقات: {row.teacher.circles.length > 0 ? row.teacher.circles.map((circle) => circle.name).join("، ") : "-"}
                     </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <form action={approveSuggestedTeacherAttendances}>
+                        <input type="hidden" name="teacherId" value={row.teacher.id} />
+                        <input type="hidden" name="month" value={currentMonth} />
+                        <button
+                          disabled={row.suggestedDays === 0}
+                          className="rounded-full bg-amber-500 px-4 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:bg-stone-300"
+                        >
+                          اعتماد كل المقترحات
+                        </button>
+                      </form>
+                      <form action={addTeacherPayout}>
+                        <input type="hidden" name="teacherId" value={row.teacher.id} />
+                        <input type="hidden" name="periodMonth" value={currentMonth} />
+                        <input type="hidden" name="amount" value={row.remaining.toFixed(2)} />
+                        <input type="hidden" name="currency" value={row.currency} />
+                        <input type="hidden" name="paidAt" value={today} />
+                        <input type="hidden" name="method" value="تسجيل سريع" />
+                        <input type="hidden" name="note" value={`دفع سريع لمتبقي مكافأة ${currentMonth}`} />
+                        <button
+                          disabled={row.remaining <= 0}
+                          className="rounded-full bg-[#1f6358] px-4 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:bg-stone-300"
+                        >
+                          دفع المتبقي
+                        </button>
+                      </form>
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-2 text-xs md:min-w-64">
                     <p className="rounded-2xl bg-white p-3 font-black text-emerald-800">حاضر: {row.presentDays}</p>
