@@ -44,6 +44,7 @@ async function requireFinanceAdmin() {
     where: {
       id: userId,
       role: "ADMIN",
+      studyMode: "REMOTE",
       isActive: true,
     },
     select: {
@@ -157,10 +158,10 @@ export default async function FinancePage() {
     return (
       <main className="min-h-screen bg-[#f6efe3] p-6" dir="rtl">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-white p-6 text-[#173d42] shadow-sm">
-          <p className="text-lg font-black">هذه الصفحة مخصصة للإدارة فقط.</p>
-          <p className="mt-2 text-sm text-[#173d42]/70">سجل الدخول بحساب إداري ثم عد إلى صفحة الحسابات المالية.</p>
-          <Link href="/" className="mt-5 inline-flex rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
-            العودة للرئيسية
+          <p className="text-lg font-black">هذه الصفحة مخصصة لإدارة التعليم عن بعد فقط.</p>
+          <p className="mt-2 text-sm text-[#173d42]/70">سجل الدخول من لوحة إدارة الأونلاين ثم عد إلى صفحة الحسابات المالية.</p>
+          <Link href="/remote/admin/login" className="mt-5 inline-flex rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+            تسجيل دخول إدارة الأونلاين
           </Link>
         </div>
       </main>
@@ -169,7 +170,7 @@ export default async function FinancePage() {
 
   const [students, expenses] = await Promise.all([
     prisma.student.findMany({
-      where: { isActive: true },
+      where: { isActive: true, studyMode: "REMOTE" },
       orderBy: [{ studyMode: "asc" }, { fullName: "asc" }],
       include: {
         teacher: { select: { fullName: true } },
@@ -243,9 +244,6 @@ export default async function FinancePage() {
               <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]">
                 لوحة الأونلاين
               </Link>
-              <Link href="/onsite/admin/dashboard" className="rounded-full bg-white/12 px-4 py-2 text-sm font-black text-white">
-                لوحة الحضوري
-              </Link>
             </div>
           </div>
         </section>
@@ -270,7 +268,7 @@ export default async function FinancePage() {
               <option value="">اختر الطالب</option>
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
-                  {student.fullName} - {student.studyMode === "ONSITE" ? "حضوري" : "أونلاين"}
+                  {student.fullName} - أونلاين
                 </option>
               ))}
             </select>
@@ -292,7 +290,7 @@ export default async function FinancePage() {
               <option value="">اختر الطالب</option>
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
-                  {student.fullName} - {student.studyMode === "ONSITE" ? "حضوري" : "أونلاين"}
+                  {student.fullName} - أونلاين
                 </option>
               ))}
             </select>
@@ -350,7 +348,7 @@ export default async function FinancePage() {
                   {studentRows.map((row) => (
                     <tr key={row.student.id} className="border-t border-[#f0e3cf]">
                       <td className="p-4 font-black">{row.student.fullName}</td>
-                      <td className="p-4">{row.student.studyMode === "ONSITE" ? "حضوري" : "أونلاين"}</td>
+                      <td className="p-4">أونلاين</td>
                       <td className="p-4">{row.student.circle?.name || "-"}</td>
                       <td className="p-4">{formatMoney(row.required, row.currency)}</td>
                       <td className="p-4 text-[#1f6358]">{formatMoney(row.paid, row.currency)}</td>
