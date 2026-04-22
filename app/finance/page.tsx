@@ -23,6 +23,25 @@ function parseDate(value: FormDataEntryValue | null) {
   return Number.isNaN(date.getTime()) ? new Date() : date;
 }
 
+function getCurrentMonthKey() {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function getMonthRange(monthKey: string) {
+  const [yearText, monthText] = monthKey.split("-");
+  const year = Number(yearText);
+  const month = Number(monthText);
+
+  if (!Number.isFinite(year) || !Number.isFinite(month) || month < 1 || month > 12) {
+    return getMonthRange(getCurrentMonthKey());
+  }
+
+  return {
+    start: new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0)),
+    end: new Date(Date.UTC(year, month, 1, 0, 0, 0, 0)),
+  };
+}
+
 function formatMoney(amount: number, currency = defaultCurrency) {
   return `${amount.toFixed(2)} ${currency}`;
 }
@@ -151,6 +170,71 @@ async function addPlatformExpense(formData: FormData) {
   revalidatePath("/finance");
 }
 
+async function saveTeacherCompensationRule(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const teacherId = String(formData.get("teacherId") || "");
+  const monthlyAmount = parseAmount(formData.get("monthlyAmount"));
+  const expectedMonthlyHours = parseAmount(formData.get("expectedMonthlyHours"));
+  const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
+  const notes = String(formData.get("notes") || "").trim() || null;
+
+  if (!teacherId) return;
+
+  await prisma.teacherCompensationRule.upsert({
+    where: { teacherId },
+    create: {
+      teacherId,
+      monthlyAmount,
+      expectedMonthlyHours,
+      currency,
+      notes,
+    },
+    update: {
+      monthlyAmount,
+      expectedMonthlyHours,
+      currency,
+      notes,
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
+async function addTeacherPayout(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const teacherId = String(formData.get("teacherId") || "");
+  const periodMonth = String(formData.get("periodMonth") || getCurrentMonthKey()).trim();
+  const amount = parseAmount(formData.get("amount"));
+  const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
+  const paidAt = parseDate(formData.get("paidAt"));
+  const method = String(formData.get("method") || "").trim() || null;
+  const note = String(formData.get("note") || "").trim() || null;
+
+  if (!teacherId || amount <= 0) return;
+
+  await prisma.teacherPayout.create({
+    data: {
+      teacherId,
+      periodMonth,
+      amount,
+      currency,
+      paidAt,
+      method,
+      note,
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
 export default async function FinancePage() {
   const admin = await requireFinanceAdmin();
 
@@ -168,7 +252,10 @@ export default async function FinancePage() {
     );
   }
 
-  const [students, expenses] = await Promise.all([
+  const currentMonth = getCurrentMonthKey();
+  const monthRange = getMonthRange(currentMonth);
+
+  const [students, expenses, teachers] = await Promise.all([
     prisma.student.findMany({
       where: { isActive: true, studyMode: "REMOTE" },
       orderBy: [{ studyMode: "asc" }, { fullName: "asc" }],
@@ -182,6 +269,40 @@ export default async function FinancePage() {
     prisma.platformExpense.findMany({
       orderBy: { expenseDate: "desc" },
       take: 20,
+    }),
+    prisma.user.findMany({
+      where: {
+        role: "TEACHER",
+        studyMode: "REMOTE",
+        isActive: true,
+      },
+      orderBy: { fullName: "asc" },
+      include: {
+        circles: {
+          where: { studyMode: "REMOTE" },
+          select: { name: true, track: true },
+        },
+        compensationRule: true,
+        teacherPayouts: {
+          where: { periodMonth: currentMonth },
+          orderBy: { paidAt: "desc" },
+        },
+        reports: {
+          where: {
+            createdAt: {
+              gte: monthRange.start,
+              lt: monthRange.end,
+            },
+            student: {
+              studyMode: "REMOTE",
+            },
+          },
+          select: {
+            createdAt: true,
+            status: true,
+          },
+        },
+      },
     }),
   ]);
 
@@ -208,7 +329,36 @@ export default async function FinancePage() {
   const expectedIncome = studentRows.reduce((sum, row) => sum + row.required, 0);
   const receivedIncome = studentRows.reduce((sum, row) => sum + row.paid, 0);
   const remainingIncome = studentRows.reduce((sum, row) => sum + row.remaining, 0);
-  const totalExpenses = expenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
+  const teacherRows = teachers.map((teacher) => {
+    const monthlyAmount = toNumber(teacher.compensationRule?.monthlyAmount);
+    const expectedMonthlyHours = toNumber(teacher.compensationRule?.expectedMonthlyHours);
+    const paid = teacher.teacherPayouts.reduce((sum, payout) => sum + toNumber(payout.amount), 0);
+    const workDays = new Set(teacher.reports.map((report) => report.createdAt.toISOString().slice(0, 10))).size;
+    const presentReports = teacher.reports.filter((report) => report.status === "PRESENT").length;
+    const absentReports = teacher.reports.filter((report) => report.status === "ABSENT").length;
+    const hourlyRate = expectedMonthlyHours > 0 ? monthlyAmount / expectedMonthlyHours : 0;
+    const estimatedDue = monthlyAmount;
+    const remaining = Math.max(estimatedDue - paid, 0);
+    const currency = teacher.compensationRule?.currency || teacher.teacherPayouts[0]?.currency || defaultCurrency;
+
+    return {
+      teacher,
+      monthlyAmount,
+      expectedMonthlyHours,
+      hourlyRate,
+      workDays,
+      presentReports,
+      absentReports,
+      paid,
+      remaining,
+      estimatedDue,
+      currency,
+    };
+  });
+
+  const platformExpensesTotal = expenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
+  const teacherPayoutsTotal = teacherRows.reduce((sum, row) => sum + row.paid, 0);
+  const totalExpenses = platformExpensesTotal + teacherPayoutsTotal;
   const currentBalance = receivedIncome - totalExpenses;
   const projectedBalance = expectedIncome - totalExpenses;
   const today = new Date().toISOString().slice(0, 10);
@@ -217,7 +367,7 @@ export default async function FinancePage() {
     { label: "الدخل المتوقع من الطلاب", value: expectedIncome, hint: "بعد الخصومات والمنح" },
     { label: "الدخل الفعلي", value: receivedIncome, hint: "المبالغ المسجلة كمدفوعة" },
     { label: "المتبقي على الطلاب", value: remainingIncome, hint: "رسوم لم يتم تحصيلها بعد" },
-    { label: "المصروفات المسجلة", value: totalExpenses, hint: "آخر المصروفات المدخلة في النظام" },
+    { label: "المصروفات المسجلة", value: totalExpenses, hint: "مصروفات المنصة ومكافآت المعلمين المدفوعة" },
     { label: "الرصيد الحالي", value: currentBalance, hint: "الدخل الفعلي ناقص المصروفات" },
     { label: "الرصيد المتوقع", value: projectedBalance, hint: "إذا تم تحصيل كل المتبقي" },
   ];
@@ -323,6 +473,101 @@ export default async function FinancePage() {
               إضافة المصروف
             </button>
           </form>
+        </section>
+
+        <section className="grid gap-4 xl:grid-cols-[1fr_1fr_1.6fr]">
+          <form action={saveTeacherCompensationRule} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-black">إعداد مكافأة المعلم</h2>
+            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
+              ضع المبلغ الشهري والساعات الشهرية المتوقعة، وسيحسب النظام قيمة الساعة تقديرياً.
+            </p>
+            <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
+              <option value="">اختر المعلم</option>
+              {teachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.fullName}
+                </option>
+              ))}
+            </select>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <input name="monthlyAmount" type="number" step="0.01" min="0" placeholder="المبلغ الشهري" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="expectedMonthlyHours" type="number" step="0.01" min="0" placeholder="الساعات الشهرية" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            </div>
+            <textarea name="notes" placeholder="مثال: المسار الرباعي، 60 ساعة شهرياً" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+              حفظ إعداد المكافأة
+            </button>
+          </form>
+
+          <form action={addTeacherPayout} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-black">تسجيل دفع مكافأة</h2>
+            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
+              عند تسجيل الدفعة تدخل مباشرة ضمن مصروفات المنصة.
+            </p>
+            <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
+              <option value="">اختر المعلم</option>
+              {teachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.fullName}
+                </option>
+              ))}
+            </select>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <input name="periodMonth" type="month" defaultValue={currentMonth} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ المدفوع" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="paidAt" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            </div>
+            <input name="method" placeholder="طريقة الدفع" className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            <textarea name="note" placeholder="ملاحظة الدفع" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#8a6335] px-5 py-3 text-sm font-black text-white">
+              تسجيل دفع المكافأة
+            </button>
+          </form>
+
+          <div className="overflow-hidden rounded-[2rem] border border-[#d9c8ad] bg-white shadow-sm">
+            <div className="border-b border-[#eadcc6] p-5">
+              <h2 className="text-xl font-black">مكافآت معلمي الأونلاين لهذا الشهر</h2>
+              <p className="mt-1 text-sm text-[#173d42]/60">
+                الشهر الحالي: {currentMonth}. أيام العمل محسوبة من الأيام التي أدخل فيها المعلم تقارير.
+              </p>
+            </div>
+            <div className="max-h-[430px] overflow-auto">
+              <table className="w-full min-w-[900px] text-right text-sm">
+                <thead className="sticky top-0 bg-[#fffaf2] text-[#173d42]/65">
+                  <tr>
+                    <th className="p-4">المعلم</th>
+                    <th className="p-4">الحلقات</th>
+                    <th className="p-4">أيام العمل</th>
+                    <th className="p-4">تقارير/غياب</th>
+                    <th className="p-4">المكافأة</th>
+                    <th className="p-4">قيمة الساعة</th>
+                    <th className="p-4">المدفوع</th>
+                    <th className="p-4">المتبقي</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {teacherRows.map((row) => (
+                    <tr key={row.teacher.id} className="border-t border-[#f0e3cf]">
+                      <td className="p-4 font-black">{row.teacher.fullName}</td>
+                      <td className="p-4">
+                        {row.teacher.circles.length > 0
+                          ? row.teacher.circles.map((circle) => circle.name).join("، ")
+                          : "-"}
+                      </td>
+                      <td className="p-4">{row.workDays}</td>
+                      <td className="p-4">{row.presentReports} / {row.absentReports}</td>
+                      <td className="p-4">{formatMoney(row.monthlyAmount, row.currency)}</td>
+                      <td className="p-4">{formatMoney(row.hourlyRate, row.currency)}</td>
+                      <td className="p-4 text-[#1f6358]">{formatMoney(row.paid, row.currency)}</td>
+                      <td className="p-4 text-[#8a6335]">{formatMoney(row.remaining, row.currency)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">

@@ -20,6 +20,8 @@ model User {
   reports   Report[]
   students  Student[]
   zoomLinks ZoomLink[]
+  compensationRule TeacherCompensationRule?
+  teacherPayouts TeacherPayout[]
 }
 
 model Student {
@@ -84,6 +86,34 @@ model PlatformExpense {
 
   @@index([expenseDate])
   @@index([category])
+}
+
+model TeacherCompensationRule {
+  id                   String   @id @default(cuid())
+  teacherId            String   @unique
+  monthlyAmount        Decimal  @default(0) @db.Decimal(10, 2)
+  expectedMonthlyHours Decimal  @default(0) @db.Decimal(10, 2)
+  currency             String   @default("USD")
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  teacher              User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model TeacherPayout {
+  id            String   @id @default(cuid())
+  teacherId     String
+  periodMonth   String
+  amount        Decimal  @db.Decimal(10, 2)
+  currency      String   @default("USD")
+  paidAt        DateTime @default(now())
+  method        String?
+  note          String?
+  createdAt     DateTime @default(now())
+  teacher       User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@index([teacherId, periodMonth])
+  @@index([paidAt])
 }
 
 model StudentDetail {
