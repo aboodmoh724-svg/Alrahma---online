@@ -23,6 +23,7 @@ model User {
   compensationRule TeacherCompensationRule?
   teacherPayouts TeacherPayout[]
   teacherAttendances TeacherAttendance[]
+  financeAuditLogs FinanceAuditLog[]
 }
 
 model Student {
@@ -130,6 +131,22 @@ model TeacherAttendance {
 
   @@unique([teacherId, dateKey])
   @@index([dateKey])
+}
+
+model FinanceAuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  summary   String
+  details   Json?
+  createdAt DateTime @default(now())
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([entity])
 }
 
 model StudentDetail {

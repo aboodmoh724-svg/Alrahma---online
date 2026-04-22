@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const defaultCurrency = "USD";
@@ -125,6 +126,26 @@ async function requireFinanceAdmin() {
   });
 }
 
+async function logFinanceAction(input: {
+  actorId: string;
+  action: string;
+  entity: string;
+  entityId?: string | null;
+  summary: string;
+  details?: Prisma.InputJsonValue;
+}) {
+  await prisma.financeAuditLog.create({
+    data: {
+      actorId: input.actorId,
+      action: input.action,
+      entity: input.entity,
+      entityId: input.entityId || null,
+      summary: input.summary,
+      details: input.details || undefined,
+    },
+  });
+}
+
 async function saveStudentFinanceAccount(formData: FormData) {
   "use server";
 
@@ -139,7 +160,12 @@ async function saveStudentFinanceAccount(formData: FormData) {
 
   if (!studentId) return;
 
-  await prisma.studentFinanceAccount.upsert({
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { fullName: true },
+  });
+
+  const account = await prisma.studentFinanceAccount.upsert({
     where: { studentId },
     create: {
       studentId,
@@ -154,6 +180,15 @@ async function saveStudentFinanceAccount(formData: FormData) {
       currency,
       notes,
     },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "UPSERT_STUDENT_FINANCE_ACCOUNT",
+    entity: "StudentFinanceAccount",
+    entityId: account.id,
+    summary: `تحديث رسوم الطالب: ${student?.fullName || studentId}`,
+    details: { studentId, totalAmount, discountAmount, currency, notes },
   });
 
   revalidatePath("/finance");
@@ -174,7 +209,12 @@ async function addStudentPayment(formData: FormData) {
 
   if (!studentId || amount <= 0) return;
 
-  await prisma.studentPayment.create({
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    select: { fullName: true },
+  });
+
+  const payment = await prisma.studentPayment.create({
     data: {
       studentId,
       amount,
@@ -183,6 +223,15 @@ async function addStudentPayment(formData: FormData) {
       paidAt,
       note,
     },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "CREATE_STUDENT_PAYMENT",
+    entity: "StudentPayment",
+    entityId: payment.id,
+    summary: `إضافة دفعة طالب: ${student?.fullName || studentId} - ${amount.toFixed(2)} ${currency}`,
+    details: { studentId, amount, currency, method, paidAt: paidAt.toISOString(), note },
   });
 
   revalidatePath("/finance");
@@ -205,13 +254,31 @@ async function addPlatformExpense(formData: FormData) {
 
   if (!title || amount <= 0) return;
 
-  await prisma.platformExpense.create({
+  const expense = await prisma.platformExpense.create({
     data: {
       title,
       category,
       amount,
       currency,
       expenseDate,
+      paymentMethod,
+      receiptUrl,
+      note,
+    },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "CREATE_PLATFORM_EXPENSE",
+    entity: "PlatformExpense",
+    entityId: expense.id,
+    summary: `إضافة مصروف: ${title} - ${amount.toFixed(2)} ${currency}`,
+    details: {
+      title,
+      category,
+      amount,
+      currency,
+      expenseDate: expenseDate.toISOString(),
       paymentMethod,
       receiptUrl,
       note,
@@ -236,7 +303,12 @@ async function saveTeacherCompensationRule(formData: FormData) {
 
   if (!teacherId) return;
 
-  await prisma.teacherCompensationRule.upsert({
+  const teacher = await prisma.user.findUnique({
+    where: { id: teacherId },
+    select: { fullName: true },
+  });
+
+  const rule = await prisma.teacherCompensationRule.upsert({
     where: { teacherId },
     create: {
       teacherId,
@@ -247,6 +319,22 @@ async function saveTeacherCompensationRule(formData: FormData) {
       notes,
     },
     update: {
+      monthlyAmount,
+      expectedMonthlyHours,
+      expectedMonthlyWorkDays,
+      currency,
+      notes,
+    },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "UPSERT_TEACHER_COMPENSATION_RULE",
+    entity: "TeacherCompensationRule",
+    entityId: rule.id,
+    summary: `تحديث إعداد مكافأة المعلم: ${teacher?.fullName || teacherId}`,
+    details: {
+      teacherId,
       monthlyAmount,
       expectedMonthlyHours,
       expectedMonthlyWorkDays,
@@ -274,7 +362,12 @@ async function addTeacherPayout(formData: FormData) {
 
   if (!teacherId || amount <= 0) return;
 
-  await prisma.teacherPayout.create({
+  const teacher = await prisma.user.findUnique({
+    where: { id: teacherId },
+    select: { fullName: true },
+  });
+
+  const payout = await prisma.teacherPayout.create({
     data: {
       teacherId,
       periodMonth,
@@ -284,6 +377,15 @@ async function addTeacherPayout(formData: FormData) {
       method,
       note,
     },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "CREATE_TEACHER_PAYOUT",
+    entity: "TeacherPayout",
+    entityId: payout.id,
+    summary: `دفع مكافأة معلم: ${teacher?.fullName || teacherId} - ${amount.toFixed(2)} ${currency}`,
+    details: { teacherId, periodMonth, amount, currency, paidAt: paidAt.toISOString(), method, note },
   });
 
   revalidatePath("/finance");
@@ -305,14 +407,24 @@ async function updateTeacherAttendance(formData: FormData) {
   const isValidStatus = status === "PRESENT" || status === "ABSENT" || status === "EXCUSED";
 
   if (!isValidStatus) {
-    await prisma.teacherAttendance.deleteMany({
+    const deleted = await prisma.teacherAttendance.deleteMany({
       where: { teacherId, dateKey },
     });
+    if (deleted.count > 0) {
+      await logFinanceAction({
+        actorId: admin.id,
+        action: "DELETE_TEACHER_ATTENDANCE",
+        entity: "TeacherAttendance",
+        entityId: `${teacherId}:${dateKey}`,
+        summary: `إلغاء اعتماد حضور معلم ليوم ${dateKey}`,
+        details: { teacherId, dateKey },
+      });
+    }
     revalidatePath("/finance");
     return;
   }
 
-  await prisma.teacherAttendance.upsert({
+  const attendance = await prisma.teacherAttendance.upsert({
     where: {
       teacherId_dateKey: {
         teacherId,
@@ -329,6 +441,15 @@ async function updateTeacherAttendance(formData: FormData) {
       status,
       note,
     },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "UPSERT_TEACHER_ATTENDANCE",
+    entity: "TeacherAttendance",
+    entityId: attendance.id,
+    summary: `اعتماد حضور معلم: ${dateKey} - ${status}`,
+    details: { teacherId, dateKey, status, note },
   });
 
   revalidatePath("/finance");
@@ -391,6 +512,15 @@ async function approveSuggestedTeacherAttendances(formData: FormData) {
       })),
       skipDuplicates: true,
     });
+
+    await logFinanceAction({
+      actorId: admin.id,
+      action: "APPROVE_SUGGESTED_TEACHER_ATTENDANCES",
+      entity: "TeacherAttendance",
+      entityId: teacherId,
+      summary: `اعتماد ${suggestedDateKeys.length} أيام مقترحة للمعلم`,
+      details: { teacherId, monthKey, dateKeys: suggestedDateKeys },
+    });
   }
 
   revalidatePath("/finance");
@@ -423,7 +553,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   const monthRange = getMonthRange(currentMonth);
   const monthDateKeys = getMonthDateKeys(currentMonth);
 
-  const [students, expenses, teachers] = await Promise.all([
+  const [students, expenses, teachers, financeAuditLogs] = await Promise.all([
     prisma.student.findMany({
       where: { isActive: true, studyMode: "REMOTE" },
       orderBy: [{ studyMode: "asc" }, { fullName: "asc" }],
@@ -477,6 +607,18 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           select: {
             createdAt: true,
             status: true,
+          },
+        },
+      },
+    }),
+    prisma.financeAuditLog.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 40,
+      include: {
+        actor: {
+          select: {
+            fullName: true,
+            email: true,
           },
         },
       },
@@ -1046,8 +1188,56 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             <p className="text-sm font-black text-[#f1d39d]">قريباً</p>
             <h3 className="mt-2 text-2xl font-black">تصدير ومراجعة</h3>
             <p className="mt-3 text-sm leading-7 text-white/70">
-              سنضيف لاحقاً تصدير Excel/PDF، وسجل العمليات المالية: من أضاف أو عدل، ومتى تم ذلك.
+              سنضيف لاحقاً تصدير Excel/PDF، ثم تعديل وحذف آمن لكل عملية مالية.
             </p>
+          </article>
+
+          <article className="rounded-[2rem] border border-[#d9c8ad] bg-white p-6 shadow-sm lg:col-span-3">
+            <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+              <div>
+                <p className="text-sm font-black text-[#9b7039]">سجل العمليات</p>
+                <h2 className="mt-2 text-2xl font-black">آخر العمليات المالية</h2>
+              </div>
+              <p className="rounded-full bg-[#fffaf2] px-4 py-2 text-xs font-black text-[#8a6335]">
+                آخر {financeAuditLogs.length} عملية
+              </p>
+            </div>
+            <div className="mt-5 max-h-[520px] overflow-auto rounded-2xl border border-[#eadcc6]">
+              <table className="w-full min-w-[900px] text-right text-sm">
+                <thead className="sticky top-0 bg-[#173d42] text-white">
+                  <tr>
+                    <th className="p-4">الوقت</th>
+                    <th className="p-4">المستخدم</th>
+                    <th className="p-4">العملية</th>
+                    <th className="p-4">النوع</th>
+                    <th className="p-4">الوصف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {financeAuditLogs.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="p-5 text-center text-[#173d42]/60">
+                        لا توجد عمليات مالية مسجلة بعد.
+                      </td>
+                    </tr>
+                  ) : (
+                    financeAuditLogs.map((log) => (
+                      <tr key={log.id} className="border-t border-[#f0e3cf]">
+                        <td className="p-4 font-bold">{log.createdAt.toISOString().slice(0, 16).replace("T", " ")}</td>
+                        <td className="p-4">{log.actor?.fullName || log.actor?.email || "غير معروف"}</td>
+                        <td className="p-4">
+                          <span className="rounded-full bg-[#fffaf2] px-3 py-1 text-xs font-black text-[#8a6335]">
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="p-4">{log.entity}</td>
+                        <td className="p-4 font-bold">{log.summary}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </article>
         </section>
         ) : null}
