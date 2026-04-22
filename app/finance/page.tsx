@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { ConfirmSubmitButton } from "./ConfirmSubmitButton";
 
 const defaultCurrency = "USD";
 const financeTabs = [
@@ -31,6 +32,12 @@ function parseDate(value: FormDataEntryValue | null) {
 
   const date = new Date(`${raw}T12:00:00.000Z`);
   return Number.isNaN(date.getTime()) ? new Date() : date;
+}
+
+function formatDateInput(value: Date | string | null | undefined) {
+  if (!value) return new Date().toISOString().slice(0, 10);
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? new Date().toISOString().slice(0, 10) : date.toISOString().slice(0, 10);
 }
 
 function getCurrentMonthKey() {
@@ -237,6 +244,99 @@ async function addStudentPayment(formData: FormData) {
   revalidatePath("/finance");
 }
 
+async function updateStudentPayment(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const paymentId = String(formData.get("paymentId") || "");
+  const amount = parseAmount(formData.get("amount"));
+  const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
+  const method = String(formData.get("method") || "").trim() || null;
+  const paidAt = parseDate(formData.get("paidAt"));
+  const note = String(formData.get("note") || "").trim() || null;
+
+  if (!paymentId || amount <= 0) return;
+
+  const existing = await prisma.studentPayment.findUnique({
+    where: { id: paymentId },
+    include: { student: { select: { fullName: true, studyMode: true } } },
+  });
+
+  if (!existing || existing.student.studyMode !== "REMOTE") return;
+
+  const payment = await prisma.studentPayment.update({
+    where: { id: paymentId },
+    data: {
+      amount,
+      currency,
+      method,
+      paidAt,
+      note,
+    },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "UPDATE_STUDENT_PAYMENT",
+    entity: "StudentPayment",
+    entityId: payment.id,
+    summary: `تعديل دفعة طالب: ${existing.student.fullName} - ${amount.toFixed(2)} ${currency}`,
+    details: {
+      before: {
+        amount: toNumber(existing.amount),
+        currency: existing.currency,
+        method: existing.method,
+        paidAt: existing.paidAt.toISOString(),
+        note: existing.note,
+      },
+      after: { amount, currency, method, paidAt: paidAt.toISOString(), note },
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
+async function deleteStudentPayment(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const paymentId = String(formData.get("paymentId") || "");
+  if (!paymentId) return;
+
+  const existing = await prisma.studentPayment.findUnique({
+    where: { id: paymentId },
+    include: { student: { select: { fullName: true, studyMode: true } } },
+  });
+
+  if (!existing || existing.student.studyMode !== "REMOTE") return;
+
+  await prisma.studentPayment.delete({
+    where: { id: paymentId },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "DELETE_STUDENT_PAYMENT",
+    entity: "StudentPayment",
+    entityId: paymentId,
+    summary: `حذف دفعة طالب: ${existing.student.fullName} - ${toNumber(existing.amount).toFixed(2)} ${existing.currency}`,
+    details: {
+      studentId: existing.studentId,
+      amount: toNumber(existing.amount),
+      currency: existing.currency,
+      method: existing.method,
+      paidAt: existing.paidAt.toISOString(),
+      note: existing.note,
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
 async function addPlatformExpense(formData: FormData) {
   "use server";
 
@@ -282,6 +382,117 @@ async function addPlatformExpense(formData: FormData) {
       paymentMethod,
       receiptUrl,
       note,
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
+async function updatePlatformExpense(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const expenseId = String(formData.get("expenseId") || "");
+  const title = String(formData.get("title") || "").trim();
+  const category = String(formData.get("category") || "").trim() || "عام";
+  const amount = parseAmount(formData.get("amount"));
+  const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
+  const expenseDate = parseDate(formData.get("expenseDate"));
+  const paymentMethod = String(formData.get("paymentMethod") || "").trim() || null;
+  const receiptUrl = String(formData.get("receiptUrl") || "").trim() || null;
+  const note = String(formData.get("note") || "").trim() || null;
+
+  if (!expenseId || !title || amount <= 0) return;
+
+  const existing = await prisma.platformExpense.findUnique({
+    where: { id: expenseId },
+  });
+
+  if (!existing) return;
+
+  const expense = await prisma.platformExpense.update({
+    where: { id: expenseId },
+    data: {
+      title,
+      category,
+      amount,
+      currency,
+      expenseDate,
+      paymentMethod,
+      receiptUrl,
+      note,
+    },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "UPDATE_PLATFORM_EXPENSE",
+    entity: "PlatformExpense",
+    entityId: expense.id,
+    summary: `تعديل مصروف: ${title} - ${amount.toFixed(2)} ${currency}`,
+    details: {
+      before: {
+        title: existing.title,
+        category: existing.category,
+        amount: toNumber(existing.amount),
+        currency: existing.currency,
+        expenseDate: existing.expenseDate.toISOString(),
+        paymentMethod: existing.paymentMethod,
+        receiptUrl: existing.receiptUrl,
+        note: existing.note,
+      },
+      after: {
+        title,
+        category,
+        amount,
+        currency,
+        expenseDate: expenseDate.toISOString(),
+        paymentMethod,
+        receiptUrl,
+        note,
+      },
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
+async function deletePlatformExpense(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const expenseId = String(formData.get("expenseId") || "");
+  if (!expenseId) return;
+
+  const existing = await prisma.platformExpense.findUnique({
+    where: { id: expenseId },
+  });
+
+  if (!existing) return;
+
+  await prisma.platformExpense.delete({
+    where: { id: expenseId },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "DELETE_PLATFORM_EXPENSE",
+    entity: "PlatformExpense",
+    entityId: expenseId,
+    summary: `حذف مصروف: ${existing.title} - ${toNumber(existing.amount).toFixed(2)} ${existing.currency}`,
+    details: {
+      title: existing.title,
+      category: existing.category,
+      amount: toNumber(existing.amount),
+      currency: existing.currency,
+      expenseDate: existing.expenseDate.toISOString(),
+      paymentMethod: existing.paymentMethod,
+      receiptUrl: existing.receiptUrl,
+      note: existing.note,
     },
   });
 
@@ -386,6 +597,103 @@ async function addTeacherPayout(formData: FormData) {
     entityId: payout.id,
     summary: `دفع مكافأة معلم: ${teacher?.fullName || teacherId} - ${amount.toFixed(2)} ${currency}`,
     details: { teacherId, periodMonth, amount, currency, paidAt: paidAt.toISOString(), method, note },
+  });
+
+  revalidatePath("/finance");
+}
+
+async function updateTeacherPayout(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const payoutId = String(formData.get("payoutId") || "");
+  const periodMonth = normalizeMonthKey(formData.get("periodMonth"));
+  const amount = parseAmount(formData.get("amount"));
+  const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
+  const paidAt = parseDate(formData.get("paidAt"));
+  const method = String(formData.get("method") || "").trim() || null;
+  const note = String(formData.get("note") || "").trim() || null;
+
+  if (!payoutId || amount <= 0) return;
+
+  const existing = await prisma.teacherPayout.findUnique({
+    where: { id: payoutId },
+    include: { teacher: { select: { fullName: true, studyMode: true } } },
+  });
+
+  if (!existing || existing.teacher.studyMode !== "REMOTE") return;
+
+  const payout = await prisma.teacherPayout.update({
+    where: { id: payoutId },
+    data: {
+      periodMonth,
+      amount,
+      currency,
+      paidAt,
+      method,
+      note,
+    },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "UPDATE_TEACHER_PAYOUT",
+    entity: "TeacherPayout",
+    entityId: payout.id,
+    summary: `تعديل دفعة معلم: ${existing.teacher.fullName} - ${amount.toFixed(2)} ${currency}`,
+    details: {
+      before: {
+        periodMonth: existing.periodMonth,
+        amount: toNumber(existing.amount),
+        currency: existing.currency,
+        paidAt: existing.paidAt.toISOString(),
+        method: existing.method,
+        note: existing.note,
+      },
+      after: { periodMonth, amount, currency, paidAt: paidAt.toISOString(), method, note },
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
+async function deleteTeacherPayout(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const payoutId = String(formData.get("payoutId") || "");
+  if (!payoutId) return;
+
+  const existing = await prisma.teacherPayout.findUnique({
+    where: { id: payoutId },
+    include: { teacher: { select: { fullName: true, studyMode: true } } },
+  });
+
+  if (!existing || existing.teacher.studyMode !== "REMOTE") return;
+
+  await prisma.teacherPayout.delete({
+    where: { id: payoutId },
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "DELETE_TEACHER_PAYOUT",
+    entity: "TeacherPayout",
+    entityId: payoutId,
+    summary: `حذف دفعة معلم: ${existing.teacher.fullName} - ${toNumber(existing.amount).toFixed(2)} ${existing.currency}`,
+    details: {
+      teacherId: existing.teacherId,
+      periodMonth: existing.periodMonth,
+      amount: toNumber(existing.amount),
+      currency: existing.currency,
+      paidAt: existing.paidAt.toISOString(),
+      method: existing.method,
+      note: existing.note,
+    },
   });
 
   revalidatePath("/finance");
@@ -648,6 +956,14 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   const expectedIncome = studentRows.reduce((sum, row) => sum + row.required, 0);
   const receivedIncome = studentRows.reduce((sum, row) => sum + row.paid, 0);
   const remainingIncome = studentRows.reduce((sum, row) => sum + row.remaining, 0);
+  const studentPayments = students
+    .flatMap((student) =>
+      student.payments.map((payment) => ({
+        payment,
+        studentName: student.fullName,
+      }))
+    )
+    .sort((a, b) => b.payment.paidAt.getTime() - a.payment.paidAt.getTime());
   const teacherRows = teachers.map((teacher) => {
     const monthlyAmount = toNumber(teacher.compensationRule?.monthlyAmount);
     const expectedMonthlyHours = toNumber(teacher.compensationRule?.expectedMonthlyHours);
@@ -696,6 +1012,14 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   });
 
   const platformExpensesTotal = expenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
+  const teacherPayoutRows = teachers
+    .flatMap((teacher) =>
+      teacher.teacherPayouts.map((payout) => ({
+        payout,
+        teacherName: teacher.fullName,
+      }))
+    )
+    .sort((a, b) => b.payout.paidAt.getTime() - a.payout.paidAt.getTime());
   const teacherPayoutsTotal = teacherRows.reduce((sum, row) => sum + row.paid, 0);
   const teacherEstimatedDueTotal = teacherRows.reduce((sum, row) => sum + row.estimatedDue, 0);
   const teacherRemainingTotal = teacherRows.reduce((sum, row) => sum + row.remaining, 0);
@@ -1095,12 +1419,98 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
             ))}
           </div>
         </section>
+
+        <section className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-black">دفعات مكافآت المعلمين</h2>
+              <p className="mt-2 text-sm leading-7 text-[#173d42]/60">
+                تعديل أو حذف دفعات هذا الشهر مع تأكيد، وكل عملية تظهر في سجل العمليات المالية.
+              </p>
+            </div>
+            <p className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#8a6335]">
+              {teacherPayoutRows.length} دفعة
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {teacherPayoutRows.length === 0 ? (
+              <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60 lg:col-span-2">
+                لا توجد دفعات معلمين مسجلة لهذا الشهر.
+              </p>
+            ) : (
+              teacherPayoutRows.map(({ payout, teacherName }) => (
+                <article key={payout.id} className="rounded-2xl border border-[#eadcc6] p-4">
+                  <p className="font-black">{teacherName}</p>
+                  <form action={updateTeacherPayout} className="mt-3 grid gap-2">
+                    <input type="hidden" name="payoutId" value={payout.id} />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      <input
+                        name="periodMonth"
+                        type="month"
+                        defaultValue={payout.periodMonth}
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <input
+                        name="amount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        defaultValue={toNumber(payout.amount).toFixed(2)}
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <input
+                        name="currency"
+                        defaultValue={payout.currency}
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <input
+                        name="paidAt"
+                        type="date"
+                        defaultValue={formatDateInput(payout.paidAt)}
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                    </div>
+                    <input
+                      name="method"
+                      defaultValue={payout.method || ""}
+                      placeholder="طريقة الدفع"
+                      className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                    />
+                    <textarea
+                      name="note"
+                      defaultValue={payout.note || ""}
+                      placeholder="ملاحظة"
+                      className="min-h-16 rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                    />
+                    <ConfirmSubmitButton
+                      confirmMessage="هل تريد حفظ تعديل دفعة المعلم؟"
+                      className="rounded-xl bg-[#173d42] px-4 py-2 text-xs font-black text-white"
+                    >
+                      حفظ التعديل
+                    </ConfirmSubmitButton>
+                  </form>
+                  <form action={deleteTeacherPayout} className="mt-2">
+                    <input type="hidden" name="payoutId" value={payout.id} />
+                    <ConfirmSubmitButton
+                      confirmMessage="هل أنت متأكد من حذف دفعة المعلم؟ لا يمكن التراجع عن الحذف."
+                      className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-700"
+                    >
+                      حذف الدفعة
+                    </ConfirmSubmitButton>
+                  </form>
+                </article>
+              ))
+            )}
+          </div>
+        </section>
         </>
         ) : null}
 
         {activeTab === "students" || activeTab === "expenses" ? (
         <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
           {activeTab === "students" ? (
+          <>
           <div className="overflow-hidden rounded-[2rem] border border-[#d9c8ad] bg-white shadow-sm">
             <div className="border-b border-[#eadcc6] p-5">
               <h2 className="text-xl font-black">حالة مدفوعات الطلاب</h2>
@@ -1137,6 +1547,77 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               </table>
             </div>
           </div>
+          <div className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+            <h2 className="text-xl font-black">آخر دفعات الطلاب</h2>
+            <p className="mt-1 text-sm leading-6 text-[#173d42]/60">
+              يمكن تعديل الدفعة أو حذفها بعد رسالة تأكيد، وكل عملية تحفظ في سجل العمليات.
+            </p>
+            <div className="mt-4 max-h-[620px] space-y-3 overflow-auto">
+              {studentPayments.length === 0 ? (
+                <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60">لا توجد دفعات مسجلة بعد.</p>
+              ) : (
+                studentPayments.map(({ payment, studentName }) => (
+                  <article key={payment.id} className="rounded-2xl border border-[#eadcc6] p-4">
+                    <p className="font-black">{studentName}</p>
+                    <form action={updateStudentPayment} className="mt-3 grid gap-2">
+                      <input type="hidden" name="paymentId" value={payment.id} />
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <input
+                          name="amount"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          defaultValue={toNumber(payment.amount).toFixed(2)}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="currency"
+                          defaultValue={payment.currency}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="paidAt"
+                          type="date"
+                          defaultValue={formatDateInput(payment.paidAt)}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="method"
+                          defaultValue={payment.method || ""}
+                          placeholder="طريقة الدفع"
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                      </div>
+                      <textarea
+                        name="note"
+                        defaultValue={payment.note || ""}
+                        placeholder="ملاحظة"
+                        className="min-h-16 rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <div className="flex flex-wrap gap-2">
+                        <ConfirmSubmitButton
+                          confirmMessage="هل تريد حفظ تعديل هذه الدفعة؟"
+                          className="rounded-xl bg-[#173d42] px-4 py-2 text-xs font-black text-white"
+                        >
+                          حفظ التعديل
+                        </ConfirmSubmitButton>
+                      </div>
+                    </form>
+                    <form action={deleteStudentPayment} className="mt-2">
+                      <input type="hidden" name="paymentId" value={payment.id} />
+                      <ConfirmSubmitButton
+                        confirmMessage="هل أنت متأكد من حذف هذه الدفعة؟ لا يمكن التراجع عن الحذف."
+                        className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-700"
+                      >
+                        حذف الدفعة
+                      </ConfirmSubmitButton>
+                    </form>
+                  </article>
+                ))
+              )}
+            </div>
+          </div>
+          </>
           ) : null}
 
           {activeTab === "expenses" ? (
@@ -1148,16 +1629,73 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               ) : (
                 expenses.map((expense) => (
                   <article key={expense.id} className="rounded-2xl border border-[#eadcc6] p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-black">{expense.title}</p>
-                        <p className="mt-1 text-xs text-[#173d42]/55">
-                          {expense.category} - {expense.expenseDate.toISOString().slice(0, 10)}
-                        </p>
+                    <form action={updatePlatformExpense} className="grid gap-2">
+                      <input type="hidden" name="expenseId" value={expense.id} />
+                      <input
+                        name="title"
+                        defaultValue={expense.title}
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs font-black"
+                      />
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <input
+                          name="category"
+                          defaultValue={expense.category}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="amount"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          defaultValue={toNumber(expense.amount).toFixed(2)}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="currency"
+                          defaultValue={expense.currency}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="expenseDate"
+                          type="date"
+                          defaultValue={formatDateInput(expense.expenseDate)}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
                       </div>
-                      <p className="font-black text-red-700">{formatMoney(toNumber(expense.amount), expense.currency)}</p>
-                    </div>
-                    {expense.note ? <p className="mt-2 text-xs leading-6 text-[#173d42]/60">{expense.note}</p> : null}
+                      <input
+                        name="paymentMethod"
+                        defaultValue={expense.paymentMethod || ""}
+                        placeholder="طريقة الدفع"
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <input
+                        name="receiptUrl"
+                        defaultValue={expense.receiptUrl || ""}
+                        placeholder="رابط الإيصال"
+                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <textarea
+                        name="note"
+                        defaultValue={expense.note || ""}
+                        placeholder="ملاحظة"
+                        className="min-h-16 rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      />
+                      <ConfirmSubmitButton
+                        confirmMessage="هل تريد حفظ تعديل هذا المصروف؟"
+                        className="rounded-xl bg-[#173d42] px-4 py-2 text-xs font-black text-white"
+                      >
+                        حفظ التعديل
+                      </ConfirmSubmitButton>
+                    </form>
+                    <form action={deletePlatformExpense} className="mt-2">
+                      <input type="hidden" name="expenseId" value={expense.id} />
+                      <ConfirmSubmitButton
+                        confirmMessage="هل أنت متأكد من حذف هذا المصروف؟ لا يمكن التراجع عن الحذف."
+                        className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-xs font-black text-red-700"
+                      >
+                        حذف المصروف
+                      </ConfirmSubmitButton>
+                    </form>
                   </article>
                 ))
               )}
