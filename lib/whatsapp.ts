@@ -136,10 +136,7 @@ async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
     },
     body: JSON.stringify({
       to,
-      number: to,
-      phone: to,
       message: body,
-      body,
     }),
   });
 
