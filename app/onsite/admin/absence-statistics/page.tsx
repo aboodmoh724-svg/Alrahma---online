@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import {
   formatIstanbulDateEnglish,
   getIstanbulDateKey,
+  getIstanbulDayRange,
 } from "@/lib/school-day";
 
 type AbsenceSummary = {
@@ -69,6 +70,51 @@ async function deleteStudentAbsences(formData: FormData) {
     where: {
       studentId: student.id,
       status: "ABSENT",
+    },
+  });
+
+  revalidatePath("/onsite/admin/absence-statistics");
+  revalidatePath("/onsite/admin/absences");
+}
+
+async function deleteDayAttendanceRecords(formData: FormData) {
+  "use server";
+
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const dateKey = String(formData.get("dateKey") || "").trim();
+
+  if (!adminId || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    return;
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) {
+    return;
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const { start, end } = getIstanbulDayRange(new Date(Date.UTC(year, month - 1, day, 12, 0, 0)));
+
+  await prisma.report.deleteMany({
+    where: {
+      createdAt: {
+        gte: start,
+        lt: end,
+      },
+      student: {
+        studyMode: "ONSITE",
+        isActive: true,
+      },
     },
   });
 
@@ -401,7 +447,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
                       <h3 className="text-xl font-black text-[#1c2d31]">
                         {day.dateLabel}
                       </h3>
-                      <div className="flex flex-wrap gap-2 text-sm font-black">
+                      <div className="flex flex-wrap items-center gap-2 text-sm font-black">
                         <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
                           حضور: {day.presentStudents.length}
                         </span>
@@ -414,6 +460,17 @@ export default async function OnsiteAbsenceStatisticsPage() {
                       </div>
                     </div>
                   </summary>
+
+                  <div className="mt-4 max-w-xs">
+                    <form action={deleteDayAttendanceRecords}>
+                      <input type="hidden" name="dateKey" value={day.dateKey} />
+                      <DeleteAbsencesButton
+                        confirmMessage={`هل تريد مسح جميع سجلات الحضوري ليوم ${day.dateLabel}؟ سيتم حذف الحضور والغياب لذلك اليوم فقط.`}
+                        idleLabel="مسح سجلات هذا اليوم"
+                        pendingLabel="جاري مسح سجلات اليوم..."
+                      />
+                    </form>
+                  </div>
 
                   <div className="mt-4 grid gap-4 lg:grid-cols-3">
                     <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
