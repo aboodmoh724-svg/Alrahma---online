@@ -81,6 +81,10 @@ export default function RemoteAdminRegistrationsPage() {
   const [selectedCircle, setSelectedCircle] = useState<Record<string, string>>({});
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
   const [financeAmount, setFinanceAmount] = useState<Record<string, string>>({});
+  const [updatingFileId, setUpdatingFileId] = useState("");
+  const [deletingRequestId, setDeletingRequestId] = useState("");
+  const [audioFiles, setAudioFiles] = useState<Record<string, File | null>>({});
+  const [idImageFiles, setIdImageFiles] = useState<Record<string, File | null>>({});
 
   const fetchData = async () => {
     try {
@@ -136,6 +140,77 @@ export default function RemoteAdminRegistrationsPage() {
     await fetchData();
   };
 
+  const updateFiles = async (requestId: string) => {
+    const audio = audioFiles[requestId];
+    const idImage = idImageFiles[requestId];
+
+    if (!audio && !idImage) {
+      alert("اختر ملفا جديدا للصوت أو الهوية أولا");
+      return;
+    }
+
+    try {
+      setUpdatingFileId(requestId);
+      const formData = new FormData();
+
+      if (audio) {
+        formData.append("audio", audio);
+      }
+
+      if (idImage) {
+        formData.append("idImage", idImage);
+      }
+
+      const response = await fetch(`/api/registration-requests/${requestId}`, {
+        method: "PATCH",
+        body: formData,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر تحديث الملفات");
+        return;
+      }
+
+      setAudioFiles((prev) => ({ ...prev, [requestId]: null }));
+      setIdImageFiles((prev) => ({ ...prev, [requestId]: null }));
+      await fetchData();
+    } catch (error) {
+      console.error("UPDATE REGISTRATION FILES ERROR =>", error);
+      alert("حدث خطأ أثناء تحديث الملفات");
+    } finally {
+      setUpdatingFileId("");
+    }
+  };
+
+  const deleteRequest = async (requestId: string) => {
+    const shouldDelete = window.confirm("هل تريد حذف طلب التسجيل نهائيا؟");
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setDeletingRequestId(requestId);
+      const response = await fetch(`/api/registration-requests/${requestId}`, {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر حذف طلب التسجيل");
+        return;
+      }
+
+      await fetchData();
+    } catch (error) {
+      console.error("DELETE REGISTRATION REQUEST ERROR =>", error);
+      alert("حدث خطأ أثناء حذف طلب التسجيل");
+    } finally {
+      setDeletingRequestId("");
+    }
+  };
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -144,7 +219,7 @@ export default function RemoteAdminRegistrationsPage() {
             <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">طلبات التسجيل</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
-              راجع طلبات التسجيل، ثم اختر حلقة أو معلما لقبول الطالب وتحويله إلى طالب رسمي.
+              راجع الطلبات، وعدل ملفات الطلب عند الحاجة، ثم اقبل الطالب أو ارفضه أو احذف الطلب.
             </p>
           </div>
           <Link href="/remote/admin/dashboard" className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]">
@@ -182,9 +257,19 @@ export default function RemoteAdminRegistrationsPage() {
                       ولي الأمر: {request.parentWhatsapp} - البريد: {request.parentEmail || "-"}
                     </p>
                   </div>
-                  <p className="text-sm font-bold text-[#1c2d31]/50">
-                    {new Date(request.createdAt).toLocaleDateString("ar-EG")}
-                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <p className="self-center text-sm font-bold text-[#1c2d31]/50">
+                      {new Date(request.createdAt).toLocaleDateString("ar-EG")}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => deleteRequest(request.id)}
+                      disabled={deletingRequestId === request.id}
+                      className="rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-black text-red-700 disabled:opacity-60"
+                    >
+                      {deletingRequestId === request.id ? "جاري الحذف..." : "حذف الطلب"}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-4">
@@ -224,8 +309,7 @@ export default function RemoteAdminRegistrationsPage() {
                       {getExpectedTuition(
                         request.requestedTracks,
                         circles.find((circle) => circle.id === selectedCircle[request.id])?.track
-                      )}{" "}
-                      USD
+                      )} USD
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
@@ -257,34 +341,84 @@ export default function RemoteAdminRegistrationsPage() {
                   </div>
                 </div>
 
-                {request.idImageUrl ? (
-                  <div className="mt-4 rounded-2xl bg-[#fffaf2] p-4">
-                    <p className="mb-3 text-sm font-black text-[#1c2d31]">صورة الإقامة أو هوية الطالب</p>
-                    <a
-                      href={request.idImageUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
-                    >
-                      فتح ملف الهوية
-                    </a>
+                <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                  <div className="rounded-2xl bg-[#fffaf2] p-4">
+                    <p className="mb-3 text-sm font-black text-[#1c2d31]">ملف الهوية أو الإقامة</p>
+                    {request.idImageUrl ? (
+                      <a
+                        href={request.idImageUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                      >
+                        فتح ملف الهوية الحالي
+                      </a>
+                    ) : (
+                      <p className="text-sm text-[#1c2d31]/55">لا يوجد ملف مرفوع حاليا.</p>
+                    )}
+                    <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] bg-white p-4">
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">استبدال ملف الهوية</label>
+                      <input
+                        type="file"
+                        accept="image/*,.pdf"
+                        onChange={(event) =>
+                          setIdImageFiles((prev) => ({
+                            ...prev,
+                            [request.id]: event.target.files?.[0] || null,
+                          }))
+                        }
+                        className="w-full text-sm"
+                      />
+                      <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
+                        الحجم المسموح الآن حتى 2MB.
+                      </p>
+                    </div>
                   </div>
-                ) : null}
 
-                {request.audioUrl ? (
-                  <div className="mt-4 rounded-2xl bg-[#fffaf2] p-4">
+                  <div className="rounded-2xl bg-[#fffaf2] p-4">
                     <p className="mb-3 text-sm font-black text-[#1c2d31]">تسجيل آية الكرسي</p>
-                    <audio controls src={request.audioUrl} className="w-full" />
-                    <a
-                      href={request.audioUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-flex rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                    {request.audioUrl ? (
+                      <>
+                        <audio controls src={request.audioUrl} className="min-h-14 w-full" />
+                        <a
+                          href={request.audioUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-3 inline-flex rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                        >
+                          فتح التسجيل الحالي
+                        </a>
+                      </>
+                    ) : (
+                      <p className="text-sm text-[#1c2d31]/55">لا يوجد تسجيل مرفوع حاليا.</p>
+                    )}
+                    <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] bg-white p-4">
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">استبدال التسجيل الصوتي</label>
+                      <input
+                        type="file"
+                        accept="audio/*,video/*"
+                        onChange={(event) =>
+                          setAudioFiles((prev) => ({
+                            ...prev,
+                            [request.id]: event.target.files?.[0] || null,
+                          }))
+                        }
+                        className="w-full text-sm"
+                      />
+                      <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
+                        الحجم المسموح الآن حتى 5MB.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => updateFiles(request.id)}
+                      disabled={updatingFileId === request.id}
+                      className="mt-4 rounded-xl bg-[#8a6335] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                     >
-                      فتح التسجيل
-                    </a>
+                      {updatingFileId === request.id ? "جاري تحديث الملفات..." : "حفظ تعديل الملفات"}
+                    </button>
                   </div>
-                ) : null}
+                </div>
 
                 {request.status === "PENDING" ? (
                   <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_0.8fr_auto_auto] md:items-end">
@@ -306,16 +440,24 @@ export default function RemoteAdminRegistrationsPage() {
                       >
                         <option value="">اختر حلقة</option>
                         {circles.map((circle) => (
-                          <option key={circle.id} value={circle.id}>{circle.name} {circle.track ? `- ${circle.track}` : ""}</option>
+                          <option key={circle.id} value={circle.id}>
+                            {circle.name} {circle.track ? `- ${circle.track}` : ""}
+                          </option>
                         ))}
                       </select>
                     </div>
                     <div>
-                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">أو اختر معلمًا</label>
-                      <select value={selectedTeacher[request.id] || ""} onChange={(e) => setSelectedTeacher((prev) => ({ ...prev, [request.id]: e.target.value }))} className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm">
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">أو اختر معلما</label>
+                      <select
+                        value={selectedTeacher[request.id] || ""}
+                        onChange={(e) => setSelectedTeacher((prev) => ({ ...prev, [request.id]: e.target.value }))}
+                        className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm"
+                      >
                         <option value="">اختر معلم</option>
                         {teachers.map((teacher) => (
-                          <option key={teacher.id} value={teacher.id}>{teacher.fullName}</option>
+                          <option key={teacher.id} value={teacher.id}>
+                            {teacher.fullName}
+                          </option>
                         ))}
                       </select>
                     </div>

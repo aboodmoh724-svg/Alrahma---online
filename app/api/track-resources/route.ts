@@ -20,16 +20,30 @@ function safeFileName(fileName: string) {
     .replace(/-+/g, "-")
     .slice(0, 60);
 
-  return `${baseName || "track-resource"}-${Date.now()}${extension}`;
+  return `${baseName || "teacher-resource"}-${Date.now()}${extension}`;
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url);
+    const teacherId = String(url.searchParams.get("teacherId") || "").trim();
+
     const resources = await prisma.trackResource.findMany({
+      where: teacherId ? { teacherId } : undefined,
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        teacher: {
+          select: {
+            id: true,
+            fullName: true,
+            studyMode: true,
+          },
+        },
+      },
     });
+
     const resourcesWithSignedUrls = await Promise.all(
       resources.map(async (resource) => ({
         ...resource,
@@ -45,7 +59,7 @@ export async function GET() {
     console.error("GET TRACK RESOURCES ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء جلب ملفات المسارات" },
+      { error: "حدث خطأ أثناء جلب ملفات المعلمين" },
       { status: 500 }
     );
   }
@@ -57,10 +71,15 @@ export async function POST(req: Request) {
     const title = String(formData.get("title") || "").trim();
     const description = String(formData.get("description") || "").trim();
     const track = normalizeTrack(formData.get("track"));
+    const teacherId = String(formData.get("teacherId") || "").trim();
     const file = formData.get("file");
 
     if (!title) {
       return NextResponse.json({ error: "عنوان الملف مطلوب" }, { status: 400 });
+    }
+
+    if (!teacherId) {
+      return NextResponse.json({ error: "اختر المعلم أولا" }, { status: 400 });
     }
 
     if (!(file instanceof File) || file.size === 0) {
@@ -68,11 +87,27 @@ export async function POST(req: Request) {
     }
 
     if (file.size > MAX_RESOURCE_FILE_SIZE) {
-      return NextResponse.json({ error: "ملف المسار أكبر من الحجم المسموح" }, { status: 400 });
+      return NextResponse.json({ error: "الملف أكبر من الحجم المسموح" }, { status: 400 });
     }
 
     if (file.type !== "application/pdf") {
       return NextResponse.json({ error: "يرجى رفع ملف PDF فقط" }, { status: 400 });
+    }
+
+    const teacher = await prisma.user.findFirst({
+      where: {
+        id: teacherId,
+        role: "TEACHER",
+        studyMode: "REMOTE",
+        isActive: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!teacher) {
+      return NextResponse.json({ error: "المعلم المحدد غير موجود" }, { status: 404 });
     }
 
     const fileName = safeFileName(file.name);
@@ -83,8 +118,18 @@ export async function POST(req: Request) {
         title,
         description: description || null,
         track,
+        teacherId: teacher.id,
         fileName,
         fileUrl: filePath,
+      },
+      include: {
+        teacher: {
+          select: {
+            id: true,
+            fullName: true,
+            studyMode: true,
+          },
+        },
       },
     });
 
@@ -96,7 +141,46 @@ export async function POST(req: Request) {
     console.error("CREATE TRACK RESOURCE ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء رفع ملف المسار" },
+      { error: "حدث خطأ أثناء رفع الملف" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const body = await req.json();
+    const resourceId = String(body.resourceId || "").trim();
+
+    if (!resourceId) {
+      return NextResponse.json({ error: "الملف مطلوب" }, { status: 400 });
+    }
+
+    const resource = await prisma.trackResource.findUnique({
+      where: {
+        id: resourceId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!resource) {
+      return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
+    }
+
+    await prisma.trackResource.delete({
+      where: {
+        id: resource.id,
+      },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE TRACK RESOURCE ERROR =>", error);
+
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف الملف" },
       { status: 500 }
     );
   }

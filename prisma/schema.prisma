@@ -25,6 +25,7 @@ model User {
   teacherPayouts TeacherPayout[]
   teacherAttendances TeacherAttendance[]
   financeAuditLogs FinanceAuditLog[]
+  trackResources TrackResource[]
 }
 
 model Student {
@@ -200,10 +201,14 @@ model TrackResource {
   title       String
   description String?
   track       String?
+  teacherId   String?
   fileUrl     String
   fileName    String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  teacher     User?    @relation(fields: [teacherId], references: [id], onDelete: SetNull)
+
+  @@index([teacherId])
 }
 
 model RegistrationRequest {

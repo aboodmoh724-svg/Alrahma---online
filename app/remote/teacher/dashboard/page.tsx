@@ -193,11 +193,9 @@ export default async function RemoteTeacherDashboardPage({
   const latestZoomLink =
     activeCircle?.zoomUrl || teacher.zoomLinks[0]?.url || null;
   const storedTrackResources = await prisma.trackResource.findMany({
-    where: activeCircle?.track
-      ? {
-          OR: [{ track: activeCircle.track }, { track: null }],
-        }
-      : { track: null },
+    where: {
+      teacherId: teacher.id,
+    },
     orderBy: {
       createdAt: "desc",
     },
@@ -272,11 +270,8 @@ export default async function RemoteTeacherDashboardPage({
               <a href="#students-details" className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white">
                 بيانات الطلاب التفصيلية
               </a>
-              <a href="#important-files" className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white">
-                ملفات مهمة
-              </a>
-              <a href="#track-files" className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white">
-                ملفات المسارات
+              <a href="#teacher-files" className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white">
+                ملفاتي
               </a>
             </div>
           </section>
@@ -461,38 +456,39 @@ export default async function RemoteTeacherDashboardPage({
             )}
           </section>
 
-          <section id="important-files" className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-              <h2 className="text-xl font-black text-[#1c2d31]">ملفات مهمة</h2>
+          <section id="teacher-files" className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <h2 className="text-xl font-black text-[#1c2d31]">ملفات المعلم</h2>
               <p className="mt-2 text-sm leading-7 text-[#1c2d31]/58">
-                سنضيف هنا ملفات آلية سير الحلقة والملفات التشغيلية التي يحتاجها المعلم.
-              </p>
-            </div>
-            <div id="track-files" className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-              <h2 className="text-xl font-black text-[#1c2d31]">ملفات المسارات</h2>
-              <p className="mt-2 text-sm leading-7 text-[#1c2d31]/58">
-                المسار الحالي: {trackLabel(activeCircle?.track || null)}.
+                تظهر هنا فقط الملفات التي رفعتها الإدارة لهذا المعلم.
               </p>
               <div className="mt-4 space-y-2">
                 {trackResources.length === 0 ? (
                   <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
-                    لا توجد ملفات لهذا المسار حتى الآن.
+                    لا توجد ملفات مخصصة لك حتى الآن.
                   </p>
                 ) : (
                   trackResources.map((resource) => (
-                    <a
+                    <div
                       key={resource.id}
-                      href={resource.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="block rounded-2xl bg-[#fffaf2] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                      className="rounded-2xl bg-[#fffaf2] p-4"
                     >
-                      {resource.title}
-                    </a>
+                      <a
+                        href={resource.fileUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block text-sm font-black text-[#1c2d31] transition hover:text-[#1f6358]"
+                      >
+                        {resource.title}
+                      </a>
+                      {resource.description ? (
+                        <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
+                          {resource.description}
+                        </p>
+                      ) : null}
+                    </div>
                   ))
                 )}
               </div>
-            </div>
           </section>
         </div>
       </div>

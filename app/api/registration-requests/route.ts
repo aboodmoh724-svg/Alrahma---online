@@ -10,8 +10,8 @@ import {
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
-const MAX_AUDIO_SIZE = 3 * 1024 * 1024;
-const MAX_ID_FILE_SIZE = 1 * 1024 * 1024;
+const MAX_AUDIO_SIZE = 5 * 1024 * 1024;
+const MAX_ID_FILE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_AUDIO_TYPES = ["audio/", "video/"];
 const ALLOWED_ID_TYPES = ["image/", "application/pdf"];
 const DEFAULT_TUITION_AMOUNT = 250;

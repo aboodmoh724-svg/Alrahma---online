@@ -5,8 +5,8 @@ import { useState } from "react";
 const inputClass =
   "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-2.5 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10 sm:py-3";
 
-const maxAudioSize = 3 * 1024 * 1024;
-const maxIdImageSize = 1 * 1024 * 1024;
+const maxAudioSize = 5 * 1024 * 1024;
+const maxIdImageSize = 2 * 1024 * 1024;
 
 const periods = [
   "الفترة الصباحية 9:00 - 12:00",
@@ -103,12 +103,12 @@ export default function RegistrationPage() {
     }
 
     if (audioFile.size > maxAudioSize) {
-      alert("حجم تسجيل آية الكرسي كبير. فضلا ارفع تسجيلًا صوتيًا قصيرًا لا يتجاوز 3MB.");
+      alert("حجم تسجيل آية الكرسي كبير. فضلا ارفع تسجيلًا صوتيًا قصيرًا لا يتجاوز 5MB.");
       return;
     }
 
     if (idImageFile && idImageFile.size > maxIdImageSize) {
-      alert("حجم صورة الهوية أو الإقامة كبير. فضلا ارفع صورة مضغوطة أو PDF لا يتجاوز 1MB.");
+      alert("حجم صورة الهوية أو الإقامة كبير. فضلا ارفع صورة مضغوطة أو PDF لا يتجاوز 2MB.");
       return;
     }
 
@@ -237,10 +237,10 @@ export default function RegistrationPage() {
                 type="file"
                 accept="image/*,.pdf"
                 onChange={(e) => setIdImageFile(e.target.files?.[0] || null)}
-                className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm"
+                className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-4 text-sm"
               />
               <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
-                الصيغ المسموحة: صورة أو PDF، والحجم لا يتجاوز 1MB مؤقتًا.
+                الصيغ المسموحة: صورة أو PDF، والحجم لا يتجاوز 2MB مؤقتًا.
               </p>
               </div>
               <div>
@@ -417,11 +417,11 @@ export default function RegistrationPage() {
                 type="file"
                 accept="audio/*,video/*"
                 onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-5 text-sm"
+                className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-6 text-sm"
                 required
               />
               <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
-                فضلا ارفع تسجيلًا صوتيًا قصيرًا قدر الإمكان، والحجم لا يتجاوز 3MB مؤقتًا.
+                فضلا ارفع تسجيلًا صوتيًا قصيرًا قدر الإمكان، والحجم لا يتجاوز 5MB مؤقتًا.
               </p>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
