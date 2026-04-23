@@ -1,9 +1,14 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
-import { ManualWhatsAppSentButton } from "@/components/admin/ManualWhatsAppSentButton";
 import { prisma } from "@/lib/prisma";
 import { formatIstanbulDateEnglish, getIstanbulDayRange } from "@/lib/school-day";
+import {
+  isWhatsAppConfigured,
+  normalizeWhatsAppNumber as normalizeWhatsAppNumberShared,
+  onsiteAbsenceWhatsAppMessage,
+  sendWhatsAppText,
+} from "@/lib/whatsapp";
 
 function normalizeWhatsAppNumber(raw: string | null) {
   const digits = String(raw || "").replace(/\D/g, "");
@@ -80,6 +85,111 @@ async function updateTodayAttendanceStatus(formData: FormData) {
       parentSentError: status === "PRESENT" ? null : undefined,
     },
   });
+
+  revalidatePath("/onsite/admin/absences");
+  revalidatePath("/onsite/admin/absence-statistics");
+}
+
+async function sendSelectedAbsenceWhatsApp(formData: FormData) {
+  "use server";
+
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const reportIds = formData
+    .getAll("reportId")
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+
+  if (!adminId || reportIds.length === 0 || !isWhatsAppConfigured()) {
+    return;
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) return;
+
+  const { start, end } = getIstanbulDayRange();
+  const reports = await prisma.report.findMany({
+    where: {
+      id: { in: reportIds },
+      status: "ABSENT",
+      sentToParent: false,
+      createdAt: {
+        gte: start,
+        lt: end,
+      },
+      student: {
+        studyMode: "ONSITE",
+        isActive: true,
+      },
+    },
+    select: {
+      id: true,
+      student: {
+        select: {
+          fullName: true,
+          parentWhatsapp: true,
+        },
+      },
+    },
+  });
+
+  const reportDate = formatIstanbulDateEnglish(start);
+
+  for (const report of reports) {
+    const phone = report.student.parentWhatsapp
+      ? normalizeWhatsAppNumberShared(report.student.parentWhatsapp)
+      : null;
+
+    if (!phone) {
+      await prisma.report.update({
+        where: { id: report.id },
+        data: {
+          parentSentError: "لا يوجد رقم واتساب صالح لولي الأمر",
+        },
+      });
+      continue;
+    }
+
+    try {
+      await sendWhatsAppText({
+        to: phone,
+        body: onsiteAbsenceWhatsAppMessage({
+          studentName: report.student.fullName,
+          reportDate,
+        }),
+      });
+
+      await prisma.report.update({
+        where: { id: report.id },
+        data: {
+          sentToParent: true,
+          parentSentAt: new Date(),
+          parentSentChannel: "WHATSAPP",
+          parentSentError: null,
+        },
+      });
+    } catch (error) {
+      await prisma.report.update({
+        where: { id: report.id },
+        data: {
+          sentToParent: false,
+          parentSentAt: null,
+          parentSentChannel: null,
+          parentSentError:
+            error instanceof Error ? error.message : "تعذر إرسال رسالة واتساب",
+        },
+      });
+    }
+  }
 
   revalidatePath("/onsite/admin/absences");
   revalidatePath("/onsite/admin/absence-statistics");
@@ -191,6 +301,7 @@ export default async function OnsiteAdminAbsencesPage() {
   const presentCount = todayAttendance.filter((report) => report.status === "PRESENT").length;
   const absentCount = todayAttendance.filter((report) => report.status === "ABSENT").length;
   const reportDate = formatIstanbulDateEnglish(start);
+  const whatsappReady = isWhatsAppConfigured();
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -331,13 +442,24 @@ export default async function OnsiteAdminAbsencesPage() {
               لا يوجد طلاب غائبون اليوم حسب آخر حالة مسجلة لكل طالب.
             </div>
           ) : (
-            <div className="grid gap-3">
+            <form action={sendSelectedAbsenceWhatsApp} className="grid gap-3">
+              <div className="flex flex-col gap-2 rounded-[1.5rem] bg-[#173d42] p-4 text-white md:flex-row md:items-center md:justify-between">
+                <div>
+                  <h2 className="text-xl font-black">إرسال واتساب للغياب المحدد</h2>
+                  <p className="mt-1 text-sm text-white/70">
+                    اختر الطلاب الغائبين فقط، ثم اضغط زر الإرسال مرة واحدة.
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={!whatsappReady}
+                  className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2]"
+                >
+                  {whatsappReady ? "إرسال للطلاب المحددين" : "واتساب غير مفعّل"}
+                </button>
+              </div>
               {absences.map((report) => {
                 const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp);
-                const message = absenceMessage({
-                  studentName: report.student.fullName,
-                  reportDate,
-                });
 
                 return (
                   <div
@@ -374,14 +496,16 @@ export default async function OnsiteAdminAbsencesPage() {
 
                     <div className="flex min-w-56 flex-col gap-2">
                       {phone ? (
-                        <>
-                          <ManualWhatsAppSentButton
-                            reportId={report.id}
-                            phone={phone}
-                            message={message}
-                            fallbackUrl={whatsAppUrl(phone, message)}
+                        <label className="flex items-center justify-center gap-3 rounded-2xl bg-[#1f6358] px-5 py-3 text-center text-sm font-black text-white">
+                          <input
+                            type="checkbox"
+                            name="reportId"
+                            value={report.id}
+                            defaultChecked
+                            className="h-5 w-5"
                           />
-                        </>
+                          تحديد للإرسال
+                        </label>
                       ) : (
                         <div className="rounded-2xl bg-red-50 px-5 py-3 text-center text-sm font-black text-red-700 ring-1 ring-red-200">
                           لا يوجد رقم ولي أمر
@@ -396,7 +520,7 @@ export default async function OnsiteAdminAbsencesPage() {
                   </div>
                 );
               })}
-            </div>
+            </form>
           )}
         </section>
       </div>

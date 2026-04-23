@@ -3,6 +3,12 @@ import { NextResponse } from "next/server";
 import { registrationReceivedEmail, sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
+import {
+  isWhatsAppConfigured,
+  normalizeWhatsAppNumber,
+  registrationReceivedWhatsAppMessage,
+  sendWhatsAppText,
+} from "@/lib/whatsapp";
 
 const MAX_AUDIO_SIZE = 3 * 1024 * 1024;
 const MAX_ID_FILE_SIZE = 1 * 1024 * 1024;
@@ -244,6 +250,8 @@ export async function POST(req: Request) {
     const parentEmail = getString(formData, "parentEmail");
     let emailSent = false;
     let emailWarning: string | null = null;
+    let whatsappSent = false;
+    let whatsappWarning: string | null = null;
 
     if (parentEmail) {
       try {
@@ -260,11 +268,28 @@ export async function POST(req: Request) {
       }
     }
 
+    const normalizedWhatsapp = normalizeWhatsAppNumber(parentWhatsapp);
+
+    if (normalizedWhatsapp && isWhatsAppConfigured()) {
+      try {
+        await sendWhatsAppText({
+          to: normalizedWhatsapp,
+          body: registrationReceivedWhatsAppMessage({ studentName }),
+        });
+        whatsappSent = true;
+      } catch (whatsappError) {
+        console.error("REGISTRATION WHATSAPP ERROR =>", whatsappError);
+        whatsappWarning = "تم استلام الطلب، لكن تعذر إرسال رسالة واتساب تلقائية حالياً.";
+      }
+    }
+
     return NextResponse.json({
       success: true,
       request,
       emailSent,
       emailWarning,
+      whatsappSent,
+      whatsappWarning,
     });
   } catch (error) {
     console.error("CREATE REGISTRATION REQUEST ERROR =>", error);

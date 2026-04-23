@@ -10,8 +10,13 @@ type WhatsAppTemplateInput = {
   bodyVariables: string[];
 };
 
+export function isWhatsAppWebJsConfigured() {
+  return Boolean(process.env.WHATSAPP_WEBJS_API_URL);
+}
+
 export function isWhatsAppConfigured() {
   return Boolean(
+    isWhatsAppWebJsConfigured() ||
     process.env.WHATSAPP_TOKEN &&
       process.env.WHATSAPP_PHONE_NUMBER_ID &&
       process.env.WHATSAPP_BUSINESS_ACCOUNT_ID
@@ -93,6 +98,65 @@ export function dailyAttendanceWhatsAppMessage(input: {
   );
 }
 
+export function registrationReceivedWhatsAppMessage(input: { studentName: string }) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `تم استلام طلب تسجيل الطالب: ${input.studentName}\n` +
+    `وسيتم مراجعة الطلب والرد عليكم في أقرب وقت بإذن الله.\n\n` +
+    `منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
+export function onsiteAbsenceWhatsAppMessage(input: { studentName: string; reportDate: string }) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نفيدكم أن ابنكم الكريم / ${input.studentName}\n` +
+    `غائب عن التحفيظ اليوم بتاريخ ${input.reportDate} بدون عذر.\n\n` +
+    `نرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\n` +
+    `نشكركم لحسن تعاونكم.\n\n` +
+    `هذه رسالة تلقائية ترسل للطلاب الغائبين.\n\n` +
+    `إدارة تحفيظ الرحمن للقرآن الكريم`
+  );
+}
+
+async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
+  const apiUrl = process.env.WHATSAPP_WEBJS_API_URL;
+
+  if (!apiUrl) {
+    return { skipped: true };
+  }
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(process.env.WHATSAPP_WEBJS_API_TOKEN
+        ? { Authorization: `Bearer ${process.env.WHATSAPP_WEBJS_API_TOKEN}` }
+        : {}),
+    },
+    body: JSON.stringify({
+      to,
+      number: to,
+      phone: to,
+      message: body,
+      body,
+    }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || "تعذر إرسال رسالة واتساب عبر whatsapp-web.js");
+  }
+
+  const text = await response.text();
+
+  try {
+    return text ? JSON.parse(text) : { success: true };
+  } catch {
+    return { success: true, response: text };
+  }
+}
+
 export async function sendWhatsAppTemplate({
   to,
   templateName,
@@ -156,6 +220,10 @@ export async function sendWhatsAppTemplate({
 }
 
 export async function sendWhatsAppText({ to, body }: WhatsAppTextInput) {
+  if (isWhatsAppWebJsConfigured()) {
+    return sendWhatsAppWebJsText({ to, body });
+  }
+
   const token = process.env.WHATSAPP_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 

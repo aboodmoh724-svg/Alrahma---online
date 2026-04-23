@@ -9,6 +9,7 @@ import {
   attendanceTemplateConfig,
   dailyAttendanceWhatsAppMessage,
   isWhatsAppConfigured,
+  isWhatsAppWebJsConfigured,
   normalizeWhatsAppNumber,
   sendWhatsAppTemplate,
   sendWhatsAppText,
@@ -171,15 +172,12 @@ export async function POST(req: Request) {
       | { attempted: true; sent: true }
       | { attempted: true; sent: false; error: string } = { attempted: false };
 
-    if (student.studyMode === "ONSITE" && !isAttendanceOnly) {
+    if (student.studyMode === "REMOTE" && !isAttendanceOnly) {
       const normalized = student.parentWhatsapp
         ? normalizeWhatsAppNumber(student.parentWhatsapp)
         : null;
 
-      if (
-        normalized &&
-        (isMakeAttendanceWebhookConfigured() || isWhatsAppConfigured())
-      ) {
+      if (normalized && (isWhatsAppConfigured() || isMakeAttendanceWebhookConfigured())) {
         whatsappResult = { attempted: true, sent: false, error: "" };
 
         try {
@@ -195,22 +193,10 @@ export async function POST(req: Request) {
             note: noteValue,
           });
 
-          if (isMakeAttendanceWebhookConfigured()) {
-            await sendAttendanceToMake({
-              reportId: report.id,
-              studentName: student.fullName,
-              parentWhatsapp: normalized,
-              status: report.status,
-              reportDate,
-              lessonName: report.lessonName,
-              nextHomework: nextHomeworkValue,
-              note: noteValue,
-              messageBody,
-            });
-          } else {
+          if (isWhatsAppConfigured()) {
             const template = attendanceTemplateConfig(report.status);
 
-            if (template) {
+            if (template && !isWhatsAppWebJsConfigured()) {
               await sendWhatsAppTemplate({
                 to: normalized,
                 templateName: template.templateName,
@@ -226,6 +212,18 @@ export async function POST(req: Request) {
             } else {
               await sendWhatsAppText({ to: normalized, body: messageBody });
             }
+          } else {
+            await sendAttendanceToMake({
+              reportId: report.id,
+              studentName: student.fullName,
+              parentWhatsapp: normalized,
+              status: report.status,
+              reportDate,
+              lessonName: report.lessonName,
+              nextHomework: nextHomeworkValue,
+              note: noteValue,
+              messageBody,
+            });
           }
 
           await prisma.report.update({
