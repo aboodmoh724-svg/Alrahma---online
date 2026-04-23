@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const inputClass =
   "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-2.5 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10 sm:py-3";
@@ -36,9 +36,11 @@ const livingWithOptions = ["والديه", "والده فقط", "والدته ف
 
 const educationLevels = ["ابتدائي", "متوسط", "ثانوي", "جامعي فأعلى", "غير ذلك"];
 
-const trackFiles = [
-  { href: "/uploads/track-resources/students-parents-guidelines.pdf", label: "التعليمات والتوجيهات للطلاب وأولياء الأمور" },
-];
+type RegistrationGuidelineResource = {
+  id: string;
+  title: string;
+  fileUrl: string;
+};
 
 export default function RegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -48,6 +50,7 @@ export default function RegistrationPage() {
   const [selectedBooks, setSelectedBooks] = useState<string[]>([]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [idImageFile, setIdImageFile] = useState<File | null>(null);
+  const [guidelineResource, setGuidelineResource] = useState<RegistrationGuidelineResource | null>(null);
   const [formData, setFormData] = useState({
     studentName: "",
     previousStudent: "false",
@@ -77,6 +80,25 @@ export default function RegistrationPage() {
   const setField = (name: keyof typeof formData, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
+  useEffect(() => {
+    const fetchGuidelineResource = async () => {
+      try {
+        const response = await fetch("/api/track-resources?scope=REGISTRATION", {
+          cache: "no-store",
+        });
+        const data = await response.json();
+        const resource = Array.isArray(data.resources) && data.resources.length > 0 ? data.resources[0] : null;
+
+        setGuidelineResource(resource);
+      } catch (error) {
+        console.error("FETCH REGISTRATION GUIDELINE ERROR =>", error);
+        setGuidelineResource(null);
+      }
+    };
+
+    fetchGuidelineResource();
+  }, []);
 
   const toggleTrack = (track: string) => {
     setSelectedTracks((prev) =>
@@ -334,17 +356,20 @@ export default function RegistrationPage() {
               فضلا اقرأ ملف التعليمات والتوجيهات جيدا قبل إرسال طلب التسجيل، فهو يحتوي على ما يحتاجه الطالب وولي الأمر.
             </p>
             <div className="grid gap-3">
-              {trackFiles.map((file) => (
+              {guidelineResource ? (
                 <a
-                  key={file.href}
-                  href={file.href}
+                  href={guidelineResource.fileUrl}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
                 >
-                  {file.label}
+                  {guidelineResource.title}
                 </a>
-              ))}
+              ) : (
+                <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                  لا يوجد ملف تعليمات مرفوع حاليا.
+                </div>
+              )}
             </div>
             <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f7f0e6] p-4 text-sm font-black text-[#1c2d31]">
               <input

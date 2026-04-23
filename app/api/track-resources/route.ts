@@ -12,6 +12,10 @@ function normalizeTrack(value: unknown) {
   return allowedTracks.includes(track) ? track : null;
 }
 
+function normalizeScope(value: unknown) {
+  return value === "REGISTRATION" ? "REGISTRATION" : "TEACHER";
+}
+
 function safeFileName(fileName: string) {
   const extension = path.extname(fileName) || ".pdf";
   const baseName = path
@@ -27,9 +31,22 @@ export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const teacherId = String(url.searchParams.get("teacherId") || "").trim();
+    const scope = normalizeScope(url.searchParams.get("scope"));
 
     const resources = await prisma.trackResource.findMany({
-      where: teacherId ? { teacherId } : undefined,
+      where:
+        scope === "REGISTRATION"
+          ? {
+              resourceScope: "REGISTRATION",
+            }
+          : teacherId
+            ? {
+                resourceScope: "TEACHER",
+                teacherId,
+              }
+            : {
+                resourceScope: "TEACHER",
+              },
       orderBy: {
         createdAt: "desc",
       },
@@ -72,13 +89,14 @@ export async function POST(req: Request) {
     const description = String(formData.get("description") || "").trim();
     const track = normalizeTrack(formData.get("track"));
     const teacherId = String(formData.get("teacherId") || "").trim();
+    const scope = normalizeScope(formData.get("scope"));
     const file = formData.get("file");
 
     if (!title) {
       return NextResponse.json({ error: "عنوان الملف مطلوب" }, { status: 400 });
     }
 
-    if (!teacherId) {
+    if (scope === "TEACHER" && !teacherId) {
       return NextResponse.json({ error: "اختر المعلم أولا" }, { status: 400 });
     }
 
@@ -94,44 +112,87 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "يرجى رفع ملف PDF فقط" }, { status: 400 });
     }
 
-    const teacher = await prisma.user.findFirst({
-      where: {
-        id: teacherId,
-        role: "TEACHER",
-        studyMode: "REMOTE",
-        isActive: true,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const teacher =
+      scope === "TEACHER"
+        ? await prisma.user.findFirst({
+            where: {
+              id: teacherId,
+              role: "TEACHER",
+              studyMode: "REMOTE",
+              isActive: true,
+            },
+            select: {
+              id: true,
+            },
+          })
+        : null;
 
-    if (!teacher) {
+    if (scope === "TEACHER" && !teacher) {
       return NextResponse.json({ error: "المعلم المحدد غير موجود" }, { status: 404 });
     }
 
     const fileName = safeFileName(file.name);
     const filePath = await uploadToSupabaseStorage(file, "track-resources", fileName);
 
-    const resource = await prisma.trackResource.create({
-      data: {
-        title,
-        description: description || null,
-        track,
-        teacherId: teacher.id,
-        fileName,
-        fileUrl: filePath,
-      },
-      include: {
-        teacher: {
-          select: {
-            id: true,
-            fullName: true,
-            studyMode: true,
+    const existingRegistrationResource =
+      scope === "REGISTRATION"
+        ? await prisma.trackResource.findFirst({
+            where: {
+              resourceScope: "REGISTRATION",
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              id: true,
+            },
+          })
+        : null;
+
+    const resource = existingRegistrationResource
+      ? await prisma.trackResource.update({
+          where: {
+            id: existingRegistrationResource.id,
           },
-        },
-      },
-    });
+          data: {
+            title,
+            description: description || null,
+            track: null,
+            teacherId: null,
+            resourceScope: "REGISTRATION",
+            fileName,
+            fileUrl: filePath,
+          },
+          include: {
+            teacher: {
+              select: {
+                id: true,
+                fullName: true,
+                studyMode: true,
+              },
+            },
+          },
+        })
+      : await prisma.trackResource.create({
+          data: {
+            title,
+            description: description || null,
+            track: scope === "REGISTRATION" ? null : track,
+            teacherId: teacher?.id || null,
+            resourceScope: scope,
+            fileName,
+            fileUrl: filePath,
+          },
+          include: {
+            teacher: {
+              select: {
+                id: true,
+                fullName: true,
+                studyMode: true,
+              },
+            },
+          },
+        });
 
     return NextResponse.json({
       success: true,

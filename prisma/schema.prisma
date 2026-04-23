@@ -202,6 +202,7 @@ model TrackResource {
   description String?
   track       String?
   teacherId   String?
+  resourceScope TrackResourceScope @default(TEACHER)
   fileUrl     String
   fileName    String
   createdAt   DateTime @default(now())
@@ -322,4 +323,9 @@ enum TeacherAttendanceStatus {
   PRESENT
   ABSENT
   EXCUSED
+}
+
+enum TrackResourceScope {
+  TEACHER
+  REGISTRATION
 }
