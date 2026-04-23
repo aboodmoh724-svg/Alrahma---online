@@ -8,6 +8,13 @@ const MAX_AUDIO_SIZE = 3 * 1024 * 1024;
 const MAX_ID_FILE_SIZE = 1 * 1024 * 1024;
 const ALLOWED_AUDIO_TYPES = ["audio/", "video/"];
 const ALLOWED_ID_TYPES = ["image/", "application/pdf"];
+const DEFAULT_TUITION_AMOUNT = 250;
+const TRACK_TUITION: Record<string, number> = {
+  HIJAA: 250,
+  TILAWA: 250,
+  RUBAI: 250,
+  FARDI: 600,
+};
 
 async function generateStudentCode() {
   const studentsCount = await prisma.student.count();
@@ -63,6 +70,26 @@ function getString(formData: FormData, key: string) {
 
 function getBoolean(formData: FormData, key: string) {
   return parseBoolean(formData.get(key));
+}
+
+function parseAmount(value: unknown) {
+  const amount = Number(String(value || "").replace(",", "."));
+  return Number.isFinite(amount) && amount >= 0 ? amount : 0;
+}
+
+function getExpectedTuitionAmount(requestedTracks: string | null | undefined, circleTrack?: string | null) {
+  const tracks = [
+    ...(circleTrack ? [circleTrack] : []),
+    ...String(requestedTracks || "")
+      .split(",")
+      .map((track) => track.trim())
+      .filter(Boolean),
+  ];
+
+  if (tracks.includes("FARDI")) return TRACK_TUITION.FARDI;
+  const firstPricedTrack = tracks.find((track) => TRACK_TUITION[track]);
+
+  return firstPricedTrack ? TRACK_TUITION[firstPricedTrack] : DEFAULT_TUITION_AMOUNT;
 }
 
 function isAllowedFileType(file: File, allowedTypes: string[]) {
@@ -284,11 +311,15 @@ export async function PATCH(req: Request) {
 
     const circleId = String(body.circleId || "").trim();
     const teacherIdFromBody = String(body.teacherId || "").trim();
+    const hasFinanceAmountOverride =
+      body.financeAmount !== undefined && body.financeAmount !== null && String(body.financeAmount).trim() !== "";
+    const financeAmountFromBody = parseAmount(body.financeAmount);
+    const financeCurrency = String(body.financeCurrency || "USD").trim() || "USD";
 
     const circle = circleId
       ? await prisma.circle.findUnique({
           where: { id: circleId },
-          select: { id: true, teacherId: true, studyMode: true },
+          select: { id: true, teacherId: true, studyMode: true, track: true },
         })
       : null;
 
@@ -301,32 +332,62 @@ export async function PATCH(req: Request) {
       );
     }
 
-    const studentCode = await generateStudentCode();
-    const student = await prisma.student.create({
-      data: {
-        studentCode,
-        fullName: request.studentName,
-        parentWhatsapp: request.parentWhatsapp,
-        parentEmail: request.parentEmail,
-        teacherId,
-        circleId: circle?.id || null,
-        studyMode: circle?.studyMode || "REMOTE",
-        isActive: true,
-      },
-    });
+    if (request.status === "ACCEPTED" && request.createdStudentId) {
+      return NextResponse.json({ error: "هذا الطلب مقبول سابقاً" }, { status: 400 });
+    }
 
-    const updatedRequest = await prisma.registrationRequest.update({
-      where: { id: request.id },
-      data: {
-        status: "ACCEPTED",
-        createdStudentId: student.id,
-      },
+    const expectedTuitionAmount =
+      hasFinanceAmountOverride
+        ? financeAmountFromBody
+        : getExpectedTuitionAmount(request.requestedTracks, circle?.track);
+
+    const studentCode = await generateStudentCode();
+    const { student, updatedRequest } = await prisma.$transaction(async (tx) => {
+      const createdStudent = await tx.student.create({
+        data: {
+          studentCode,
+          fullName: request.studentName,
+          parentWhatsapp: request.parentWhatsapp,
+          parentEmail: request.parentEmail,
+          teacherId,
+          circleId: circle?.id || null,
+          studyMode: circle?.studyMode || "REMOTE",
+          isActive: true,
+        },
+      });
+
+      await tx.studentFinanceAccount.create({
+        data: {
+          studentId: createdStudent.id,
+          totalAmount: expectedTuitionAmount,
+          discountAmount: 0,
+          currency: financeCurrency,
+          notes: `تم إنشاء الرسوم تلقائياً من طلب التسجيل. المسارات المطلوبة: ${request.requestedTracks || "-"}`,
+        },
+      });
+
+      const acceptedRequest = await tx.registrationRequest.update({
+        where: { id: request.id },
+        data: {
+          status: "ACCEPTED",
+          createdStudentId: createdStudent.id,
+        },
+      });
+
+      return {
+        student: createdStudent,
+        updatedRequest: acceptedRequest,
+      };
     });
 
     return NextResponse.json({
       success: true,
       request: updatedRequest,
       student,
+      finance: {
+        totalAmount: expectedTuitionAmount,
+        currency: financeCurrency,
+      },
     });
   } catch (error) {
     console.error("UPDATE REGISTRATION REQUEST ERROR =>", error);

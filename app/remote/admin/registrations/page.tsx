@@ -11,6 +11,7 @@ type Teacher = {
 type Circle = {
   id: string;
   name: string;
+  track: string | null;
   teacher: Teacher | null;
 };
 
@@ -46,8 +47,31 @@ type RegistrationRequest = {
   audioFileName: string | null;
   notes: string | null;
   status: "PENDING" | "ACCEPTED" | "REJECTED";
+  createdStudentId: string | null;
   createdAt: string;
 };
+
+const trackTuition: Record<string, number> = {
+  HIJAA: 250,
+  TILAWA: 250,
+  RUBAI: 250,
+  FARDI: 600,
+};
+
+function getExpectedTuition(requestedTracks?: string | null, circleTrack?: string | null) {
+  const tracks = [
+    ...(circleTrack ? [circleTrack] : []),
+    ...String(requestedTracks || "")
+      .split(",")
+      .map((track) => track.trim())
+      .filter(Boolean),
+  ];
+
+  if (tracks.includes("FARDI")) return 600;
+  const firstPricedTrack = tracks.find((track) => trackTuition[track]);
+
+  return firstPricedTrack ? trackTuition[firstPricedTrack] : 250;
+}
 
 export default function RemoteAdminRegistrationsPage() {
   const [requests, setRequests] = useState<RegistrationRequest[]>([]);
@@ -56,6 +80,7 @@ export default function RemoteAdminRegistrationsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedCircle, setSelectedCircle] = useState<Record<string, string>>({});
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
+  const [financeAmount, setFinanceAmount] = useState<Record<string, string>>({});
 
   const fetchData = async () => {
     try {
@@ -97,6 +122,8 @@ export default function RemoteAdminRegistrationsPage() {
         action,
         circleId: selectedCircle[requestId] || "",
         teacherId: selectedTeacher[requestId] || "",
+        financeAmount: financeAmount[requestId] || "",
+        financeCurrency: "USD",
       }),
     });
     const data = await response.json();
@@ -191,6 +218,16 @@ export default function RemoteAdminRegistrationsPage() {
                     <p className="font-black text-[#1c2d31]">المسارات المطلوبة</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.requestedTracks || "-"}</p>
                   </div>
+                  <div className="rounded-2xl bg-[#173d42] p-3 text-sm text-white">
+                    <p className="font-black">الرسوم المتوقعة</p>
+                    <p className="mt-1 text-white/75">
+                      {getExpectedTuition(
+                        request.requestedTracks,
+                        circles.find((circle) => circle.id === selectedCircle[request.id])?.track
+                      )}{" "}
+                      USD
+                    </p>
+                  </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">التجهيزات</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.hasDevice ? "متوفرة" : "غير مؤكدة"}</p>
@@ -250,13 +287,26 @@ export default function RemoteAdminRegistrationsPage() {
                 ) : null}
 
                 {request.status === "PENDING" ? (
-                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto_auto] md:items-end">
+                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_0.8fr_auto_auto] md:items-end">
                     <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">الحلقة</label>
-                      <select value={selectedCircle[request.id] || ""} onChange={(e) => setSelectedCircle((prev) => ({ ...prev, [request.id]: e.target.value }))} className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm">
+                      <select
+                        value={selectedCircle[request.id] || ""}
+                        onChange={(e) => {
+                          const circleId = e.target.value;
+                          const circleTrack = circles.find((circle) => circle.id === circleId)?.track;
+
+                          setSelectedCircle((prev) => ({ ...prev, [request.id]: circleId }));
+                          setFinanceAmount((prev) => ({
+                            ...prev,
+                            [request.id]: String(getExpectedTuition(request.requestedTracks, circleTrack)),
+                          }));
+                        }}
+                        className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm"
+                      >
                         <option value="">اختر حلقة</option>
                         {circles.map((circle) => (
-                          <option key={circle.id} value={circle.id}>{circle.name}</option>
+                          <option key={circle.id} value={circle.id}>{circle.name} {circle.track ? `- ${circle.track}` : ""}</option>
                         ))}
                       </select>
                     </div>
@@ -268,6 +318,31 @@ export default function RemoteAdminRegistrationsPage() {
                           <option key={teacher.id} value={teacher.id}>{teacher.fullName}</option>
                         ))}
                       </select>
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">المبلغ المطلوب</label>
+                      <div className="flex overflow-hidden rounded-2xl border border-[#d9c8ad] bg-white">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={
+                            financeAmount[request.id] ??
+                            String(
+                              getExpectedTuition(
+                                request.requestedTracks,
+                                circles.find((circle) => circle.id === selectedCircle[request.id])?.track
+                              )
+                            )
+                          }
+                          onChange={(event) =>
+                            setFinanceAmount((prev) => ({ ...prev, [request.id]: event.target.value }))
+                          }
+                          className="w-full px-4 py-3 text-sm outline-none"
+                        />
+                        <span className="bg-[#fffaf2] px-3 py-3 text-sm font-black text-[#8a6335]">USD</span>
+                      </div>
+                      <p className="mt-1 text-xs text-[#1c2d31]/55">يمكن تعديله قبل القبول.</p>
                     </div>
                     <button type="button" onClick={() => updateRequest(request.id, "ACCEPT")} className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white">
                       قبول
