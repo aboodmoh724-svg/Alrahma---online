@@ -12,6 +12,41 @@ type WhatsAppTemplateInput = {
 
 const DEFAULT_WEBJS_API_URL = "http://185.182.8.94:3001/send-message";
 
+function extractWhatsAppErrorMessage(raw: string) {
+  const text = String(raw || "").trim();
+
+  if (!text) {
+    return "تعذر إرسال رسالة واتساب عبر الخادم الحالي.";
+  }
+
+  if (/<!doctype html>|<html/i.test(text)) {
+    return "خادم واتساب أعاد صفحة غير متوقعة. تأكد من رابط خادم واتساب في Vercel أو من أن الخدمة تعمل بشكل صحيح.";
+  }
+
+  try {
+    const parsed = JSON.parse(text) as {
+      error?: string | { message?: string };
+      message?: string;
+    };
+
+    if (typeof parsed.error === "string" && parsed.error.trim()) {
+      return parsed.error.trim();
+    }
+
+    if (parsed.error && typeof parsed.error === "object" && parsed.error.message?.trim()) {
+      return parsed.error.message.trim();
+    }
+
+    if (typeof parsed.message === "string" && parsed.message.trim()) {
+      return parsed.message.trim();
+    }
+  } catch {
+    // Fall back to the plain text below.
+  }
+
+  return text.length > 280 ? `${text.slice(0, 280)}...` : text;
+}
+
 export function isWhatsAppWebJsConfigured() {
   return Boolean(process.env.WHATSAPP_WEBJS_API_URL || DEFAULT_WEBJS_API_URL);
 }
@@ -108,7 +143,10 @@ export function registrationReceivedWhatsAppMessage(input: { studentName: string
   );
 }
 
-export function onsiteAbsenceWhatsAppMessage(input: { studentName: string; reportDate: string }) {
+export function onsiteAbsenceWhatsAppMessage(input: {
+  studentName: string;
+  reportDate: string;
+}) {
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
     `نفيدكم أن ابنكم الكريم / ${input.studentName}\n` +
@@ -145,6 +183,7 @@ async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
       ...(process.env.WHATSAPP_WEBJS_API_TOKEN
         ? { Authorization: `Bearer ${process.env.WHATSAPP_WEBJS_API_TOKEN}` }
         : {}),
@@ -157,7 +196,7 @@ async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
 
   if (!response.ok) {
     const message = await response.text();
-    throw new Error(message || "تعذر إرسال رسالة واتساب عبر whatsapp-web.js");
+    throw new Error(extractWhatsAppErrorMessage(message));
   }
 
   const text = await response.text();
