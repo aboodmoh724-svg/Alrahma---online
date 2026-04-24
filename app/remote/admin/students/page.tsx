@@ -22,6 +22,7 @@ type Student = {
   id: string;
   studentCode: string | null;
   fullName: string;
+  parentWhatsapp: string | null;
   studyMode: "REMOTE" | "ONSITE";
   isActive: boolean;
   createdAt: string;
@@ -37,8 +38,10 @@ export default function RemoteAdminStudentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [editingStudentId, setEditingStudentId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [editParentWhatsapp, setEditParentWhatsapp] = useState("");
   const [formData, setFormData] = useState({
     fullName: "",
+    parentWhatsapp: "",
     teacherId: "",
     circleId: "",
     studyMode: "REMOTE",
@@ -140,7 +143,13 @@ export default function RemoteAdminStudentsPage() {
       }
 
       alert("تمت إضافة الطالب بنجاح");
-      setFormData({ fullName: "", teacherId: "", circleId: "", studyMode: "REMOTE" });
+      setFormData({
+        fullName: "",
+        parentWhatsapp: "",
+        teacherId: "",
+        circleId: "",
+        studyMode: "REMOTE",
+      });
       await fetchData();
     } catch (error) {
       console.error("CREATE REMOTE STUDENT ERROR =>", error);
@@ -152,7 +161,12 @@ export default function RemoteAdminStudentsPage() {
 
   const updateStudent = async (
     studentId: string,
-    patch: { fullName?: string; teacherId?: string; circleId?: string | null }
+    patch: {
+      fullName?: string;
+      parentWhatsapp?: string;
+      teacherId?: string;
+      circleId?: string | null;
+    }
   ) => {
     const res = await fetch(`/api/students/${studentId}`, {
       method: "PATCH",
@@ -197,10 +211,14 @@ export default function RemoteAdminStudentsPage() {
   const startEdit = (student: Student) => {
     setEditingStudentId(student.id);
     setEditName(student.fullName);
+    setEditParentWhatsapp(student.parentWhatsapp || "");
   };
 
   const saveStudentName = async (studentId: string) => {
-    const ok = await updateStudent(studentId, { fullName: editName });
+    const ok = await updateStudent(studentId, {
+      fullName: editName,
+      parentWhatsapp: editParentWhatsapp,
+    });
     if (ok) {
       setEditingStudentId(null);
       await fetchData();
@@ -237,6 +255,15 @@ export default function RemoteAdminStudentsPage() {
                 placeholder="اسم الطالب"
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                 required
+              />
+              <input
+                type="text"
+                name="parentWhatsapp"
+                value={formData.parentWhatsapp}
+                onChange={handleChange}
+                placeholder="رقم ولي الأمر"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                dir="ltr"
               />
               <select
                 name="circleId"
@@ -296,6 +323,7 @@ export default function RemoteAdminStudentsPage() {
                     <tr className="bg-gray-100 text-right text-sm text-gray-600">
                       <th className="px-4 py-3 font-medium">رقم الطالب</th>
                       <th className="px-4 py-3 font-medium">اسم الطالب</th>
+                      <th className="px-4 py-3 font-medium">رقم ولي الأمر</th>
                       <th className="px-4 py-3 font-medium">المعلم</th>
                       <th className="px-4 py-3 font-medium">الحلقة</th>
                       <th className="px-4 py-3 font-medium">الإجراءات</th>
@@ -316,6 +344,18 @@ export default function RemoteAdminStudentsPage() {
                             />
                           ) : (
                             student.fullName
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {editingStudentId === student.id ? (
+                            <input
+                              value={editParentWhatsapp}
+                              onChange={(event) => setEditParentWhatsapp(event.target.value)}
+                              className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                              dir="ltr"
+                            />
+                          ) : (
+                            student.parentWhatsapp || "-"
                           )}
                         </td>
                         <td className="px-4 py-3 text-gray-700">

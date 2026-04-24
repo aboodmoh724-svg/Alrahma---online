@@ -35,7 +35,15 @@ export async function GET(req: Request) {
       orderBy: {
         createdAt: "desc",
       },
-      include: {
+      select: {
+        id: true,
+        studentCode: true,
+        fullName: true,
+        studyMode: true,
+        isActive: true,
+        createdAt: true,
+        parentWhatsapp: true,
+        parentEmail: true,
         teacher: {
           select: {
             id: true,
@@ -73,6 +81,7 @@ export async function POST(req: Request) {
     const fullName = String(body.fullName || "").trim();
     const circleId = String(body.circleId || "").trim();
     const teacherIdFromBody = String(body.teacherId || "").trim();
+    const parentWhatsapp = String(body.parentWhatsapp || "").trim() || null;
     const studyMode = body.studyMode === "ONSITE" ? "ONSITE" : "REMOTE";
 
     if (!fullName) {
@@ -136,12 +145,21 @@ export async function POST(req: Request) {
       data: {
         studentCode,
         fullName,
+        parentWhatsapp,
         teacherId,
         circleId: resolvedCircleId,
         studyMode: resolvedStudyMode,
         isActive: true,
       },
-      include: {
+      select: {
+        id: true,
+        studentCode: true,
+        fullName: true,
+        studyMode: true,
+        isActive: true,
+        createdAt: true,
+        parentWhatsapp: true,
+        parentEmail: true,
         teacher: {
           select: {
             id: true,
