@@ -1,7 +1,11 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { dailyReportEmail, isEmailConfigured, sendEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
+import {
+  normalizeWhatsAppNumber,
+  remoteDailyReportWhatsAppMessage,
+  sendWhatsAppText,
+} from "@/lib/whatsapp";
 
 type RouteContext = {
   params: Promise<{
@@ -28,22 +32,21 @@ export async function PATCH(request: Request, context: RouteContext) {
       where: {
         id: reportId,
         teacherId,
+        student: {
+          studyMode: "REMOTE",
+        },
       },
       select: {
         id: true,
         sentToParent: true,
         lessonName: true,
-        pageFrom: true,
-        pageTo: true,
-        pagesCount: true,
+        review: true,
         nextHomework: true,
         note: true,
-        status: true,
-        createdAt: true,
         student: {
           select: {
             fullName: true,
-            parentEmail: true,
+            parentWhatsapp: true,
           },
         },
       },
@@ -63,48 +66,46 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
-    if (!report.student.parentEmail) {
+    const phone = report.student.parentWhatsapp
+      ? normalizeWhatsAppNumber(report.student.parentWhatsapp)
+      : null;
+
+    if (!phone) {
       return NextResponse.json(
-        { error: "لا يوجد بريد إلكتروني مسجل لولي الأمر" },
+        { error: "لا يوجد رقم واتساب مسجل لولي الأمر" },
         { status: 400 }
       );
     }
 
-    if (!isEmailConfigured()) {
-      return NextResponse.json(
-        { error: "خدمة الإيميل غير مفعلة بعد. أضف BREVO_API_KEY في إعدادات Vercel." },
-        { status: 503 }
-      );
-    }
-
-    const emailContent = dailyReportEmail({
+    const message = remoteDailyReportWhatsAppMessage({
       studentName: report.student.fullName,
-      reportDate: report.createdAt.toLocaleDateString("ar-EG"),
       lessonName: report.lessonName,
-      status: report.status,
-      pageFrom: report.pageFrom,
-      pageTo: report.pageTo,
-      pagesCount: report.pagesCount,
-      nextHomework: report.nextHomework,
+      review: report.review,
+      homework: report.nextHomework,
       note: report.note,
     });
 
     try {
-      await sendEmail({
-        to: report.student.parentEmail,
-        subject: emailContent.subject,
-        text: emailContent.text,
+      await sendWhatsAppText({
+        to: phone,
+        body: message,
       });
-    } catch (emailError) {
-      const message =
-        emailError instanceof Error
-          ? emailError.message
-          : "تعذر إرسال التقرير عبر الإيميل";
+    } catch (whatsAppError) {
+      const messageText =
+        whatsAppError instanceof Error
+          ? whatsAppError.message
+          : "تعذر إرسال التقرير عبر واتساب";
 
-      return NextResponse.json(
-        { error: message },
-        { status: 502 }
-      );
+      await prisma.report.update({
+        where: {
+          id: report.id,
+        },
+        data: {
+          parentSentError: messageText,
+        },
+      });
+
+      return NextResponse.json({ error: messageText }, { status: 502 });
     }
 
     const updatedReport = await prisma.report.update({
@@ -112,7 +113,10 @@ export async function PATCH(request: Request, context: RouteContext) {
         id: report.id,
       },
       data: {
-        sentToParent,
+        sentToParent: true,
+        parentSentAt: new Date(),
+        parentSentChannel: "WHATSAPP",
+        parentSentError: null,
       },
     });
 

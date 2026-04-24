@@ -10,16 +10,18 @@ type WhatsAppTemplateInput = {
   bodyVariables: string[];
 };
 
+const DEFAULT_WEBJS_API_URL = "http://185.182.8.94:3001/send-message";
+
 export function isWhatsAppWebJsConfigured() {
-  return Boolean(process.env.WHATSAPP_WEBJS_API_URL);
+  return Boolean(process.env.WHATSAPP_WEBJS_API_URL || DEFAULT_WEBJS_API_URL);
 }
 
 export function isWhatsAppConfigured() {
   return Boolean(
     isWhatsAppWebJsConfigured() ||
-    process.env.WHATSAPP_TOKEN &&
-      process.env.WHATSAPP_PHONE_NUMBER_ID &&
-      process.env.WHATSAPP_BUSINESS_ACCOUNT_ID
+      (process.env.WHATSAPP_TOKEN &&
+        process.env.WHATSAPP_PHONE_NUMBER_ID &&
+        process.env.WHATSAPP_BUSINESS_ACCOUNT_ID)
   );
 }
 
@@ -100,10 +102,9 @@ export function dailyAttendanceWhatsAppMessage(input: {
 
 export function registrationReceivedWhatsAppMessage(input: { studentName: string }) {
   return (
-    `السلام عليكم ورحمة الله وبركاته\n\n` +
-    `تم استلام طلب تسجيل الطالب: ${input.studentName}\n` +
-    `وسيتم مراجعة الطلب والرد عليكم في أقرب وقت بإذن الله.\n\n` +
-    `منصة الرحمة لتعليم القرآن الكريم`
+    `السلام عليكم ورحمة الله وبركاته\n` +
+    `تم تسجيل الطالب ${input.studentName} بنجاح في منصة الرحمة.\n` +
+    `سنقوم بالتواصل معكم قريبًا بإذن الله.`
   );
 }
 
@@ -113,18 +114,32 @@ export function onsiteAbsenceWhatsAppMessage(input: { studentName: string; repor
     `نفيدكم أن ابنكم الكريم / ${input.studentName}\n` +
     `غائب عن التحفيظ اليوم بتاريخ ${input.reportDate} بدون عذر.\n\n` +
     `نرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\n` +
-    `نشكركم لحسن تعاونكم.\n\n` +
+    `نشكر لكم حسن تعاونكم.\n\n` +
     `هذه رسالة تلقائية ترسل للطلاب الغائبين.\n\n` +
     `إدارة تحفيظ الرحمن للقرآن الكريم`
   );
 }
 
-async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
-  const apiUrl = process.env.WHATSAPP_WEBJS_API_URL;
+export function remoteDailyReportWhatsAppMessage(input: {
+  studentName: string;
+  lessonName: string;
+  review?: string | null;
+  homework?: string | null;
+  note?: string | null;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n` +
+    `تقرير الطالب: ${input.studentName}\n\n` +
+    `الدرس: ${input.lessonName || "-"}\n` +
+    `المراجعة: ${input.review?.trim() || "-"}\n` +
+    `الواجب: ${input.homework?.trim() || "-"}\n` +
+    `ملاحظات: ${input.note?.trim() || "-"}\n\n` +
+    `جزاكم الله خيرًا`
+  );
+}
 
-  if (!apiUrl) {
-    return { skipped: true };
-  }
+async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
+  const apiUrl = process.env.WHATSAPP_WEBJS_API_URL || DEFAULT_WEBJS_API_URL;
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -135,7 +150,7 @@ async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
         : {}),
     },
     body: JSON.stringify({
-      to,
+      phone: to,
       message: body,
     }),
   });
@@ -264,4 +279,3 @@ export async function sendWhatsAppText({ to, body }: WhatsAppTextInput) {
 
   return response.json();
 }
-

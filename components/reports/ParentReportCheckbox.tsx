@@ -5,18 +5,18 @@ import { useState } from "react";
 type ParentReportCheckboxProps = {
   reportId: string;
   initialChecked: boolean;
-  parentEmail?: string | null;
+  parentWhatsapp?: string | null;
 };
 
 export default function ParentReportCheckbox({
   reportId,
   initialChecked,
-  parentEmail,
+  parentWhatsapp,
 }: ParentReportCheckboxProps) {
   const [checked, setChecked] = useState(initialChecked);
   const [saving, setSaving] = useState(false);
 
-  const handleSendEmail = async () => {
+  const handleSendWhatsApp = async () => {
     if (checked || saving) {
       return;
     }
@@ -39,12 +39,12 @@ export default function ParentReportCheckbox({
 
       if (!response.ok) {
         setChecked(previousChecked);
-        alert(data.error || "تعذر إرسال التقرير عبر الإيميل");
+        alert(data.error || "تعذر إرسال التقرير عبر واتساب");
       }
     } catch (error) {
-      console.error("PARENT REPORT CHECKBOX ERROR =>", error);
+      console.error("PARENT REPORT WHATSAPP ERROR =>", error);
       setChecked(previousChecked);
-      alert("حدث خطأ أثناء إرسال التقرير عبر الإيميل");
+      alert("حدث خطأ أثناء إرسال التقرير عبر واتساب");
     } finally {
       setSaving(false);
     }
@@ -52,25 +52,27 @@ export default function ParentReportCheckbox({
 
   return (
     <div className="space-y-2">
-      {parentEmail ? (
+      {parentWhatsapp ? (
         <button
           type="button"
-          onClick={handleSendEmail}
+          onClick={handleSendWhatsApp}
           disabled={saving || checked}
           className="block w-full rounded-xl bg-[#1f6358] px-3 py-2 text-center text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {checked ? "تم إرسال الإيميل" : saving ? "جاري الإرسال..." : "إرسال التقرير بالإيميل"}
+          {checked ? "تم إرسال الواتساب" : saving ? "جاري الإرسال..." : "إرسال عبر واتساب"}
         </button>
       ) : (
         <p className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800">
-          لا يوجد إيميل لولي الأمر
+          لا يوجد رقم واتساب لولي الأمر
         </p>
       )}
-      <div className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
-        checked
-          ? "cursor-default border-emerald-200 bg-emerald-50 text-emerald-800"
-          : "border-[#d9c8ad] text-[#1c2d31]"
-      }`}>
+      <div
+        className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
+          checked
+            ? "cursor-default border-emerald-200 bg-emerald-50 text-emerald-800"
+            : "border-[#d9c8ad] text-[#1c2d31]"
+        }`}
+      >
         <input
           type="checkbox"
           checked={checked}

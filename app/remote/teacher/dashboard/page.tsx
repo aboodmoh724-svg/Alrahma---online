@@ -432,7 +432,7 @@ export default async function RemoteTeacherDashboardPage({
                           <ParentReportCheckbox
                             reportId={todayReport.id}
                             initialChecked={todayReport.sentToParent}
-                            parentEmail={student.parentEmail}
+                            parentWhatsapp={student.parentWhatsapp}
                           />
                         ) : null}
 

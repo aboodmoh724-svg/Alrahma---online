@@ -1,19 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import {
-  isMakeAttendanceWebhookConfigured,
-  sendAttendanceToMake,
-} from "@/lib/make-attendance";
 import { prisma } from "@/lib/prisma";
-import {
-  attendanceTemplateConfig,
-  dailyAttendanceWhatsAppMessage,
-  isWhatsAppConfigured,
-  isWhatsAppWebJsConfigured,
-  normalizeWhatsAppNumber,
-  sendWhatsAppTemplate,
-  sendWhatsAppText,
-} from "@/lib/whatsapp";
 
 function optionalNumber(value: unknown) {
   if (value === null || value === undefined || value === "") {
@@ -22,28 +9,6 @@ function optionalNumber(value: unknown) {
 
   const numberValue = Number(value);
   return Number.isFinite(numberValue) ? numberValue : null;
-}
-
-function attendanceMessage(input: {
-  studentName: string;
-  reportDate: string;
-  status: "PRESENT" | "ABSENT";
-  lessonName: string;
-  nextHomework: string;
-  note: string;
-}) {
-  if (input.status === "ABSENT") {
-    return `السلام عليكم ورحمة الله وبركاته\n\nنفيدكم أن ابنكم الكريم / ${input.studentName}\nغائب عن التحفيظ اليوم بدون عذر.\n\nنرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\nنشكر لكم حرصكم وتفهمكم.\n\nهذه الرسالة ترسل بشكل تلقائي للطلاب الغائبين.\n\nإدارة تحفيظ الرحمة للقرآن الكريم - أفيون`;
-  }
-
-  return dailyAttendanceWhatsAppMessage({
-    studentName: input.studentName,
-    reportDate: input.reportDate,
-    status: input.status,
-    lessonName: input.lessonName,
-    nextHomework: input.nextHomework,
-    note: input.note,
-  });
 }
 
 export async function POST(req: Request) {
@@ -90,21 +55,19 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "الطالب مطلوب" }, { status: 400 });
     }
 
-    if (
-      !isAbsent &&
-      (!lessonName || typeof lessonName !== "string" || !lessonName.trim())
-    ) {
+    if (!isAbsent && (!lessonName || typeof lessonName !== "string" || !lessonName.trim())) {
       return NextResponse.json({ error: "الدرس مطلوب" }, { status: 400 });
     }
 
     if (
       !isAbsent &&
       !isAttendanceOnly &&
-      (!lessonSurah ||
-        typeof lessonSurah !== "string" ||
-        !lessonSurah.trim())
+      (!lessonSurah || typeof lessonSurah !== "string" || !lessonSurah.trim())
     ) {
-      return NextResponse.json({ error: "اسم السورة في الدرس الجديد مطلوب" }, { status: 400 });
+      return NextResponse.json(
+        { error: "اسم السورة في الدرس الجديد مطلوب" },
+        { status: 400 }
+      );
     }
 
     const student = await prisma.student.findFirst({
@@ -115,9 +78,6 @@ export async function POST(req: Request) {
       },
       select: {
         id: true,
-        fullName: true,
-        parentWhatsapp: true,
-        studyMode: true,
       },
     });
 
@@ -139,25 +99,19 @@ export async function POST(req: Request) {
             : typeof lessonSurah === "string"
               ? lessonSurah.trim()
               : null,
-        lessonMemorized:
-          typeof lessonMemorized === "boolean" ? lessonMemorized : null,
-        lastFiveMemorized:
-          typeof lastFiveMemorized === "boolean" ? lastFiveMemorized : null,
+        lessonMemorized: typeof lessonMemorized === "boolean" ? lessonMemorized : null,
+        lastFiveMemorized: typeof lastFiveMemorized === "boolean" ? lastFiveMemorized : null,
         review: typeof review === "string" ? review.trim() : "",
-        reviewSurah:
-          typeof reviewSurah === "string" ? reviewSurah.trim() : null,
+        reviewSurah: typeof reviewSurah === "string" ? reviewSurah.trim() : null,
         reviewFrom: optionalNumber(reviewFrom),
         reviewTo: optionalNumber(reviewTo),
         reviewPagesCount: optionalNumber(reviewPagesCount),
-        reviewMemorized:
-          typeof reviewMemorized === "boolean" ? reviewMemorized : null,
+        reviewMemorized: typeof reviewMemorized === "boolean" ? reviewMemorized : null,
         pageFrom: optionalNumber(pageFrom),
         pageTo: optionalNumber(pageTo),
         pagesCount: optionalNumber(pagesCount),
-        homework:
-          typeof homework === "string" && homework.trim() ? homework.trim() : "-",
-        nextHomework:
-          typeof nextHomework === "string" ? nextHomework.trim() : "",
+        homework: typeof homework === "string" && homework.trim() ? homework.trim() : "-",
+        nextHomework: typeof nextHomework === "string" ? nextHomework.trim() : "",
         nextLessonHomework:
           typeof nextLessonHomework === "string" ? nextLessonHomework.trim() : "",
         nextReviewHomework:
@@ -167,100 +121,10 @@ export async function POST(req: Request) {
       },
     });
 
-    let whatsappResult:
-      | { attempted: false }
-      | { attempted: true; sent: true }
-      | { attempted: true; sent: false; error: string } = { attempted: false };
-
-    if (student.studyMode === "REMOTE" && !isAttendanceOnly) {
-      const normalized = student.parentWhatsapp
-        ? normalizeWhatsAppNumber(student.parentWhatsapp)
-        : null;
-
-      if (normalized && (isWhatsAppConfigured() || isMakeAttendanceWebhookConfigured())) {
-        whatsappResult = { attempted: true, sent: false, error: "" };
-
-        try {
-          const reportDate = report.createdAt.toLocaleDateString("ar-EG");
-          const nextHomeworkValue = report.nextHomework || "غير محدد";
-          const noteValue = report.note || "لا توجد ملاحظات";
-          const messageBody = attendanceMessage({
-            studentName: student.fullName,
-            reportDate,
-            status: report.status,
-            lessonName: report.lessonName,
-            nextHomework: nextHomeworkValue,
-            note: noteValue,
-          });
-
-          if (isWhatsAppConfigured()) {
-            const template = attendanceTemplateConfig(report.status);
-
-            if (template && !isWhatsAppWebJsConfigured()) {
-              await sendWhatsAppTemplate({
-                to: normalized,
-                templateName: template.templateName,
-                languageCode: template.languageCode,
-                bodyVariables: [
-                  student.fullName,
-                  reportDate,
-                  report.lessonName,
-                  nextHomeworkValue,
-                  noteValue,
-                ],
-              });
-            } else {
-              await sendWhatsAppText({ to: normalized, body: messageBody });
-            }
-          } else {
-            await sendAttendanceToMake({
-              reportId: report.id,
-              studentName: student.fullName,
-              parentWhatsapp: normalized,
-              status: report.status,
-              reportDate,
-              lessonName: report.lessonName,
-              nextHomework: nextHomeworkValue,
-              note: noteValue,
-              messageBody,
-            });
-          }
-
-          await prisma.report.update({
-            where: { id: report.id },
-            data: {
-              sentToParent: true,
-              parentSentAt: new Date(),
-              parentSentChannel: "WHATSAPP",
-              parentSentError: null,
-            },
-          });
-          whatsappResult = { attempted: true, sent: true };
-        } catch (whatsAppError) {
-          const message =
-            whatsAppError instanceof Error
-              ? whatsAppError.message
-              : "تعذر إرسال رسالة واتساب لولي الأمر";
-
-          await prisma.report.update({
-            where: { id: report.id },
-            data: {
-              sentToParent: false,
-              parentSentAt: null,
-              parentSentChannel: null,
-              parentSentError: message,
-            },
-          });
-
-          whatsappResult = { attempted: true, sent: false, error: message };
-        }
-      }
-    }
-
     return NextResponse.json({
       success: true,
       report,
-      whatsapp: whatsappResult,
+      whatsapp: { attempted: false },
     });
   } catch (error) {
     console.error("CREATE REPORT ERROR =>", error);
