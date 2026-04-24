@@ -43,10 +43,13 @@ export async function GET(_request: Request, context: RouteContext) {
           select: {
             id: true,
             lessonName: true,
+            lessonMemorized: true,
+            lastFiveMemorized: true,
             review: true,
             pageFrom: true,
             pageTo: true,
             pagesCount: true,
+            reviewMemorized: true,
             homework: true,
             nextHomework: true,
             note: true,
@@ -64,6 +67,7 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
+    const previousReport = student.reports[0] || null;
     const lastNextHomework =
       student.reports.find((report) => report.nextHomework?.trim())
         ?.nextHomework || "";
@@ -72,6 +76,7 @@ export async function GET(_request: Request, context: RouteContext) {
       success: true,
       student,
       reports: student.reports,
+      previousReport,
       lastNextHomework,
     });
   } catch (error) {

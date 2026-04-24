@@ -23,11 +23,13 @@ type ReportItem = {
       id: string;
       name: string;
       track: string | null;
+      studyMode?: "REMOTE" | "ONSITE";
     } | null;
     teacher: {
       id: string;
       fullName: string;
       email: string;
+      studyMode?: "REMOTE" | "ONSITE";
     };
   };
 };
@@ -130,6 +132,26 @@ function buildSummaries(reports: ReportItem[]) {
   );
 }
 
+function isRemoteReport(report: ReportItem) {
+  const studentMode = report.student.studyMode;
+  const teacherMode = report.student.teacher?.studyMode;
+  const circleMode = report.student.circle?.studyMode;
+
+  if (studentMode !== "REMOTE") {
+    return false;
+  }
+
+  if (teacherMode && teacherMode !== "REMOTE") {
+    return false;
+  }
+
+  if (circleMode && circleMode !== "REMOTE") {
+    return false;
+  }
+
+  return true;
+}
+
 export default function RemoteAdminReportsPage() {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,9 +160,16 @@ export default function RemoteAdminReportsPage() {
   const fetchReports = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/admin-reports", { cache: "no-store" });
+      const reportsUrl = new URL("/api/admin-reports", window.location.origin);
+      reportsUrl.searchParams.set("studyMode", "REMOTE");
+
+      const res = await fetch(reportsUrl.toString(), { cache: "no-store" });
       const data = await res.json();
-      setReports(Array.isArray(data.reports) ? data.reports : []);
+      setReports(
+        Array.isArray(data.reports)
+          ? data.reports.filter((report: ReportItem) => isRemoteReport(report))
+          : []
+      );
     } catch (error) {
       console.error("FETCH ADMIN REPORTS ERROR =>", error);
       setReports([]);

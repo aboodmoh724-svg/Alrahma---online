@@ -1,9 +1,24 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url)
+    const rawStudyMode = url.searchParams.get("studyMode") || ""
+    const studyMode =
+      rawStudyMode === "REMOTE" || rawStudyMode === "ONSITE" ? rawStudyMode : ""
+
     const reports = await prisma.report.findMany({
+      where: studyMode
+        ? {
+            student: {
+              studyMode,
+              teacher: {
+                studyMode,
+              },
+            },
+          }
+        : undefined,
       orderBy: {
         createdAt: "desc",
       },
@@ -19,6 +34,7 @@ export async function GET() {
                 id: true,
                 name: true,
                 track: true,
+                studyMode: true,
               },
             },
             teacher: {
@@ -26,6 +42,7 @@ export async function GET() {
                 id: true,
                 fullName: true,
                 email: true,
+                studyMode: true,
               },
             },
           },

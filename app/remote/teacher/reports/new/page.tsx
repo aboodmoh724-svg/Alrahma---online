@@ -9,6 +9,20 @@ type Student = {
   fullName: string;
 };
 
+type HistoryReport = {
+  id: string;
+  lessonName: string;
+  lessonMemorized: boolean | null;
+  lastFiveMemorized: boolean | null;
+  review: string | null;
+  reviewMemorized: boolean | null;
+  homework: string;
+  nextHomework: string | null;
+  note: string | null;
+  status: "PRESENT" | "ABSENT";
+  createdAt: string;
+};
+
 const surahNames = [
   "الفاتحة",
   "البقرة",
@@ -201,6 +215,8 @@ function NewReportForm() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [suggestedHomework, setSuggestedHomework] = useState("");
+  const [previousReport, setPreviousReport] = useState<HistoryReport | null>(null);
+  const [recentReports, setRecentReports] = useState<HistoryReport[]>([]);
 
   const [formData, setFormData] = useState({
     studentId: studentIdFromUrl,
@@ -232,10 +248,13 @@ function NewReportForm() {
     const fetchStudents = async () => {
       try {
         setLoadingStudents(true);
-        const studentsUrl = circleIdFromUrl
-          ? `/api/students?circleId=${circleIdFromUrl}`
-          : "/api/students";
-        const res = await fetch(studentsUrl, { cache: "no-store" });
+        const studentsUrl = new URL(
+          circleIdFromUrl ? `/api/students?circleId=${circleIdFromUrl}` : "/api/students",
+          window.location.origin
+        );
+        studentsUrl.searchParams.set("studyMode", "REMOTE");
+
+        const res = await fetch(studentsUrl.toString(), { cache: "no-store" });
         const data = await res.json();
         setStudents(res.ok && Array.isArray(data.students) ? data.students : []);
       } catch (error) {
@@ -252,16 +271,30 @@ function NewReportForm() {
   useEffect(() => {
     if (!formData.studentId) {
       setSuggestedHomework("");
+      setPreviousReport(null);
+      setRecentReports([]);
       return;
     }
 
     const fetchStudentHistory = async () => {
       try {
         setLoadingHistory(true);
-        const res = await fetch(`/api/students/${formData.studentId}/history`, {
+        const historyUrl = new URL(
+          `/api/students/${formData.studentId}/history`,
+          window.location.origin
+        );
+        historyUrl.searchParams.set("studyMode", "REMOTE");
+
+        const res = await fetch(historyUrl.toString(), {
           cache: "no-store",
         });
         const data = await res.json();
+        setPreviousReport(res.ok && data.previousReport ? data.previousReport : null);
+        setRecentReports(
+          res.ok && Array.isArray(data.reports)
+            ? data.reports.slice(0, 3)
+            : []
+        );
         setSuggestedHomework(
           res.ok && typeof data.lastNextHomework === "string"
             ? data.lastNextHomework
@@ -269,6 +302,8 @@ function NewReportForm() {
         );
       } catch (error) {
         console.error("FETCH STUDENT HISTORY ERROR =>", error);
+        setPreviousReport(null);
+        setRecentReports([]);
         setSuggestedHomework("");
       } finally {
         setLoadingHistory(false);
@@ -306,6 +341,12 @@ function NewReportForm() {
     }
 
     return null;
+  };
+
+  const memorizedLabel = (value: boolean | null) => {
+    if (value === true) return "حافظ";
+    if (value === false) return "غير حافظ";
+    return "غير مسجل";
   };
 
   const buildNextHomework = () => {
@@ -409,6 +450,135 @@ function NewReportForm() {
             رجوع للوحة المعلم
           </Link>
         </div>
+
+        {formData.studentId ? (
+          <section className="mb-5 rounded-[2rem] border border-[#d9c8ad]/70 bg-[#fffaf2] p-5 shadow-sm">
+            <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div>
+                <p className="text-sm font-black text-[#9b7039]">آخر متابعة داخل الأونلاين</p>
+                <h2 className="mt-1 text-xl font-black text-[#1c2d31]">ملخص سريع قبل كتابة التقرير</h2>
+              </div>
+              {loadingHistory ? (
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#8a6335] ring-1 ring-[#d9c8ad]">
+                  جاري جلب السجل...
+                </span>
+              ) : null}
+            </div>
+
+            {previousReport ? (
+              <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <p className="text-xs font-black text-[#9b7039]">آخر يوم</p>
+                  <p className="mt-2 text-sm font-black text-[#1c2d31]">
+                    {new Date(previousReport.createdAt).toLocaleDateString("ar-EG")}
+                  </p>
+                  <p className="mt-1 text-xs text-[#1c2d31]/60">
+                    {previousReport.status === "PRESENT" ? "حاضر" : "غائب"}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <p className="text-xs font-black text-[#9b7039]">حفظ الدرس</p>
+                  <p className="mt-2 text-sm font-black text-[#1c2d31]">
+                    {memorizedLabel(previousReport.lessonMemorized)}
+                  </p>
+                  <p className="mt-1 text-xs text-[#1c2d31]/60">
+                    آخر خمس صفحات: {memorizedLabel(previousReport.lastFiveMemorized)}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <p className="text-xs font-black text-[#9b7039]">حفظ المراجعة</p>
+                  <p className="mt-2 text-sm font-black text-[#1c2d31]">
+                    {memorizedLabel(previousReport.reviewMemorized)}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <p className="text-xs font-black text-[#9b7039]">الدرس الأخير</p>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
+                    {previousReport.lessonName}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2">
+                  <p className="text-xs font-black text-[#9b7039]">الواجب السابق</p>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
+                    {previousReport.nextHomework?.trim() || previousReport.homework || "لا يوجد واجب مسجل"}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2">
+                  <p className="text-xs font-black text-[#9b7039]">المراجعة السابقة</p>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
+                    {previousReport.review?.trim() || "لا توجد مراجعة مسجلة"}
+                  </p>
+                </div>
+
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2 xl:col-span-4">
+                  <p className="text-xs font-black text-[#9b7039]">ملاحظات آخر تقرير</p>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
+                    {previousReport.note?.trim() || "لا توجد ملاحظات"}
+                  </p>
+                </div>
+
+                {recentReports.length > 0 ? (
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2 xl:col-span-4">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <p className="text-xs font-black text-[#9b7039]">آخر 3 تقارير</p>
+                        <p className="mt-1 text-sm text-[#1c2d31]/60">
+                          نظرة سريعة على سير الطالب في الأيام الأخيرة.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 grid gap-3 xl:grid-cols-3">
+                      {recentReports.map((report, index) => (
+                        <article key={report.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                          <div className="flex items-start justify-between gap-3">
+                            <div>
+                              <p className="text-xs font-black text-[#9b7039]">
+                                {index === 0 ? "الأحدث" : `قبل ${index} ${index === 1 ? "حصة" : "حصص"}`}
+                              </p>
+                              <p className="mt-1 text-sm font-black text-[#1c2d31]">
+                                {new Date(report.createdAt).toLocaleDateString("ar-EG")}
+                              </p>
+                            </div>
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1c2d31] ring-1 ring-[#d9c8ad]">
+                              {report.status === "PRESENT" ? "حاضر" : "غائب"}
+                            </span>
+                          </div>
+
+                          <p className="mt-3 text-sm font-black text-[#1c2d31]">{report.lessonName}</p>
+
+                          <div className="mt-3 space-y-2 text-sm text-[#1c2d31]/75">
+                            <p>
+                              <span className="font-black text-[#1c2d31]">حفظ الدرس: </span>
+                              {memorizedLabel(report.lessonMemorized)}
+                            </p>
+                            <p>
+                              <span className="font-black text-[#1c2d31]">الواجب: </span>
+                              {report.nextHomework?.trim() || report.homework || "لا يوجد"}
+                            </p>
+                            <p>
+                              <span className="font-black text-[#1c2d31]">المراجعة: </span>
+                              {report.review?.trim() || "لا توجد"}
+                            </p>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+              </div>
+            ) : loadingHistory ? null : (
+              <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-[#1c2d31]/65 ring-1 ring-[#eadcc6]">
+                لا يوجد تقرير سابق لهذا الطالب داخل قسم الأونلاين حتى الآن.
+              </div>
+            )}
+          </section>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <section className={sectionClass}>
