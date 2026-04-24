@@ -12,9 +12,13 @@ export async function GET(req: Request) {
       where: studyMode
         ? {
             student: {
-              studyMode,
-              teacher: {
+              is: {
                 studyMode,
+                teacher: {
+                  is: {
+                    studyMode,
+                  },
+                },
               },
             },
           }
