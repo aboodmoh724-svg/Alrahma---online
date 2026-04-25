@@ -39,10 +39,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       select: {
         id: true,
         sentToParent: true,
+        createdAt: true,
         lessonName: true,
         review: true,
         nextHomework: true,
         note: true,
+        teacher: {
+          select: {
+            fullName: true,
+          },
+        },
         student: {
           select: {
             fullName: true,
@@ -79,6 +85,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const message = remoteDailyReportWhatsAppMessage({
       studentName: report.student.fullName,
+      teacherName: report.teacher?.fullName || "غير محدد",
+      reportDate: report.createdAt.toLocaleDateString("en-CA"),
       lessonName: report.lessonName,
       review: report.review,
       homework: report.nextHomework,

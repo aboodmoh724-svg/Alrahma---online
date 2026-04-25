@@ -49,6 +49,8 @@ type StudentSummary = {
   sentToParentCount: number;
 };
 
+type NotifyType = "ABSENCE_REPEAT" | "STRUGGLE_REPEAT" | "CUSTOM";
+
 function getStudentLevel(summary: StudentSummary) {
   const totalChecked = summary.memorizedCount + summary.notMemorizedCount;
 
@@ -156,6 +158,12 @@ export default function RemoteAdminReportsPage() {
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [customMessage, setCustomMessage] = useState("");
+  const [sendingType, setSendingType] = useState<NotifyType | null>(null);
+  const [notifyFeedback, setNotifyFeedback] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const fetchReports = async () => {
     try {
@@ -200,6 +208,74 @@ export default function RemoteAdminReportsPage() {
 
   const selectedSummary = filteredSummaries[0] || null;
 
+  useEffect(() => {
+    setNotifyFeedback(null);
+    setCustomMessage("");
+  }, [selectedSummary?.id]);
+
+  const sendParentMessage = async (type: NotifyType) => {
+    if (!selectedSummary) {
+      return;
+    }
+
+    if (type === "CUSTOM" && !customMessage.trim()) {
+      setNotifyFeedback({
+        tone: "error",
+        text: "الرجاء كتابة الرسالة الخاصة أولًا.",
+      });
+      return;
+    }
+
+    try {
+      setSendingType(type);
+      setNotifyFeedback(null);
+
+      const response = await fetch(
+        `/api/admin/students/${selectedSummary.id}/notify-parent`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            type,
+            message: customMessage,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "تعذر إرسال الرسالة إلى ولي الأمر");
+      }
+
+      setNotifyFeedback({
+        tone: "success",
+        text:
+          type === "ABSENCE_REPEAT"
+            ? "تم إرسال رسالة الغياب المتكرر بنجاح."
+            : type === "STRUGGLE_REPEAT"
+              ? "تم إرسال رسالة التعثر المتكرر بنجاح."
+              : "تم إرسال الرسالة الخاصة بنجاح.",
+      });
+
+      if (type === "CUSTOM") {
+        setCustomMessage("");
+      }
+    } catch (error) {
+      setNotifyFeedback({
+        tone: "error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "حدث خطأ أثناء إرسال الرسالة إلى ولي الأمر",
+      });
+    } finally {
+      setSendingType(null);
+    }
+  };
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -208,7 +284,8 @@ export default function RemoteAdminReportsPage() {
             <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">قسم التقارير</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
-              ابحث باسم الطالب أو رقم الطالب لعرض ملخص مستواه بدل تصفح قائمة طويلة من التقارير.
+              ابحث باسم الطالب أو رقم الطالب لعرض ملخص مستواه، ثم أرسل لولي الأمر رسالة
+              غياب متكرر أو تعثر متكرر أو رسالة خاصة مباشرة من نفس الصفحة.
             </p>
           </div>
           <Link
@@ -330,6 +407,92 @@ export default function RemoteAdminReportsPage() {
                       {selectedSummary.reports.length}
                     </p>
                   </div>
+                </div>
+
+                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <h3 className="text-xl font-black text-[#1c2d31]">
+                        التواصل مع ولي الأمر
+                      </h3>
+                      <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                        أرسل رسالة جاهزة عند تكرر الغياب أو التعثر، أو اكتب رسالة خاصة لهذا
+                        الطالب فقط.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-xs font-black">
+                      <span className="rounded-full bg-amber-100 px-3 py-2 text-amber-800">
+                        غياب مسجل: {selectedSummary.absentCount}
+                      </span>
+                      <span className="rounded-full bg-[#eef7f5] px-3 py-2 text-[#1f6358]">
+                        تعثر مسجل: {selectedSummary.notMemorizedCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => sendParentMessage("ABSENCE_REPEAT")}
+                      disabled={sendingType !== null || selectedSummary.absentCount <= 1}
+                      className="rounded-2xl bg-[#173d42] px-4 py-4 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {sendingType === "ABSENCE_REPEAT"
+                        ? "جارٍ إرسال رسالة الغياب..."
+                        : "إرسال قالب الغياب المتكرر"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => sendParentMessage("STRUGGLE_REPEAT")}
+                      disabled={sendingType !== null || selectedSummary.notMemorizedCount <= 1}
+                      className="rounded-2xl bg-[#1f6358] px-4 py-4 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                    >
+                      {sendingType === "STRUGGLE_REPEAT"
+                        ? "جارٍ إرسال رسالة التعثر..."
+                        : "إرسال قالب التعثر المتكرر"}
+                    </button>
+                  </div>
+
+                  <div className="mt-4 rounded-[1.5rem] border border-[#d9c8ad] bg-[#fffaf2] p-4">
+                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                      رسالة خاصة لولي الأمر
+                    </label>
+                    <textarea
+                      value={customMessage}
+                      onChange={(event) => setCustomMessage(event.target.value)}
+                      rows={5}
+                      placeholder="اكتب هنا رسالة خاصة لهذا الطالب، وسيتم إضافة ختم الإدارة تلقائيًا في النهاية."
+                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+                    />
+                    <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <p className="text-xs leading-6 text-[#1c2d31]/55">
+                        ستضاف الجملة التالية تلقائيًا في نهاية الرسالة: إدارة منصة الرحمة
+                        لتعليم القرآن الكريم
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => sendParentMessage("CUSTOM")}
+                        disabled={sendingType !== null || !customMessage.trim()}
+                        className="rounded-2xl bg-[#c39a62] px-5 py-3 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                      >
+                        {sendingType === "CUSTOM"
+                          ? "جارٍ إرسال الرسالة..."
+                          : "إرسال الرسالة الخاصة"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {notifyFeedback ? (
+                    <div
+                      className={`mt-4 rounded-2xl px-4 py-3 text-sm font-bold ${
+                        notifyFeedback.tone === "success"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : "bg-rose-100 text-rose-800"
+                      }`}
+                    >
+                      {notifyFeedback.text}
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">

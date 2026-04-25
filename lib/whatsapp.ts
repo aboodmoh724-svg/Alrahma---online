@@ -142,7 +142,7 @@ export function registrationReceivedWhatsAppMessage(input: { studentName: string
     `اسم الطالب: ${input.studentName}\n` +
     `تم استلام طلب التسجيل بنجاح، وسيتم التواصل معكم قريبًا بعد مراجعة الطلب بإذن الله.\n\n` +
     `نسأل الله التوفيق لابنكم، وأن يبارك في رحلته مع كتاب الله.\n\n` +
-    `منصة الرحمة لتعليم القرآن الكريم`
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
 }
 
@@ -157,12 +157,14 @@ export function onsiteAbsenceWhatsAppMessage(input: {
     `نرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\n` +
     `نشكر لكم حسن تعاونكم.\n\n` +
     `هذه رسالة تلقائية ترسل للطلاب الغائبين.\n\n` +
-    `إدارة تحفيظ الرحمن للقرآن الكريم`
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
 }
 
 export function remoteDailyReportWhatsAppMessage(input: {
   studentName: string;
+  teacherName: string;
+  reportDate: string;
   lessonName: string;
   review?: string | null;
   homework?: string | null;
@@ -171,12 +173,60 @@ export function remoteDailyReportWhatsAppMessage(input: {
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
     `تقرير الطالب: ${input.studentName}\n\n` +
+    `المعلم: ${input.teacherName || "-"}\n` +
+    `التاريخ: ${input.reportDate || "-"}\n` +
     `الدرس: ${input.lessonName || "-"}\n` +
     `المراجعة: ${input.review?.trim() || "-"}\n` +
     `الواجب: ${input.homework?.trim() || "-"}\n` +
     `الملاحظات: ${input.note?.trim() || "-"}\n\n` +
-    `جزاكم الله خيرًا، وبارك الله في متابعتكم.`
+    `جزاكم الله خيرًا، وبارك الله في متابعتكم.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
+}
+
+export function repeatedAbsenceWhatsAppMessage(input: {
+  studentName: string;
+  teacherName?: string | null;
+  circleName?: string | null;
+  absenceCount: number;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نود إشعاركم بأن غياب الطالب ${input.studentName} قد تكرر أكثر من مرة.\n` +
+    `عدد مرات الغياب المسجلة: ${input.absenceCount}\n` +
+    `المعلم: ${input.teacherName?.trim() || "-"}\n` +
+    `الحلقة: ${input.circleName?.trim() || "-"}\n\n` +
+    `نرجو منكم متابعة الابن الكريم والحرص على انتظامه حتى لا يتأثر مستواه في الحفظ والمتابعة.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
+export function repeatedStruggleWhatsAppMessage(input: {
+  studentName: string;
+  teacherName?: string | null;
+  circleName?: string | null;
+  struggleCount: number;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نود إشعاركم بأن الطالب ${input.studentName} بحاجة إلى متابعة إضافية، حيث تكرر التعثر لديه أكثر من مرة.\n` +
+    `عدد مرات التعثر المسجلة: ${input.struggleCount}\n` +
+    `المعلم: ${input.teacherName?.trim() || "-"}\n` +
+    `الحلقة: ${input.circleName?.trim() || "-"}\n\n` +
+    `نرجو منكم دعم الابن الكريم في المراجعة اليومية والمتابعة المستمرة حتى يتحسن مستواه بإذن الله.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
+export function customParentWhatsAppMessage(input: {
+  message: string;
+}) {
+  const body = input.message.trim();
+  if (!body) {
+    return "";
+  }
+
+  return `${body}\n\nإدارة منصة الرحمة لتعليم القرآن الكريم`;
 }
 
 export function teacherWelcomeWhatsAppMessage(input: {
@@ -199,7 +249,8 @@ export function teacherWelcomeWhatsAppMessage(input: {
     `اسم المستخدم: ${input.email}\n` +
     `كلمة المرور: ${input.password}\n\n` +
     `رابط الدخول:\n${loginPath}\n\n` +
-    `نسأل الله لكم التوفيق والسداد، وأن يجعل عملكم في ميزان حسناتكم.`
+    `نسأل الله لكم التوفيق والسداد، وأن يجعل عملكم في ميزان حسناتكم.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
 }
 
