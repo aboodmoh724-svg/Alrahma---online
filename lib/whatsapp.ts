@@ -10,7 +10,7 @@ type WhatsAppTemplateInput = {
   bodyVariables: string[];
 };
 
-const DEFAULT_WEBJS_API_URL = "http://185.182.8.94:3001/send-message";
+const DEFAULT_WEBJS_API_URL = "http://185.182.8.94/send-message";
 
 function extractWhatsAppErrorMessage(raw: string) {
   const text = String(raw || "").trim();
@@ -137,9 +137,12 @@ export function dailyAttendanceWhatsAppMessage(input: {
 
 export function registrationReceivedWhatsAppMessage(input: { studentName: string }) {
   return (
-    `السلام عليكم ورحمة الله وبركاته\n` +
-    `تم تسجيل الطالب ${input.studentName} بنجاح في منصة الرحمة.\n` +
-    `سنقوم بالتواصل معكم قريبًا بإذن الله.`
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نشكركم على التسجيل في منصة الرحمة لتعليم القرآن الكريم.\n\n` +
+    `اسم الطالب: ${input.studentName}\n` +
+    `تم استلام طلب التسجيل بنجاح، وسيتم التواصل معكم قريبًا بعد مراجعة الطلب بإذن الله.\n\n` +
+    `نسأل الله التوفيق لابنكم، وأن يبارك في رحلته مع كتاب الله.\n\n` +
+    `منصة الرحمة لتعليم القرآن الكريم`
   );
 }
 
@@ -166,13 +169,37 @@ export function remoteDailyReportWhatsAppMessage(input: {
   note?: string | null;
 }) {
   return (
-    `السلام عليكم ورحمة الله وبركاته\n` +
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
     `تقرير الطالب: ${input.studentName}\n\n` +
     `الدرس: ${input.lessonName || "-"}\n` +
     `المراجعة: ${input.review?.trim() || "-"}\n` +
     `الواجب: ${input.homework?.trim() || "-"}\n` +
-    `ملاحظات: ${input.note?.trim() || "-"}\n\n` +
-    `جزاكم الله خيرًا`
+    `الملاحظات: ${input.note?.trim() || "-"}\n\n` +
+    `جزاكم الله خيرًا، وبارك الله في متابعتكم.`
+  );
+}
+
+export function teacherWelcomeWhatsAppMessage(input: {
+  teacherName: string;
+  email: string;
+  password: string;
+  studyMode: "REMOTE" | "ONSITE";
+}) {
+  const platformLabel = input.studyMode === "REMOTE" ? "التعليم عن بعد" : "التعليم الحضوري";
+  const loginPath =
+    input.studyMode === "REMOTE"
+      ? "https://alrahma-reports.vercel.app/remote/teacher/login"
+      : "https://alrahma-reports.vercel.app/onsite/teacher/login";
+
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `مرحبًا بالأستاذ ${input.teacherName}\n` +
+    `يسرنا انضمامكم إلى منصة الرحمة لتعليم القرآن الكريم.\n\n` +
+    `نوع الحساب: ${platformLabel}\n` +
+    `اسم المستخدم: ${input.email}\n` +
+    `كلمة المرور: ${input.password}\n\n` +
+    `رابط الدخول:\n${loginPath}\n\n` +
+    `نسأل الله لكم التوفيق والسداد، وأن يجعل عملكم في ميزان حسناتكم.`
   );
 }
 

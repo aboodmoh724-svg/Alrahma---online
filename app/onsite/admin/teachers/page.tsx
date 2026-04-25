@@ -1,128 +1,124 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from "react"
-import Link from "next/link"
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 type Teacher = {
-  id: string
-  fullName: string
-  email: string
-  studyMode: "REMOTE" | "ONSITE"
-  isActive: boolean
-  createdAt: string
-}
+  id: string;
+  fullName: string;
+  email: string;
+  whatsapp: string | null;
+  studyMode: "REMOTE" | "ONSITE";
+  isActive: boolean;
+  createdAt: string;
+};
 
 export default function OnsiteAdminTeachersPage() {
-  const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [loading, setLoading] = useState(true)
-  const [submitting, setSubmitting] = useState(false)
-  const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null)
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
   const [editData, setEditData] = useState({
     fullName: "",
     email: "",
-  })
-
+    whatsapp: "",
+  });
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
+    whatsapp: "",
     studyMode: "ONSITE",
-  })
+  });
 
   const fetchTeachers = async () => {
     try {
-      setLoading(true)
-
+      setLoading(true);
       const res = await fetch("/api/teachers?studyMode=ONSITE", {
         cache: "no-store",
-      })
-
-      const data = await res.json()
-      const list = Array.isArray(data.teachers) ? (data.teachers as Teacher[]) : []
-      setTeachers(list.filter((t) => t.studyMode === "ONSITE"))
+      });
+      const data = await res.json();
+      const list = Array.isArray(data.teachers) ? (data.teachers as Teacher[]) : [];
+      setTeachers(list.filter((teacher) => teacher.studyMode === "ONSITE"));
     } catch (error) {
-      console.error("FETCH ONSITE TEACHERS ERROR =>", error)
-      setTeachers([])
+      console.error("FETCH ONSITE TEACHERS ERROR =>", error);
+      setTeachers([]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchTeachers()
-  }, [])
+    fetchTeachers();
+  }, []);
 
   const activeTeachers = useMemo(
-    () => teachers.filter((t) => t.isActive),
+    () => teachers.filter((teacher) => teacher.isActive),
     [teachers]
-  )
+  );
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
 
     try {
-      setSubmitting(true)
-
+      setSubmitting(true);
       const res = await fetch("/api/teachers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ ...formData, studyMode: "ONSITE" }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
 
       if (!res.ok) {
-        alert(data.error || "حدث خطأ أثناء إضافة المعلم")
-        return
+        alert(data.error || "حدث خطأ أثناء إضافة المعلم");
+        return;
       }
 
-      alert("تمت إضافة المعلم بنجاح")
+      if (data.whatsappSent) {
+        alert("تمت إضافة المعلم وإرسال رسالة الترحيب عبر واتساب بنجاح");
+      } else if (data.whatsappWarning) {
+        alert(data.whatsappWarning);
+      } else {
+        alert("تمت إضافة المعلم بنجاح");
+      }
 
       setFormData({
         fullName: "",
         email: "",
         password: "",
+        whatsapp: "",
         studyMode: "ONSITE",
-      })
+      });
 
-      await fetchTeachers()
+      await fetchTeachers();
     } catch (error) {
-      console.error("CREATE ONSITE TEACHER SUBMIT ERROR =>", error)
-      alert("حدث خطأ أثناء إضافة المعلم")
+      console.error("CREATE ONSITE TEACHER SUBMIT ERROR =>", error);
+      alert("حدث خطأ أثناء إضافة المعلم");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const startEdit = (teacher: Teacher) => {
-    setEditingTeacherId(teacher.id)
+    setEditingTeacherId(teacher.id);
     setEditData({
       fullName: teacher.fullName,
       email: teacher.email,
-    })
-  }
-
-  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setEditData((prev) => ({ ...prev, [name]: value }))
-  }
+      whatsapp: teacher.whatsapp || "",
+    });
+  };
 
   const handleUpdateTeacher = async (teacherId: string) => {
     try {
-      setSubmitting(true)
+      setSubmitting(true);
 
       const res = await fetch("/api/teachers", {
         method: "PATCH",
@@ -133,35 +129,36 @@ export default function OnsiteAdminTeachersPage() {
           teacherId,
           fullName: editData.fullName,
           email: editData.email,
+          whatsapp: editData.whatsapp,
           studyMode: "ONSITE",
         }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "تعذر تحديث بيانات المعلم")
-        return
+        alert(data.error || "تعذر تحديث بيانات المعلم");
+        return;
       }
 
-      setEditingTeacherId(null)
-      await fetchTeachers()
+      setEditingTeacherId(null);
+      await fetchTeachers();
     } catch (error) {
-      console.error("UPDATE ONSITE TEACHER ERROR =>", error)
-      alert("حدث خطأ أثناء تحديث بيانات المعلم")
+      console.error("UPDATE ONSITE TEACHER ERROR =>", error);
+      alert("حدث خطأ أثناء تحديث بيانات المعلم");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleDeleteTeacher = async (teacher: Teacher) => {
     const confirmed = window.confirm(
       `هل تريد حذف المعلم ${teacher.fullName}؟ لا يمكن حذف المعلم إذا كان مرتبطا بطلاب أو حلقات.`
-    )
+    );
 
-    if (!confirmed) return
+    if (!confirmed) return;
 
     try {
-      setSubmitting(true)
+      setSubmitting(true);
 
       const res = await fetch("/api/teachers", {
         method: "DELETE",
@@ -169,22 +166,22 @@ export default function OnsiteAdminTeachersPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ teacherId: teacher.id, studyMode: "ONSITE" }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
       if (!res.ok) {
-        alert(data.error || "تعذر حذف المعلم")
-        return
+        alert(data.error || "تعذر حذف المعلم");
+        return;
       }
 
-      await fetchTeachers()
+      await fetchTeachers();
     } catch (error) {
-      console.error("DELETE ONSITE TEACHER ERROR =>", error)
-      alert("حدث خطأ أثناء حذف المعلم")
+      console.error("DELETE ONSITE TEACHER ERROR =>", error);
+      alert("حدث خطأ أثناء حذف المعلم");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -259,6 +256,21 @@ export default function OnsiteAdminTeachersPage() {
                 />
               </div>
 
+              <div>
+                <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                  رقم واتساب المعلم
+                </label>
+                <input
+                  type="text"
+                  name="whatsapp"
+                  value={formData.whatsapp}
+                  onChange={handleChange}
+                  placeholder="905xxxxxxxxx"
+                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  dir="ltr"
+                />
+              </div>
+
               <button
                 type="submit"
                 disabled={submitting}
@@ -292,6 +304,7 @@ export default function OnsiteAdminTeachersPage() {
                     <tr className="bg-[#fffaf2] text-right text-sm text-[#1c2d31]/70">
                       <th className="px-4 py-3 font-black">الاسم</th>
                       <th className="px-4 py-3 font-black">البريد</th>
+                      <th className="px-4 py-3 font-black">واتساب</th>
                       <th className="px-4 py-3 font-black">الحالة</th>
                       <th className="px-4 py-3 font-black">الإجراءات</th>
                     </tr>
@@ -306,9 +319,13 @@ export default function OnsiteAdminTeachersPage() {
                           {editingTeacherId === teacher.id ? (
                             <input
                               type="text"
-                              name="fullName"
                               value={editData.fullName}
-                              onChange={handleEditChange}
+                              onChange={(event) =>
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  fullName: event.target.value,
+                                }))
+                              }
                               className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
                             />
                           ) : (
@@ -319,13 +336,35 @@ export default function OnsiteAdminTeachersPage() {
                           {editingTeacherId === teacher.id ? (
                             <input
                               type="email"
-                              name="email"
                               value={editData.email}
-                              onChange={handleEditChange}
+                              onChange={(event) =>
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  email: event.target.value,
+                                }))
+                              }
                               className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
                             />
                           ) : (
                             teacher.email
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-[#1c2d31]/70">
+                          {editingTeacherId === teacher.id ? (
+                            <input
+                              type="text"
+                              value={editData.whatsapp}
+                              onChange={(event) =>
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  whatsapp: event.target.value,
+                                }))
+                              }
+                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                              dir="ltr"
+                            />
+                          ) : (
+                            teacher.whatsapp || "-"
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -389,6 +428,5 @@ export default function OnsiteAdminTeachersPage() {
         </div>
       </div>
     </main>
-  )
+  );
 }
-

@@ -29,6 +29,17 @@ export default function ParentReportCheckbox({
 }: ParentReportCheckboxProps) {
   const [checked, setChecked] = useState(initialChecked);
   const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(
+    initialChecked
+      ? {
+          type: "success",
+          message: "تم إرسال التقرير عبر واتساب بنجاح.",
+        }
+      : null
+  );
 
   const handleSendWhatsApp = async () => {
     if (checked || saving) {
@@ -38,6 +49,7 @@ export default function ParentReportCheckbox({
     const previousChecked = checked;
     setChecked(true);
     setSaving(true);
+    setFeedback(null);
 
     try {
       const response = await fetch(`/api/reports/${reportId}/parent-sent`, {
@@ -54,12 +66,24 @@ export default function ParentReportCheckbox({
 
       if (!response.ok) {
         setChecked(previousChecked);
-        alert(sanitizeAlertMessage(data.error));
+        setFeedback({
+          type: "error",
+          message: sanitizeAlertMessage(data.error),
+        });
+        return;
       }
+
+      setFeedback({
+        type: "success",
+        message: "تم إرسال التقرير عبر واتساب بنجاح.",
+      });
     } catch (error) {
       console.error("PARENT REPORT WHATSAPP ERROR =>", error);
       setChecked(previousChecked);
-      alert("حدث خطأ أثناء إرسال التقرير عبر واتساب");
+      setFeedback({
+        type: "error",
+        message: "حدث خطأ أثناء إرسال التقرير عبر واتساب",
+      });
     } finally {
       setSaving(false);
     }
@@ -96,6 +120,17 @@ export default function ParentReportCheckbox({
         />
         <span>{checked ? "تم إرسال التقرير" : "لم يتم إرسال التقرير بعد"}</span>
       </div>
+      {feedback ? (
+        <p
+          className={`rounded-xl px-3 py-2 text-center text-xs font-bold ${
+            feedback.type === "success"
+              ? "bg-emerald-50 text-emerald-800"
+              : "bg-red-50 text-red-700"
+          }`}
+        >
+          {feedback.message}
+        </p>
+      ) : null}
     </div>
   );
 }

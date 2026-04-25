@@ -7,6 +7,7 @@ type Teacher = {
   id: string;
   fullName: string;
   email: string;
+  whatsapp: string | null;
   studyMode: "REMOTE" | "ONSITE";
   isActive: boolean;
   createdAt: string;
@@ -17,11 +18,12 @@ export default function RemoteAdminTeachersPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
-  const [editData, setEditData] = useState({ fullName: "", email: "" });
+  const [editData, setEditData] = useState({ fullName: "", email: "", whatsapp: "" });
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
+    whatsapp: "",
     studyMode: "REMOTE",
   });
 
@@ -68,8 +70,15 @@ export default function RemoteAdminTeachersPage() {
         return;
       }
 
-      alert("تمت إضافة المعلم بنجاح");
-      setFormData({ fullName: "", email: "", password: "", studyMode: "REMOTE" });
+      if (data.whatsappSent) {
+        alert("تمت إضافة المعلم وإرسال رسالة الترحيب عبر واتساب بنجاح");
+      } else if (data.whatsappWarning) {
+        alert(data.whatsappWarning);
+      } else {
+        alert("تمت إضافة المعلم بنجاح");
+      }
+
+      setFormData({ fullName: "", email: "", password: "", whatsapp: "", studyMode: "REMOTE" });
       await fetchTeachers();
     } catch (error) {
       console.error("CREATE REMOTE TEACHER ERROR =>", error);
@@ -81,7 +90,11 @@ export default function RemoteAdminTeachersPage() {
 
   const startEdit = (teacher: Teacher) => {
     setEditingTeacherId(teacher.id);
-    setEditData({ fullName: teacher.fullName, email: teacher.email });
+    setEditData({
+      fullName: teacher.fullName,
+      email: teacher.email,
+      whatsapp: teacher.whatsapp || "",
+    });
   };
 
   const handleUpdateTeacher = async (teacherId: string) => {
@@ -188,6 +201,15 @@ export default function RemoteAdminTeachersPage() {
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                 required
               />
+              <input
+                type="text"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleChange}
+                placeholder="رقم واتساب المعلم"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                dir="ltr"
+              />
               <button
                 type="submit"
                 disabled={submitting}
@@ -219,6 +241,7 @@ export default function RemoteAdminTeachersPage() {
                     <tr className="bg-gray-100 text-right text-sm text-gray-600">
                       <th className="px-4 py-3 font-medium">الاسم</th>
                       <th className="px-4 py-3 font-medium">البريد</th>
+                      <th className="px-4 py-3 font-medium">واتساب</th>
                       <th className="px-4 py-3 font-medium">الحالة</th>
                       <th className="px-4 py-3 font-medium">الإجراءات</th>
                     </tr>
@@ -258,6 +281,24 @@ export default function RemoteAdminTeachersPage() {
                             />
                           ) : (
                             teacher.email
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-gray-700">
+                          {editingTeacherId === teacher.id ? (
+                            <input
+                              type="text"
+                              value={editData.whatsapp}
+                              onChange={(event) =>
+                                setEditData((prev) => ({
+                                  ...prev,
+                                  whatsapp: event.target.value,
+                                }))
+                              }
+                              className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
+                              dir="ltr"
+                            />
+                          ) : (
+                            teacher.whatsapp || "-"
                           )}
                         </td>
                         <td className="px-4 py-3">
