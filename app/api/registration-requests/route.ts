@@ -1,12 +1,12 @@
 import path from "path";
 import { NextResponse } from "next/server";
 import { registrationReceivedEmail, sendEmail } from "@/lib/email";
+import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
-  registrationReceivedWhatsAppMessage,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
@@ -272,9 +272,13 @@ export async function POST(req: Request) {
 
     if (normalizedWhatsapp && isWhatsAppConfigured()) {
       try {
+        const whatsAppMessage = await renderMessageTemplate("REGISTRATION_RECEIVED", {
+          studentName,
+        });
+
         await sendWhatsAppText({
           to: normalizedWhatsapp,
-          body: registrationReceivedWhatsAppMessage({ studentName }),
+          body: whatsAppMessage,
         });
         whatsappSent = true;
       } catch (whatsappError) {

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
+import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
   sendWhatsAppText,
-  teacherWelcomeWhatsAppMessage,
 } from "@/lib/whatsapp";
 
 function normalizeStudyMode(value: unknown) {
@@ -117,13 +117,20 @@ export async function POST(req: Request) {
 
     if (normalizedWhatsapp && isWhatsAppConfigured()) {
       try {
+        const platformLabel = studyMode === "REMOTE" ? "التعليم عن بعد" : "التعليم الحضوري";
+        const loginUrl =
+          studyMode === "REMOTE"
+            ? "https://alrahma-reports.vercel.app/remote/teacher/login"
+            : "https://alrahma-reports.vercel.app/onsite/teacher/login";
+
         await sendWhatsAppText({
           to: normalizedWhatsapp,
-          body: teacherWelcomeWhatsAppMessage({
+          body: await renderMessageTemplate("TEACHER_WELCOME", {
             teacherName: teacher.fullName,
+            platformLabel,
             email: teacher.email,
             password,
-            studyMode,
+            loginUrl,
           }),
         });
         whatsappSent = true;

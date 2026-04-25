@@ -67,6 +67,12 @@ const sections = [
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
+    href: "/remote/admin/messages",
+    title: "قوالب الرسائل",
+    description: "تعديل قالب رسالة المعلم، ورسالة التقرير، ورسالة التسجيل، وضبط التذكير التلقائي للمعلمين.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/admin/statistics#unassigned-students",
     title: "طلاب بلا حلقة",
     description: "قسم مهم لمتابعة الطلاب الذين لم يتم ربطهم بحلقة بعد.",

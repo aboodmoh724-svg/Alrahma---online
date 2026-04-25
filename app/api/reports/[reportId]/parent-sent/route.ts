@@ -1,9 +1,9 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
   normalizeWhatsAppNumber,
-  remoteDailyReportWhatsAppMessage,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
@@ -83,14 +83,14 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const message = remoteDailyReportWhatsAppMessage({
+    const message = await renderMessageTemplate("REMOTE_REPORT", {
       studentName: report.student.fullName,
       teacherName: report.teacher?.fullName || "غير محدد",
       reportDate: report.createdAt.toLocaleDateString("en-CA"),
       lessonName: report.lessonName,
-      review: report.review,
-      homework: report.nextHomework,
-      note: report.note,
+      review: report.review?.trim() || "-",
+      homework: report.nextHomework?.trim() || "-",
+      note: report.note?.trim() || "-",
     });
 
     try {
