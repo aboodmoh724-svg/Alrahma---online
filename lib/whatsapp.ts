@@ -200,11 +200,16 @@ async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
   }
 
   const text = await response.text();
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("text/html") || /<!doctype html>|<html/i.test(text)) {
+    throw new Error(extractWhatsAppErrorMessage(text));
+  }
 
   try {
     return text ? JSON.parse(text) : { success: true };
   } catch {
-    return { success: true, response: text };
+    throw new Error(extractWhatsAppErrorMessage(text));
   }
 }
 

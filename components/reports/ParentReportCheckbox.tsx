@@ -8,6 +8,20 @@ type ParentReportCheckboxProps = {
   parentWhatsapp?: string | null;
 };
 
+function sanitizeAlertMessage(value: unknown) {
+  const text = String(value || "").trim();
+
+  if (!text) {
+    return "تعذر إرسال التقرير عبر واتساب";
+  }
+
+  if (/<!doctype html>|<html/i.test(text)) {
+    return "تعذر إرسال التقرير عبر واتساب. يبدو أن خادم واتساب أعاد صفحة غير متوقعة.";
+  }
+
+  return text;
+}
+
 export default function ParentReportCheckbox({
   reportId,
   initialChecked,
@@ -35,11 +49,12 @@ export default function ParentReportCheckbox({
           sentToParent: true,
         }),
       });
+
       const data = await response.json();
 
       if (!response.ok) {
         setChecked(previousChecked);
-        alert(data.error || "تعذر إرسال التقرير عبر واتساب");
+        alert(sanitizeAlertMessage(data.error));
       }
     } catch (error) {
       console.error("PARENT REPORT WHATSAPP ERROR =>", error);
