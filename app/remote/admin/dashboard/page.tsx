@@ -61,6 +61,12 @@ const sections = [
     tone: "bg-white text-[#173d42]",
   },
   {
+    href: "/remote/admin/broadcasts",
+    title: "الرسائل الجماعية",
+    description: "كتابة رسالة موحدة وإرسالها إلى أولياء الأمور في الأونلاين أو الحضوري أو الجميع.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/admin/statistics#unassigned-students",
     title: "طلاب بلا حلقة",
     description: "قسم مهم لمتابعة الطلاب الذين لم يتم ربطهم بحلقة بعد.",
