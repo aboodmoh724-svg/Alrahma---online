@@ -10,6 +10,7 @@ import {
   TEMPLATE_DEFINITIONS,
 } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
+import { getReportNotePresets, saveReportNotePresets } from "@/lib/report-note-presets";
 
 async function getRemoteAdminUser() {
   const cookieStore = await cookies();
@@ -40,15 +41,17 @@ export async function GET() {
       return NextResponse.json({ error: "غير مصرح لك بعرض إعدادات الرسائل" }, { status: 403 });
     }
 
-    const [templates, reminderSettings] = await Promise.all([
+    const [templates, reminderSettings, notePresets] = await Promise.all([
       getTemplateDefinitionsWithValues(),
       getTeacherReminderSettings(),
+      getReportNotePresets(),
     ]);
 
     return NextResponse.json({
       success: true,
       templates,
       reminderSettings,
+      notePresets,
     });
   } catch (error) {
     console.error("GET MESSAGE SETTINGS ERROR =>", error);
@@ -109,6 +112,18 @@ export async function PATCH(request: Request) {
         timezone: timezone || DEFAULT_TEACHER_REMINDER_SETTINGS.timezone,
         lastTriggeredOn,
       });
+
+      return NextResponse.json({
+        success: true,
+      });
+    }
+
+    if (body.notePresets) {
+      const presets = Array.isArray(body.notePresets)
+        ? body.notePresets.map((item: unknown) => String(item || "").trim()).filter(Boolean)
+        : [];
+
+      await saveReportNotePresets(presets);
 
       return NextResponse.json({
         success: true,

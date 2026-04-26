@@ -227,6 +227,7 @@ function NewReportForm() {
   const [previousReport, setPreviousReport] = useState<HistoryReport | null>(null);
   const [recentReports, setRecentReports] = useState<HistoryReport[]>([]);
   const [selectedNotePreset, setSelectedNotePreset] = useState("");
+  const [reportNotePresetOptions, setReportNotePresetOptions] = useState(notePresetOptions);
 
   const [formData, setFormData] = useState({
     studentId: studentIdFromUrl,
@@ -277,6 +278,33 @@ function NewReportForm() {
 
     fetchStudents();
   }, [circleIdFromUrl]);
+
+  useEffect(() => {
+    const fetchReportNotePresets = async () => {
+      try {
+        const response = await fetch("/api/report-note-presets", {
+          cache: "no-store",
+        });
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data.presets)) {
+          return;
+        }
+
+        const normalizedPresets = data.presets
+          .map((item: unknown) => String(item || "").trim())
+          .filter(Boolean);
+
+        if (normalizedPresets.length > 0) {
+          setReportNotePresetOptions(normalizedPresets);
+        }
+      } catch (error) {
+        console.error("FETCH REPORT NOTE PRESETS ERROR =>", error);
+      }
+    };
+
+    fetchReportNotePresets();
+  }, []);
 
   useEffect(() => {
     if (!formData.studentId) {
@@ -810,7 +838,7 @@ function NewReportForm() {
                     className={inputClass}
                   >
                     <option value="">اختر ملاحظة جاهزة لإدراجها تلقائيًا</option>
-                    {notePresetOptions.map((option) => (
+                    {reportNotePresetOptions.map((option) => (
                       <option key={option} value={option}>
                         {option}
                       </option>

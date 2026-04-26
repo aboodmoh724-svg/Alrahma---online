@@ -21,6 +21,7 @@ type ReminderSettings = {
 
 export default function RemoteAdminMessagesPage() {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
+  const [notePresets, setNotePresets] = useState<string[]>([]);
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>({
     enabled: false,
     time: "18:00",
@@ -30,6 +31,7 @@ export default function RemoteAdminMessagesPage() {
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savingReminder, setSavingReminder] = useState(false);
+  const [savingNotePresets, setSavingNotePresets] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const loadSettings = async () => {
@@ -46,6 +48,7 @@ export default function RemoteAdminMessagesPage() {
 
       setTemplates(data.templates || []);
       setReminderSettings(data.reminderSettings);
+      setNotePresets(Array.isArray(data.notePresets) ? data.notePresets : []);
     } catch (error) {
       setFeedback(
         error instanceof Error ? error.message : "تعذر تحميل إعدادات الرسائل"
@@ -134,6 +137,50 @@ export default function RemoteAdminMessagesPage() {
       );
     } finally {
       setSavingReminder(false);
+    }
+  };
+
+  const updateNotePreset = (index: number, value: string) => {
+    setNotePresets((current) =>
+      current.map((item, itemIndex) => (itemIndex === index ? value : item))
+    );
+  };
+
+  const addNotePreset = () => {
+    setNotePresets((current) => [...current, ""]);
+  };
+
+  const removeNotePreset = (index: number) => {
+    setNotePresets((current) => current.filter((_, itemIndex) => itemIndex !== index));
+  };
+
+  const saveNotePresets = async () => {
+    try {
+      setSavingNotePresets(true);
+      setFeedback(null);
+
+      const response = await fetch("/api/admin/message-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          notePresets,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "تعذر حفظ الملاحظات الجاهزة");
+      }
+
+      await loadSettings();
+      setFeedback("تم حفظ الملاحظات الجاهزة لتقارير الأونلاين.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "تعذر حفظ الملاحظات الجاهزة");
+    } finally {
+      setSavingNotePresets(false);
     }
   };
 
@@ -228,6 +275,67 @@ export default function RemoteAdminMessagesPage() {
                 className="mt-4 rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
               >
                 {savingReminder ? "جارٍ حفظ الإعدادات..." : "حفظ إعدادات التذكير"}
+              </button>
+            </section>
+
+            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <h2 className="text-xl font-black text-[#1c2d31]">
+                    الملاحظات الجاهزة لتقارير الأونلاين
+                  </h2>
+                  <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                    هذه القائمة تظهر للمعلم داخل نموذج التقرير. يمكنك تعديل النصوص أو إضافة ملاحظات جديدة أو حذف ما لا تحتاجه.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={addNotePreset}
+                  className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf2]"
+                >
+                  إضافة ملاحظة
+                </button>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {notePresets.length === 0 ? (
+                  <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                    لا توجد ملاحظات جاهزة حاليا. أضف أول ملاحظة من الزر أعلاه.
+                  </div>
+                ) : (
+                  notePresets.map((preset, index) => (
+                    <div
+                      key={`${index}-${preset}`}
+                      className="flex flex-col gap-3 rounded-2xl bg-[#fffaf2] p-4 md:flex-row md:items-center"
+                    >
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-black text-[#8a6335] ring-1 ring-[#d9c8ad]">
+                        {index + 1}
+                      </div>
+                      <input
+                        value={preset}
+                        onChange={(event) => updateNotePreset(index, event.target.value)}
+                        placeholder="اكتب الملاحظة الجاهزة هنا"
+                        className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeNotePreset(index)}
+                        className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-700"
+                      >
+                        حذف
+                      </button>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={saveNotePresets}
+                disabled={savingNotePresets}
+                className="mt-4 rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+              >
+                {savingNotePresets ? "جارٍ حفظ الملاحظات..." : "حفظ الملاحظات الجاهزة"}
               </button>
             </section>
 
