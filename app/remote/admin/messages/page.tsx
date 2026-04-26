@@ -305,7 +305,7 @@ export default function RemoteAdminMessagesPage() {
                 ) : (
                   notePresets.map((preset, index) => (
                     <div
-                      key={`${index}-${preset}`}
+                      key={`note-preset-${index}`}
                       className="flex flex-col gap-3 rounded-2xl bg-[#fffaf2] p-4 md:flex-row md:items-center"
                     >
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-sm font-black text-[#8a6335] ring-1 ring-[#d9c8ad]">

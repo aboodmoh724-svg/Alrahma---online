@@ -813,17 +813,7 @@ function NewReportForm() {
               </section>
 
               <section className={sectionClass}>
-                <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                  الملاحظات
-                </label>
-                <textarea
-                  value={formData.note}
-                  onChange={(e) => setField("note", e.target.value)}
-                  rows={4}
-                  placeholder="أي ملاحظات تربوية أو تنبيه مختصر"
-                  className={inputClass}
-                />
-                <div className="mt-3">
+                <div>
                   <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                     ملاحظات سريعة جاهزة
                   </label>
@@ -832,7 +822,6 @@ function NewReportForm() {
                     onChange={(e) => {
                       const value = e.target.value;
                       setSelectedNotePreset(value);
-                      if (!value) return;
                       setField("note", value);
                     }}
                     className={inputClass}
