@@ -265,6 +265,16 @@ export async function DELETE(req: Request) {
             students: true,
             circles: true,
             reports: true,
+            zoomLinks: true,
+            trackResources: true,
+            teacherPayouts: true,
+            teacherAttendances: true,
+            financeAuditLogs: true,
+          },
+        },
+        compensationRule: {
+          select: {
+            id: true,
           },
         },
       },
@@ -274,22 +284,29 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "المعلم غير موجود" }, { status: 404 });
     }
 
-    if (teacher._count.students > 0 || teacher._count.circles > 0) {
+    if (
+      teacher._count.students > 0 ||
+      teacher._count.circles > 0 ||
+      teacher._count.reports > 0 ||
+      teacher._count.zoomLinks > 0 ||
+      teacher._count.trackResources > 0 ||
+      teacher._count.teacherPayouts > 0 ||
+      teacher._count.teacherAttendances > 0 ||
+      teacher._count.financeAuditLogs > 0 ||
+      teacher.compensationRule
+    ) {
       return NextResponse.json(
         {
           error:
-            "لا يمكن حذف هذا المعلم لأنه مرتبط بطلاب أو حلقات. انقل الطلاب والحلقات أولًا ثم أعد المحاولة.",
+            "لا يمكن حذف هذا المعلم نهائيا لأنه ما زال مرتبطا بطلاب أو حلقات أو تقارير أو بيانات مالية/إدارية. انقل أو احذف الارتباطات أولا ثم أعد المحاولة.",
         },
         { status: 400 }
       );
     }
 
-    await prisma.user.update({
+    await prisma.user.delete({
       where: {
         id: teacher.id,
-      },
-      data: {
-        isActive: false,
       },
     });
 

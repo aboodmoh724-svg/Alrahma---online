@@ -184,6 +184,66 @@ export function remoteDailyReportWhatsAppMessage(input: {
   );
 }
 
+function memorizationStatusLabel(value: boolean | null | undefined) {
+  if (value === true) {
+    return "*حافظ*";
+  }
+
+  if (value === false) {
+    return "*غير حافظ*";
+  }
+
+  return "غير مسجل";
+}
+
+export function remoteReportMemorizationSummary(input: {
+  lessonMemorized?: boolean | null;
+  lastFiveMemorized?: boolean | null;
+  reviewMemorized?: boolean | null;
+}) {
+  return (
+    `*نتيجة التقييم:*\n` +
+    `- *الدرس الجديد:* ${memorizationStatusLabel(input.lessonMemorized)}\n` +
+    `- *آخر خمس صفحات:* ${memorizationStatusLabel(input.lastFiveMemorized)}\n` +
+    `- *المراجعة:* ${memorizationStatusLabel(input.reviewMemorized)}`
+  );
+}
+
+export function registrationAcceptedWhatsAppMessage(input: {
+  studentName: string;
+  circleName?: string | null;
+  teacherName?: string | null;
+  zoomUrl?: string | null;
+  scheduleDetails?: string | null;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نحيطكم علمًا بأنه تم قبول الطالب *${input.studentName}* في منصة الرحمة.\n\n` +
+    `*الحلقة:* ${input.circleName?.trim() || "-"}\n` +
+    `*المعلم:* ${input.teacherName?.trim() || "-"}\n` +
+    `*تفاصيل الموعد:* ${input.scheduleDetails?.trim() || "-"}\n` +
+    `*رابط الحلقة:* ${input.zoomUrl?.trim() || "-"}\n\n` +
+    `نسأل الله له التوفيق والبركة في رحلته مع كتاب الله.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
+export function fullPaymentReceivedWhatsAppMessage(input: {
+  studentName: string;
+  amount: string;
+  currency: string;
+  circleName?: string | null;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `تم استلام الرسوم كاملة للطالب *${input.studentName}* بنجاح.\n\n` +
+    `*المبلغ المسدد:* ${input.amount} ${input.currency}\n` +
+    `*الحلقة:* ${input.circleName?.trim() || "-"}\n\n` +
+    `جزاكم الله خيرًا وبارك الله فيكم.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
 export function repeatedAbsenceWhatsAppMessage(input: {
   studentName: string;
   teacherName?: string | null;

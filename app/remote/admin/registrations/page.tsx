@@ -83,8 +83,11 @@ export default function RemoteAdminRegistrationsPage() {
   const [financeAmount, setFinanceAmount] = useState<Record<string, string>>({});
   const [updatingFileId, setUpdatingFileId] = useState("");
   const [deletingRequestId, setDeletingRequestId] = useState("");
+  const [sendingAcceptanceId, setSendingAcceptanceId] = useState("");
+  const [bulkDeleting, setBulkDeleting] = useState(false);
   const [audioFiles, setAudioFiles] = useState<Record<string, File | null>>({});
   const [idImageFiles, setIdImageFiles] = useState<Record<string, File | null>>({});
+  const [scheduleDetailsByRequestId, setScheduleDetailsByRequestId] = useState<Record<string, string>>({});
 
   const fetchData = async () => {
     try {
@@ -113,6 +116,17 @@ export default function RemoteAdminRegistrationsPage() {
 
   useEffect(() => {
     fetchData();
+    fetch("/api/registration-requests", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "MARK_SEEN",
+      }),
+    }).catch((error) => {
+      console.error("MARK REGISTRATION REQUESTS AS SEEN ERROR =>", error);
+    });
   }, []);
 
   const updateRequest = async (requestId: string, action: "ACCEPT" | "REJECT") => {
@@ -211,6 +225,66 @@ export default function RemoteAdminRegistrationsPage() {
     }
   };
 
+  const deleteAllRequests = async () => {
+    const shouldDelete = window.confirm(
+      "هل تريد مسح جميع طلبات التسجيل السابقة نهائيا؟ سيبقى الطلاب المقبولون في النظام لكن سيتم حذف سجل الطلبات."
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
+    try {
+      setBulkDeleting(true);
+      const response = await fetch("/api/registration-requests", {
+        method: "DELETE",
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر مسح طلبات التسجيل");
+        return;
+      }
+
+      await fetchData();
+    } catch (error) {
+      console.error("DELETE ALL REGISTRATION REQUESTS ERROR =>", error);
+      alert("حدث خطأ أثناء مسح طلبات التسجيل");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
+  const sendAcceptanceMessage = async (requestId: string) => {
+    try {
+      setSendingAcceptanceId(requestId);
+      const response = await fetch("/api/registration-requests", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requestId,
+          action: "SEND_ACCEPTANCE_MESSAGE",
+          scheduleDetails: scheduleDetailsByRequestId[requestId] || "",
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر إرسال رسالة القبول");
+        return;
+      }
+
+      alert("تم إرسال رسالة القبول لولي الأمر بنجاح");
+    } catch (error) {
+      console.error("SEND ACCEPTANCE MESSAGE ERROR =>", error);
+      alert("حدث خطأ أثناء إرسال رسالة القبول");
+    } finally {
+      setSendingAcceptanceId("");
+    }
+  };
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -222,9 +296,22 @@ export default function RemoteAdminRegistrationsPage() {
               راجع الطلبات، وعدل ملفات الطلب عند الحاجة، ثم اقبل الطالب أو ارفضه أو احذف الطلب.
             </p>
           </div>
-          <Link href="/remote/admin/dashboard" className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]">
-            الرجوع للوحة الإدارة
-          </Link>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={deleteAllRequests}
+              disabled={bulkDeleting || requests.length === 0}
+              className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-center text-sm font-black text-red-700 disabled:opacity-60"
+            >
+              {bulkDeleting ? "جاري مسح الطلبات..." : "مسح جميع الطلبات السابقة"}
+            </button>
+            <Link
+              href="/remote/admin/dashboard"
+              className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            >
+              الرجوع للوحة الإدارة
+            </Link>
+          </div>
         </div>
 
         {loading ? (
@@ -243,14 +330,20 @@ export default function RemoteAdminRegistrationsPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-2xl font-black text-[#1c2d31]">{request.studentName}</h2>
-                      <span className={`rounded-full px-3 py-1 text-xs font-black ${
-                        request.status === "PENDING"
-                          ? "bg-amber-100 text-amber-800"
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-black ${
+                          request.status === "PENDING"
+                            ? "bg-amber-100 text-amber-800"
+                            : request.status === "ACCEPTED"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {request.status === "PENDING"
+                          ? "قيد المراجعة"
                           : request.status === "ACCEPTED"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-red-100 text-red-700"
-                      }`}>
-                        {request.status === "PENDING" ? "قيد المراجعة" : request.status === "ACCEPTED" ? "مقبول" : "مرفوض"}
+                            ? "مقبول"
+                            : "مرفوض"}
                       </span>
                     </div>
                     <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
@@ -275,16 +368,22 @@ export default function RemoteAdminRegistrationsPage() {
                 <div className="mt-4 grid gap-3 md:grid-cols-4">
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">الصف/العمر</p>
-                    <p className="mt-1 text-[#1c2d31]/60">{request.grade || "-"} / {request.birthDate ? new Date(request.birthDate).toLocaleDateString("ar-EG") : "-"}</p>
+                    <p className="mt-1 text-[#1c2d31]/60">
+                      {request.grade || "-"} /{" "}
+                      {request.birthDate ? new Date(request.birthDate).toLocaleDateString("ar-EG") : "-"}
+                    </p>
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">الجنسية/بلد الإقامة</p>
-                    <p className="mt-1 text-[#1c2d31]/60">{request.nationality || "-"} / {request.country || "-"}</p>
+                    <p className="mt-1 text-[#1c2d31]/60">
+                      {request.nationality || "-"} / {request.country || "-"}
+                    </p>
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">حياة الوالدين</p>
                     <p className="mt-1 text-[#1c2d31]/60">
-                      الأب: {request.fatherAlive === null ? "-" : request.fatherAlive ? "نعم" : "لا"} - الأم: {request.motherAlive === null ? "-" : request.motherAlive ? "نعم" : "لا"}
+                      الأب: {request.fatherAlive === null ? "-" : request.fatherAlive ? "نعم" : "لا"} - الأم:{" "}
+                      {request.motherAlive === null ? "-" : request.motherAlive ? "نعم" : "لا"}
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
@@ -293,7 +392,9 @@ export default function RemoteAdminRegistrationsPage() {
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">تعليم الأب/الأم</p>
-                    <p className="mt-1 text-[#1c2d31]/60">{request.fatherEducation || "-"} / {request.motherEducation || "-"}</p>
+                    <p className="mt-1 text-[#1c2d31]/60">
+                      {request.fatherEducation || "-"} / {request.motherEducation || "-"}
+                    </p>
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">الفترة</p>
@@ -309,7 +410,8 @@ export default function RemoteAdminRegistrationsPage() {
                       {getExpectedTuition(
                         request.requestedTracks,
                         circles.find((circle) => circle.id === selectedCircle[request.id])?.track
-                      )} USD
+                      )}{" "}
+                      USD
                     </p>
                   </div>
                   <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
@@ -369,9 +471,7 @@ export default function RemoteAdminRegistrationsPage() {
                         }
                         className="w-full text-sm"
                       />
-                      <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
-                        الحجم المسموح الآن حتى 2MB.
-                      </p>
+                      <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">الحجم المسموح الآن حتى 2MB.</p>
                     </div>
                   </div>
 
@@ -405,9 +505,7 @@ export default function RemoteAdminRegistrationsPage() {
                         }
                         className="w-full text-sm"
                       />
-                      <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
-                        الحجم المسموح الآن حتى 5MB.
-                      </p>
+                      <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">الحجم المسموح الآن حتى 5MB.</p>
                     </div>
                     <button
                       type="button"
@@ -486,12 +584,55 @@ export default function RemoteAdminRegistrationsPage() {
                       </div>
                       <p className="mt-1 text-xs text-[#1c2d31]/55">يمكن تعديله قبل القبول.</p>
                     </div>
-                    <button type="button" onClick={() => updateRequest(request.id, "ACCEPT")} className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white">
+                    <button
+                      type="button"
+                      onClick={() => updateRequest(request.id, "ACCEPT")}
+                      className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white"
+                    >
                       قبول
                     </button>
-                    <button type="button" onClick={() => updateRequest(request.id, "REJECT")} className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700">
+                    <button
+                      type="button"
+                      onClick={() => updateRequest(request.id, "REJECT")}
+                      className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700"
+                    >
                       رفض
                     </button>
+                  </div>
+                ) : null}
+
+                {request.status === "ACCEPTED" && request.createdStudentId ? (
+                  <div className="mt-4 rounded-[1.75rem] border border-emerald-200 bg-emerald-50/70 p-4">
+                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                      <div className="flex-1">
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          تفاصيل موعد الحلقة للرسالة
+                        </label>
+                        <textarea
+                          value={scheduleDetailsByRequestId[request.id] || ""}
+                          onChange={(event) =>
+                            setScheduleDetailsByRequestId((prev) => ({
+                              ...prev,
+                              [request.id]: event.target.value,
+                            }))
+                          }
+                          rows={3}
+                          placeholder="مثال: الأحد والثلاثاء والخميس - الساعة 7:30 مساء بتوقيت مكة"
+                          className="w-full rounded-2xl border border-[#b8d7cb] bg-white px-4 py-3 text-sm outline-none"
+                        />
+                        <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
+                          هذه الرسالة يدوية. أرسلها بعد الدفع واكتمال الترتيب النهائي للحلقة.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => sendAcceptanceMessage(request.id)}
+                        disabled={sendingAcceptanceId === request.id}
+                        className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                      >
+                        {sendingAcceptanceId === request.id ? "جاري إرسال الرسالة..." : "إرسال رسالة القبول"}
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </article>

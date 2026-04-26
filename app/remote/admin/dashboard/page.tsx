@@ -3,7 +3,17 @@ import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { prisma } from "@/lib/prisma";
 
-const sections = [
+const REGISTRATION_REQUESTS_LAST_SEEN_KEY = "registration_requests:last_seen_at";
+
+type DashboardSection = {
+  href: string;
+  requiresFinanceAccess?: boolean;
+  title: string;
+  description: string;
+  tone: string;
+};
+
+const sections: DashboardSection[] = [
   {
     href: "/finance",
     requiresFinanceAccess: true,
@@ -99,8 +109,41 @@ async function getCurrentRemoteAdmin() {
   });
 }
 
+async function getNewRegistrationRequestsCount() {
+  const lastSeenSetting = await prisma.appSetting.findUnique({
+    where: {
+      key: REGISTRATION_REQUESTS_LAST_SEEN_KEY,
+    },
+    select: {
+      value: true,
+    },
+  });
+
+  const seenAtRaw =
+    lastSeenSetting?.value &&
+    typeof lastSeenSetting.value === "object" &&
+    !Array.isArray(lastSeenSetting.value)
+      ? (lastSeenSetting.value as { seenAt?: unknown }).seenAt
+      : null;
+
+  const seenAt = new Date(String(seenAtRaw || "1970-01-01T00:00:00.000Z"));
+  const effectiveSeenAt = Number.isNaN(seenAt.getTime()) ? new Date("1970-01-01T00:00:00.000Z") : seenAt;
+
+  return prisma.registrationRequest.count({
+    where: {
+      createdAt: {
+        gt: effectiveSeenAt,
+      },
+    },
+  });
+}
+
 export default async function RemoteAdminDashboardPage() {
-  const currentAdmin = await getCurrentRemoteAdmin();
+  const [currentAdmin, newRegistrationsCount] = await Promise.all([
+    getCurrentRemoteAdmin(),
+    getNewRegistrationRequestsCount(),
+  ]);
+
   const visibleSections = sections.filter(
     (section) => !section.requiresFinanceAccess || currentAdmin?.canAccessFinance
   );
@@ -134,7 +177,14 @@ export default async function RemoteAdminDashboardPage() {
               href={section.href}
               className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
             >
-              <h2 className="text-2xl font-black">{section.title}</h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-2xl font-black">{section.title}</h2>
+                {section.href === "/remote/admin/registrations" && newRegistrationsCount > 0 ? (
+                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white">
+                    {newRegistrationsCount}
+                  </span>
+                ) : null}
+              </div>
               <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
               <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
                 فتح القسم

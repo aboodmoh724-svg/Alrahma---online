@@ -4,6 +4,7 @@ import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
   normalizeWhatsAppNumber,
+  remoteReportMemorizationSummary,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
@@ -44,6 +45,9 @@ export async function PATCH(request: Request, context: RouteContext) {
         review: true,
         nextHomework: true,
         note: true,
+        lessonMemorized: true,
+        lastFiveMemorized: true,
+        reviewMemorized: true,
         teacher: {
           select: {
             fullName: true,
@@ -92,11 +96,17 @@ export async function PATCH(request: Request, context: RouteContext) {
       homework: report.nextHomework?.trim() || "-",
       note: report.note?.trim() || "-",
     });
+    const messageWithSummary =
+      `${message}\n\n${remoteReportMemorizationSummary({
+        lessonMemorized: report.lessonMemorized,
+        lastFiveMemorized: report.lastFiveMemorized,
+        reviewMemorized: report.reviewMemorized,
+      })}`.trim();
 
     try {
       await sendWhatsAppText({
         to: phone,
-        body: message,
+        body: messageWithSummary,
       });
     } catch (whatsAppError) {
       const messageText =

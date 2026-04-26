@@ -4,8 +4,15 @@ import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
+import {
+  fullPaymentReceivedWhatsAppMessage,
+  isWhatsAppConfigured,
+  normalizeWhatsAppNumber,
+  sendWhatsAppText,
+} from "@/lib/whatsapp";
 
 const defaultCurrency = "USD";
+const FULL_PAYMENT_NOTIFICATION_KEY_PREFIX = "finance_full_payment_notified:";
 const financeTabs = [
   { key: "summary", label: "الملخص المالي" },
   { key: "students", label: "مدفوعات الطلاب" },
@@ -156,6 +163,101 @@ async function logFinanceAction(input: {
   });
 }
 
+async function notifyIfStudentFullyPaid(studentId: string) {
+  const notificationKey = `${FULL_PAYMENT_NOTIFICATION_KEY_PREFIX}${studentId}`;
+
+  const student = await prisma.student.findUnique({
+    where: { id: studentId },
+    include: {
+      circle: {
+        select: {
+          name: true,
+        },
+      },
+      financeAccount: true,
+      payments: true,
+    },
+  });
+
+  if (!student || student.studyMode !== "REMOTE") {
+    return;
+  }
+
+  const totalAmount = toNumber(student.financeAccount?.totalAmount);
+  const discountAmount = toNumber(student.financeAccount?.discountAmount);
+  const requiredAmount = Math.max(totalAmount - discountAmount, 0);
+  const paidAmount = student.payments.reduce((sum, payment) => sum + toNumber(payment.amount), 0);
+
+  if (paidAmount + 0.001 < requiredAmount) {
+    await prisma.appSetting.deleteMany({
+      where: {
+        key: notificationKey,
+      },
+    });
+    return;
+  }
+
+  if (requiredAmount <= 0 || !student.parentWhatsapp || !isWhatsAppConfigured()) {
+    return;
+  }
+
+  const existingNotification = await prisma.appSetting.findUnique({
+    where: {
+      key: notificationKey,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (existingNotification) {
+    return;
+  }
+
+  const normalizedWhatsapp = normalizeWhatsAppNumber(student.parentWhatsapp);
+
+  if (!normalizedWhatsapp) {
+    return;
+  }
+
+  try {
+    const currency = student.financeAccount?.currency || student.payments[0]?.currency || defaultCurrency;
+
+    await sendWhatsAppText({
+      to: normalizedWhatsapp,
+      body: fullPaymentReceivedWhatsAppMessage({
+        studentName: student.fullName,
+        amount: requiredAmount.toFixed(2),
+        currency,
+        circleName: student.circle?.name || null,
+      }),
+    });
+
+    await prisma.appSetting.upsert({
+      where: {
+        key: notificationKey,
+      },
+      update: {
+        value: {
+          notifiedAt: new Date().toISOString(),
+          requiredAmount,
+          paidAmount,
+        },
+      },
+      create: {
+        key: notificationKey,
+        value: {
+          notifiedAt: new Date().toISOString(),
+          requiredAmount,
+          paidAmount,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("FULL PAYMENT WHATSAPP ERROR =>", error);
+  }
+}
+
 async function saveStudentFinanceAccount(formData: FormData) {
   "use server";
 
@@ -201,6 +303,7 @@ async function saveStudentFinanceAccount(formData: FormData) {
     details: { studentId, totalAmount, discountAmount, currency, notes },
   });
 
+  await notifyIfStudentFullyPaid(studentId);
   revalidatePath("/finance");
 }
 
@@ -244,6 +347,7 @@ async function addStudentPayment(formData: FormData) {
     details: { studentId, amount, currency, method, paidAt: paidAt.toISOString(), note },
   });
 
+  await notifyIfStudentFullyPaid(studentId);
   revalidatePath("/finance");
 }
 
@@ -298,6 +402,7 @@ async function updateStudentPayment(formData: FormData) {
     },
   });
 
+  await notifyIfStudentFullyPaid(existing.studentId);
   revalidatePath("/finance");
 }
 
@@ -337,6 +442,7 @@ async function deleteStudentPayment(formData: FormData) {
     },
   });
 
+  await notifyIfStudentFullyPaid(existing.studentId);
   revalidatePath("/finance");
 }
 

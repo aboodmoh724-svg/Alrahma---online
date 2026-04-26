@@ -7,6 +7,7 @@ import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
+  registrationAcceptedWhatsAppMessage,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
@@ -15,6 +16,7 @@ const MAX_ID_FILE_SIZE = 2 * 1024 * 1024;
 const ALLOWED_AUDIO_TYPES = ["audio/", "video/"];
 const ALLOWED_ID_TYPES = ["image/", "application/pdf"];
 const DEFAULT_TUITION_AMOUNT = 250;
+const REGISTRATION_REQUESTS_LAST_SEEN_KEY = "registration_requests:last_seen_at";
 const TRACK_TUITION: Record<string, number> = {
   HIJAA: 250,
   TILAWA: 250,
@@ -283,7 +285,7 @@ export async function POST(req: Request) {
         whatsappSent = true;
       } catch (whatsappError) {
         console.error("REGISTRATION WHATSAPP ERROR =>", whatsappError);
-        whatsappWarning = "تم استلام الطلب، لكن تعذر إرسال رسالة واتساب تلقائية حالياً.";
+        whatsappWarning = "تم استلام الطلب، لكن تعذر إرسال رسالة واتساب تلقائية حاليا.";
       }
     }
 
@@ -308,8 +310,24 @@ export async function POST(req: Request) {
 export async function PATCH(req: Request) {
   try {
     const body = await req.json();
-    const requestId = String(body.requestId || "").trim();
     const action = String(body.action || "").trim();
+
+    if (action === "MARK_SEEN") {
+      const seenAt = new Date().toISOString();
+
+      await prisma.appSetting.upsert({
+        where: { key: REGISTRATION_REQUESTS_LAST_SEEN_KEY },
+        update: { value: { seenAt } },
+        create: {
+          key: REGISTRATION_REQUESTS_LAST_SEEN_KEY,
+          value: { seenAt },
+        },
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    const requestId = String(body.requestId || "").trim();
 
     if (!requestId) {
       return NextResponse.json({ error: "طلب التسجيل مطلوب" }, { status: 400 });
@@ -332,6 +350,63 @@ export async function PATCH(req: Request) {
       });
 
       return NextResponse.json({ success: true, request: updatedRequest });
+    }
+
+    if (action === "SEND_ACCEPTANCE_MESSAGE") {
+      if (request.status !== "ACCEPTED" || !request.createdStudentId) {
+        return NextResponse.json(
+          { error: "يجب قبول الطلب وإنشاء الطالب أولا قبل إرسال رسالة القبول" },
+          { status: 400 }
+        );
+      }
+
+      if (!isWhatsAppConfigured()) {
+        return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
+      }
+
+      const createdStudent = await prisma.student.findUnique({
+        where: {
+          id: request.createdStudentId,
+        },
+        select: {
+          fullName: true,
+          parentWhatsapp: true,
+          circle: {
+            select: {
+              name: true,
+              zoomUrl: true,
+            },
+          },
+          teacher: {
+            select: {
+              fullName: true,
+            },
+          },
+        },
+      });
+
+      if (!createdStudent) {
+        return NextResponse.json({ error: "الطالب المرتبط بالطلب غير موجود" }, { status: 404 });
+      }
+
+      const normalizedWhatsapp = normalizeWhatsAppNumber(createdStudent.parentWhatsapp || "");
+
+      if (!normalizedWhatsapp) {
+        return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });
+      }
+
+      await sendWhatsAppText({
+        to: normalizedWhatsapp,
+        body: registrationAcceptedWhatsAppMessage({
+          studentName: createdStudent.fullName || request.studentName,
+          circleName: createdStudent.circle?.name || null,
+          teacherName: createdStudent.teacher?.fullName || null,
+          zoomUrl: createdStudent.circle?.zoomUrl || null,
+          scheduleDetails: String(body.scheduleDetails || "").trim() || null,
+        }),
+      });
+
+      return NextResponse.json({ success: true });
     }
 
     if (action !== "ACCEPT") {
@@ -362,7 +437,7 @@ export async function PATCH(req: Request) {
     }
 
     if (request.status === "ACCEPTED" && request.createdStudentId) {
-      return NextResponse.json({ error: "هذا الطلب مقبول سابقاً" }, { status: 400 });
+      return NextResponse.json({ error: "هذا الطلب مقبول سابقا" }, { status: 400 });
     }
 
     const expectedTuitionAmount =
@@ -391,7 +466,7 @@ export async function PATCH(req: Request) {
           totalAmount: expectedTuitionAmount,
           discountAmount: 0,
           currency: financeCurrency,
-          notes: `تم إنشاء الرسوم تلقائياً من طلب التسجيل. المسارات المطلوبة: ${request.requestedTracks || "-"}`,
+          notes: `تم إنشاء الرسوم تلقائيا من طلب التسجيل. المسارات المطلوبة: ${request.requestedTracks || "-"}`,
         },
       });
 
@@ -423,6 +498,24 @@ export async function PATCH(req: Request) {
 
     return NextResponse.json(
       { error: "حدث خطأ أثناء مراجعة طلب التسجيل" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE() {
+  try {
+    const deleted = await prisma.registrationRequest.deleteMany({});
+
+    return NextResponse.json({
+      success: true,
+      deletedCount: deleted.count,
+    });
+  } catch (error) {
+    console.error("DELETE ALL REGISTRATION REQUESTS ERROR =>", error);
+
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء مسح طلبات التسجيل" },
       { status: 500 }
     );
   }

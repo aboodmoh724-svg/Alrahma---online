@@ -146,6 +146,15 @@ const inputClass =
 const sectionClass =
   "rounded-[2rem] border border-[#d9c8ad]/70 bg-white/86 p-5 shadow-sm";
 
+const notePresetOptions = [
+  "ممتاز ومتابع بشكل جيد.",
+  "يحتاج إلى مزيد من المراجعة اليومية.",
+  "مستواه جيد لكن يحتاج إلى تثبيت الحفظ.",
+  "نرجو متابعة ولي الأمر للواجب بشكل يومي.",
+  "يوجد تشتت أثناء الحلقة ويحتاج إلى تركيز أكبر.",
+  "تحسن واضح عن الحصص السابقة.",
+];
+
 function SurahInput({
   id,
   label,
@@ -217,6 +226,7 @@ function NewReportForm() {
   const [suggestedHomework, setSuggestedHomework] = useState("");
   const [previousReport, setPreviousReport] = useState<HistoryReport | null>(null);
   const [recentReports, setRecentReports] = useState<HistoryReport[]>([]);
+  const [selectedNotePreset, setSelectedNotePreset] = useState("");
 
   const [formData, setFormData] = useState({
     studentId: studentIdFromUrl,
@@ -785,6 +795,28 @@ function NewReportForm() {
                   placeholder="أي ملاحظات تربوية أو تنبيه مختصر"
                   className={inputClass}
                 />
+                <div className="mt-3">
+                  <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                    ملاحظات سريعة جاهزة
+                  </label>
+                  <select
+                    value={selectedNotePreset}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectedNotePreset(value);
+                      if (!value) return;
+                      setField("note", value);
+                    }}
+                    className={inputClass}
+                  >
+                    <option value="">اختر ملاحظة جاهزة لإدراجها تلقائيًا</option>
+                    {notePresetOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </section>
             </>
           ) : null}
