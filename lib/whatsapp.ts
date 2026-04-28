@@ -8,6 +8,14 @@ type WhatsAppTextInput = {
   channel?: WhatsAppChannel;
 };
 
+type WhatsAppDocumentInput = {
+  to: string;
+  documentUrl: string;
+  fileName: string;
+  caption?: string;
+  channel?: WhatsAppChannel;
+};
+
 type WhatsAppTemplateInput = {
   to: string;
   templateName: string;
@@ -375,7 +383,6 @@ export function teacherVisitReportWhatsAppMessage(input: {
   visitNumber: number;
   visitType: string;
   visitDate: string;
-  pdfUrl: string;
 }) {
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
@@ -383,8 +390,7 @@ export function teacherVisitReportWhatsAppMessage(input: {
     `تم رفع تقرير زيارة جديد لكم من المشرف ${input.supervisorName}.\n\n` +
     `رقم الزيارة: ${input.visitNumber}\n` +
     `نوع الزيارة: ${input.visitType}\n` +
-    `التاريخ: ${input.visitDate}\n` +
-    `رابط التقرير:\n${input.pdfUrl}\n\n` +
+    `التاريخ: ${input.visitDate}\n\n` +
     `مع تمنياتنا لكم بالتوفيق والسداد.\n\n` +
     `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
@@ -404,6 +410,51 @@ async function sendWhatsAppWebJsText({ to, body, channel }: WhatsAppTextInput) {
     body: JSON.stringify({
       phone: to,
       message: body,
+      channel,
+    }),
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(extractWhatsAppErrorMessage(message));
+  }
+
+  const text = await response.text();
+  const contentType = response.headers.get("content-type") || "";
+
+  if (contentType.includes("text/html") || /<!doctype html>|<html/i.test(text)) {
+    throw new Error(extractWhatsAppErrorMessage(text));
+  }
+
+  try {
+    return text ? JSON.parse(text) : { success: true };
+  } catch {
+    throw new Error(extractWhatsAppErrorMessage(text));
+  }
+}
+
+async function sendWhatsAppWebJsDocument({
+  to,
+  documentUrl,
+  fileName,
+  caption,
+  channel,
+}: WhatsAppDocumentInput) {
+  const apiUrl = resolveWebJsApiUrl(channel);
+  const apiToken = resolveWebJsApiToken(channel);
+
+  const response = await fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "ngrok-skip-browser-warning": "true",
+      ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}),
+    },
+    body: JSON.stringify({
+      phone: to,
+      documentUrl,
+      fileName,
+      caption,
       channel,
     }),
   });
@@ -536,4 +587,28 @@ export async function sendWhatsAppText({ to, body, channel }: WhatsAppTextInput)
   }
 
   return response.json();
+}
+
+export async function sendWhatsAppDocument({
+  to,
+  documentUrl,
+  fileName,
+  caption,
+  channel,
+}: WhatsAppDocumentInput) {
+  if (isWhatsAppWebJsConfigured(channel)) {
+    return sendWhatsAppWebJsDocument({
+      to,
+      documentUrl,
+      fileName,
+      caption,
+      channel,
+    });
+  }
+
+  return sendWhatsAppText({
+    to,
+    body: `${caption?.trim() || "تم إرسال تقرير جديد لكم."}\n\n${documentUrl}`,
+    channel,
+  });
 }

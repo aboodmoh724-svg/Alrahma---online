@@ -18,6 +18,7 @@ import {
 } from "@/lib/teacher-visit-reports";
 import {
   normalizeWhatsAppNumber,
+  sendWhatsAppDocument,
   sendWhatsAppText,
   teacherVisitReportWhatsAppMessage,
 } from "@/lib/whatsapp";
@@ -241,21 +242,44 @@ export async function POST(req: Request) {
     let sentToTeacherAt: Date | null = null;
     const teacherWhatsapp = normalizeWhatsAppNumber(teacher.whatsapp || "");
 
-    if (teacherWhatsapp) {
-      await sendWhatsAppText({
-        to: teacherWhatsapp,
-        channel: "REMOTE",
-        body: teacherVisitReportWhatsAppMessage({
-          teacherName: teacher.fullName,
-          supervisorName: supervisor.fullName,
-          visitNumber: createdReport.visitNumber,
-          visitType: teacherVisitTypeLabel(visitType),
-          visitDate: teacherVisitDateLabel(visitAt),
-          pdfUrl: pdf.pdfUrl,
-        }),
-      });
+    let whatsappWarning: string | null = null;
 
-      sentToTeacherAt = new Date();
+    if (teacherWhatsapp) {
+      try {
+        await sendWhatsAppDocument({
+          to: teacherWhatsapp,
+          channel: "REMOTE",
+          documentUrl: pdf.pdfUrl,
+          fileName: `teacher-visit-${createdReport.visitNumber}.pdf`,
+          caption: teacherVisitReportWhatsAppMessage({
+            teacherName: teacher.fullName,
+            supervisorName: supervisor.fullName,
+            visitNumber: createdReport.visitNumber,
+            visitType: teacherVisitTypeLabel(visitType),
+            visitDate: teacherVisitDateLabel(visitAt),
+          }),
+        });
+
+        sentToTeacherAt = new Date();
+      } catch (whatsappError) {
+        console.error("TEACHER VISIT WHATSAPP ERROR =>", whatsappError);
+        whatsappWarning = "تم حفظ التقرير، لكن تعذر إرساله عبر واتساب حاليًا.";
+
+        await sendWhatsAppText({
+          to: teacherWhatsapp,
+          channel: "REMOTE",
+          body:
+            teacherVisitReportWhatsAppMessage({
+              teacherName: teacher.fullName,
+              supervisorName: supervisor.fullName,
+              visitNumber: createdReport.visitNumber,
+              visitType: teacherVisitTypeLabel(visitType),
+              visitDate: teacherVisitDateLabel(visitAt),
+            }) + `\n\nرابط التقرير:\n${pdf.pdfUrl}`,
+        }).catch((fallbackError) => {
+          console.error("TEACHER VISIT WHATSAPP FALLBACK ERROR =>", fallbackError);
+        });
+      }
     }
 
     const report = await prisma.teacherVisitReport.update({
@@ -286,7 +310,10 @@ export async function POST(req: Request) {
     await createTeacherNotification({
       userId: teacher.id,
       title: `تقرير زيارة جديد رقم ${report.visitNumber}`,
-      body: `تمت إضافة زيارة ${teacherVisitTypeLabel(visitType)} بتاريخ ${teacherVisitDateLabel(visitAt)}.`,
+      body:
+        sentToTeacherAt
+          ? `تم إرسال تقرير الزيارة عبر الواتساب. راجع الواتساب لفتح ملف الـ PDF.`
+          : `تم حفظ تقرير الزيارة. تعذر الإرسال عبر الواتساب حاليًا، راجع الإدارة.`,
       link: pdf.pdfPath,
     });
 
@@ -294,6 +321,7 @@ export async function POST(req: Request) {
       success: true,
       report,
       pdfUrl: pdf.pdfUrl,
+      whatsappWarning,
     });
   } catch (error) {
     console.error("CREATE TEACHER VISIT REPORT ERROR =>", error);

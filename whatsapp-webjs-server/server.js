@@ -4,7 +4,7 @@ const cors = require("cors");
 const express = require("express");
 const fs = require("fs");
 const qrcode = require("qrcode-terminal");
-const { Client, LocalAuth } = require("whatsapp-web.js");
+const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
 
 const app = express();
 const port = Number(process.env.PORT || 3333);
@@ -140,6 +140,9 @@ app.post("/send-message", requireToken, async (req, res) => {
 
     const to = normalizePhone(req.body.to || req.body.phone || req.body.number);
     const message = String(req.body.message || req.body.body || "").trim();
+    const documentUrl = String(req.body.documentUrl || "").trim();
+    const fileName = String(req.body.fileName || "").trim();
+    const caption = String(req.body.caption || message || "").trim();
 
     if (!to) {
       res.status(400).json({
@@ -149,21 +152,36 @@ app.post("/send-message", requireToken, async (req, res) => {
       return;
     }
 
-    if (!message) {
+    if (!message && !documentUrl) {
       res.status(400).json({
         success: false,
-        error: "Missing 'message'.",
+        error: "Missing 'message' or 'documentUrl'.",
       });
       return;
     }
 
     const chatId = `${to}@c.us`;
-    const result = await client.sendMessage(chatId, message);
+    let result;
+
+    if (documentUrl) {
+      const media = await MessageMedia.fromUrl(documentUrl, {
+        unsafeMime: true,
+        filename: fileName || undefined,
+      });
+
+      result = await client.sendMessage(chatId, media, {
+        sendMediaAsDocument: true,
+        caption: caption || undefined,
+      });
+    } else {
+      result = await client.sendMessage(chatId, message);
+    }
 
     res.json({
       success: true,
       to,
       messageId: result.id?._serialized || null,
+      sentDocument: Boolean(documentUrl),
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
