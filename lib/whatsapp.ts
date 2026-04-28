@@ -369,6 +369,27 @@ export function teacherWelcomeWhatsAppMessage(input: {
   );
 }
 
+export function teacherVisitReportWhatsAppMessage(input: {
+  teacherName: string;
+  supervisorName: string;
+  visitNumber: number;
+  visitType: string;
+  visitDate: string;
+  pdfUrl: string;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `الأستاذ ${input.teacherName}\n` +
+    `تم رفع تقرير زيارة جديد لكم من المشرف ${input.supervisorName}.\n\n` +
+    `رقم الزيارة: ${input.visitNumber}\n` +
+    `نوع الزيارة: ${input.visitType}\n` +
+    `التاريخ: ${input.visitDate}\n` +
+    `رابط التقرير:\n${input.pdfUrl}\n\n` +
+    `مع تمنياتنا لكم بالتوفيق والسداد.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
 async function sendWhatsAppWebJsText({ to, body, channel }: WhatsAppTextInput) {
   const apiUrl = resolveWebJsApiUrl(channel);
   const apiToken = resolveWebJsApiToken(channel);

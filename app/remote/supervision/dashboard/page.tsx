@@ -35,6 +35,12 @@ const sections = [
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
+    href: "/remote/supervision/teacher-visits",
+    title: "زيارات المعلمين",
+    description: "إدخال زيارات المشرفين بسرعة، وحفظها كـ PDF منظم مع إرسال التقرير للمعلم.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/supervision/registrations",
     title: "الطلبات المحولة من الإدارة",
     description: "الحالات التي أكدتْها الإدارة وحولتها للإشراف للاختبار والتقييم والتوزيع.",
