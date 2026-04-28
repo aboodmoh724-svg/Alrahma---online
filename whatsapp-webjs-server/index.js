@@ -10,6 +10,9 @@ const app = express();
 const port = Number(process.env.PORT || 3001);
 const apiToken = String(process.env.API_TOKEN || "").trim();
 const allowedOrigin = String(process.env.ALLOWED_ORIGIN || "*").trim() || "*";
+const serviceName = String(process.env.WHATSAPP_SERVICE_NAME || "alrahma-whatsapp-server").trim();
+const clientId = String(process.env.WHATSAPP_CLIENT_ID || "alrahma-main").trim();
+const authDataPath = String(process.env.WHATSAPP_AUTH_DATA_PATH || ".wwebjs_auth").trim();
 
 let ready = false;
 let currentQr = null;
@@ -50,8 +53,8 @@ function requireToken(req, res, next) {
 
 const client = new Client({
   authStrategy: new LocalAuth({
-    clientId: "alrahma-main",
-    dataPath: ".wwebjs_auth",
+    clientId,
+    dataPath: authDataPath,
   }),
   puppeteer: {
     headless: true,
@@ -89,7 +92,8 @@ client.on("disconnected", (reason) => {
 app.get("/", (_req, res) => {
   res.json({
     success: true,
-    service: "alrahma-whatsapp-server",
+    service: serviceName,
+    clientId,
     ready,
   });
 });
@@ -169,7 +173,9 @@ app.post("/send-message", requireToken, async (req, res) => {
 
 async function start() {
   app.listen(port, () => {
-    console.log(`alrahma-whatsapp-server listening on port ${port}`);
+    console.log(`${serviceName} listening on port ${port}`);
+    console.log(`clientId: ${clientId}`);
+    console.log(`authPath: ${authDataPath}`);
   });
 
   await client.initialize();
