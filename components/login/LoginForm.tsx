@@ -7,9 +7,10 @@ type LoginFormProps = {
   title?: string;
   subtitle?: string;
   buttonLabel?: string;
+  rememberKey?: string;
 };
 
-function getSavedLogin() {
+function getSavedLogin(rememberKey: string) {
   if (typeof window === "undefined") {
     return {
       email: "",
@@ -18,7 +19,7 @@ function getSavedLogin() {
     };
   }
 
-  const savedLogin = localStorage.getItem("alrahma_teacher_login");
+  const savedLogin = localStorage.getItem(rememberKey);
 
   if (!savedLogin) {
     return {
@@ -42,7 +43,7 @@ function getSavedLogin() {
       rememberMe: Boolean(email || password),
     };
   } catch {
-    localStorage.removeItem("alrahma_teacher_login");
+    localStorage.removeItem(rememberKey);
 
     return {
       email: "",
@@ -56,9 +57,10 @@ export default function LoginForm({
   title = "تسجيل الدخول",
   subtitle = "أدخل بياناتك للوصول إلى حسابك",
   buttonLabel = "تسجيل الدخول",
+  rememberKey = "alrahma_login",
 }: LoginFormProps) {
   const router = useRouter();
-  const [savedLogin] = useState(getSavedLogin);
+  const [savedLogin] = useState(() => getSavedLogin(rememberKey));
 
   const [email, setEmail] = useState(savedLogin.email);
   const [password, setPassword] = useState(savedLogin.password);
@@ -94,11 +96,11 @@ export default function LoginForm({
 
       if (rememberMe) {
         localStorage.setItem(
-          "alrahma_teacher_login",
+          rememberKey,
           JSON.stringify({ email, password })
         );
       } else {
-        localStorage.removeItem("alrahma_teacher_login");
+        localStorage.removeItem(rememberKey);
       }
 
       router.push(data.redirectTo);

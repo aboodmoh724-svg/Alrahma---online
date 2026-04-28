@@ -3,15 +3,22 @@ import Link from "next/link";
 const entries = [
   {
     href: "/remote/admin/login",
-    title: "دخول الإدارة والإشراف",
-    description: "الماليات والرسائل وطلبات التسجيل ولوحة الإشراف التشغيلية.",
+    title: "دخول الإدارة",
+    description: "الماليات، الرسائل، طلبات التسجيل، وإدارة المشرفين والصلاحيات.",
     icon: "إ",
     tone: "bg-[#173d42] text-white",
   },
   {
+    href: "/remote/supervision/login",
+    title: "دخول الإشراف",
+    description: "المهام الإشرافية، متابعة الطلاب والمعلمين، والطلبات المحولة من الإدارة.",
+    icon: "ش",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/teacher/login",
     title: "دخول المعلم",
-    description: "إضافة التقارير اليومية ومتابعة سجل الطلاب.",
+    description: "إضافة التقارير اليومية ومتابعة سجل الطلاب والتنبيهات.",
     icon: "م",
     tone: "bg-[#f3eadc] text-[#8a6335]",
   },
@@ -39,8 +46,10 @@ export default function RemotePage() {
               <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/12 text-3xl font-black text-[#f1d39d] backdrop-blur">
                 ر
               </div>
-              <h1 className="text-4xl font-black">كيف تريد الدخول؟</h1>
-              <p className="mt-3 text-sm leading-7 text-white/78">اختر نوع حسابك للمتابعة إلى لوحة التحكم المناسبة.</p>
+              <h1 className="text-4xl font-black">اختر بوابة الدخول</h1>
+              <p className="mt-3 text-sm leading-7 text-white/78">
+                لكل دور واجهته المستقلة: الإدارة، الإشراف، أو المعلم.
+              </p>
             </div>
           </div>
 
@@ -48,8 +57,10 @@ export default function RemotePage() {
             <div className="w-full max-w-xl space-y-3 sm:space-y-5">
               <div className="mb-2 rounded-3xl bg-[#fffaf2] p-5 text-[#1c2d31] ring-1 ring-[#d9c8ad] lg:hidden">
                 <p className="text-sm font-bold text-[#9b7039]">تعليم عن بعد</p>
-                <h1 className="mt-2 text-2xl font-black">كيف تريد الدخول؟</h1>
-                <p className="mt-2 text-sm leading-6 text-[#1c2d31]/65">اختر حساب الإدارة أو المعلم للمتابعة.</p>
+                <h1 className="mt-2 text-2xl font-black">اختر بوابة الدخول</h1>
+                <p className="mt-2 text-sm leading-6 text-[#1c2d31]/65">
+                  لكل دور واجهته المستقلة: الإدارة، الإشراف، أو المعلم.
+                </p>
               </div>
               {entries.map((entry) => (
                 <Link

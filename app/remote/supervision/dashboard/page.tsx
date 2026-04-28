@@ -37,7 +37,7 @@ const sections = [
   {
     href: "/remote/supervision/registrations",
     title: "الطلبات المحولة من الإدارة",
-    description: "الحالات التي أكدتها الإدارة وحولتها للإشراف للاختبار والتقييم والتوزيع.",
+    description: "الحالات التي أكدتْها الإدارة وحولتها للإشراف للاختبار والتقييم والتوزيع.",
     tone: "bg-white text-[#173d42]",
   },
   {
@@ -70,6 +70,7 @@ async function getCurrentSupervisor() {
     },
     select: {
       fullName: true,
+      canAccessFinance: true,
     },
   });
 }
@@ -118,15 +119,23 @@ export default async function RemoteSupervisionDashboardPage() {
                 لوحة الإشراف
               </p>
               <Link
-                href="/remote/admin/dashboard"
+                href="/remote"
                 className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]"
               >
-                الرجوع للإدارة
+                بوابات الدخول
               </Link>
+              {supervisor?.canAccessFinance ? (
+                <Link
+                  href="/remote/admin/dashboard"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]"
+                >
+                  لوحة الإدارة
+                </Link>
+              ) : null}
               <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
-              متابعة تشغيلية واضحة للطلاب والمعلمين والحلقات.
+              واجهة إشراف مستقلة لمتابعة الطلاب والمعلمين والمهام اليومية.
             </h1>
             <p className="mt-4 text-sm leading-8 text-white/72">
               {supervisor?.fullName
