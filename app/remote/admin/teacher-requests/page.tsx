@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type TeacherRequest = {
   id: string;
@@ -65,6 +66,10 @@ function formatDate(date: string) {
 }
 
 export default function RemoteAdminTeacherRequestsPage() {
+  const pathname = usePathname();
+  const dashboardHref = pathname.startsWith("/remote/supervision/")
+    ? "/remote/supervision/dashboard"
+    : "/remote/admin/dashboard";
   const [requests, setRequests] = useState<TeacherRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
@@ -139,7 +144,7 @@ export default function RemoteAdminTeacherRequestsPage() {
             </p>
           </div>
           <Link
-            href="/remote/admin/dashboard"
+            href={dashboardHref}
             className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] hover:bg-[#fffaf2]"
           >
             الرجوع إلى لوحة الإدارة

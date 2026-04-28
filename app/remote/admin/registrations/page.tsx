@@ -48,6 +48,9 @@ type RegistrationRequest = {
   notes: string | null;
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdStudentId: string | null;
+  forwardedToSupervisionAt: string | null;
+  supervisionStatus: "PENDING" | "UNDER_REVIEW" | "PLACED" | "ON_HOLD";
+  supervisionNote: string | null;
   createdAt: string;
 };
 
@@ -88,6 +91,8 @@ export default function RemoteAdminRegistrationsPage() {
   const [audioFiles, setAudioFiles] = useState<Record<string, File | null>>({});
   const [idImageFiles, setIdImageFiles] = useState<Record<string, File | null>>({});
   const [scheduleDetailsByRequestId, setScheduleDetailsByRequestId] = useState<Record<string, string>>({});
+  const [forwardingId, setForwardingId] = useState("");
+  const [supervisionNotesByRequestId, setSupervisionNotesByRequestId] = useState<Record<string, string>>({});
 
   const fetchData = async () => {
     try {
@@ -282,6 +287,37 @@ export default function RemoteAdminRegistrationsPage() {
       alert("حدث خطأ أثناء إرسال رسالة القبول");
     } finally {
       setSendingAcceptanceId("");
+    }
+  };
+
+  const forwardToSupervision = async (requestId: string) => {
+    try {
+      setForwardingId(requestId);
+      const response = await fetch("/api/registration-requests", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          requestId,
+          action: "FORWARD_TO_SUPERVISION",
+          supervisionNote: supervisionNotesByRequestId[requestId] || "",
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر تحويل الطلب إلى الإشراف");
+        return;
+      }
+
+      alert("تم تحويل الطلب إلى الإشراف بنجاح");
+      await fetchData();
+    } catch (error) {
+      console.error("FORWARD TO SUPERVISION ERROR =>", error);
+      alert("حدث خطأ أثناء تحويل الطلب إلى الإشراف");
+    } finally {
+      setForwardingId("");
     }
   };
 
@@ -603,7 +639,7 @@ export default function RemoteAdminRegistrationsPage() {
 
                 {request.status === "ACCEPTED" && request.createdStudentId ? (
                   <div className="mt-4 rounded-[1.75rem] border border-emerald-200 bg-emerald-50/70 p-4">
-                    <div className="flex flex-col gap-3 lg:flex-row lg:items-end">
+                    <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
                       <div className="flex-1">
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                           تفاصيل موعد الحلقة للرسالة
@@ -623,15 +659,48 @@ export default function RemoteAdminRegistrationsPage() {
                         <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
                           هذه الرسالة يدوية. أرسلها بعد الدفع واكتمال الترتيب النهائي للحلقة.
                         </p>
+                        {request.forwardedToSupervisionAt ? (
+                          <p className="mt-2 text-xs font-black text-[#1f6358]">
+                            تم تحويل الطلب إلى الإشراف
+                          </p>
+                        ) : null}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => sendAcceptanceMessage(request.id)}
-                        disabled={sendingAcceptanceId === request.id}
-                        className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
-                      >
-                        {sendingAcceptanceId === request.id ? "جاري إرسال الرسالة..." : "إرسال رسالة القبول"}
-                      </button>
+                      <div className="space-y-3">
+                        <button
+                          type="button"
+                          onClick={() => sendAcceptanceMessage(request.id)}
+                          disabled={sendingAcceptanceId === request.id}
+                          className="w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          {sendingAcceptanceId === request.id ? "جاري إرسال الرسالة..." : "إرسال رسالة القبول"}
+                        </button>
+
+                        <textarea
+                          value={supervisionNotesByRequestId[request.id] || request.supervisionNote || ""}
+                          onChange={(event) =>
+                            setSupervisionNotesByRequestId((prev) => ({
+                              ...prev,
+                              [request.id]: event.target.value,
+                            }))
+                          }
+                          rows={3}
+                          placeholder="ملاحظة مختصرة للإشراف: مستوى الطالب، ملاحظات الاختبار، أو ما يلزم متابعته"
+                          className="w-full rounded-2xl border border-[#b8d7cb] bg-white px-4 py-3 text-sm outline-none"
+                        />
+
+                        <button
+                          type="button"
+                          onClick={() => forwardToSupervision(request.id)}
+                          disabled={forwardingId === request.id || Boolean(request.forwardedToSupervisionAt)}
+                          className="w-full rounded-2xl border border-[#1f6358] bg-white px-5 py-3 text-sm font-black text-[#1f6358] disabled:opacity-60"
+                        >
+                          {request.forwardedToSupervisionAt
+                            ? "تم التحويل إلى الإشراف"
+                            : forwardingId === request.id
+                              ? "جارٍ التحويل..."
+                              : "تحويل إلى الإشراف"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : null}

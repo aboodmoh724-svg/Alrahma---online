@@ -3,8 +3,8 @@ import Link from "next/link";
 const entries = [
   {
     href: "/remote/admin/login",
-    title: "دخول الإدارة",
-    description: "إدارة المعلمين، الطلاب، الحلقات، والروابط.",
+    title: "دخول الإدارة والإشراف",
+    description: "الماليات والرسائل وطلبات التسجيل ولوحة الإشراف التشغيلية.",
     icon: "إ",
     tone: "bg-[#173d42] text-white",
   },

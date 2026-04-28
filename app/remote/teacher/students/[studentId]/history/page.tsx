@@ -158,7 +158,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
               سجل الطالب: {student.fullName}
             </h1>
             <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
-              شاشة سريعة للمعلم توضح الحضور، والسير، والواجب، وآخر وضع للطالب خلال ثوانٍ.
+              شاشة سريعة للمعلم توضح الحضور والسير وآخر وضع للطالب خلال ثوانٍ.
             </p>
           </div>
 
@@ -270,10 +270,11 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                     </div>
                   </div>
 
-                  <div className="mt-4 hidden overflow-x-auto xl:block">
-                    <table className="min-w-full border-separate border-spacing-0 overflow-hidden rounded-[1.5rem] text-right">
+                  <div className="mt-4 hidden overflow-hidden rounded-[1.6rem] border border-[#e7dcc8] bg-[#fcf8f2] shadow-sm xl:block">
+                    <div className="overflow-x-auto">
+                    <table className="min-w-full border-separate border-spacing-0 text-right">
                       <thead>
-                        <tr className="bg-[#f7f0e6] text-xs font-black text-[#8a6335]">
+                        <tr className="bg-[#f3e8d4] text-xs font-black text-[#8a6335]">
                           <th className="px-3 py-3">التاريخ</th>
                           <th className="px-3 py-3">اليوم</th>
                           <th className="px-3 py-3">الحالة</th>
@@ -285,7 +286,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                       </thead>
                       <tbody>
                         {group.reports.map((report) => (
-                          <tr key={report.id} className="bg-white text-sm text-[#1c2d31] even:bg-[#fffaf4]">
+                          <tr key={report.id} className="bg-white text-sm text-[#1c2d31] transition hover:bg-[#fdf6ea] even:bg-[#fffaf4]">
                             <td className="border-t border-[#efe2cd] px-3 py-3 font-black">
                               {reportDateLabel(report.createdAt)}
                             </td>
@@ -321,11 +322,12 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
 
                   <div className="mt-4 space-y-3 xl:hidden">
                     {group.reports.map((report) => (
-                      <article key={report.id} className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                      <article key={report.id} className="rounded-[1.5rem] bg-[#fffaf2] p-4 shadow-sm ring-1 ring-[#eadcc6]">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-black text-[#1c2d31]">

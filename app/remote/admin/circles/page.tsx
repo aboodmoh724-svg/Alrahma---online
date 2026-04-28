@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type Teacher = {
   id: string;
@@ -22,6 +23,10 @@ type Circle = {
 };
 
 export default function RemoteAdminCirclesPage() {
+  const pathname = usePathname();
+  const dashboardHref = pathname.startsWith("/remote/supervision/")
+    ? "/remote/supervision/dashboard"
+    : "/remote/admin/dashboard";
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -248,7 +253,7 @@ export default function RemoteAdminCirclesPage() {
           </div>
 
           <Link
-            href="/remote/admin/dashboard"
+            href={dashboardHref}
             className="rounded-xl border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-white"
           >
             الرجوع للداشبورد

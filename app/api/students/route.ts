@@ -140,7 +140,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const studentCode = await generateStudentCode();
+    const studentCode = await generateStudentCode(resolvedStudyMode);
 
     const student = await prisma.student.create({
       data: {

@@ -284,6 +284,9 @@ model RegistrationRequest {
   notes              String?
   status             RegistrationStatus @default(PENDING)
   createdStudentId   String?
+  forwardedToSupervisionAt DateTime?
+  supervisionStatus  SupervisionStatus  @default(PENDING)
+  supervisionNote    String?
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
   readingLevel       String?
@@ -380,6 +383,13 @@ enum TeacherAttendanceStatus {
 enum TrackResourceScope {
   TEACHER
   REGISTRATION
+}
+
+enum SupervisionStatus {
+  PENDING
+  UNDER_REVIEW
+  PLACED
+  ON_HOLD
 }
 
 enum TeacherRequestType {

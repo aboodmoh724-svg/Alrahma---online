@@ -136,7 +136,7 @@ export async function POST(req: Request) {
         })
       : await prisma.student.create({
           data: {
-            studentCode: await generateStudentCode(),
+            studentCode: await generateStudentCode("ONSITE"),
             fullName,
             parentWhatsapp,
             parentEmail,

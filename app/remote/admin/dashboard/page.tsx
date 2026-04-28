@@ -13,6 +13,16 @@ type DashboardSection = {
   tone: string;
 };
 
+const ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS = new Set([
+  "/remote/admin/statistics",
+  "/remote/admin/students",
+  "/remote/admin/circles",
+  "/remote/admin/teachers",
+  "/remote/admin/teacher-requests",
+  "/remote/admin/reports",
+  "/remote/admin/statistics#unassigned-students",
+]);
+
 const sections: DashboardSection[] = [
   {
     href: "/finance",
@@ -94,6 +104,12 @@ const sections: DashboardSection[] = [
     description: "قسم مهم لمتابعة الطلاب الذين لم يتم ربطهم بحلقة بعد.",
     tone: "bg-[#fffaf2] text-[#9b7039]",
   },
+  {
+    href: "/remote/supervision/dashboard",
+    title: "لوحة الإشراف",
+    description: "واجهة تشغيلية موحدة لإدارة الطلاب والمعلمين والحلقات وطلبات المعلمين والتقارير وحالات التسجيل المحولة.",
+    tone: "bg-[#173d42] text-white",
+  },
 ];
 
 async function getCurrentRemoteAdmin() {
@@ -145,13 +161,27 @@ async function getNewRegistrationRequestsCount() {
 }
 
 async function getOpenTeacherRequestsCount() {
-  return prisma.teacherRequest.count({
-    where: {
-      status: {
-        in: ["NEW", "IN_REVIEW"],
+  const [teacherRequestsCount, forwardedRegistrationsCount] = await Promise.all([
+    prisma.teacherRequest.count({
+      where: {
+        status: {
+          in: ["NEW", "IN_REVIEW"],
+        },
       },
-    },
-  });
+    }),
+    prisma.registrationRequest.count({
+      where: {
+        forwardedToSupervisionAt: {
+          not: null,
+        },
+        supervisionStatus: {
+          in: ["PENDING", "UNDER_REVIEW", "ON_HOLD"],
+        },
+      },
+    }),
+  ]);
+
+  return teacherRequestsCount + forwardedRegistrationsCount;
 }
 
 export default async function RemoteAdminDashboardPage() {
@@ -162,7 +192,9 @@ export default async function RemoteAdminDashboardPage() {
   ]);
 
   const visibleSections = sections.filter(
-    (section) => !section.requiresFinanceAccess || currentAdmin?.canAccessFinance
+    (section) =>
+      !ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS.has(section.href) &&
+      (!section.requiresFinanceAccess || currentAdmin?.canAccessFinance)
   );
 
   return (
@@ -200,7 +232,7 @@ export default async function RemoteAdminDashboardPage() {
                   <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white">
                     {newRegistrationsCount}
                   </span>
-                ) : section.href === "/remote/admin/teacher-requests" &&
+                ) : section.href === "/remote/supervision/dashboard" &&
                   openTeacherRequestsCount > 0 ? (
                   <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
                     {openTeacherRequestsCount}

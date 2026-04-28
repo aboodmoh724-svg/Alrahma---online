@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { registrationReceivedEmail, sendEmail } from "@/lib/email";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
+import { generateStudentCode } from "@/lib/student-code";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
 import {
   isWhatsAppConfigured,
@@ -23,28 +24,6 @@ const TRACK_TUITION: Record<string, number> = {
   RUBAI: 250,
   FARDI: 600,
 };
-
-async function generateStudentCode() {
-  const studentsCount = await prisma.student.count();
-
-  for (let offset = 1; offset < 1000; offset += 1) {
-    const code = `ST-${1000 + studentsCount + offset}`;
-    const existingStudent = await prisma.student.findUnique({
-      where: {
-        studentCode: code,
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    if (!existingStudent) {
-      return code;
-    }
-  }
-
-  return `ST-${Date.now()}`;
-}
 
 function parseBoolean(value: unknown) {
   return value === true || value === "true" || value === "yes" || value === "نعم";
@@ -411,6 +390,48 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === "FORWARD_TO_SUPERVISION") {
+      if (request.status !== "ACCEPTED" || !request.createdStudentId) {
+        return NextResponse.json(
+          { error: "يجب قبول الطلب وإنشاء الطالب أولًا قبل تحويله إلى الإشراف" },
+          { status: 400 }
+        );
+      }
+
+      const updatedRequest = await prisma.registrationRequest.update({
+        where: { id: request.id },
+        data: {
+          forwardedToSupervisionAt: new Date(),
+          supervisionStatus: "UNDER_REVIEW",
+          supervisionNote: String(body.supervisionNote || "").trim() || null,
+        },
+      });
+
+      return NextResponse.json({ success: true, request: updatedRequest });
+    }
+
+    if (action === "UPDATE_SUPERVISION_STATUS") {
+      const supervisionStatus = String(body.supervisionStatus || "").trim();
+
+      if (!["PENDING", "UNDER_REVIEW", "PLACED", "ON_HOLD"].includes(supervisionStatus)) {
+        return NextResponse.json({ error: "حالة الإشراف غير صالحة" }, { status: 400 });
+      }
+
+      const updatedRequest = await prisma.registrationRequest.update({
+        where: { id: request.id },
+        data: {
+          supervisionStatus: supervisionStatus as
+            | "PENDING"
+            | "UNDER_REVIEW"
+            | "PLACED"
+            | "ON_HOLD",
+          supervisionNote: String(body.supervisionNote || "").trim() || null,
+        },
+      });
+
+      return NextResponse.json({ success: true, request: updatedRequest });
+    }
+
     if (action !== "ACCEPT") {
       return NextResponse.json({ error: "الإجراء غير معروف" }, { status: 400 });
     }
@@ -447,7 +468,7 @@ export async function PATCH(req: Request) {
         ? financeAmountFromBody
         : getExpectedTuitionAmount(request.requestedTracks, circle?.track);
 
-    const studentCode = await generateStudentCode();
+    const studentCode = await generateStudentCode(circle?.studyMode || "REMOTE");
     const { student, updatedRequest } = await prisma.$transaction(async (tx) => {
       const createdStudent = await tx.student.create({
         data: {

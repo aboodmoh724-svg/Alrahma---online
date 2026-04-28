@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type ReportItem = {
   id: string;
@@ -155,6 +156,10 @@ function isRemoteReport(report: ReportItem) {
 }
 
 export default function RemoteAdminReportsPage() {
+  const pathname = usePathname();
+  const dashboardHref = pathname.startsWith("/remote/supervision/")
+    ? "/remote/supervision/dashboard"
+    : "/remote/admin/dashboard";
   const [reports, setReports] = useState<ReportItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -289,7 +294,7 @@ export default function RemoteAdminReportsPage() {
             </p>
           </div>
           <Link
-            href="/remote/admin/dashboard"
+            href={dashboardHref}
             className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإدارة
@@ -303,7 +308,7 @@ export default function RemoteAdminReportsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="اكتب اسم الطالب أو رقمه مثل ST-1001"
+            placeholder="اكتب اسم الطالب أو رقمه مثل 1001"
             className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
           />
         </section>
