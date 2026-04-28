@@ -281,6 +281,7 @@ export async function POST(req: Request) {
         await sendWhatsAppText({
           to: normalizedWhatsapp,
           body: whatsAppMessage,
+          channel: "REMOTE",
         });
         whatsappSent = true;
       } catch (whatsappError) {
@@ -404,6 +405,7 @@ export async function PATCH(req: Request) {
           zoomUrl: createdStudent.circle?.zoomUrl || null,
           scheduleDetails: String(body.scheduleDetails || "").trim() || null,
         }),
+        channel: "REMOTE",
       });
 
       return NextResponse.json({ success: true });

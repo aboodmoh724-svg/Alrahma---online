@@ -38,7 +38,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "غير مصرح لك بإرسال الرسائل الجماعية" }, { status: 403 });
     }
 
-    if (!isWhatsAppConfigured()) {
+    if (
+      !isWhatsAppConfigured("REMOTE") &&
+      !isWhatsAppConfigured("ONSITE") &&
+      !isWhatsAppConfigured()
+    ) {
       return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليًا" }, { status: 400 });
     }
 
@@ -103,6 +107,7 @@ export async function POST(request: Request) {
         await sendWhatsAppText({
           to: phone,
           body: rawMessage,
+          channel: recipient.studyMode,
         });
         sentCount += 1;
       } catch (error) {

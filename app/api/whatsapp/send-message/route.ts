@@ -6,6 +6,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const phone = normalizeWhatsAppNumber(String(body.phone || ""));
     const message = String(body.message || "").trim();
+    const channel = body.channel === "ONSITE" ? "ONSITE" : body.channel === "REMOTE" ? "REMOTE" : undefined;
 
     if (!phone) {
       return NextResponse.json(
@@ -24,6 +25,7 @@ export async function POST(request: Request) {
     const response = await sendWhatsAppText({
       to: phone,
       body: message,
+      channel,
     });
 
     return NextResponse.json({

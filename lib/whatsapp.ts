@@ -1,6 +1,9 @@
+export type WhatsAppChannel = "REMOTE" | "ONSITE";
+
 type WhatsAppTextInput = {
   to: string;
   body: string;
+  channel?: WhatsAppChannel;
 };
 
 type WhatsAppTemplateInput = {
@@ -11,6 +14,56 @@ type WhatsAppTemplateInput = {
 };
 
 const DEFAULT_WEBJS_API_URL = "http://185.182.8.94/send-message";
+
+function resolveWebJsApiUrl(channel?: WhatsAppChannel) {
+  if (channel === "ONSITE") {
+    return (
+      process.env.WHATSAPP_WEBJS_API_URL_ONSITE ||
+      process.env.WHATSAPP_WEBJS_API_URL ||
+      DEFAULT_WEBJS_API_URL
+    );
+  }
+
+  if (channel === "REMOTE") {
+    return (
+      process.env.WHATSAPP_WEBJS_API_URL_REMOTE ||
+      process.env.WHATSAPP_WEBJS_API_URL ||
+      DEFAULT_WEBJS_API_URL
+    );
+  }
+
+  return (
+    process.env.WHATSAPP_WEBJS_API_URL_REMOTE ||
+    process.env.WHATSAPP_WEBJS_API_URL ||
+    process.env.WHATSAPP_WEBJS_API_URL_ONSITE ||
+    DEFAULT_WEBJS_API_URL
+  );
+}
+
+function resolveWebJsApiToken(channel?: WhatsAppChannel) {
+  if (channel === "ONSITE") {
+    return (
+      process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE ||
+      process.env.WHATSAPP_WEBJS_API_TOKEN ||
+      ""
+    );
+  }
+
+  if (channel === "REMOTE") {
+    return (
+      process.env.WHATSAPP_WEBJS_API_TOKEN_REMOTE ||
+      process.env.WHATSAPP_WEBJS_API_TOKEN ||
+      ""
+    );
+  }
+
+  return (
+    process.env.WHATSAPP_WEBJS_API_TOKEN_REMOTE ||
+    process.env.WHATSAPP_WEBJS_API_TOKEN ||
+    process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE ||
+    ""
+  );
+}
 
 function extractWhatsAppErrorMessage(raw: string) {
   const text = String(raw || "").trim();
@@ -47,13 +100,13 @@ function extractWhatsAppErrorMessage(raw: string) {
   return text.length > 280 ? `${text.slice(0, 280)}...` : text;
 }
 
-export function isWhatsAppWebJsConfigured() {
-  return Boolean(process.env.WHATSAPP_WEBJS_API_URL || DEFAULT_WEBJS_API_URL);
+export function isWhatsAppWebJsConfigured(channel?: WhatsAppChannel) {
+  return Boolean(resolveWebJsApiUrl(channel));
 }
 
-export function isWhatsAppConfigured() {
+export function isWhatsAppConfigured(channel?: WhatsAppChannel) {
   return Boolean(
-    isWhatsAppWebJsConfigured() ||
+    isWhatsAppWebJsConfigured(channel) ||
       (process.env.WHATSAPP_TOKEN &&
         process.env.WHATSAPP_PHONE_NUMBER_ID &&
         process.env.WHATSAPP_BUSINESS_ACCOUNT_ID)
@@ -314,21 +367,21 @@ export function teacherWelcomeWhatsAppMessage(input: {
   );
 }
 
-async function sendWhatsAppWebJsText({ to, body }: WhatsAppTextInput) {
-  const apiUrl = process.env.WHATSAPP_WEBJS_API_URL || DEFAULT_WEBJS_API_URL;
+async function sendWhatsAppWebJsText({ to, body, channel }: WhatsAppTextInput) {
+  const apiUrl = resolveWebJsApiUrl(channel);
+  const apiToken = resolveWebJsApiToken(channel);
 
   const response = await fetch(apiUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "ngrok-skip-browser-warning": "true",
-      ...(process.env.WHATSAPP_WEBJS_API_TOKEN
-        ? { Authorization: `Bearer ${process.env.WHATSAPP_WEBJS_API_TOKEN}` }
-        : {}),
+      ...(apiToken ? { Authorization: `Bearer ${apiToken}` } : {}),
     },
     body: JSON.stringify({
       phone: to,
       message: body,
+      channel,
     }),
   });
 
@@ -413,9 +466,9 @@ export async function sendWhatsAppTemplate({
   return response.json();
 }
 
-export async function sendWhatsAppText({ to, body }: WhatsAppTextInput) {
-  if (isWhatsAppWebJsConfigured()) {
-    return sendWhatsAppWebJsText({ to, body });
+export async function sendWhatsAppText({ to, body, channel }: WhatsAppTextInput) {
+  if (isWhatsAppWebJsConfigured(channel)) {
+    return sendWhatsAppWebJsText({ to, body, channel });
   }
 
   const token = process.env.WHATSAPP_TOKEN;

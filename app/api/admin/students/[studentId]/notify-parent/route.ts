@@ -78,6 +78,7 @@ export async function POST(request: Request, context: RouteContext) {
       select: {
         id: true,
         fullName: true,
+        studyMode: true,
         parentWhatsapp: true,
         circle: {
           select: {
@@ -159,6 +160,7 @@ export async function POST(request: Request, context: RouteContext) {
     await sendWhatsAppText({
       to: phone,
       body: message,
+      channel: student.studyMode,
     });
 
     return NextResponse.json({

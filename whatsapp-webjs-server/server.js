@@ -10,6 +10,9 @@ const app = express();
 const port = Number(process.env.PORT || 3333);
 const apiToken = String(process.env.API_TOKEN || "").trim();
 const allowedOrigin = String(process.env.ALLOWED_ORIGIN || "*").trim() || "*";
+const serviceName = String(process.env.WHATSAPP_SERVICE_NAME || "alrahma-whatsapp-webjs-server").trim();
+const clientId = String(process.env.WHATSAPP_CLIENT_ID || "alrahma-main").trim();
+const authDataPath = String(process.env.WHATSAPP_AUTH_DATA_PATH || ".wwebjs_auth").trim();
 
 let clientReady = false;
 let lastQrAt = null;
@@ -33,8 +36,8 @@ app.use(
 
 const client = new Client({
   authStrategy: new LocalAuth({
-    clientId: "alrahma-main",
-    dataPath: ".wwebjs_auth",
+    clientId,
+    dataPath: authDataPath,
   }),
   puppeteer: {
     headless: false,
@@ -106,7 +109,8 @@ client.on("disconnected", (reason) => {
 app.get("/", (_req, res) => {
   res.json({
     success: true,
-    service: "alrahma-whatsapp-webjs-server",
+    service: serviceName,
+    clientId,
     ready: clientReady,
     lastQrAt,
     lastReadyAt,
@@ -116,6 +120,8 @@ app.get("/", (_req, res) => {
 app.get("/status", (_req, res) => {
   res.json({
     success: true,
+    service: serviceName,
+    clientId,
     ready: clientReady,
     lastQrAt,
     lastReadyAt,
@@ -172,6 +178,9 @@ app.post("/send-message", requireToken, async (req, res) => {
 async function start() {
   app.listen(port, () => {
     console.log(`WhatsApp bridge listening on http://localhost:${port}`);
+    console.log(`Service name: ${serviceName}`);
+    console.log(`Client ID: ${clientId}`);
+    console.log(`Auth path: ${authDataPath}`);
     console.log("Waiting for WhatsApp client...");
   });
 

@@ -148,6 +148,7 @@ export async function GET(request: Request) {
         await sendWhatsAppText({
           to: phone,
           body: message,
+          channel: "REMOTE",
         });
 
         sentCount += 1;

@@ -231,6 +231,7 @@ async function notifyIfStudentFullyPaid(studentId: string) {
         currency,
         circleName: student.circle?.name || null,
       }),
+      channel: "REMOTE",
     });
 
     await prisma.appSetting.upsert({

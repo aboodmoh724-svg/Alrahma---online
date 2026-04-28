@@ -132,6 +132,7 @@ export async function POST(req: Request) {
             password,
             loginUrl,
           }),
+          channel: studyMode,
         });
         whatsappSent = true;
       } catch (whatsappError) {

@@ -107,6 +107,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       await sendWhatsAppText({
         to: phone,
         body: messageWithSummary,
+        channel: "REMOTE",
       });
     } catch (whatsAppError) {
       const messageText =
