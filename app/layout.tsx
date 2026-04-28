@@ -1,9 +1,14 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "منصة الرحمة",
   description: "منصة إدارة تقارير تحفيظ القرآن الكريم",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f7f0e6",
+  colorScheme: "light",
 };
 
 export default function RootLayout({

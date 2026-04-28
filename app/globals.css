@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: only light;
   --background: #f7f0e6;
   --foreground: #1c2d31;
   --rahma-ink: #1c2d31;
@@ -9,6 +10,11 @@
   --rahma-gold: #c39a62;
   --rahma-cream: #f7f0e6;
   --rahma-card: rgba(255, 252, 247, 0.86);
+}
+
+html {
+  color-scheme: only light;
+  background-color: var(--background);
 }
 
 @theme inline {
@@ -22,6 +28,7 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Tajawal", "Segoe UI", Tahoma, Arial, sans-serif;
+  min-height: 100%;
 }
 
 ::selection {
