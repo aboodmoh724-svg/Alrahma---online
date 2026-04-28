@@ -38,29 +38,15 @@ function compactText(value: string | null | undefined, fallback = "-") {
   return text || fallback;
 }
 
-function reportPoints(report: StudentReport) {
-  if (report.status === "ABSENT") {
-    return 0;
-  }
-
-  const memorizationPoints = [
-    report.lessonMemorized,
-    report.lastFiveMemorized,
-    report.reviewMemorized,
-  ].filter((value) => value === true).length;
-
-  return 1 + memorizationPoints;
-}
-
 function reportDayName(date: Date) {
-  return new Intl.DateTimeFormat("ar-EG", { weekday: "long" }).format(date);
+  return new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date);
 }
 
 function reportDateLabel(date: Date) {
-  return new Intl.DateTimeFormat("ar-EG", {
+  return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+    month: "short",
+    day: "numeric",
   }).format(date);
 }
 
@@ -69,7 +55,7 @@ function monthKey(date: Date) {
 }
 
 function monthLabel(date: Date) {
-  return new Intl.DateTimeFormat("ar-EG", {
+  return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
     month: "long",
   }).format(date);
@@ -80,23 +66,23 @@ function timelineTone(report: StudentReport) {
     return "bg-rose-100 text-rose-700 ring-rose-200";
   }
 
-  const points = reportPoints(report);
-
-  if (points >= 4) {
+  if (
+    report.lessonMemorized === true &&
+    report.lastFiveMemorized === true &&
+    report.reviewMemorized === true
+  ) {
     return "bg-emerald-100 text-emerald-700 ring-emerald-200";
   }
 
-  if (points >= 2) {
+  if (
+    report.lessonMemorized === false ||
+    report.lastFiveMemorized === false ||
+    report.reviewMemorized === false
+  ) {
     return "bg-amber-100 text-amber-700 ring-amber-200";
   }
 
   return "bg-slate-100 text-slate-700 ring-slate-200";
-}
-
-function monthTone(pointsAverage: number) {
-  if (pointsAverage >= 3.2) return "text-emerald-700 bg-emerald-100 ring-emerald-200";
-  if (pointsAverage >= 2) return "text-amber-700 bg-amber-100 ring-amber-200";
-  return "text-slate-700 bg-slate-100 ring-slate-200";
 }
 
 export default async function StudentHistoryPage({ params }: PageProps) {
@@ -158,28 +144,17 @@ export default async function StudentHistoryPage({ params }: PageProps) {
 
   const reports = student.reports as StudentReport[];
   const latestReport = reports[0] || null;
-  const presentCount = reports.filter((report) => report.status === "PRESENT").length;
-  const absentCount = reports.length - presentCount;
   const latestHomework =
     reports.find((report) => compactText(report.nextHomework, "") !== "")?.nextHomework || null;
   const latestReview =
     reports.find((report) => compactText(report.review, "") !== "")?.review || null;
   const last12Reports = reports.slice(0, 12);
-  const averagePoints =
-    reports.length > 0
-      ? Math.round(
-          (reports.reduce((sum, report) => sum + reportPoints(report), 0) / reports.length) * 10
-        ) / 10
-      : 0;
 
   const monthlyGroups = reports.reduce<
     Array<{
       key: string;
       label: string;
       reports: StudentReport[];
-      presentCount: number;
-      absentCount: number;
-      averagePoints: number;
     }>
   >((groups, report) => {
     const key = monthKey(report.createdAt);
@@ -194,24 +169,10 @@ export default async function StudentHistoryPage({ params }: PageProps) {
       key,
       label: monthLabel(report.createdAt),
       reports: [report],
-      presentCount: 0,
-      absentCount: 0,
-      averagePoints: 0,
     });
 
     return groups;
   }, []);
-
-  monthlyGroups.forEach((group) => {
-    group.presentCount = group.reports.filter((report) => report.status === "PRESENT").length;
-    group.absentCount = group.reports.length - group.presentCount;
-    group.averagePoints =
-      Math.round(
-        (group.reports.reduce((sum, report) => sum + reportPoints(report), 0) /
-          group.reports.length) *
-          10
-      ) / 10;
-  });
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -240,9 +201,9 @@ export default async function StudentHistoryPage({ params }: PageProps) {
           </div>
         ) : (
           <>
-            <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+            <section className="space-y-4">
               <div className="rounded-[2rem] bg-[#173d42] p-5 text-white shadow-lg">
-                <p className="text-sm font-black text-[#f1d39d]">نظرة خاطفة للمعلم البديل</p>
+                <p className="text-sm font-black text-[#f1d39d]">نظرة سريعة لسير الطالب</p>
                 <h2 className="mt-2 text-2xl font-black">أين وصل الطالب الآن؟</h2>
 
                 {latestReport ? (
@@ -258,11 +219,11 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4">
-                      <p className="text-xs font-black text-[#f1d39d]">نقاط آخر حصة</p>
-                      <p className="mt-2 text-3xl font-black">{reportPoints(latestReport)}/4</p>
-                      <p className="mt-1 text-xs text-white/72">
-                        1 للحضور + 3 بنود للإتقان
+                      <p className="text-xs font-black text-[#f1d39d]">حالة الحضور</p>
+                      <p className="mt-2 text-2xl font-black">
+                        {latestReport.status === "PRESENT" ? "Present" : "Absent"}
                       </p>
+                      <p className="mt-1 text-xs text-white/72">آخر وضع مسجل للطالب</p>
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4 md:col-span-2">
@@ -285,6 +246,15 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                         {compactText(latestReview || latestReport.review)}
                       </p>
                     </div>
+
+                    <div className="rounded-[1.5rem] bg-white/10 p-4 md:col-span-2">
+                      <p className="text-xs font-black text-[#f1d39d]">نتيجة آخر حصة</p>
+                      <div className="mt-2 grid gap-2 text-sm text-white md:grid-cols-3">
+                        <p>الدرس: {memorizedLabel(latestReport.lessonMemorized)}</p>
+                        <p>آخر 5: {memorizedLabel(latestReport.lastFiveMemorized)}</p>
+                        <p>المراجعة: {memorizedLabel(latestReport.reviewMemorized)}</p>
+                      </div>
+                    </div>
                   </div>
                 ) : null}
               </div>
@@ -292,51 +262,21 @@ export default async function StudentHistoryPage({ params }: PageProps) {
               <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-black text-[#9b7039]">ملخص سريع</p>
-                    <h2 className="mt-1 text-xl font-black text-[#1c2d31]">مؤشرات عامة</h2>
+                    <p className="text-sm font-black text-[#9b7039]">آخر الحصص</p>
+                    <h2 className="mt-1 text-xl font-black text-[#1c2d31]">نظرة زمنية سريعة</h2>
                   </div>
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${monthTone(averagePoints)}`}
-                  >
-                    متوسط النقاط: {averagePoints}/4
-                  </span>
+                  <p className="text-xs text-[#1c2d31]/55">آخر 12 حصة من اليمين للأحدث</p>
                 </div>
-
-                <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
-                    <p className="text-xs font-black text-[#9b7039]">إجمالي الحصص</p>
-                    <p className="mt-2 text-2xl font-black text-[#1c2d31]">{reports.length}</p>
-                  </div>
-                  <div className="rounded-2xl bg-[#eff8f3] p-4 ring-1 ring-emerald-100">
-                    <p className="text-xs font-black text-emerald-700">حضور</p>
-                    <p className="mt-2 text-2xl font-black text-emerald-700">{presentCount}</p>
-                  </div>
-                  <div className="rounded-2xl bg-[#fff1f2] p-4 ring-1 ring-rose-100">
-                    <p className="text-xs font-black text-rose-700">غياب</p>
-                    <p className="mt-2 text-2xl font-black text-rose-700">{absentCount}</p>
-                  </div>
-                  <div className="rounded-2xl bg-[#eef6fb] p-4 ring-1 ring-sky-100">
-                    <p className="text-xs font-black text-sky-700">عدد الشهور المسجلة</p>
-                    <p className="mt-2 text-2xl font-black text-sky-700">{monthlyGroups.length}</p>
-                  </div>
-                </div>
-
-                <div className="mt-5">
-                  <div className="flex items-center justify-between gap-3">
-                    <p className="text-sm font-black text-[#1c2d31]">آخر 12 حصة</p>
-                    <p className="text-xs text-[#1c2d31]/55">من اليمين للأحدث</p>
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {last12Reports.map((report) => (
-                      <div
-                        key={report.id}
-                        className={`flex h-11 w-11 items-center justify-center rounded-2xl text-sm font-black ring-1 ${timelineTone(report)}`}
-                        title={`${reportDateLabel(report.createdAt)} - ${report.lessonName}`}
-                      >
-                        {reportPoints(report)}
-                      </div>
-                    ))}
-                  </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {last12Reports.map((report) => (
+                    <div
+                      key={report.id}
+                      className={`rounded-2xl px-3 py-2 text-xs font-black ring-1 ${timelineTone(report)}`}
+                      title={`${reportDateLabel(report.createdAt)} - ${report.lessonName}`}
+                    >
+                      {report.status === "PRESENT" ? "Present" : "Absent"}
+                    </div>
+                  ))}
                 </div>
               </div>
             </section>
@@ -347,9 +287,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                   <p className="text-sm font-black text-[#9b7039]">فهرس الشهور</p>
                   <h2 className="mt-1 text-xl font-black text-[#1c2d31]">انتقال سريع بين السجلات</h2>
                 </div>
-                <p className="text-xs leading-6 text-[#1c2d31]/55">
-                  النقاط من 4: نقطة حضور + نقطة للدرس الجديد + نقطة لآخر خمس صفحات + نقطة للمراجعة
-                </p>
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -377,20 +314,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                       <p className="text-sm font-black text-[#9b7039]">سجل شهري</p>
                       <h2 className="mt-1 text-2xl font-black text-[#1c2d31]">{group.label}</h2>
                     </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full bg-[#eff8f3] px-3 py-1 text-xs font-black text-emerald-700 ring-1 ring-emerald-100">
-                        حضور: {group.presentCount}
-                      </span>
-                      <span className="rounded-full bg-[#fff1f2] px-3 py-1 text-xs font-black text-rose-700 ring-1 ring-rose-100">
-                        غياب: {group.absentCount}
-                      </span>
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${monthTone(group.averagePoints)}`}
-                      >
-                        متوسط الشهر: {group.averagePoints}/4
-                      </span>
-                    </div>
                   </div>
 
                   <div className="mt-4 hidden overflow-x-auto xl:block">
@@ -400,7 +323,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                           <th className="px-3 py-3">التاريخ</th>
                           <th className="px-3 py-3">اليوم</th>
                           <th className="px-3 py-3">الحالة</th>
-                          <th className="px-3 py-3">النقاط</th>
                           <th className="px-3 py-3">الدرس</th>
                           <th className="px-3 py-3">المراجعة</th>
                           <th className="px-3 py-3">واجب الحصة</th>
@@ -426,13 +348,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                                 }`}
                               >
                                 {report.status === "PRESENT" ? "حاضر" : "غائب"}
-                              </span>
-                            </td>
-                            <td className="border-t border-[#efe2cd] px-3 py-3">
-                              <span
-                                className={`inline-flex rounded-full px-3 py-1 text-xs font-black ring-1 ${timelineTone(report)}`}
-                              >
-                                {reportPoints(report)}/4
                               </span>
                             </td>
                             <td className="border-t border-[#efe2cd] px-3 py-3 leading-7">
@@ -479,11 +394,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                               }`}
                             >
                               {report.status === "PRESENT" ? "حاضر" : "غائب"}
-                            </span>
-                            <span
-                              className={`rounded-full px-3 py-1 text-xs font-black ring-1 ${timelineTone(report)}`}
-                            >
-                              {reportPoints(report)}/4
                             </span>
                           </div>
                         </div>
