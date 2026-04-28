@@ -39,7 +39,7 @@ function compactText(value: string | null | undefined, fallback = "-") {
 }
 
 function reportDayName(date: Date) {
-  return new Intl.DateTimeFormat("en-US", { weekday: "short" }).format(date);
+  return new Intl.DateTimeFormat("ar-EG", { weekday: "long" }).format(date);
 }
 
 function reportDateLabel(date: Date) {
@@ -59,30 +59,6 @@ function monthLabel(date: Date) {
     year: "numeric",
     month: "long",
   }).format(date);
-}
-
-function timelineTone(report: StudentReport) {
-  if (report.status === "ABSENT") {
-    return "bg-rose-100 text-rose-700 ring-rose-200";
-  }
-
-  if (
-    report.lessonMemorized === true &&
-    report.lastFiveMemorized === true &&
-    report.reviewMemorized === true
-  ) {
-    return "bg-emerald-100 text-emerald-700 ring-emerald-200";
-  }
-
-  if (
-    report.lessonMemorized === false ||
-    report.lastFiveMemorized === false ||
-    report.reviewMemorized === false
-  ) {
-    return "bg-amber-100 text-amber-700 ring-amber-200";
-  }
-
-  return "bg-slate-100 text-slate-700 ring-slate-200";
 }
 
 export default async function StudentHistoryPage({ params }: PageProps) {
@@ -148,7 +124,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
     reports.find((report) => compactText(report.nextHomework, "") !== "")?.nextHomework || null;
   const latestReview =
     reports.find((report) => compactText(report.review, "") !== "")?.review || null;
-  const last12Reports = reports.slice(0, 12);
 
   const monthlyGroups = reports.reduce<
     Array<{
@@ -201,7 +176,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
           </div>
         ) : (
           <>
-            <section className="space-y-4">
+            <section>
               <div className="rounded-[2rem] bg-[#173d42] p-5 text-white shadow-lg">
                 <p className="text-sm font-black text-[#f1d39d]">نظرة سريعة لسير الطالب</p>
                 <h2 className="mt-2 text-2xl font-black">أين وصل الطالب الآن؟</h2>
@@ -221,7 +196,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                     <div className="rounded-[1.5rem] bg-white/10 p-4">
                       <p className="text-xs font-black text-[#f1d39d]">حالة الحضور</p>
                       <p className="mt-2 text-2xl font-black">
-                        {latestReport.status === "PRESENT" ? "Present" : "Absent"}
+                        {latestReport.status === "PRESENT" ? "حاضر" : "غائب"}
                       </p>
                       <p className="mt-1 text-xs text-white/72">آخر وضع مسجل للطالب</p>
                     </div>
@@ -257,27 +232,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                     </div>
                   </div>
                 ) : null}
-              </div>
-
-              <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-black text-[#9b7039]">آخر الحصص</p>
-                    <h2 className="mt-1 text-xl font-black text-[#1c2d31]">نظرة زمنية سريعة</h2>
-                  </div>
-                  <p className="text-xs text-[#1c2d31]/55">آخر 12 حصة من اليمين للأحدث</p>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {last12Reports.map((report) => (
-                    <div
-                      key={report.id}
-                      className={`rounded-2xl px-3 py-2 text-xs font-black ring-1 ${timelineTone(report)}`}
-                      title={`${reportDateLabel(report.createdAt)} - ${report.lessonName}`}
-                    >
-                      {report.status === "PRESENT" ? "Present" : "Absent"}
-                    </div>
-                  ))}
-                </div>
               </div>
             </section>
 
@@ -325,7 +279,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                           <th className="px-3 py-3">الحالة</th>
                           <th className="px-3 py-3">الدرس</th>
                           <th className="px-3 py-3">المراجعة</th>
-                          <th className="px-3 py-3">واجب الحصة</th>
                           <th className="px-3 py-3">الواجب التالي</th>
                           <th className="px-3 py-3">نتيجة الحفظ</th>
                         </tr>
@@ -355,9 +308,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                             </td>
                             <td className="border-t border-[#efe2cd] px-3 py-3 leading-7">
                               {compactText(report.review)}
-                            </td>
-                            <td className="border-t border-[#efe2cd] px-3 py-3 leading-7">
-                              {compactText(report.homework)}
                             </td>
                             <td className="border-t border-[#efe2cd] px-3 py-3 leading-7">
                               {compactText(report.nextHomework)}
@@ -402,10 +352,6 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                           <p>
                             <span className="font-black text-[#1c2d31]">المراجعة: </span>
                             {compactText(report.review)}
-                          </p>
-                          <p>
-                            <span className="font-black text-[#1c2d31]">واجب الحصة: </span>
-                            {compactText(report.homework)}
                           </p>
                           <p>
                             <span className="font-black text-[#1c2d31]">الواجب التالي: </span>
