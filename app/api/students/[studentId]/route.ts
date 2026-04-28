@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { Prisma, StudyMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { createTeacherNotification } from "@/lib/teacher-notifications";
 
 type RouteContext = {
   params: Promise<{
@@ -89,7 +90,16 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
       select: {
         id: true,
+        fullName: true,
+        studentCode: true,
         studyMode: true,
+        teacherId: true,
+        circle: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
@@ -129,6 +139,16 @@ export async function PATCH(request: Request, context: RouteContext) {
           circle: { select: { id: true, name: true, studyMode: true } },
         },
       });
+
+      if (updated.teacher.id !== student.teacherId) {
+        await createTeacherNotification({
+          userId: updated.teacher.id,
+          type: "STUDENT_MOVED",
+          title: `تم ربط الطالب ${updated.fullName} بك`,
+          body: `تم نقل الطالب ${updated.fullName}${updated.studentCode ? ` برقم ${updated.studentCode}` : ""}${updated.circle?.name ? ` إلى حلقة ${updated.circle.name}` : ""}.`,
+          link: "/remote/teacher/requests",
+        });
+      }
 
       return NextResponse.json({ success: true, student: updated });
     }
@@ -187,6 +207,19 @@ export async function PATCH(request: Request, context: RouteContext) {
         circle: { select: { id: true, name: true, studyMode: true } },
       },
     });
+
+    if (
+      (hasTeacherId || hasCircleId || inferredCircleId !== undefined) &&
+      updated.teacher.id !== student.teacherId
+    ) {
+      await createTeacherNotification({
+        userId: updated.teacher.id,
+        type: "STUDENT_MOVED",
+        title: `تم ربط الطالب ${updated.fullName} بك`,
+        body: `تم تحديث إسناد الطالب ${updated.fullName}${updated.studentCode ? ` برقم ${updated.studentCode}` : ""}${updated.circle?.name ? ` داخل حلقة ${updated.circle.name}` : ""}.`,
+        link: "/remote/teacher/requests",
+      });
+    }
 
     return NextResponse.json({ success: true, student: updated });
   } catch (error) {

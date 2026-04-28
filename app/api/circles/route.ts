@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { createTeacherNotification } from "@/lib/teacher-notifications";
 
 function normalizeStudyMode(value: unknown) {
   if (value === "REMOTE" || value === "ONSITE") return value;
@@ -176,7 +177,14 @@ export async function PATCH(req: Request) {
       },
       select: {
         id: true,
+        name: true,
         studyMode: true,
+        teacherId: true,
+        _count: {
+          select: {
+            students: true,
+          },
+        },
       },
     });
 
@@ -206,6 +214,16 @@ export async function PATCH(req: Request) {
           studyMode: circle.studyMode,
         },
       });
+
+      if (teacher.id !== existingCircle.teacherId && existingCircle._count.students > 0) {
+        await createTeacherNotification({
+          userId: teacher.id,
+          type: "STUDENT_MOVED",
+          title: `تم إسناد حلقة ${existingCircle.name} لك`,
+          body: `تم ربطك بحلقة ${existingCircle.name} وبها ${existingCircle._count.students} طالب/طلاب. يمكنك مراجعة تفاصيلهم من لوحة المعلم.`,
+          link: "/remote/teacher/dashboard",
+        });
+      }
     }
 
     return NextResponse.json({

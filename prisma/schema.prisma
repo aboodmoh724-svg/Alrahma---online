@@ -27,6 +27,9 @@ model User {
   teacherAttendances TeacherAttendance[]
   financeAuditLogs FinanceAuditLog[]
   trackResources TrackResource[]
+  teacherRequests TeacherRequest[] @relation("TeacherRequestTeacher")
+  reviewedTeacherRequests TeacherRequest[] @relation("TeacherRequestAdmin")
+  notifications UserNotification[]
 }
 
 model Student {
@@ -45,6 +48,7 @@ model Student {
   financeAccount StudentFinanceAccount?
   payments       StudentPayment[]
   reports        Report[]
+  teacherRequests TeacherRequest[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
@@ -158,6 +162,45 @@ model AppSetting {
   value     Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model TeacherRequest {
+  id         String                 @id @default(cuid())
+  teacherId  String
+  studentId  String?
+  type       TeacherRequestType
+  priority   TeacherRequestPriority @default(NORMAL)
+  status     TeacherRequestStatus   @default(NEW)
+  subject    String
+  details    String
+  adminNote  String?
+  reviewedBy String?
+  resolvedAt DateTime?
+  createdAt  DateTime               @default(now())
+  updatedAt  DateTime               @updatedAt
+  teacher    User                   @relation("TeacherRequestTeacher", fields: [teacherId], references: [id], onDelete: Cascade)
+  student    Student?               @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  reviewer   User?                  @relation("TeacherRequestAdmin", fields: [reviewedBy], references: [id], onDelete: SetNull)
+
+  @@index([teacherId, status])
+  @@index([status, createdAt])
+  @@index([studentId])
+}
+
+model UserNotification {
+  id        String               @id @default(cuid())
+  userId     String
+  type      UserNotificationType @default(GENERAL)
+  title     String
+  body      String
+  link      String?
+  isRead    Boolean              @default(false)
+  readAt    DateTime?
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead, createdAt])
 }
 
 model StudentDetail {
@@ -337,4 +380,31 @@ enum TeacherAttendanceStatus {
 enum TrackResourceScope {
   TEACHER
   REGISTRATION
+}
+
+enum TeacherRequestType {
+  TEST_REQUEST
+  STRUGGLING_STUDENT
+  SPECIAL_CASE
+  GENERAL
+}
+
+enum TeacherRequestStatus {
+  NEW
+  IN_REVIEW
+  RESOLVED
+  REJECTED
+}
+
+enum TeacherRequestPriority {
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum UserNotificationType {
+  GENERAL
+  REQUEST_UPDATED
+  STUDENT_ASSIGNED
+  STUDENT_MOVED
 }

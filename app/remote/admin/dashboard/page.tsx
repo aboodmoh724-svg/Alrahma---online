@@ -53,6 +53,12 @@ const sections: DashboardSection[] = [
     tone: "bg-white text-[#173d42]",
   },
   {
+    href: "/remote/admin/teacher-requests",
+    title: "طلبات المعلمين",
+    description: "متابعة طلبات الاختبارات والطلاب المتعثرين والحالات الخاصة والرد عليها من مكان واحد.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/admin/reports",
     title: "قسم التقارير",
     description: "البحث عن طالب بالاسم أو الرقم وعرض ملخص مستواه.",
@@ -138,10 +144,21 @@ async function getNewRegistrationRequestsCount() {
   });
 }
 
+async function getOpenTeacherRequestsCount() {
+  return prisma.teacherRequest.count({
+    where: {
+      status: {
+        in: ["NEW", "IN_REVIEW"],
+      },
+    },
+  });
+}
+
 export default async function RemoteAdminDashboardPage() {
-  const [currentAdmin, newRegistrationsCount] = await Promise.all([
+  const [currentAdmin, newRegistrationsCount, openTeacherRequestsCount] = await Promise.all([
     getCurrentRemoteAdmin(),
     getNewRegistrationRequestsCount(),
+    getOpenTeacherRequestsCount(),
   ]);
 
   const visibleSections = sections.filter(
@@ -182,6 +199,11 @@ export default async function RemoteAdminDashboardPage() {
                 {section.href === "/remote/admin/registrations" && newRegistrationsCount > 0 ? (
                   <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white">
                     {newRegistrationsCount}
+                  </span>
+                ) : section.href === "/remote/admin/teacher-requests" &&
+                  openTeacherRequestsCount > 0 ? (
+                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
+                    {openTeacherRequestsCount}
                   </span>
                 ) : null}
               </div>

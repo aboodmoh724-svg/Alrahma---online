@@ -210,6 +210,32 @@ export default async function RemoteTeacherDashboardPage({
       Boolean(resource.fileUrl)
     )
   );
+  const [unreadNotificationsCount, recentNotifications, openRequestsCount] =
+    await Promise.all([
+      prisma.userNotification.count({
+        where: {
+          userId: teacher.id,
+          isRead: false,
+        },
+      }),
+      prisma.userNotification.findMany({
+        where: {
+          userId: teacher.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 4,
+      }),
+      prisma.teacherRequest.count({
+        where: {
+          teacherId: teacher.id,
+          status: {
+            in: ["NEW", "IN_REVIEW"],
+          },
+        },
+      }),
+    ]);
   const addReportHref = activeCircle
     ? `/remote/teacher/reports/new?circleId=${activeCircle.id}`
     : "/remote/teacher/reports/new";
@@ -273,6 +299,17 @@ export default async function RemoteTeacherDashboardPage({
               <a href="#teacher-files" className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white">
                 ملفاتي
               </a>
+              <Link
+                href="/remote/teacher/requests"
+                className="flex items-center justify-between rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white"
+              >
+                <span>طلبات المعلم والإشعارات</span>
+                {unreadNotificationsCount > 0 ? (
+                  <span className="rounded-full bg-red-600 px-2.5 py-1 text-xs font-black text-white">
+                    {unreadNotificationsCount}
+                  </span>
+                ) : null}
+              </Link>
             </div>
           </section>
         </aside>
@@ -351,6 +388,85 @@ export default async function RemoteTeacherDashboardPage({
               <p className="mt-2 text-sm font-bold text-[#1c2d31]/55">
                 النوع: عن بعد
               </p>
+            </div>
+          </section>
+
+          <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-black text-[#1c2d31]">إشعارات سريعة</h2>
+                  <p className="mt-1 text-sm text-[#1c2d31]/58">
+                    أي طالب جديد أو تحديث على طلباتك سيظهر لك هنا مباشرة.
+                  </p>
+                </div>
+                <Link
+                  href="/remote/teacher/requests"
+                  className="rounded-xl border border-[#d9c8ad] px-4 py-2 text-sm font-black text-[#1c2d31] hover:bg-white"
+                >
+                  فتح الصفحة
+                </Link>
+              </div>
+
+              {recentNotifications.length === 0 ? (
+                <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                  لا توجد إشعارات حتى الآن.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentNotifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`rounded-2xl p-4 ring-1 ${
+                        notification.isRead
+                          ? "bg-[#fffaf2] ring-[#e7dcc8]"
+                          : "bg-[#fff3df] ring-[#c39a62]"
+                      }`}
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-black text-[#173d42]">{notification.title}</p>
+                        <span className="text-xs font-bold text-[#1c2d31]/55">
+                          {new Date(notification.createdAt).toLocaleString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-7 text-[#1c2d31]/68">
+                        {notification.body}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h2 className="text-xl font-black text-[#1c2d31]">طلباتك المرفوعة</h2>
+                  <p className="mt-1 text-sm text-[#1c2d31]/58">
+                    لو احتجت اختبارًا أو دعمًا لطالب متعثر، ارفع الطلب من هنا بدل الرسائل المتفرقة.
+                  </p>
+                </div>
+                <span className="rounded-full bg-[#1f6358]/10 px-4 py-2 text-sm font-black text-[#1f6358]">
+                  {openRequestsCount} مفتوح
+                </span>
+              </div>
+
+              <div className="mt-5 rounded-[1.6rem] bg-[#fffaf2] p-4 ring-1 ring-[#e7dcc8]">
+                <p className="text-sm leading-8 text-[#1c2d31]/70">
+                  هذه البداية الأولى لنظام التواصل مع الإشراف. ستجد فيه طلباتك السابقة والإشعارات الخاصة بإضافة الطلاب والردود الجديدة.
+                </p>
+                <Link
+                  href="/remote/teacher/requests"
+                  className="mt-4 inline-flex rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42]"
+                >
+                  فتح طلبات المعلم والإشعارات
+                </Link>
+              </div>
             </div>
           </section>
 
