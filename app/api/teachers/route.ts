@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { appUrl } from "@/lib/app-url";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
@@ -120,8 +121,8 @@ export async function POST(req: Request) {
         const platformLabel = studyMode === "REMOTE" ? "التعليم عن بعد" : "التعليم الحضوري";
         const loginUrl =
           studyMode === "REMOTE"
-            ? "https://alrahma-reports.vercel.app/remote/teacher/login"
-            : "https://alrahma-reports.vercel.app/onsite/teacher/login";
+            ? appUrl("/remote/teacher/login")
+            : appUrl("/onsite/teacher/login");
 
         await sendWhatsAppText({
           to: normalizedWhatsapp,

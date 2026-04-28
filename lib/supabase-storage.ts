@@ -1,4 +1,18 @@
+import { promises as fs } from "fs";
+import path from "path";
+
 const DEFAULT_BUCKET = "alrahma-uploads";
+const DEFAULT_LOCAL_UPLOADS_DIR = path.join(process.cwd(), "uploads");
+
+function storageDriver() {
+  return String(process.env.STORAGE_DRIVER || "supabase").trim().toLowerCase() === "local"
+    ? "local"
+    : "supabase";
+}
+
+function getLocalUploadsDir() {
+  return String(process.env.LOCAL_UPLOADS_DIR || "").trim() || DEFAULT_LOCAL_UPLOADS_DIR;
+}
 
 function getSupabaseConfig() {
   const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,6 +34,10 @@ function cleanPath(value: string) {
   return value.replace(/^\/+/, "").replace(/\/+/g, "/");
 }
 
+function localUploadPublicPath(filePath: string) {
+  return `/uploads/${cleanPath(filePath)}`;
+}
+
 function storageRequestHeaders(contentType?: string) {
   const { serviceRoleKey } = getSupabaseConfig();
 
@@ -39,6 +57,17 @@ export function isStoredInSupabase(value: string | null | undefined) {
 }
 
 export async function uploadToSupabaseStorage(file: File, folder: string, fileName: string) {
+  if (storageDriver() === "local") {
+    const objectPath = cleanPath(`${folder}/${fileName}`);
+    const outputPath = path.join(getLocalUploadsDir(), objectPath);
+    const bytes = await file.arrayBuffer();
+
+    await fs.mkdir(path.dirname(outputPath), { recursive: true });
+    await fs.writeFile(outputPath, Buffer.from(bytes));
+
+    return objectPath;
+  }
+
   const { url, bucket } = getSupabaseConfig();
   const objectPath = cleanPath(`${folder}/${fileName}`);
   const uploadUrl = `${url}/storage/v1/object/${bucket}/${encodeURIComponent(objectPath).replace(/%2F/g, "/")}`;
@@ -64,6 +93,10 @@ export async function uploadToSupabaseStorage(file: File, folder: string, fileNa
 export async function createSignedStorageUrl(filePath: string | null | undefined, expiresIn = 60 * 60) {
   if (!filePath || !isStoredInSupabase(filePath)) {
     return filePath || null;
+  }
+
+  if (storageDriver() === "local") {
+    return localUploadPublicPath(filePath);
   }
 
   const { url, bucket } = getSupabaseConfig();

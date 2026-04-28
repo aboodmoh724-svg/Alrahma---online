@@ -1,3 +1,5 @@
+import { appUrl } from "@/lib/app-url";
+
 export type WhatsAppChannel = "REMOTE" | "ONSITE";
 
 type WhatsAppTextInput = {
@@ -351,8 +353,8 @@ export function teacherWelcomeWhatsAppMessage(input: {
   const platformLabel = input.studyMode === "REMOTE" ? "التعليم عن بعد" : "التعليم الحضوري";
   const loginPath =
     input.studyMode === "REMOTE"
-      ? "https://alrahma-reports.vercel.app/remote/teacher/login"
-      : "https://alrahma-reports.vercel.app/onsite/teacher/login";
+      ? appUrl("/remote/teacher/login")
+      : appUrl("/onsite/teacher/login");
 
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +

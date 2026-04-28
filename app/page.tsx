@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { getAppBaseUrl } from "@/lib/app-url";
 
 const portals = [
   {
@@ -43,6 +44,8 @@ const shortcuts = [
 ];
 
 export default function HomePage() {
+  const appBaseUrl = getAppBaseUrl();
+
   return (
     <main className="rahma-shell min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-6" dir="rtl">
       <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-7xl flex-col gap-4 sm:min-h-[calc(100vh-3rem)] sm:gap-6">
@@ -93,7 +96,7 @@ export default function HomePage() {
               <div className="rounded-[1.6rem] bg-white/10 p-4 backdrop-blur">
                 <p className="text-sm font-black text-[#f1d39d]">الرابط المعتمد للنشر</p>
                 <p className="mt-2 break-all text-sm text-white/80">
-                  https://alrahma-reports.vercel.app
+                  {appBaseUrl}
                 </p>
               </div>
             </div>
