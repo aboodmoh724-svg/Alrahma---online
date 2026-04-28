@@ -29,6 +29,12 @@ const sections = [
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
+    href: "/remote/supervision/tasks",
+    title: "المهام الإشرافية",
+    description: "مهام تلقائية للتعثر والغياب، ومهام من الإدارة، وإجراءات المتابعة حتى الإغلاق.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/supervision/registrations",
     title: "الطلبات المحولة من الإدارة",
     description: "الحالات التي أكدتها الإدارة وحولتها للإشراف للاختبار والتقييم والتوزيع.",
@@ -59,6 +65,7 @@ async function getCurrentSupervisor() {
       id: userId,
       role: "ADMIN",
       studyMode: "REMOTE",
+      canAccessSupervision: true,
       isActive: true,
     },
     select: {
@@ -76,6 +83,7 @@ export default async function RemoteSupervisionDashboardPage() {
     circlesCount,
     openTeacherRequestsCount,
     forwardedRegistrationsCount,
+    supervisionTasksCount,
   ] = await Promise.all([
     prisma.student.count({ where: { studyMode: "REMOTE", isActive: true } }),
     prisma.user.count({ where: { studyMode: "REMOTE", role: "TEACHER", isActive: true } }),
@@ -89,6 +97,11 @@ export default async function RemoteSupervisionDashboardPage() {
       where: {
         forwardedToSupervisionAt: { not: null },
         supervisionStatus: { in: ["PENDING", "UNDER_REVIEW", "ON_HOLD"] },
+      },
+    }),
+    prisma.supervisionTask.count({
+      where: {
+        status: { in: ["NEW", "IN_PROGRESS", "WAITING"] },
       },
     }),
   ]);
@@ -123,7 +136,7 @@ export default async function RemoteSupervisionDashboardPage() {
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-5">
+        <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
           <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
             <p className="text-sm font-bold text-[#1c2d31]/55">الطلاب</p>
             <p className="mt-2 text-4xl font-black text-[#173d42]">{studentsCount}</p>
@@ -143,6 +156,10 @@ export default async function RemoteSupervisionDashboardPage() {
           <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
             <p className="text-sm font-bold text-[#1c2d31]/55">طلبات بانتظار الإشراف</p>
             <p className="mt-2 text-4xl font-black text-[#8a6335]">{forwardedRegistrationsCount}</p>
+          </div>
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <p className="text-sm font-bold text-[#1c2d31]/55">المهام الإشرافية المفتوحة</p>
+            <p className="mt-2 text-4xl font-black text-[#8a6335]">{supervisionTasksCount}</p>
           </div>
         </section>
 

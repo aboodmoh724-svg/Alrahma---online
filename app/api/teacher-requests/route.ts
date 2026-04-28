@@ -7,6 +7,7 @@ import type {
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
+import { createSupervisionTask, logStudentFollowUpAction } from "@/lib/supervision";
 
 const ALLOWED_REQUEST_TYPES: TeacherRequestType[] = [
   "TEST_REQUEST",
@@ -208,6 +209,16 @@ export async function POST(req: Request) {
       include: requestIncludes(),
     });
 
+    await createSupervisionTask({
+      studentId: request.studentId,
+      createdById: user.id,
+      source: "TEACHER",
+      category: "TEACHER_REQUEST",
+      title: `طلب من المعلم: ${request.subject}`,
+      details: request.details,
+      triggerKey: `teacher-request:${request.id}`,
+    });
+
     return NextResponse.json({
       success: true,
       request,
@@ -265,6 +276,16 @@ export async function PATCH(req: Request) {
       },
       include: requestIncludes(),
     });
+
+    if (updatedRequest.studentId) {
+      await logStudentFollowUpAction({
+        studentId: updatedRequest.studentId,
+        actorId: user.id,
+        actionType: "GENERAL_ACTION",
+        title: `متابعة طلب معلم: ${updatedRequest.subject}`,
+        details: adminNote || `تم تحديث حالة طلب المعلم إلى ${status}.`,
+      });
+    }
 
     const studentLabel = updatedRequest.student
       ? ` للطالب ${updatedRequest.student.fullName}`

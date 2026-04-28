@@ -25,6 +25,19 @@ const ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS = new Set([
 
 const sections: DashboardSection[] = [
   {
+    href: "/remote/admin/supervisors",
+    requiresFinanceAccess: true,
+    title: "المشرفون والصلاحيات",
+    description: "إضافة مشرفين مستقلين عن الإدارة وتحديد من يملك الإشراف أو المالية أو كليهما.",
+    tone: "bg-[#8a6335] text-white",
+  },
+  {
+    href: "/remote/admin/statistics-general",
+    title: "إحصائيات عامة",
+    description: "ملخص سريع للحالات العامة والطلبات المفتوحة والمهام المحولة للإشراف.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
     href: "/finance",
     requiresFinanceAccess: true,
     title: "الحسابات المالية",

@@ -39,7 +39,13 @@ export async function POST(request: Request) {
     if (user.role === "TEACHER" && user.studyMode === "REMOTE") {
       redirectTo = "/remote/teacher/dashboard";
     } else if (user.role === "ADMIN" && user.studyMode === "REMOTE") {
-      redirectTo = "/remote/admin/dashboard";
+      if (user.canAccessFinance) {
+        redirectTo = "/remote/admin/dashboard";
+      } else if (user.canAccessSupervision) {
+        redirectTo = "/remote/supervision/dashboard";
+      } else {
+        redirectTo = "/remote/admin/dashboard";
+      }
     } else if (user.role === "TEACHER" && user.studyMode === "ONSITE") {
       redirectTo = "/onsite/teacher/dashboard";
     } else if (user.role === "ADMIN" && user.studyMode === "ONSITE") {

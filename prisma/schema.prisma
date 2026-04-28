@@ -15,6 +15,7 @@ model User {
   role      UserRole
   studyMode StudyMode
   canAccessFinance Boolean @default(false)
+  canAccessSupervision Boolean @default(false)
   isActive  Boolean    @default(true)
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
@@ -30,6 +31,8 @@ model User {
   teacherRequests TeacherRequest[] @relation("TeacherRequestTeacher")
   reviewedTeacherRequests TeacherRequest[] @relation("TeacherRequestAdmin")
   notifications UserNotification[]
+  createdSupervisionTasks SupervisionTask[] @relation("SupervisionTaskCreator")
+  supervisionActions StudentFollowUpAction[] @relation("StudentFollowUpActor")
 }
 
 model Student {
@@ -49,6 +52,8 @@ model Student {
   payments       StudentPayment[]
   reports        Report[]
   teacherRequests TeacherRequest[]
+  supervisionTasks SupervisionTask[]
+  followUpActions StudentFollowUpAction[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
@@ -201,6 +206,48 @@ model UserNotification {
   user      User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead, createdAt])
+}
+
+model SupervisionTask {
+  id          String                @id @default(cuid())
+  studentId   String?
+  createdById String?
+  source      SupervisionTaskSource @default(AUTOMATIC)
+  category    SupervisionTaskCategory
+  title       String
+  details     String
+  status      SupervisionTaskStatus @default(NEW)
+  triggerKey  String?
+  assignedTo  String?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  closedAt    DateTime?
+  student     Student?              @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  creator     User?                 @relation("SupervisionTaskCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  actions     StudentFollowUpAction[]
+
+  @@index([status, source, createdAt])
+  @@index([studentId, status])
+  @@unique([triggerKey])
+}
+
+model StudentFollowUpAction {
+  id                   String                 @id @default(cuid())
+  studentId            String
+  supervisionTaskId    String?
+  actorId              String?
+  actionType           StudentFollowUpActionType
+  title                String
+  details              String
+  contactedParent      Boolean                @default(false)
+  contactedTeacher     Boolean                @default(false)
+  createdAt            DateTime               @default(now())
+  student              Student                @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  supervisionTask      SupervisionTask?       @relation(fields: [supervisionTaskId], references: [id], onDelete: SetNull)
+  actor                User?                  @relation("StudentFollowUpActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([studentId, createdAt])
+  @@index([supervisionTaskId])
 }
 
 model StudentDetail {
@@ -417,4 +464,34 @@ enum UserNotificationType {
   REQUEST_UPDATED
   STUDENT_ASSIGNED
   STUDENT_MOVED
+}
+
+enum SupervisionTaskSource {
+  AUTOMATIC
+  TEACHER
+  ADMIN
+}
+
+enum SupervisionTaskCategory {
+  MEMORIZATION_STREAK
+  ABSENCE_STREAK
+  TEACHER_REQUEST
+  TEACHER_VISIT
+  GENERAL_SUPERVISION
+}
+
+enum SupervisionTaskStatus {
+  NEW
+  IN_PROGRESS
+  WAITING
+  DONE
+}
+
+enum StudentFollowUpActionType {
+  SUPERVISION_NOTE
+  PARENT_CONTACT
+  TEACHER_CONTACT
+  CLASS_VISIT
+  TEACHER_VISIT
+  GENERAL_ACTION
 }

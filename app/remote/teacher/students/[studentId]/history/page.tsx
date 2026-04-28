@@ -111,6 +111,19 @@ export default async function StudentHistoryPage({ params }: PageProps) {
           createdAt: "desc",
         },
       },
+      followUpActions: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 12,
+        include: {
+          actor: {
+            select: {
+              fullName: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -148,6 +161,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
 
     return groups;
   }, []);
+  const followUpActions = student.followUpActions;
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -233,6 +247,43 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                   </div>
                 ) : null}
               </div>
+            </section>
+
+            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                <div>
+                  <p className="text-sm font-black text-[#9b7039]">سجل المتابعة الإشرافية</p>
+                  <h2 className="text-2xl font-black text-[#1c2d31]">ماذا حصل مع الطالب سابقًا؟</h2>
+                </div>
+                <span className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                  {followUpActions.length} إجراء محفوظ
+                </span>
+              </div>
+
+              {followUpActions.length === 0 ? (
+                <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] p-5 text-center text-sm text-[#1c2d31]/55">
+                  لا توجد متابعات إشرافية محفوظة لهذا الطالب حتى الآن.
+                </div>
+              ) : (
+                <div className="mt-4 space-y-3">
+                  {followUpActions.map((action) => (
+                    <article key={action.id} className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="font-black text-[#173d42]">{action.title}</p>
+                        <span className="text-xs font-bold text-[#1c2d31]/55">
+                          {reportDateLabel(action.createdAt)} - {reportDayName(action.createdAt)}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{action.details}</p>
+                      <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[#1c2d31]/55">
+                        {action.actor?.fullName ? <span>بواسطة: {action.actor.fullName}</span> : null}
+                        {action.contactedParent ? <span>تم التواصل مع ولي الأمر</span> : null}
+                        {action.contactedTeacher ? <span>تم التواصل مع المعلم</span> : null}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
             </section>
 
             <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
