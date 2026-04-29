@@ -38,6 +38,13 @@ const sections: DashboardSection[] = [
     tone: "bg-white text-[#173d42]",
   },
   {
+    href: "/remote/admin/supervision-tasks",
+    requiresFinanceAccess: true,
+    title: "مهام الإشراف",
+    description: "إضافة مهمة من الإدارة لتظهر للمشرف في الجديدة ثم قيد المتابعة أو الانتظار أو المنتهية.",
+    tone: "bg-[#1f6358] text-white",
+  },
+  {
     href: "/finance",
     requiresFinanceAccess: true,
     title: "الحسابات المالية",

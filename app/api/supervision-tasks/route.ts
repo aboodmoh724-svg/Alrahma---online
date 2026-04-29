@@ -74,11 +74,34 @@ async function getCurrentSupervisor() {
   });
 }
 
+async function getCurrentRemoteAdmin() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: "ADMIN",
+      studyMode: "REMOTE",
+      isActive: true,
+      canAccessFinance: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
 export async function GET(req: Request) {
   try {
-    const supervisor = await getCurrentSupervisor();
+    const [supervisor, admin] = await Promise.all([
+      getCurrentSupervisor(),
+      getCurrentRemoteAdmin(),
+    ]);
 
-    if (!supervisor) {
+    if (!supervisor && !admin) {
       return NextResponse.json({ error: "غير مصرح لك بعرض المهام الإشرافية" }, { status: 403 });
     }
 
@@ -148,9 +171,9 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const supervisor = await getCurrentSupervisor();
+    const admin = await getCurrentRemoteAdmin();
 
-    if (!supervisor) {
+    if (!admin) {
       return NextResponse.json({ error: "غير مصرح لك بإضافة مهمة إشرافية" }, { status: 403 });
     }
 
@@ -166,7 +189,7 @@ export async function POST(req: Request) {
 
     const task = await createSupervisionTask({
       studentId: studentId || null,
-      createdById: supervisor.id,
+      createdById: admin.id,
       source: "ADMIN",
       category,
       title,

@@ -47,11 +47,6 @@ const ACTION_TYPE_OPTIONS = [
   { value: "TEACHER_VISIT", label: "زيارة معلم" },
 ];
 
-const CATEGORY_OPTIONS = [
-  { value: "GENERAL_SUPERVISION", label: "مهمة إشرافية" },
-  { value: "TEACHER_VISIT", label: "زيارة معلم" },
-];
-
 const SOURCE_LABELS: Record<Task["source"], string> = {
   AUTOMATIC: "تلقائي",
   TEACHER: "طلب معلم",
@@ -60,10 +55,8 @@ const SOURCE_LABELS: Record<Task["source"], string> = {
 
 export default function RemoteSupervisionTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [students, setStudents] = useState<Array<{ id: string; fullName: string; studentCode: string | null }>>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
-  const [formSubmitting, setFormSubmitting] = useState(false);
   const [activeStatus, setActiveStatus] = useState<Task["status"]>("NEW");
   const [statusDrafts, setStatusDrafts] = useState<Record<string, Task["status"]>>({});
   const [actionTitles, setActionTitles] = useState<Record<string, string>>({});
@@ -71,12 +64,6 @@ export default function RemoteSupervisionTasksPage() {
   const [actionTypes, setActionTypes] = useState<Record<string, string>>({});
   const [contactedParent, setContactedParent] = useState<Record<string, boolean>>({});
   const [contactedTeacher, setContactedTeacher] = useState<Record<string, boolean>>({});
-  const [createForm, setCreateForm] = useState({
-    studentId: "",
-    title: "",
-    details: "",
-    category: "GENERAL_SUPERVISION",
-  });
 
   const filteredTasks = useMemo(
     () => tasks.filter((task) => task.status === activeStatus),
@@ -86,24 +73,11 @@ export default function RemoteSupervisionTasksPage() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const [tasksRes, studentsRes] = await Promise.all([
-        fetch("/api/supervision-tasks", { cache: "no-store" }),
-        fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
-      ]);
-
-      const [tasksData, studentsData] = await Promise.all([tasksRes.json(), studentsRes.json()]);
+      const tasksRes = await fetch("/api/supervision-tasks", { cache: "no-store" });
+      const tasksData = await tasksRes.json();
       const list = Array.isArray(tasksData.tasks) ? (tasksData.tasks as Task[]) : [];
 
       setTasks(list);
-      setStudents(
-        Array.isArray(studentsData.students)
-          ? studentsData.students.map((student: { id: string; fullName: string; studentCode: string | null }) => ({
-              id: student.id,
-              fullName: student.fullName,
-              studentCode: student.studentCode,
-            }))
-          : []
-      );
       setStatusDrafts(Object.fromEntries(list.map((task) => [task.id, task.status])));
       setActionTypes(Object.fromEntries(list.map((task) => [task.id, "GENERAL_ACTION"])));
     } catch (error) {
@@ -150,38 +124,6 @@ export default function RemoteSupervisionTasksPage() {
     }
   };
 
-  const createTask = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    try {
-      setFormSubmitting(true);
-      const response = await fetch("/api/supervision-tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(createForm),
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert(data.error || "تعذر إنشاء المهمة");
-        return;
-      }
-
-      setCreateForm({
-        studentId: "",
-        title: "",
-        details: "",
-        category: "GENERAL_SUPERVISION",
-      });
-      await fetchTasks();
-    } catch (error) {
-      console.error("CREATE SUPERVISION TASK PAGE ERROR =>", error);
-      alert("حدث خطأ أثناء إنشاء المهمة");
-    } finally {
-      setFormSubmitting(false);
-    }
-  };
-
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -190,7 +132,7 @@ export default function RemoteSupervisionTasksPage() {
             <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">المهام الإشرافية</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
-              هنا تجتمع المهام التلقائية وطلبات المعلمين والمهام التي تضعها الإدارة للمشرفين.
+              هنا تظهر المهام التلقائية وطلبات المعلمين وما تحيله الإدارة للمشرف، ثم تنتقل بين جديدة وقيد المتابعة وانتظار ومنتهية.
             </p>
           </div>
           <Link
@@ -200,56 +142,6 @@ export default function RemoteSupervisionTasksPage() {
             الرجوع إلى لوحة الإشراف
           </Link>
         </div>
-
-        <form onSubmit={createTask} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-          <h2 className="text-2xl font-black text-[#1c2d31]">إضافة مهمة من الإدارة</h2>
-          <div className="mt-4 grid gap-4 lg:grid-cols-[220px_220px_1fr_1fr_auto]">
-            <select
-              value={createForm.category}
-              onChange={(event) => setCreateForm((prev) => ({ ...prev, category: event.target.value }))}
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
-            >
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            <select
-              value={createForm.studentId}
-              onChange={(event) => setCreateForm((prev) => ({ ...prev, studentId: event.target.value }))}
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
-            >
-              <option value="">بدون طالب محدد</option>
-              {students.map((student) => (
-                <option key={student.id} value={student.id}>
-                  {student.fullName}{student.studentCode ? ` - ${student.studentCode}` : ""}
-                </option>
-              ))}
-            </select>
-            <input
-              value={createForm.title}
-              onChange={(event) => setCreateForm((prev) => ({ ...prev, title: event.target.value }))}
-              placeholder="عنوان المهمة"
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
-              required
-            />
-            <input
-              value={createForm.details}
-              onChange={(event) => setCreateForm((prev) => ({ ...prev, details: event.target.value }))}
-              placeholder="تفاصيل المهمة أو خطة الزيارة"
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
-              required
-            />
-            <button
-              type="submit"
-              disabled={formSubmitting}
-              className="rounded-xl bg-[#173d42] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
-            >
-              {formSubmitting ? "جارٍ الحفظ..." : "إضافة"}
-            </button>
-          </div>
-        </form>
 
         <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
           <div className="flex flex-wrap gap-2">
