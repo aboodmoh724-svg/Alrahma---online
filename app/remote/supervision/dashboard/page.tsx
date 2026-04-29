@@ -155,19 +155,35 @@ export default async function RemoteSupervisionDashboardPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {sections.map((section) => (
-            <Link
-              key={section.href}
-              href={section.href}
-              className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
-            >
-              <h2 className="text-2xl font-black">{section.title}</h2>
-              <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
-              <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
-                فتح القسم
-              </span>
-            </Link>
-          ))}
+          {sections.map((section) => {
+            const badge =
+              section.href === "/remote/supervision/students"
+                ? studentsCount
+                : section.href === "/remote/supervision/teachers"
+                  ? circlesCount
+                  : section.href === "/remote/supervision/operations"
+                    ? openTeacherRequestsCount + forwardedRegistrationsCount + supervisionTasksCount
+                    : null;
+
+            return (
+              <Link
+                key={section.href}
+                href={section.href}
+                className={`relative min-h-48 overflow-hidden rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
+              >
+                {badge !== null && badge > 0 ? (
+                  <span className="absolute left-5 top-5 rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white shadow-sm">
+                    +{badge}
+                  </span>
+                ) : null}
+                <h2 className="text-2xl font-black">{section.title}</h2>
+                <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
+                <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
+                  فتح القسم
+                </span>
+              </Link>
+            );
+          })}
         </section>
       </div>
     </main>

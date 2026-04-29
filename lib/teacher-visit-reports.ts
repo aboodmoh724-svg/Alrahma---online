@@ -19,7 +19,7 @@ export const TEACHER_VISIT_EVALUATION_OPTIONS = [
 ] as const;
 
 export const TEACHER_VISIT_MAIN_ITEMS = [
-  "تنمية الدرس الجديد",
+  "تسمية الدرس الجديد",
   "تسميع آخر خمس صفحات",
   "المراجعة",
   "تصحيح وتلقين الدرس الجديد",

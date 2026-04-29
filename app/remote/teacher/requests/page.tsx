@@ -181,6 +181,28 @@ export default function RemoteTeacherRequestsPage() {
     }
   };
 
+  const openNotification = async (item: NotificationItem) => {
+    try {
+      if (!item.isRead) {
+        await fetch("/api/teacher-notifications", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notificationId: item.id }),
+        });
+      }
+
+      if (item.link) {
+        window.location.href = item.link;
+        return;
+      }
+
+      await fetchData();
+    } catch (error) {
+      console.error("OPEN TEACHER NOTIFICATION ERROR =>", error);
+      await fetchData();
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#f7f0e6] px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -325,13 +347,15 @@ export default function RemoteTeacherRequestsPage() {
               ) : (
                 <div className="space-y-3">
                   {notifications.map((item) => (
-                    <div
+                    <button
                       key={item.id}
+                      type="button"
+                      onClick={() => openNotification(item)}
                       className={`rounded-2xl border p-4 ${
                         item.isRead
                           ? "border-[#e7dcc8] bg-[#fffaf2]"
                           : "border-[#c39a62] bg-[#fff3df]"
-                      }`}
+                      } w-full text-right transition hover:border-[#1f6358]`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-black text-[#173d42]">{item.title}</p>
@@ -340,7 +364,7 @@ export default function RemoteTeacherRequestsPage() {
                         </span>
                       </div>
                       <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{item.body}</p>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}

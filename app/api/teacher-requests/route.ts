@@ -120,9 +120,44 @@ export async function GET(req: Request) {
     });
 
     if (user.role === "ADMIN") {
+      const readReceipts = await prisma.userNotification.findMany({
+        where: {
+          type: "REQUEST_UPDATED",
+          link: {
+            in: requests.map((request) => `/remote/teacher/requests?requestId=${request.id}`),
+          },
+        },
+        select: {
+          link: true,
+          isRead: true,
+          readAt: true,
+          createdAt: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      const receiptByRequestId = new Map<string, (typeof readReceipts)[number]>();
+
+      for (const receipt of readReceipts) {
+        const requestId = receipt.link?.replace("/remote/teacher/requests?requestId=", "") || "";
+
+        if (requestId && !receiptByRequestId.has(requestId)) {
+          receiptByRequestId.set(requestId, receipt);
+        }
+      }
+
       return NextResponse.json({
         success: true,
-        requests,
+        requests: requests.map((request) => {
+          const receipt = receiptByRequestId.get(request.id);
+
+          return {
+            ...request,
+            teacherNotificationReadAt: receipt?.isRead ? receipt.readAt : null,
+            teacherNotificationSentAt: receipt?.createdAt || null,
+          };
+        }),
       });
     }
 
@@ -296,7 +331,7 @@ export async function PATCH(req: Request) {
       type: "REQUEST_UPDATED",
       title: `تم تحديث طلبك${studentLabel}`,
       body: `حالة الطلب الآن: ${status}. ${adminNote ? `ملاحظة الإدارة: ${adminNote}` : "يمكنك مراجعة التفاصيل من صفحة الطلبات."}`,
-      link: "/remote/teacher/requests",
+      link: `/remote/teacher/requests?requestId=${updatedRequest.id}`,
     });
 
     return NextResponse.json({

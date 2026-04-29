@@ -50,7 +50,14 @@ export default function RemoteSupervisionTeachersPage() {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creatingCircle, setCreatingCircle] = useState(false);
   const [search, setSearch] = useState("");
+  const [circleForm, setCircleForm] = useState({
+    name: "",
+    teacherId: "",
+    track: "",
+    zoomUrl: "",
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -130,6 +137,52 @@ export default function RemoteSupervisionTeachersPage() {
 
   const circlesWithoutTeacher = circles.filter((circle) => !circle.teacher?.id);
 
+  const createCircle = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    try {
+      setCreatingCircle(true);
+      const response = await fetch("/api/circles", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...circleForm, studyMode: "REMOTE" }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر فتح الحلقة");
+        return;
+      }
+
+      setCircleForm({ name: "", teacherId: "", track: "", zoomUrl: "" });
+      const [circlesRes, studentsRes] = await Promise.all([
+        fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
+      ]);
+      const [circlesData, studentsData] = await Promise.all([
+        circlesRes.json(),
+        studentsRes.json(),
+      ]);
+      setCircles(
+        Array.isArray(circlesData.circles)
+          ? circlesData.circles.filter((circle: Circle) => circle.studyMode === "REMOTE")
+          : []
+      );
+      setStudents(
+        Array.isArray(studentsData.students)
+          ? studentsData.students.filter(
+              (student: Student) => student.studyMode === "REMOTE" && student.isActive !== false
+            )
+          : []
+      );
+    } catch (error) {
+      console.error("CREATE SUPERVISION CIRCLE ERROR =>", error);
+      alert("حدث خطأ أثناء فتح الحلقة");
+    } finally {
+      setCreatingCircle(false);
+    }
+  };
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -188,6 +241,76 @@ export default function RemoteSupervisionTeachersPage() {
             ) : null}
           </div>
         </section>
+
+        <form
+          onSubmit={createCircle}
+          className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+        >
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-black text-[#1c2d31]">فتح حلقة جديدة</h2>
+              <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                يفتح المشرف الحلقة ويختار المعلم المناسب، ثم يتم توزيع الطلاب عليها من صفحة الطلاب.
+              </p>
+            </div>
+            <button
+              type="submit"
+              disabled={creatingCircle}
+              className="rounded-2xl bg-[#1f6358] px-6 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+            >
+              {creatingCircle ? "جار فتح الحلقة..." : "فتح الحلقة"}
+            </button>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <input
+              value={circleForm.name}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, name: event.target.value }))
+              }
+              placeholder="اسم الحلقة"
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              required
+            />
+            <select
+              value={circleForm.teacherId}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, teacherId: event.target.value }))
+              }
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+            >
+              <option value="">اختر المعلم</option>
+              {teachers.map((teacher) => (
+                <option key={teacher.id} value={teacher.id}>
+                  {teacher.fullName}
+                </option>
+              ))}
+            </select>
+            <select
+              value={circleForm.track}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, track: event.target.value }))
+              }
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+            >
+              <option value="">اختر المسار</option>
+              <option value="HIJAA">مسار الهجاء</option>
+              <option value="RUBAI">المسار الرباعي</option>
+              <option value="FARDI">المسار الفردي</option>
+              <option value="TILAWA">مسار التلاوة</option>
+            </select>
+            <input
+              type="url"
+              value={circleForm.zoomUrl}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, zoomUrl: event.target.value }))
+              }
+              placeholder="رابط الحلقة"
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              dir="ltr"
+            />
+          </div>
+        </form>
 
         {loading ? (
           <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
