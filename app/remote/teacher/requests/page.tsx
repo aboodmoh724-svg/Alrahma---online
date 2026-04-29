@@ -123,6 +123,26 @@ export default function RemoteTeacherRequestsPage() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const notificationId = new URLSearchParams(window.location.search).get("notificationId");
+
+    if (!notificationId) return;
+
+    const markNotification = async () => {
+      await fetch("/api/teacher-notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notificationId }),
+      });
+      await fetchData();
+      window.history.replaceState(null, "", "/remote/teacher/requests");
+    };
+
+    markNotification().catch((error) => {
+      console.error("MARK LINKED TEACHER NOTIFICATION ERROR =>", error);
+    });
+  }, []);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 

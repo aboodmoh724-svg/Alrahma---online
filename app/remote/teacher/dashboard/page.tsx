@@ -415,13 +415,14 @@ export default async function RemoteTeacherDashboardPage({
               ) : (
                 <div className="space-y-3">
                   {recentNotifications.map((notification) => (
-                    <div
+                    <Link
                       key={notification.id}
+                      href={`/remote/teacher/requests?notificationId=${notification.id}`}
                       className={`rounded-2xl p-4 ring-1 ${
                         notification.isRead
                           ? "bg-[#fffaf2] ring-[#e7dcc8]"
                           : "bg-[#fff3df] ring-[#c39a62]"
-                      }`}
+                      } block transition hover:ring-[#1f6358]`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-black text-[#173d42]">{notification.title}</p>
@@ -437,7 +438,7 @@ export default async function RemoteTeacherDashboardPage({
                       <p className="mt-2 text-sm leading-7 text-[#1c2d31]/68">
                         {notification.body}
                       </p>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}
