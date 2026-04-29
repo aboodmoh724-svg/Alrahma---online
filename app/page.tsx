@@ -10,6 +10,7 @@ const portals = [
     accent: "from-[#1f6358] to-[#173d42]",
     links: [
       { href: "/remote/admin/login", label: "دخول الإدارة" },
+      { href: "/remote/supervision/login", label: "دخول الإشراف" },
       { href: "/remote/teacher/login", label: "دخول المعلم" },
     ],
   },
@@ -89,15 +90,14 @@ export default function HomePage() {
                   كل الحلقات في مكان واحد سريع وواضح
                 </h1>
                 <p className="mt-4 max-w-lg text-sm leading-8 text-white/72 sm:text-base">
-                  هذا هو مركز الدخول للكادر: التعليم عن بعد، التعليم الحضوري، ولوحة التسجيل العامة كلها من رابط واحد.
+                  هذا هو مركز الدخول للكادر: التعليم عن بعد، التعليم الحضوري، والإشراف، ولوحة
+                  التسجيل العامة كلها من رابط واحد.
                 </p>
               </div>
 
               <div className="rounded-[1.6rem] bg-white/10 p-4 backdrop-blur">
                 <p className="text-sm font-black text-[#f1d39d]">الرابط المعتمد للنشر</p>
-                <p className="mt-2 break-all text-sm text-white/80">
-                  {appBaseUrl}
-                </p>
+                <p className="mt-2 break-all text-sm text-white/80">{appBaseUrl}</p>
               </div>
             </div>
           </div>
@@ -158,12 +158,8 @@ export default function HomePage() {
                     href={shortcut.href}
                     className="rounded-2xl border border-[#d9c8ad]/70 bg-[#fffaf2] p-4 transition hover:-translate-y-0.5 hover:bg-white"
                   >
-                    <h3 className="text-sm font-black text-[#1c2d31]">
-                      {shortcut.title}
-                    </h3>
-                    <p className="mt-2 text-xs leading-6 text-[#1c2d31]/58">
-                      {shortcut.description}
-                    </p>
+                    <h3 className="text-sm font-black text-[#1c2d31]">{shortcut.title}</h3>
+                    <p className="mt-2 text-xs leading-6 text-[#1c2d31]/58">{shortcut.description}</p>
                   </Link>
                 ))}
               </div>

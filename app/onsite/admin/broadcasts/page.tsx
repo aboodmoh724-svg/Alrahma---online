@@ -4,7 +4,7 @@ import BroadcastsPageClient from "@/components/admin/BroadcastsPageClient";
 import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
 
-export default async function RemoteAdminBroadcastsPage() {
+export default async function OnsiteAdminBroadcastsPage() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("alrahma_user_id")?.value;
 
@@ -14,7 +14,7 @@ export default async function RemoteAdminBroadcastsPage() {
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-amber-50 p-5 text-amber-800">
           <p className="font-black">الرجاء تسجيل الدخول أولًا.</p>
           <Link
-            href="/remote/admin/login"
+            href="/onsite/admin/login"
             className="mt-3 inline-flex rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700"
           >
             تسجيل الدخول
@@ -28,7 +28,7 @@ export default async function RemoteAdminBroadcastsPage() {
     where: {
       id: userId,
       role: "ADMIN",
-      studyMode: "REMOTE",
+      studyMode: "ONSITE",
       isActive: true,
     },
     select: { id: true },
@@ -38,9 +38,9 @@ export default async function RemoteAdminBroadcastsPage() {
     return (
       <main className="rahma-shell min-h-screen p-6" dir="rtl">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-200 bg-red-50 p-5 text-red-700">
-          <p className="font-black">لا تملك صلاحية الدخول إلى الرسائل الجماعية للأونلاين.</p>
+          <p className="font-black">لا تملك صلاحية الدخول إلى الرسائل الجماعية للحضوري.</p>
           <Link
-            href="/remote/admin/login"
+            href="/onsite/admin/login"
             className="mt-3 inline-flex rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700"
           >
             تسجيل الدخول بحساب الإدارة
@@ -53,7 +53,7 @@ export default async function RemoteAdminBroadcastsPage() {
   const [students, teachers] = await Promise.all([
     prisma.student.findMany({
       where: {
-        studyMode: "REMOTE",
+        studyMode: "ONSITE",
         isActive: true,
       },
       select: {
@@ -68,7 +68,7 @@ export default async function RemoteAdminBroadcastsPage() {
     prisma.user.findMany({
       where: {
         role: "TEACHER",
-        studyMode: "REMOTE",
+        studyMode: "ONSITE",
         isActive: true,
       },
       select: {
@@ -110,9 +110,9 @@ export default async function RemoteAdminBroadcastsPage() {
 
   return (
     <BroadcastsPageClient
-      scope="REMOTE"
-      sectionTitle="الأونلاين"
-      dashboardHref="/remote/admin/dashboard"
+      scope="ONSITE"
+      sectionTitle="الحضوري"
+      dashboardHref="/onsite/admin/dashboard"
       parentOptions={parentOptions}
       teacherOptions={teacherOptions}
     />

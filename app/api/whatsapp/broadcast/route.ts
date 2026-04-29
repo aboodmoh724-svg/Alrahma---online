@@ -5,12 +5,36 @@ import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
   sendWhatsAppText,
+  type WhatsAppChannel,
 } from "@/lib/whatsapp";
 
-type BroadcastTarget = "ALL" | "REMOTE" | "ONSITE";
+type RecipientType = "ALL_PARENTS" | "ALL_TEACHERS" | "SELECTED_PARENTS";
 
-function normalizeTarget(value: unknown): BroadcastTarget {
-  return value === "REMOTE" || value === "ONSITE" ? value : "ALL";
+function normalizeRecipientType(value: unknown): RecipientType | null {
+  if (
+    value === "ALL_PARENTS" ||
+    value === "ALL_TEACHERS" ||
+    value === "SELECTED_PARENTS"
+  ) {
+    return value;
+  }
+
+  return null;
+}
+
+function broadcastFooter(scope: WhatsAppChannel) {
+  return scope === "ONSITE"
+    ? "Ø¥Ø¯Ø§Ø±Ø© ØªØ­ÙÙŠØ¸ Ø§Ù„Ø±Ø­Ù…Ø© Ù„Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…"
+    : "Ø¥Ø¯Ø§Ø±Ø© Ù…Ù†ØµØ© Ø§Ù„Ø±Ø­Ù…Ø© Ù„ØªØ­ÙÙŠØ¸ Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…";
+}
+
+function withFooter(message: string, scope: WhatsAppChannel) {
+  const body = message.trim();
+  if (!body) {
+    return "";
+  }
+
+  return `${body}\n\n${broadcastFooter(scope)}`;
 }
 
 export async function POST(request: Request) {
@@ -19,7 +43,7 @@ export async function POST(request: Request) {
     const userId = cookieStore.get("alrahma_user_id")?.value;
 
     if (!userId) {
-      return NextResponse.json({ error: "الرجاء تسجيل الدخول أولًا" }, { status: 401 });
+      return NextResponse.json({ error: "Ø§Ù„Ø±Ø¬Ø§Ø¡ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯Ø®ÙˆÙ„ Ø£ÙˆÙ„Ù‹Ø§" }, { status: 401 });
     }
 
     const admin = await prisma.user.findFirst({
@@ -35,86 +59,103 @@ export async function POST(request: Request) {
     });
 
     if (!admin) {
-      return NextResponse.json({ error: "غير مصرح لك بإرسال الرسائل الجماعية" }, { status: 403 });
+      return NextResponse.json({ error: "ØºÙŠØ± Ù…ØµØ±Ø­ Ù„Ùƒ Ø¨Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø±Ø³Ø§Ø¦Ù„ Ø§Ù„Ø¬Ù…Ø§Ø¹ÙŠØ©" }, { status: 403 });
     }
 
-    if (
-      !isWhatsAppConfigured("REMOTE") &&
-      !isWhatsAppConfigured("ONSITE") &&
-      !isWhatsAppConfigured()
-    ) {
-      return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليًا" }, { status: 400 });
+    const scope = admin.studyMode as WhatsAppChannel;
+
+    if (!isWhatsAppConfigured(scope)) {
+      return NextResponse.json({ error: "Ø®Ø¯Ù…Ø© ÙˆØ§ØªØ³Ø§Ø¨ ØºÙŠØ± Ù…ÙØ¹Ù„Ø© Ø­Ø§Ù„ÙŠÙ‹Ø§ Ù„Ù‡Ø°Ø§ Ø§Ù„Ù‚Ø³Ù…" }, { status: 400 });
     }
 
     const body = await request.json();
     const rawMessage = String(body.message || "").trim();
-    const target = normalizeTarget(body.target);
+    const recipientType = normalizeRecipientType(body.recipientType);
+    const selectedParentIds = Array.isArray(body.selectedParentIds)
+      ? body.selectedParentIds.map((value: unknown) => String(value || "").trim()).filter(Boolean)
+      : [];
 
     if (!rawMessage) {
-      return NextResponse.json({ error: "نص الرسالة مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ù†Øµ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
-    const students = await prisma.student.findMany({
-      where: {
-        isActive: true,
-        ...(target === "ALL" ? {} : { studyMode: target }),
-      },
-      select: {
-        id: true,
-        fullName: true,
-        parentWhatsapp: true,
-        studyMode: true,
-      },
-    });
+    if (!recipientType) {
+      return NextResponse.json({ error: "Ù†ÙˆØ¹ Ø§Ù„Ø§Ø³ØªÙ‡Ø¯Ø§Ù ØºÙŠØ± ØµØ§Ù„Ø­" }, { status: 400 });
+    }
 
-    const uniqueRecipients = new Map<
-      string,
-      {
-        studentId: string;
-        studentName: string;
-        studyMode: "REMOTE" | "ONSITE";
-      }
-    >();
+    const recipients = new Map<string, { recipientName: string }>();
 
-    for (const student of students) {
-      const phone = normalizeWhatsAppNumber(student.parentWhatsapp || "");
-
-      if (!phone || uniqueRecipients.has(phone)) {
-        continue;
-      }
-
-      uniqueRecipients.set(phone, {
-        studentId: student.id,
-        studentName: student.fullName,
-        studyMode: student.studyMode,
+    if (recipientType === "ALL_PARENTS" || recipientType === "SELECTED_PARENTS") {
+      const students = await prisma.student.findMany({
+        where: {
+          isActive: true,
+          studyMode: scope,
+          ...(recipientType === "SELECTED_PARENTS" ? { id: { in: selectedParentIds } } : {}),
+        },
+        select: {
+          fullName: true,
+          parentWhatsapp: true,
+        },
       });
+
+      for (const student of students) {
+        const phone = normalizeWhatsAppNumber(student.parentWhatsapp || "");
+        if (!phone || recipients.has(phone)) {
+          continue;
+        }
+
+        recipients.set(phone, {
+          recipientName: student.fullName,
+        });
+      }
     }
 
-    const recipients = [...uniqueRecipients.entries()];
+    if (recipientType === "ALL_TEACHERS") {
+      const teachers = await prisma.user.findMany({
+        where: {
+          role: "TEACHER",
+          isActive: true,
+          studyMode: scope,
+        },
+        select: {
+          fullName: true,
+          whatsapp: true,
+        },
+      });
 
-    if (recipients.length === 0) {
-      return NextResponse.json(
-        { error: "لا يوجد أولياء أمور لديهم رقم واتساب صالح في الفئة المحددة" },
-        { status: 400 }
-      );
+      for (const teacher of teachers) {
+        const phone = normalizeWhatsAppNumber(teacher.whatsapp || "");
+        if (!phone || recipients.has(phone)) {
+          continue;
+        }
+
+        recipients.set(phone, {
+          recipientName: teacher.fullName,
+        });
+      }
     }
 
+    if (recipients.size === 0) {
+      return NextResponse.json({ error: "Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø±Ù‚Ø§Ù… ÙˆØ§ØªØ³Ø§Ø¨ ØµØ§Ù„Ø­Ø© ÙÙŠ Ø§Ù„ÙØ¦Ø© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©" }, { status: 400 });
+    }
+
+    const finalMessage = withFooter(rawMessage, scope);
     let sentCount = 0;
-    const failed: Array<{ phone: string; studentName: string; error: string }> = [];
+    const failed: Array<{ phone: string; recipientName: string; error: string }> = [];
 
-    for (const [phone, recipient] of recipients) {
+    for (const [phone, recipient] of recipients.entries()) {
       try {
         await sendWhatsAppText({
           to: phone,
-          body: rawMessage,
-          channel: recipient.studyMode,
+          body: finalMessage,
+          channel: scope,
         });
         sentCount += 1;
       } catch (error) {
         failed.push({
           phone,
-          studentName: recipient.studentName,
-          error: error instanceof Error ? error.message : "تعذر الإرسال",
+          recipientName: recipient.recipientName,
+          error: error instanceof Error ? error.message : "ØªØ¹Ø°Ø± Ø§Ù„Ø¥Ø±Ø³Ø§Ù„",
         });
       }
     }
@@ -123,14 +164,14 @@ export async function POST(request: Request) {
       success: failed.length === 0,
       sentCount,
       failedCount: failed.length,
-      recipientsCount: recipients.length,
+      recipientsCount: recipients.size,
       failed,
     });
   } catch (error) {
     console.error("WHATSAPP BROADCAST ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء إرسال الرسالة الجماعية" },
+      { error: "Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø¥Ø±Ø³Ø§Ù„ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ø§Ù„Ø¬Ù…Ø§Ø¹ÙŠØ©" },
       { status: 500 }
     );
   }

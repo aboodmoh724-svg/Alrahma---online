@@ -4,7 +4,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 const sections = [
   {
     href: "/onsite/admin/teachers",
-    title: "المعلمين",
+    title: "المعلمون",
     description: "إضافة المعلمين وتفعيل/تعطيل الحسابات.",
     tone: "bg-[#173d42] text-white",
   },
@@ -23,7 +23,7 @@ const sections = [
   {
     href: "/onsite/admin/absences",
     title: "غياب اليوم",
-    description: "عرض الطلاب الغائبين وفتح رسائل واتساب جاهزة لأولياء الأمور.",
+    description: "عرض الطلاب الغائبين وإرسال رسائل الغياب الجماعية مباشرة إلى أولياء الأمور.",
     tone: "bg-amber-600 text-white",
   },
   {
@@ -31,6 +31,12 @@ const sections = [
     title: "إحصائيات الغائبين",
     description: "معرفة عدد مرات غياب كل طالب والأيام التي غاب فيها.",
     tone: "bg-[#8a6335] text-white",
+  },
+  {
+    href: "/onsite/admin/broadcasts",
+    title: "الرسائل الجماعية",
+    description: "إرسال رسالة موحدة إلى أولياء الأمور أو المعلمين أو أولياء أمور محددين في الحضوري.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
     href: "/onsite/admin/import",
@@ -64,7 +70,7 @@ export default function OnsiteAdminDashboardPage() {
               اختر القسم الذي تريد إدارته.
             </h1>
             <p className="mt-4 text-sm leading-8 text-white/72">
-              هذه لوحة حضوري مخصصة لإدارة طلاب المركز والمعلمين والحلقات.
+              هذه لوحة حضوري مخصصة لإدارة طلاب المركز والمعلمين والحلقات والرسائل اليومية.
             </p>
           </div>
         </section>
@@ -77,9 +83,7 @@ export default function OnsiteAdminDashboardPage() {
               className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
             >
               <h2 className="text-2xl font-black">{section.title}</h2>
-              <p className="mt-4 text-sm leading-8 opacity-75">
-                {section.description}
-              </p>
+              <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
               <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
                 فتح القسم
               </span>
@@ -90,4 +94,3 @@ export default function OnsiteAdminDashboardPage() {
     </main>
   );
 }
-
