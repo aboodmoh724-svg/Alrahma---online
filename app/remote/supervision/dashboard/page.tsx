@@ -7,32 +7,26 @@ const sections = [
   {
     href: "/remote/supervision/students",
     title: "الطلاب",
-    description: "عرض بيانات الطلاب وتوزيعهم على الحلقات والمعلمين فقط.",
+    description: "توزيع الطلاب على الحلقات والمعلمين ومراجعة غير المسكنين.",
     tone: "bg-[#1f6358] text-white",
   },
   {
     href: "/remote/supervision/teachers",
     title: "المعلمون والحلقات",
-    description: "بطاقات المعلمين مع الحلقات والطلاب وروابط الدروس والمسارات.",
-    tone: "bg-white text-[#173d42]",
+    description: "فتح الحلقات والوصول السريع إلى روابطها ومواعيدها ومساراتها.",
+    tone: "bg-[#f8efe0] text-[#173d42]",
   },
   {
     href: "/remote/supervision/operations",
     title: "المتابعة الإشرافية",
-    description: "طلبات المعلمين والمهام والزيارات والطلبات المحولة من الإدارة في مكان واحد.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    description: "طلبات المعلمين والمهام والزيارات وطلبات التسجيل في مكان واحد.",
+    tone: "bg-[#173d42] text-white",
   },
   {
     href: "/remote/supervision/reports",
     title: "تقارير الطلاب",
-    description: "متابعة السير العام للطلاب والتعثر والغيابات والتواصل مع أولياء الأمور.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
-  },
-  {
-    href: "/remote/supervision/statistics",
-    title: "الإحصائيات والمتابعة",
-    description: "نظرة عامة على المعلمين والطلاب والحلقات والطلاب بلا حلقة.",
-    tone: "bg-[#173d42] text-white",
+    description: "إحصائيات عامة وتفاصيل كل طالب في صفحة واحدة سهلة القراءة.",
+    tone: "bg-white text-[#173d42]",
   },
 ];
 

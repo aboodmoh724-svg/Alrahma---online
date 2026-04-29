@@ -18,6 +18,9 @@ type Circle = {
   track: string | null;
   studyMode: "REMOTE" | "ONSITE";
   zoomUrl: string | null;
+  periodLabel: string | null;
+  startsAt: string | null;
+  endsAt: string | null;
   teacher: Pick<Teacher, "id" | "fullName" | "email"> | null;
   _count: {
     students: number;
@@ -57,6 +60,9 @@ export default function RemoteSupervisionTeachersPage() {
     teacherId: "",
     track: "",
     zoomUrl: "",
+    periodLabel: "",
+    startsAt: "",
+    endsAt: "",
   });
 
   useEffect(() => {
@@ -154,7 +160,7 @@ export default function RemoteSupervisionTeachersPage() {
         return;
       }
 
-      setCircleForm({ name: "", teacherId: "", track: "", zoomUrl: "" });
+      setCircleForm({ name: "", teacherId: "", track: "", zoomUrl: "", periodLabel: "", startsAt: "", endsAt: "" });
       const [circlesRes, studentsRes] = await Promise.all([
         fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
         fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
@@ -309,6 +315,38 @@ export default function RemoteSupervisionTeachersPage() {
               className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
               dir="ltr"
             />
+            <select
+              value={circleForm.periodLabel}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, periodLabel: event.target.value }))
+              }
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+            >
+              <option value="">اختر الفترة</option>
+              <option value="الفترة الصباحية">الفترة الصباحية</option>
+              <option value="الفترة المسائية الأولى">الفترة المسائية الأولى</option>
+              <option value="الفترة المسائية الثانية">الفترة المسائية الثانية</option>
+              <option value="الفترة المسائية الثالثة">الفترة المسائية الثالثة</option>
+              <option value="الفترة المسائية الرابعة">الفترة المسائية الرابعة</option>
+            </select>
+            <input
+              type="time"
+              value={circleForm.startsAt}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, startsAt: event.target.value }))
+              }
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              aria-label="وقت بداية الحلقة"
+            />
+            <input
+              type="time"
+              value={circleForm.endsAt}
+              onChange={(event) =>
+                setCircleForm((prev) => ({ ...prev, endsAt: event.target.value }))
+              }
+              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              aria-label="وقت نهاية الحلقة"
+            />
           </div>
         </form>
 
@@ -369,7 +407,10 @@ export default function RemoteSupervisionTeachersPage() {
                               <div>
                                 <h3 className="font-black text-[#1c2d31]">{circle.name}</h3>
                                 <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                                  {trackLabel(circle.track)} - {circleStudents.length} طالب
+                                  {trackLabel(circle.track)} - {circle.periodLabel || "بدون فترة"} - {circle.startsAt || "--:--"} إلى {circle.endsAt || "--:--"}
+                                </p>
+                                <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                                  {circleStudents.length} طالب
                                 </p>
                               </div>
                               {circle.zoomUrl ? (
@@ -377,9 +418,9 @@ export default function RemoteSupervisionTeachersPage() {
                                   href={circle.zoomUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="rounded-xl bg-[#173d42] px-4 py-2 text-center text-xs font-black text-white"
+                                  className="rounded-xl bg-[#1f6358] px-4 py-2 text-center text-xs font-black text-white shadow-sm"
                                 >
-                                  فتح الرابط
+                                  دخول الحلقة
                                 </a>
                               ) : (
                                 <span className="rounded-xl bg-white px-4 py-2 text-xs font-black text-[#1c2d31]/55 ring-1 ring-[#d9c8ad]">

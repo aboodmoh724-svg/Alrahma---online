@@ -320,6 +320,9 @@ model Circle {
   name      String
   studyMode StudyMode
   zoomUrl   String?
+  periodLabel String?
+  startsAt  String?
+  endsAt    String?
   teacherId String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt

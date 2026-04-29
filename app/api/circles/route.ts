@@ -61,6 +61,9 @@ export async function POST(req: Request) {
     const name = String(body.name || "").trim();
     const teacherId = String(body.teacherId || "").trim();
     const zoomUrl = String(body.zoomUrl || "").trim();
+    const periodLabel = String(body.periodLabel || "").trim();
+    const startsAt = String(body.startsAt || "").trim();
+    const endsAt = String(body.endsAt || "").trim();
     const studyMode = normalizeStudyMode(body.studyMode) || "REMOTE";
     const track = normalizeTrack(body.track);
 
@@ -95,6 +98,9 @@ export async function POST(req: Request) {
         track,
         studyMode,
         zoomUrl: zoomUrl || null,
+        periodLabel: periodLabel || null,
+        startsAt: startsAt || null,
+        endsAt: endsAt || null,
         teacherId: teacher?.id || null,
       },
       include: {
@@ -136,6 +142,12 @@ export async function PATCH(req: Request) {
       typeof body.teacherId === "string" ? body.teacherId.trim() : undefined;
     const zoomUrl =
       typeof body.zoomUrl === "string" ? body.zoomUrl.trim() : undefined;
+    const periodLabel =
+      typeof body.periodLabel === "string" ? body.periodLabel.trim() : undefined;
+    const startsAt =
+      typeof body.startsAt === "string" ? body.startsAt.trim() : undefined;
+    const endsAt =
+      typeof body.endsAt === "string" ? body.endsAt.trim() : undefined;
     const track =
       body.track === null || typeof body.track === "string"
         ? normalizeTrack(body.track)
@@ -201,6 +213,9 @@ export async function PATCH(req: Request) {
         ...(track !== undefined ? { track } : {}),
         ...(teacherId !== undefined ? { teacherId: teacher?.id || null } : {}),
         ...(zoomUrl !== undefined ? { zoomUrl: zoomUrl || null } : {}),
+        ...(periodLabel !== undefined ? { periodLabel: periodLabel || null } : {}),
+        ...(startsAt !== undefined ? { startsAt: startsAt || null } : {}),
+        ...(endsAt !== undefined ? { endsAt: endsAt || null } : {}),
       },
     });
 
