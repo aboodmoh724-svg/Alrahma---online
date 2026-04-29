@@ -6,45 +6,21 @@ import { prisma } from "@/lib/prisma";
 const sections = [
   {
     href: "/remote/supervision/students",
-    title: "إدارة الطلاب",
-    description: "متابعة أرقام الطلاب وتوزيعهم ونقلهم بين الحلقات.",
+    title: "الطلاب",
+    description: "عرض بيانات الطلاب وتوزيعهم على الحلقات والمعلمين فقط.",
     tone: "bg-[#1f6358] text-white",
   },
   {
     href: "/remote/supervision/teachers",
-    title: "إدارة المعلمين",
-    description: "متابعة بيانات المعلمين وحساباتهم والتأكد من الجاهزية التشغيلية.",
+    title: "المعلمون والحلقات",
+    description: "بطاقات المعلمين مع الحلقات والطلاب وروابط الدروس والمسارات.",
     tone: "bg-white text-[#173d42]",
   },
   {
-    href: "/remote/supervision/circles",
-    title: "الحلقات والمسارات",
-    description: "ضبط الحلقات وربط المعلمين والطلاب وروابط الدروس.",
-    tone: "bg-[#c39a62] text-white",
-  },
-  {
-    href: "/remote/supervision/teacher-requests",
-    title: "طلبات المعلمين",
-    description: "استقبال طلبات الاختبارات والطلاب المتعثرين والحالات الخاصة والرد عليها.",
+    href: "/remote/supervision/operations",
+    title: "المتابعة الإشرافية",
+    description: "طلبات المعلمين والمهام والزيارات والطلبات المحولة من الإدارة في مكان واحد.",
     tone: "bg-[#fffaf2] text-[#173d42]",
-  },
-  {
-    href: "/remote/supervision/tasks",
-    title: "المهام الإشرافية",
-    description: "مهام تلقائية للتعثر والغياب، ومهام من الإدارة، وإجراءات المتابعة حتى الإغلاق.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
-  },
-  {
-    href: "/remote/supervision/teacher-visits",
-    title: "زيارات المعلمين",
-    description: "إدخال زيارات المشرفين بسرعة، وحفظها كـ PDF منظم مع إرسال التقرير للمعلم.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
-  },
-  {
-    href: "/remote/supervision/registrations",
-    title: "الطلبات المحولة من الإدارة",
-    description: "الحالات التي أكدتْها الإدارة وحولتها للإشراف للاختبار والتقييم والتوزيع.",
-    tone: "bg-white text-[#173d42]",
   },
   {
     href: "/remote/supervision/reports",

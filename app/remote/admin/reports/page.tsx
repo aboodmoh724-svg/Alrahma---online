@@ -305,12 +305,24 @@ export default function RemoteAdminReportsPage() {
           <label className="mb-2 block text-sm font-black text-[#1c2d31]">
             البحث عن طالب
           </label>
-          <input
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder="اكتب اسم الطالب أو رقمه مثل 1001"
-            className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
-          />
+          <div className="relative">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="اكتب اسم الطالب أو رقمه مثل 1001"
+              className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+            />
+            {search ? (
+              <button
+                type="button"
+                onClick={() => setSearch("")}
+                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white transition hover:bg-[#1f6358]"
+                aria-label="مسح اختيار الطالب"
+              >
+                ×
+              </button>
+            ) : null}
+          </div>
         </section>
 
         {loading ? (
