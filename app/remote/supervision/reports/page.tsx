@@ -6,6 +6,13 @@ import Link from "next/link";
 type ReportItem = {
   id: string;
   lessonName: string;
+  lessonSurah: string | null;
+  pageFrom: number | null;
+  pageTo: number | null;
+  review: string | null;
+  reviewSurah: string | null;
+  reviewFrom: number | null;
+  reviewTo: number | null;
   lessonMemorized: boolean | null;
   lastFiveMemorized: boolean | null;
   reviewMemorized: boolean | null;
@@ -126,6 +133,27 @@ function studentLevel(summary: StudentSummary) {
   if (summary.absentCount >= 3) return "غياب يحتاج متابعة";
   if (checked > 0 && summary.notMemorizedCount / checked >= 0.45) return "تعثر يحتاج متابعة";
   return "مستقر";
+}
+
+function englishDate(date: string) {
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+function memorizedLabel(value: boolean | null) {
+  if (value === true) return "حافظ";
+  if (value === false) return "غير حافظ";
+  return "لم يحدد";
+}
+
+function rangeLabel(from: number | null, to: number | null) {
+  if (from && to) return `${from} - ${to}`;
+  if (from) return String(from);
+  if (to) return String(to);
+  return "-";
 }
 
 export default function RemoteSupervisionReportsPage() {
@@ -323,7 +351,7 @@ export default function RemoteSupervisionReportsPage() {
                       <div key={report.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-black text-[#1c2d31]">
-                            {new Date(report.createdAt).toLocaleDateString("ar-EG")}
+                            {englishDate(report.createdAt)}
                           </p>
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-black ${
@@ -335,12 +363,27 @@ export default function RemoteSupervisionReportsPage() {
                             {report.status === "PRESENT" ? "حاضر" : "غائب"}
                           </span>
                         </div>
-                        <p className="mt-3 text-sm leading-7 text-[#1c2d31]/72">{report.lessonName}</p>
+                        <div className="mt-3 space-y-2 text-sm leading-7 text-[#1c2d31]/72">
+                          <p>
+                            <span className="font-black text-[#1c2d31]">الدرس الجديد: </span>
+                            {report.lessonName || report.lessonSurah || "-"} - الصفحات {rangeLabel(report.pageFrom, report.pageTo)}
+                          </p>
+                          <p>
+                            <span className="font-black text-[#1c2d31]">المراجعة: </span>
+                            {report.review || report.reviewSurah || "-"} - الصفحات {rangeLabel(report.reviewFrom, report.reviewTo)}
+                          </p>
+                        </div>
                         <div className="mt-3 flex flex-wrap gap-2 text-xs font-black">
-                          <span className="rounded-full bg-white px-3 py-1 text-[#173d42] ring-1 ring-[#d9c8ad]">
-                            صفحات: {(report.pagesCount || 0) + (report.reviewPagesCount || 0)}
+                          <span className="rounded-full bg-white px-3 py-1 text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                            الدرس: {memorizedLabel(report.lessonMemorized)}
                           </span>
                           <span className="rounded-full bg-white px-3 py-1 text-[#173d42] ring-1 ring-[#d9c8ad]">
+                            آخر خمس: {memorizedLabel(report.lastFiveMemorized)}
+                          </span>
+                          <span className="rounded-full bg-white px-3 py-1 text-[#173d42] ring-1 ring-[#d9c8ad]">
+                            المراجعة: {memorizedLabel(report.reviewMemorized)}
+                          </span>
+                          <span className="rounded-full bg-white px-3 py-1 text-[#8a6335] ring-1 ring-[#d9c8ad]">
                             أرسل للولي: {report.sentToParent ? "نعم" : "لا"}
                           </span>
                         </div>

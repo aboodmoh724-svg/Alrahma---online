@@ -48,6 +48,14 @@ function trackLabel(track: string | null) {
   return "لم يحدد";
 }
 
+const PERIOD_DEFAULTS: Record<string, { startsAt: string; endsAt: string }> = {
+  "الفترة الصباحية": { startsAt: "09:00", endsAt: "11:00" },
+  "الفترة المسائية الأولى": { startsAt: "15:00", endsAt: "18:00" },
+  "الفترة المسائية الثانية": { startsAt: "19:00", endsAt: "22:00" },
+  "الفترة المسائية الثالثة": { startsAt: "23:00", endsAt: "02:00" },
+  "الفترة المسائية الرابعة": { startsAt: "03:00", endsAt: "06:00" },
+};
+
 export default function RemoteSupervisionTeachersPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -189,6 +197,16 @@ export default function RemoteSupervisionTeachersPage() {
     }
   };
 
+  const selectPeriod = (periodLabel: string) => {
+    const defaults = PERIOD_DEFAULTS[periodLabel];
+
+    setCircleForm((prev) => ({
+      ...prev,
+      periodLabel,
+      ...(defaults ? defaults : {}),
+    }));
+  };
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -317,9 +335,7 @@ export default function RemoteSupervisionTeachersPage() {
             />
             <select
               value={circleForm.periodLabel}
-              onChange={(event) =>
-                setCircleForm((prev) => ({ ...prev, periodLabel: event.target.value }))
-              }
+              onChange={(event) => selectPeriod(event.target.value)}
               className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
             >
               <option value="">اختر الفترة</option>
@@ -407,7 +423,9 @@ export default function RemoteSupervisionTeachersPage() {
                               <div>
                                 <h3 className="font-black text-[#1c2d31]">{circle.name}</h3>
                                 <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                                  {trackLabel(circle.track)} - {circle.periodLabel || "بدون فترة"} - {circle.startsAt || "--:--"} إلى {circle.endsAt || "--:--"}
+                                  {trackLabel(circle.track)}
+                                  {circle.periodLabel ? ` - ${circle.periodLabel}` : ""}
+                                  {circle.startsAt || circle.endsAt ? ` - ${circle.startsAt || "--:--"} إلى ${circle.endsAt || "--:--"}` : ""}
                                 </p>
                                 <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
                                   {circleStudents.length} طالب

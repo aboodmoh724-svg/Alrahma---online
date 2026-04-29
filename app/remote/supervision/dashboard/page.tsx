@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
+import DashboardSectionLink from "@/components/supervision/DashboardSectionLink";
 import { prisma } from "@/lib/prisma";
 
 const sections = [
@@ -111,12 +112,12 @@ export default async function RemoteSupervisionDashboardPage() {
               <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
-              واجهة إشراف مستقلة لمتابعة الطلاب والمعلمين والمهام اليومية.
+              نرعى حروف القرآن في القلوب، حتى يصبح التعليم أثرًا وهداية.
             </h1>
             <p className="mt-4 text-sm leading-8 text-white/72">
               {supervisor?.fullName
-                ? `أهلًا بك ${supervisor.fullName}. هذه الواجهة مخصصة للمتابعة الإشرافية اليومية بعد أن تجهز الإدارة الطلبات والدفعات.`
-                : "هذه الواجهة مخصصة للمتابعة الإشرافية اليومية بعد أن تجهز الإدارة الطلبات والدفعات."}
+                ? `أهلًا بك ${supervisor.fullName}. هنا تكتمل العناية بالطالب والمعلم والحلقة؛ متابعة هادئة تحفظ المقصد وتخدم كتاب الله.`
+                : "هنا تكتمل العناية بالطالب والمعلم والحلقة؛ متابعة هادئة تحفظ المقصد وتخدم كتاب الله."}
             </p>
           </div>
         </section>
@@ -159,24 +160,7 @@ export default async function RemoteSupervisionDashboardPage() {
                     ? openTeacherRequestsCount + forwardedRegistrationsCount + supervisionTasksCount
                     : null;
 
-            return (
-              <Link
-                key={section.href}
-                href={section.href}
-                className={`relative min-h-48 overflow-hidden rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
-              >
-                {badge !== null && badge > 0 ? (
-                  <span className="absolute left-5 top-5 rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white shadow-sm">
-                    +{badge}
-                  </span>
-                ) : null}
-                <h2 className="text-2xl font-black">{section.title}</h2>
-                <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
-                <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
-                  فتح القسم
-                </span>
-              </Link>
-            );
+            return <DashboardSectionLink key={section.href} {...section} badge={badge} />;
           })}
         </section>
       </div>
