@@ -10,6 +10,7 @@ import {
   normalizeWhatsAppNumber,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 
 const defaultCurrency = "USD";
 const FULL_PAYMENT_NOTIFICATION_KEY_PREFIX = "finance_full_payment_notified:";
@@ -197,7 +198,12 @@ async function notifyIfStudentFullyPaid(studentId: string) {
     return;
   }
 
-  if (requiredAmount <= 0 || !student.parentWhatsapp || !isWhatsAppConfigured()) {
+  if (
+    requiredAmount <= 0 ||
+    !student.parentWhatsapp ||
+    !isWhatsAppConfigured() ||
+    !(await isMessageAutomationEnabled("FULL_PAYMENT_RECEIVED_WHATSAPP"))
+  ) {
     return;
   }
 

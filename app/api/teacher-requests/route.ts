@@ -7,6 +7,7 @@ import type {
 } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { createSupervisionTask, logStudentFollowUpAction } from "@/lib/supervision";
 
 const ALLOWED_REQUEST_TYPES: TeacherRequestType[] = [
@@ -326,13 +327,15 @@ export async function PATCH(req: Request) {
       ? ` للطالب ${updatedRequest.student.fullName}`
       : "";
 
-    await createTeacherNotification({
-      userId: updatedRequest.teacherId,
-      type: "REQUEST_UPDATED",
-      title: `تم تحديث طلبك${studentLabel}`,
-      body: `حالة الطلب الآن: ${status}. ${adminNote ? `ملاحظة الإدارة: ${adminNote}` : "يمكنك مراجعة التفاصيل من صفحة الطلبات."}`,
-      link: `/remote/teacher/requests?requestId=${updatedRequest.id}`,
-    });
+    if (await isMessageAutomationEnabled("TEACHER_REQUEST_UPDATED_NOTIFICATION")) {
+      await createTeacherNotification({
+        userId: updatedRequest.teacherId,
+        type: "REQUEST_UPDATED",
+        title: `تم تحديث طلبك${studentLabel}`,
+        body: `حالة الطلب الآن: ${status}. ${adminNote ? `ملاحظة الإدارة: ${adminNote}` : "يمكنك مراجعة التفاصيل من صفحة الطلبات."}`,
+        link: `/remote/teacher/requests?requestId=${updatedRequest.id}`,
+      });
+    }
 
     return NextResponse.json({
       success: true,

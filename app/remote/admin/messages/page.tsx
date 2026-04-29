@@ -19,9 +19,40 @@ type ReminderSettings = {
   lastTriggeredOn: string | null;
 };
 
+type AutomationRule = {
+  key: string;
+  title: string;
+  trigger: string;
+  recipient: string;
+  channel: "WHATSAPP" | "IN_APP";
+  location: string;
+  templateKey?: string;
+  enabled: boolean;
+  notes?: string;
+};
+
+type CustomAutomationRule = {
+  id: string;
+  title: string;
+  trigger: string;
+  recipient: string;
+  channel: "WHATSAPP" | "IN_APP";
+  enabled: boolean;
+  notes: string;
+};
+
+type AutomationSettings = {
+  systemRules: AutomationRule[];
+  customRules: CustomAutomationRule[];
+};
+
 export default function RemoteAdminMessagesPage() {
   const [templates, setTemplates] = useState<TemplateItem[]>([]);
   const [notePresets, setNotePresets] = useState<string[]>([]);
+  const [automationSettings, setAutomationSettings] = useState<AutomationSettings>({
+    systemRules: [],
+    customRules: [],
+  });
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>({
     enabled: false,
     time: "18:00",
@@ -32,6 +63,7 @@ export default function RemoteAdminMessagesPage() {
   const [savingKey, setSavingKey] = useState<string | null>(null);
   const [savingReminder, setSavingReminder] = useState(false);
   const [savingNotePresets, setSavingNotePresets] = useState(false);
+  const [savingAutomation, setSavingAutomation] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const loadSettings = async () => {
@@ -49,6 +81,12 @@ export default function RemoteAdminMessagesPage() {
       setTemplates(data.templates || []);
       setReminderSettings(data.reminderSettings);
       setNotePresets(Array.isArray(data.notePresets) ? data.notePresets : []);
+      setAutomationSettings(
+        data.automationSettings || {
+          systemRules: [],
+          customRules: [],
+        }
+      );
     } catch (error) {
       setFeedback(
         error instanceof Error ? error.message : "تعذر تحميل إعدادات الرسائل"
@@ -140,6 +178,95 @@ export default function RemoteAdminMessagesPage() {
     }
   };
 
+  const updateSystemAutomation = (key: string, enabled: boolean) => {
+    setAutomationSettings((current) => ({
+      ...current,
+      systemRules: current.systemRules.map((rule) =>
+        rule.key === key ? { ...rule, enabled } : rule
+      ),
+    }));
+
+    if (key === "TEACHER_MISSING_REPORT_REMINDER_WHATSAPP") {
+      setReminderSettings((current) => ({
+        ...current,
+        enabled,
+      }));
+    }
+  };
+
+  const updateCustomAutomation = (
+    id: string,
+    field: keyof CustomAutomationRule,
+    value: string | boolean
+  ) => {
+    setAutomationSettings((current) => ({
+      ...current,
+      customRules: current.customRules.map((rule) =>
+        rule.id === id ? { ...rule, [field]: value } : rule
+      ),
+    }));
+  };
+
+  const addCustomAutomation = () => {
+    setAutomationSettings((current) => ({
+      ...current,
+      customRules: [
+        ...current.customRules,
+        {
+          id: `custom-${Date.now()}`,
+          title: "",
+          trigger: "",
+          recipient: "",
+          channel: "WHATSAPP",
+          enabled: true,
+          notes: "",
+        },
+      ],
+    }));
+  };
+
+  const removeCustomAutomation = (id: string) => {
+    setAutomationSettings((current) => ({
+      ...current,
+      customRules: current.customRules.filter((rule) => rule.id !== id),
+    }));
+  };
+
+  const saveAutomationSettings = async () => {
+    try {
+      setSavingAutomation(true);
+      setFeedback(null);
+
+      const response = await fetch("/api/admin/message-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          automationSettings: {
+            overrides: Object.fromEntries(
+              automationSettings.systemRules.map((rule) => [rule.key, rule.enabled])
+            ),
+            customRules: automationSettings.customRules,
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "تعذر حفظ إعدادات الرسائل التلقائية");
+      }
+
+      await loadSettings();
+      setFeedback("تم حفظ إعدادات الرسائل التلقائية.");
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "تعذر حفظ إعدادات الرسائل التلقائية");
+    } finally {
+      setSavingAutomation(false);
+    }
+  };
+
   const updateNotePreset = (index: number, value: string) => {
     setNotePresets((current) =>
       current.map((item, itemIndex) => (itemIndex === index ? value : item))
@@ -218,6 +345,133 @@ export default function RemoteAdminMessagesPage() {
           </div>
         ) : (
           <>
+            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                <div>
+                  <h2 className="text-xl font-black text-[#1c2d31]">
+                    سجل الرسائل والتنبيهات التلقائية
+                  </h2>
+                  <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                    هذه الخانات توضح متى يرسل النظام تلقائيا، ولمن، ومن أي موضع. إغلاق أي خانة يوقف الإرسال الآلي المرتبط بها.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={addCustomAutomation}
+                    className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf2]"
+                  >
+                    إضافة خانة
+                  </button>
+                  <button
+                    type="button"
+                    onClick={saveAutomationSettings}
+                    disabled={savingAutomation}
+                    className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+                  >
+                    {savingAutomation ? "جارٍ الحفظ..." : "حفظ التفعيل"}
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
+                {automationSettings.systemRules.map((rule) => (
+                  <article
+                    key={rule.key}
+                    className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <h3 className="text-lg font-black text-[#173d42]">{rule.title}</h3>
+                        <p className="mt-1 text-xs font-bold text-[#8a6335]">
+                          {rule.channel === "WHATSAPP" ? "واتساب" : "تنبيه داخل اللوحة"} - {rule.location}
+                        </p>
+                      </div>
+                      <label className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-xs font-black text-[#1c2d31] ring-1 ring-[#d9c8ad]">
+                        <input
+                          type="checkbox"
+                          checked={rule.enabled}
+                          onChange={(event) => updateSystemAutomation(rule.key, event.target.checked)}
+                          className="h-4 w-4 accent-[#1f6358]"
+                        />
+                        {rule.enabled ? "مفعل" : "مغلق"}
+                      </label>
+                    </div>
+                    <div className="mt-3 space-y-2 text-sm leading-7 text-[#1c2d31]/72">
+                      <p><span className="font-black text-[#1c2d31]">متى: </span>{rule.trigger}</p>
+                      <p><span className="font-black text-[#1c2d31]">لمن: </span>{rule.recipient}</p>
+                      {rule.templateKey ? (
+                        <p><span className="font-black text-[#1c2d31]">القالب: </span>{rule.templateKey}</p>
+                      ) : null}
+                      {rule.notes ? <p className="text-[#8a6335]">{rule.notes}</p> : null}
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              {automationSettings.customRules.length > 0 ? (
+                <div className="mt-5 space-y-3">
+                  <h3 className="text-lg font-black text-[#1c2d31]">خانات مضافة من الإدارة</h3>
+                  {automationSettings.customRules.map((rule) => (
+                    <div key={rule.id} className="rounded-[1.5rem] bg-[#f4fbf8] p-4 ring-1 ring-[#cfe3d9]">
+                      <div className="grid gap-3 md:grid-cols-2">
+                        <input
+                          value={rule.title}
+                          onChange={(event) => updateCustomAutomation(rule.id, "title", event.target.value)}
+                          placeholder="اسم الرسالة أو التنبيه"
+                          className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                        />
+                        <input
+                          value={rule.recipient}
+                          onChange={(event) => updateCustomAutomation(rule.id, "recipient", event.target.value)}
+                          placeholder="لمن ترسل"
+                          className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                        />
+                        <input
+                          value={rule.trigger}
+                          onChange={(event) => updateCustomAutomation(rule.id, "trigger", event.target.value)}
+                          placeholder="متى ترسل"
+                          className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                        />
+                        <select
+                          value={rule.channel}
+                          onChange={(event) => updateCustomAutomation(rule.id, "channel", event.target.value)}
+                          className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                        >
+                          <option value="WHATSAPP">واتساب</option>
+                          <option value="IN_APP">تنبيه داخل اللوحة</option>
+                        </select>
+                        <textarea
+                          value={rule.notes}
+                          onChange={(event) => updateCustomAutomation(rule.id, "notes", event.target.value)}
+                          placeholder="ملاحظات أو تفاصيل إضافية"
+                          className="min-h-24 rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none md:col-span-2"
+                        />
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-3">
+                        <label className="flex items-center gap-2 text-sm font-black text-[#1c2d31]">
+                          <input
+                            type="checkbox"
+                            checked={rule.enabled}
+                            onChange={(event) => updateCustomAutomation(rule.id, "enabled", event.target.checked)}
+                            className="h-4 w-4 accent-[#1f6358]"
+                          />
+                          مفعل
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeCustomAutomation(rule.id)}
+                          className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-700"
+                        >
+                          حذف
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </section>
+
             <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
               <div className="mb-4">
                 <h2 className="text-xl font-black text-[#1c2d31]">

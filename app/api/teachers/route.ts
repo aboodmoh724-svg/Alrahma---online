@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { appUrl } from "@/lib/app-url";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
@@ -116,7 +117,11 @@ export async function POST(req: Request) {
     let whatsappWarning: string | null = null;
     const normalizedWhatsapp = normalizeWhatsAppNumber(whatsapp);
 
-    if (normalizedWhatsapp && isWhatsAppConfigured()) {
+    if (
+      normalizedWhatsapp &&
+      isWhatsAppConfigured() &&
+      (await isMessageAutomationEnabled("TEACHER_WELCOME_WHATSAPP"))
+    ) {
       try {
         const platformLabel = studyMode === "REMOTE" ? "التعليم عن بعد" : "التعليم الحضوري";
         const loginUrl =

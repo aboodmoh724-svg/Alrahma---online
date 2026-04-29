@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { generateTeacherVisitPdf } from "@/lib/teacher-visit-report-pdf";
@@ -244,7 +245,10 @@ export async function POST(req: Request) {
 
     let whatsappWarning: string | null = null;
 
-    if (teacherWhatsapp) {
+    if (
+      teacherWhatsapp &&
+      (await isMessageAutomationEnabled("TEACHER_VISIT_REPORT_WHATSAPP"))
+    ) {
       try {
         await sendWhatsAppDocument({
           to: teacherWhatsapp,
@@ -307,15 +311,17 @@ export async function POST(req: Request) {
       },
     });
 
-    await createTeacherNotification({
-      userId: teacher.id,
-      title: `تقرير زيارة جديد رقم ${report.visitNumber}`,
-      body:
-        sentToTeacherAt
-          ? `تم إرسال تقرير الزيارة عبر الواتساب. راجع الواتساب لفتح ملف الـ PDF.`
-          : `تم حفظ تقرير الزيارة. تعذر الإرسال عبر الواتساب حاليًا، راجع الإدارة.`,
-      link: pdf.pdfPath,
-    });
+    if (await isMessageAutomationEnabled("TEACHER_VISIT_REPORT_NOTIFICATION")) {
+      await createTeacherNotification({
+        userId: teacher.id,
+        title: `تقرير زيارة جديد رقم ${report.visitNumber}`,
+        body:
+          sentToTeacherAt
+            ? `تم إرسال تقرير الزيارة عبر الواتساب. راجع الواتساب لفتح ملف الـ PDF.`
+            : `تم حفظ تقرير الزيارة. تعذر الإرسال عبر الواتساب حاليًا، راجع الإدارة.`,
+        link: pdf.pdfPath,
+      });
+    }
 
     return NextResponse.json({
       success: true,

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import type { Prisma, StudyMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 
 type RouteContext = {
   params: Promise<{
@@ -140,7 +141,10 @@ export async function PATCH(request: Request, context: RouteContext) {
         },
       });
 
-      if (updated.teacher.id !== student.teacherId) {
+      if (
+        updated.teacher.id !== student.teacherId &&
+        (await isMessageAutomationEnabled("STUDENT_MOVED_NOTIFICATION"))
+      ) {
         await createTeacherNotification({
           userId: updated.teacher.id,
           type: "STUDENT_MOVED",
@@ -210,7 +214,8 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (
       (hasTeacherId || hasCircleId || inferredCircleId !== undefined) &&
-      updated.teacher.id !== student.teacherId
+      updated.teacher.id !== student.teacherId &&
+      (await isMessageAutomationEnabled("STUDENT_MOVED_NOTIFICATION"))
     ) {
       await createTeacherNotification({
         userId: updated.teacher.id,

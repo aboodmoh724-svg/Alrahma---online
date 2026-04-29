@@ -1,6 +1,7 @@
 import path from "path";
 import { NextResponse } from "next/server";
 import { registrationReceivedEmail, sendEmail } from "@/lib/email";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import { generateStudentCode } from "@/lib/student-code";
@@ -251,7 +252,11 @@ export async function POST(req: Request) {
 
     const normalizedWhatsapp = normalizeWhatsAppNumber(parentWhatsapp);
 
-    if (normalizedWhatsapp && isWhatsAppConfigured()) {
+    if (
+      normalizedWhatsapp &&
+      isWhatsAppConfigured() &&
+      (await isMessageAutomationEnabled("REGISTRATION_RECEIVED_WHATSAPP"))
+    ) {
       try {
         const whatsAppMessage = await renderMessageTemplate("REGISTRATION_RECEIVED", {
           studentName,

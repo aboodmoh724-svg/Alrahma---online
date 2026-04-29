@@ -4,6 +4,7 @@ import {
   renderMessageTemplate,
   saveTeacherReminderSettings,
 } from "@/lib/message-templates";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
@@ -62,7 +63,10 @@ export async function GET(request: Request) {
 
     const reminderSettings = await getTeacherReminderSettings();
 
-    if (!reminderSettings.enabled) {
+    if (
+      !reminderSettings.enabled ||
+      !(await isMessageAutomationEnabled("TEACHER_MISSING_REPORT_REMINDER_WHATSAPP"))
+    ) {
       return NextResponse.json({ success: true, skipped: "disabled" });
     }
 

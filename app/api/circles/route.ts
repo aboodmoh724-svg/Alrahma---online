@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 
 function normalizeStudyMode(value: unknown) {
   if (value === "REMOTE" || value === "ONSITE") return value;
@@ -230,7 +231,11 @@ export async function PATCH(req: Request) {
         },
       });
 
-      if (teacher.id !== existingCircle.teacherId && existingCircle._count.students > 0) {
+      if (
+        teacher.id !== existingCircle.teacherId &&
+        existingCircle._count.students > 0 &&
+        (await isMessageAutomationEnabled("CIRCLE_ASSIGNED_NOTIFICATION"))
+      ) {
         await createTeacherNotification({
           userId: teacher.id,
           type: "STUDENT_MOVED",

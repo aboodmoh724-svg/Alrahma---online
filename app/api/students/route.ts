@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { generateStudentCode } from "@/lib/student-code";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 
 export async function GET(req: Request) {
   try {
@@ -178,13 +179,15 @@ export async function POST(req: Request) {
       },
     });
 
-    await createTeacherNotification({
-      userId: teacherId,
-      type: "STUDENT_ASSIGNED",
-      title: `تمت إضافة الطالب ${student.fullName}`,
-      body: `تمت إضافة الطالب ${student.fullName}${student.studentCode ? ` برقم ${student.studentCode}` : ""}${student.circle?.name ? ` إلى حلقة ${student.circle.name}` : ""}.`,
-      link: "/remote/teacher/requests",
-    });
+    if (await isMessageAutomationEnabled("STUDENT_ASSIGNED_NOTIFICATION")) {
+      await createTeacherNotification({
+        userId: teacherId,
+        type: "STUDENT_ASSIGNED",
+        title: `تمت إضافة الطالب ${student.fullName}`,
+        body: `تمت إضافة الطالب ${student.fullName}${student.studentCode ? ` برقم ${student.studentCode}` : ""}${student.circle?.name ? ` إلى حلقة ${student.circle.name}` : ""}.`,
+        link: "/remote/teacher/requests",
+      });
+    }
 
     return NextResponse.json({
       success: true,

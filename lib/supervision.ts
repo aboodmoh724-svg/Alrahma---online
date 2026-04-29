@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import type {
   StudentFollowUpActionType,
   SupervisionTaskCategory,
@@ -187,7 +188,10 @@ export async function updateSupervisionTaskStatus(params: {
     });
   }
 
-  if (task.student?.teacherId) {
+  if (
+    task.student?.teacherId &&
+    (await isMessageAutomationEnabled("SUPERVISION_ACTION_NOTIFICATION"))
+  ) {
     await createTeacherNotification({
       userId: task.student.teacherId,
       title: `متابعة إشرافية للطالب ${task.student.fullName}`,

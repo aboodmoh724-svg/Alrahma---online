@@ -9,6 +9,13 @@ import {
   saveTeacherReminderSettings,
   TEMPLATE_DEFINITIONS,
 } from "@/lib/message-templates";
+import {
+  CustomMessageAutomationRule,
+  getMessageAutomationSettings,
+  MessageAutomationKey,
+  MESSAGE_AUTOMATION_RULES,
+  saveMessageAutomationSettings,
+} from "@/lib/message-automation-settings";
 import { prisma } from "@/lib/prisma";
 import { getReportNotePresets, saveReportNotePresets } from "@/lib/report-note-presets";
 
@@ -41,10 +48,11 @@ export async function GET() {
       return NextResponse.json({ error: "غير مصرح لك بعرض إعدادات الرسائل" }, { status: 403 });
     }
 
-    const [templates, reminderSettings, notePresets] = await Promise.all([
+    const [templates, reminderSettings, notePresets, automationSettings] = await Promise.all([
       getTemplateDefinitionsWithValues(),
       getTeacherReminderSettings(),
       getReportNotePresets(),
+      getMessageAutomationSettings(),
     ]);
 
     return NextResponse.json({
@@ -52,6 +60,7 @@ export async function GET() {
       templates,
       reminderSettings,
       notePresets,
+      automationSettings,
     });
   } catch (error) {
     console.error("GET MESSAGE SETTINGS ERROR =>", error);
@@ -113,6 +122,17 @@ export async function PATCH(request: Request) {
         lastTriggeredOn,
       });
 
+      const currentAutomationSettings = await getMessageAutomationSettings();
+      await saveMessageAutomationSettings({
+        overrides: Object.fromEntries(
+          currentAutomationSettings.systemRules.map((rule) => [
+            rule.key,
+            rule.key === "TEACHER_MISSING_REPORT_REMINDER_WHATSAPP" ? enabled : rule.enabled,
+          ])
+        ) as Partial<Record<MessageAutomationKey, boolean>>,
+        customRules: currentAutomationSettings.customRules,
+      });
+
       return NextResponse.json({
         success: true,
       });
@@ -124,6 +144,59 @@ export async function PATCH(request: Request) {
         : [];
 
       await saveReportNotePresets(presets);
+
+      return NextResponse.json({
+        success: true,
+      });
+    }
+
+    if (body.automationSettings) {
+      const rawSettings = body.automationSettings as Record<string, unknown>;
+      const knownKeys = new Set(MESSAGE_AUTOMATION_RULES.map((rule) => rule.key));
+      const overridesRaw =
+        rawSettings.overrides && typeof rawSettings.overrides === "object" && !Array.isArray(rawSettings.overrides)
+          ? (rawSettings.overrides as Record<string, unknown>)
+          : {};
+      const overrides = Object.fromEntries(
+        Object.entries(overridesRaw)
+          .filter(([key]) => knownKeys.has(key as MessageAutomationKey))
+          .map(([key, value]) => [key, value === true])
+      ) as Partial<Record<MessageAutomationKey, boolean>>;
+      const customRules: CustomMessageAutomationRule[] = Array.isArray(rawSettings.customRules)
+        ? rawSettings.customRules
+            .map((rule: unknown, index) => {
+              if (!rule || typeof rule !== "object" || Array.isArray(rule)) return null;
+              const item = rule as Record<string, unknown>;
+              const title = String(item.title || "").trim();
+              if (!title) return null;
+              const channel: CustomMessageAutomationRule["channel"] =
+                item.channel === "IN_APP" ? "IN_APP" : "WHATSAPP";
+
+              return {
+                id: String(item.id || `custom-${Date.now()}-${index}`),
+                title,
+                trigger: String(item.trigger || "").trim(),
+                recipient: String(item.recipient || "").trim(),
+                channel,
+                enabled: item.enabled !== false,
+                notes: String(item.notes || "").trim(),
+              };
+            })
+            .filter((rule): rule is NonNullable<typeof rule> => Boolean(rule))
+        : [];
+
+      await saveMessageAutomationSettings({
+        overrides,
+        customRules,
+      });
+
+      if (typeof overrides.TEACHER_MISSING_REPORT_REMINDER_WHATSAPP === "boolean") {
+        const reminderSettings = await getTeacherReminderSettings();
+        await saveTeacherReminderSettings({
+          ...reminderSettings,
+          enabled: overrides.TEACHER_MISSING_REPORT_REMINDER_WHATSAPP,
+        });
+      }
 
       return NextResponse.json({
         success: true,
