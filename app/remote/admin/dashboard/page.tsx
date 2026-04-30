@@ -15,9 +15,6 @@ type DashboardSection = {
 
 const ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS = new Set([
   "/remote/admin/statistics",
-  "/remote/admin/students",
-  "/remote/admin/circles",
-  "/remote/admin/teachers",
   "/remote/admin/teacher-requests",
   "/remote/admin/reports",
   "/remote/admin/statistics#unassigned-students",
