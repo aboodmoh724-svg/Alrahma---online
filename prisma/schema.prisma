@@ -389,8 +389,6 @@ model RegistrationRequest {
   motherEducation    String?
   idImageUrl         String?
   idImageFileName    String?
-  interviewDate      DateTime?
-  interviewLink      String?
 }
 
 model Report {

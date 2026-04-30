@@ -291,24 +291,6 @@ export function registrationAcceptedWhatsAppMessage(input: {
   );
 }
 
-export function registrationInterviewWhatsAppMessage(input: {
-  studentName: string;
-  interviewDate: string;
-  interviewTime: string;
-  zoomUrl?: string | null;
-}) {
-  return (
-    `السلام عليكم ورحمة الله وبركاته\n\n` +
-    `أهلاً بكم في منصة الرحمة لتعليم القرآن الكريم.\n` +
-    `تم تحديد موعد المقابلة الأولى لتحديد مستوى الطالب/ة: *${input.studentName}*\n\n` +
-    `*التاريخ:* ${input.interviewDate}\n` +
-    `*الوقت:* ${input.interviewTime} بتوقيت مكة المكرمة\n` +
-    (input.zoomUrl ? `*رابط الزووم:* ${input.zoomUrl.trim()}\n\n` : `\n`) +
-    `نرجو تأكيد ما إذا كان هذا الموعد مناسباً لكم أو غير مناسب بالرد على هذه الرسالة.\n\n` +
-    `إدارة منصة الرحمة لتعليم القرآن الكريم`
-  );
-}
-
 export function supervisionStudentAcceptanceWhatsAppMessage(input: {
   studentName: string;
 }) {
