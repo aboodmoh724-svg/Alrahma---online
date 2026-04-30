@@ -53,6 +53,8 @@ type RegistrationRequest = {
   supervisionStatus: "PENDING" | "UNDER_REVIEW" | "PLACED" | "ON_HOLD";
   supervisionNote: string | null;
   createdAt: string;
+  interviewDate?: string | null;
+  interviewLink?: string | null;
 };
 
 const STATUS_OPTIONS = [
@@ -105,6 +107,13 @@ export default function RemoteSupervisionRegistrationsPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
   const [sendingAcceptanceId, setSendingAcceptanceId] = useState<string | null>(null);
   const [sendingDetailsId, setSendingDetailsId] = useState<string | null>(null);
+
+  // Interview Modal State
+  const [interviewModalOpen, setInterviewModalOpen] = useState<string | null>(null);
+  const [interviewDate, setInterviewDate] = useState("");
+  const [interviewTime, setInterviewTime] = useState("");
+  const [interviewZoomUrl, setInterviewZoomUrl] = useState("");
+  const [schedulingId, setSchedulingId] = useState<string | null>(null);
 
   const forwardedRequests = useMemo(
     () => requests.filter((request) => request.status === "ACCEPTED" && request.forwardedToSupervisionAt),
@@ -249,10 +258,38 @@ export default function RemoteSupervisionRegistrationsPage() {
 
       alert("تم إرسال الرسالة بنجاح");
     } catch (error) {
-      console.error("SEND SUPERVISION REGISTRATION MESSAGE ERROR =>", error);
       alert("حدث خطأ أثناء إرسال الرسالة");
     } finally {
       setSending(null);
+    }
+  };
+
+  const scheduleInterview = async (requestId: string) => {
+    try {
+      setSchedulingId(requestId);
+      const response = await fetch(`/api/supervision/registrations/${requestId}/interview`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interviewDate, interviewTime, zoomUrl: interviewZoomUrl }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر تحديد الموعد");
+        return;
+      }
+
+      alert(data.message || "تم تحديد الموعد بنجاح");
+      setInterviewModalOpen(null);
+      setInterviewDate("");
+      setInterviewTime("");
+      setInterviewZoomUrl("");
+      await fetchData();
+    } catch (error) {
+      console.error("SCHEDULE INTERVIEW ERROR =>", error);
+      alert("حدث خطأ أثناء تحديد الموعد");
+    } finally {
+      setSchedulingId(null);
     }
   };
 
@@ -455,6 +492,13 @@ export default function RemoteSupervisionRegistrationsPage() {
                       >
                         {savingId === request.id ? "جارٍ الحفظ..." : "حفظ حالة الإشراف"}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setInterviewModalOpen(request.id)}
+                        className="w-full rounded-xl border-2 border-[#1f6358] bg-transparent px-4 py-3 text-sm font-black text-[#1f6358] transition hover:bg-[#1f6358] hover:text-white"
+                      >
+                        تحديد موعد مقابلة
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -517,6 +561,62 @@ export default function RemoteSupervisionRegistrationsPage() {
           </details>
         ) : null}
       </div>
+
+      {interviewModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c2d31]/50 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-[2rem] bg-[#fffaf2] p-8 shadow-xl" dir="rtl">
+            <h2 className="mb-6 text-2xl font-black text-[#1c2d31]">تحديد موعد المقابلة</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-bold text-[#1c2d31]/80">التاريخ</label>
+                <input
+                  type="date"
+                  value={interviewDate}
+                  onChange={(e) => setInterviewDate(e.target.value)}
+                  className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-[#1c2d31]/80">الوقت</label>
+                <input
+                  type="time"
+                  value={interviewTime}
+                  onChange={(e) => setInterviewTime(e.target.value)}
+                  className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none"
+                />
+              </div>
+              <div>
+                <label className="mb-2 block text-sm font-bold text-[#1c2d31]/80">رابط زووم (اختياري)</label>
+                <input
+                  type="url"
+                  value={interviewZoomUrl}
+                  onChange={(e) => setInterviewZoomUrl(e.target.value)}
+                  placeholder="https://zoom.us/j/..."
+                  className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-left outline-none"
+                  dir="ltr"
+                />
+              </div>
+              <div className="mt-8 flex gap-3">
+                <button
+                  type="button"
+                  disabled={schedulingId === interviewModalOpen || !interviewDate || !interviewTime}
+                  onClick={() => scheduleInterview(interviewModalOpen)}
+                  className="flex-1 rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+                >
+                  {schedulingId === interviewModalOpen ? "جارٍ الإرسال..." : "حفظ وإرسال واتساب"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInterviewModalOpen(null)}
+                  className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-black text-[#1c2d31]"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
