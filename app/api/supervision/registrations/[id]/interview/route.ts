@@ -5,10 +5,11 @@ import { Prisma } from "@prisma/client";
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id;
+    const resolvedParams = await params;
+    const id = resolvedParams.id;
     if (!id) {
       return NextResponse.json({ error: "رقم الطلب غير صالح" }, { status: 400 });
     }
