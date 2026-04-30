@@ -565,7 +565,7 @@ export async function PATCH(req: Request) {
       }
 
       if (request.createdStudentId) {
-        return NextResponse.json({ error: "تم تسكين هذا الطلب وإنشاء الطالب مسبقًا" }, { status: 400 });
+        return NextResponse.json({ error: "تم وضع هذا الطالب في حلقة وإنشاؤه مسبقًا" }, { status: 400 });
       }
 
       const circleId = String(body.circleId || "").trim();
@@ -586,7 +586,7 @@ export async function PATCH(req: Request) {
 
       if (!teacherId) {
         return NextResponse.json(
-          { error: "اختر حلقة لها معلم أو اختر معلما قبل تسكين الطالب" },
+          { error: "اختر حلقة لها معلم أو اختر معلما قبل وضع الطالب في الحلقة" },
           { status: 400 }
         );
       }
@@ -624,7 +624,7 @@ export async function PATCH(req: Request) {
             totalAmount: expectedTuitionAmount,
             discountAmount: 0,
             currency: financeCurrency,
-            notes: `تم إنشاء الرسوم تلقائيا بعد تسكين طلب التسجيل. المسارات المطلوبة: ${request.requestedTracks || "-"}`,
+            notes: `تم إنشاء الرسوم تلقائيا بعد وضع الطالب في حلقة. المسارات المطلوبة: ${request.requestedTracks || "-"}`,
           },
         });
 

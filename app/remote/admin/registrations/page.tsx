@@ -654,7 +654,7 @@ export default function RemoteAdminRegistrationsPage() {
                             }))
                           }
                           rows={3}
-                          placeholder="مثال: تم التحقق من الدفع، يرجى اختبار الطالب وتسكينه في الحلقة المناسبة."
+                          placeholder="مثال: تم التحقق من الدفع، يرجى اختبار الطالب ووضعه في الحلقة المناسبة."
                           className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
                         />
                         <p className="mt-1 text-xs leading-6 text-[#1c2d31]/55">
@@ -744,7 +744,7 @@ export default function RemoteAdminRegistrationsPage() {
                   <div className="mt-4 rounded-[1.75rem] border border-amber-200 bg-amber-50/70 p-4">
                     <p className="text-sm font-black text-[#8a6335]">تم قبول الطلب وتحويله للإشراف</p>
                     <p className="mt-2 text-sm leading-7 text-[#1c2d31]/65">
-                      ينتظر الطالب الآن اختيار الحلقة والمعلم من لوحة الإشراف. بعد التسكين سيظهر الطالب في النظام ويمكن إرسال رسالة القبول النهائية لولي الأمر.
+                      ينتظر الطالب الآن اختيار الحلقة والمعلم من لوحة الإشراف. بعد وضعه في الحلقة سيظهر الطالب في النظام ويمكن إرسال رسالة القبول النهائية لولي الأمر.
                     </p>
                     {request.supervisionNote ? (
                       <pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-white p-4 text-xs leading-6 text-[#1c2d31]/70">

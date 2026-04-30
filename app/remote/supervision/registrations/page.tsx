@@ -57,14 +57,14 @@ type RegistrationRequest = {
 
 const STATUS_OPTIONS = [
   { value: "UNDER_REVIEW", label: "قيد المراجعة" },
-  { value: "PLACED", label: "تم التسكين" },
+  { value: "PLACED", label: "تم وضع الطالب في حلقة" },
   { value: "ON_HOLD", label: "معلق" },
 ] as const;
 
 const STATUS_LABELS: Record<RegistrationRequest["supervisionStatus"], string> = {
   PENDING: "بانتظار الإشراف",
   UNDER_REVIEW: "قيد المراجعة",
-  PLACED: "تم التسكين",
+  PLACED: "تم وضع الطالب في حلقة",
   ON_HOLD: "معلق",
 };
 
@@ -130,6 +130,20 @@ export default function RemoteSupervisionRegistrationsPage() {
   const forwardedRequests = useMemo(
     () => requests.filter((request) => request.status === "ACCEPTED" && request.forwardedToSupervisionAt),
     [requests]
+  );
+  const activeRequests = useMemo(
+    () =>
+      forwardedRequests.filter(
+        (request) => request.supervisionStatus !== "PLACED" && !request.createdStudentId
+      ),
+    [forwardedRequests]
+  );
+  const completedRequests = useMemo(
+    () =>
+      forwardedRequests.filter(
+        (request) => request.supervisionStatus === "PLACED" || Boolean(request.createdStudentId)
+      ),
+    [forwardedRequests]
   );
 
   const fetchData = async () => {
@@ -218,15 +232,15 @@ export default function RemoteSupervisionRegistrationsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "تعذر تسكين الطالب");
+        alert(data.error || "تعذر وضع الطالب في الحلقة");
         return;
       }
 
-      alert("تم تسكين الطالب وإنشاؤه في النظام بنجاح");
+      alert("تم وضع الطالب في الحلقة وإنشاؤه في النظام بنجاح");
       await fetchData();
     } catch (error) {
       console.error("PLACE SUPERVISION REGISTRATION ERROR =>", error);
-      alert("حدث خطأ أثناء تسكين الطالب");
+      alert("حدث خطأ أثناء وضع الطالب في الحلقة");
     } finally {
       setPlacingId(null);
     }
@@ -240,7 +254,7 @@ export default function RemoteSupervisionRegistrationsPage() {
             <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">طلبات التسجيل المحولة</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
-              راجع بيانات الطالب كما سجلها ولي الأمر، ثم اختر الحلقة أو المعلم المناسب لتسكينه.
+              راجع بيانات الطالب كما سجلها ولي الأمر، ثم اختر الحلقة أو المعلم المناسب لوضعه في الحلقة.
             </p>
           </div>
           <Link
@@ -255,13 +269,13 @@ export default function RemoteSupervisionRegistrationsPage() {
           <div className="rounded-[2rem] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/60">
             جاري تحميل الحالات المحولة...
           </div>
-        ) : forwardedRequests.length === 0 ? (
+        ) : activeRequests.length === 0 ? (
           <div className="rounded-[2rem] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/60">
-            لا توجد طلبات محولة للإشراف حتى الآن.
+            لا توجد طلبات تنتظر قرار الإشراف حاليًا.
           </div>
         ) : (
           <div className="space-y-4">
-            {forwardedRequests.map((request) => {
+            {activeRequests.map((request) => {
               const selectedCircleData = circles.find((circle) => circle.id === selectedCircle[request.id]);
 
               return (
@@ -435,7 +449,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                             onClick={() => placeRequest(request)}
                             className="w-full rounded-xl bg-[#8a6335] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                           >
-                            {placingId === request.id ? "جارٍ التسكين..." : "تسكين الطالب وإنشاؤه"}
+                            {placingId === request.id ? "جارٍ وضع الطالب..." : "وضع الطالب في حلقة وإنشاؤه"}
                           </button>
                         </div>
                       ) : (
@@ -462,6 +476,42 @@ export default function RemoteSupervisionRegistrationsPage() {
             })}
           </div>
         )}
+
+        {!loading && completedRequests.length > 0 ? (
+          <details className="rounded-[2rem] bg-white/78 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <summary className="cursor-pointer text-lg font-black text-[#1c2d31]">
+              سجل الطلبات المنتهية ({completedRequests.length})
+            </summary>
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+              {completedRequests.map((request) => (
+                <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-4">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h3 className="text-lg font-black text-[#1c2d31]">{request.studentName}</h3>
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
+                      {STATUS_LABELS[request.supervisionStatus]}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]/65">
+                    {request.requestedTracks || "لم يحدد المسار"} - {request.parentWhatsapp}
+                  </p>
+                  {request.supervisionNote ? (
+                    <p className="mt-2 line-clamp-3 text-xs leading-6 text-[#1c2d31]/55">
+                      {request.supervisionNote}
+                    </p>
+                  ) : null}
+                  {request.createdStudentId ? (
+                    <Link
+                      href="/remote/supervision/students"
+                      className="mt-3 inline-flex rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
+                    >
+                      فتح سجل الطلاب
+                    </Link>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          </details>
+        ) : null}
       </div>
     </main>
   );
