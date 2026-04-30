@@ -6,6 +6,7 @@ type WhatsAppTextInput = {
   to: string;
   body: string;
   channel?: WhatsAppChannel;
+  chatId?: string | null;
 };
 
 type WhatsAppDocumentInput = {
@@ -522,7 +523,7 @@ export function teacherVisitReportWhatsAppMessage(input: {
   );
 }
 
-async function sendWhatsAppWebJsText({ to, body, channel }: WhatsAppTextInput) {
+async function sendWhatsAppWebJsText({ to, body, channel, chatId }: WhatsAppTextInput) {
   const apiUrl = resolveWebJsApiUrl(channel);
   const apiToken = resolveWebJsApiToken(channel);
 
@@ -535,6 +536,7 @@ async function sendWhatsAppWebJsText({ to, body, channel }: WhatsAppTextInput) {
     },
     body: JSON.stringify({
       phone: to,
+      chatId,
       message: body,
       channel,
     }),
@@ -666,9 +668,9 @@ export async function sendWhatsAppTemplate({
   return response.json();
 }
 
-export async function sendWhatsAppText({ to, body, channel }: WhatsAppTextInput) {
+export async function sendWhatsAppText({ to, body, channel, chatId }: WhatsAppTextInput) {
   if (isWhatsAppWebJsConfigured(channel)) {
-    const result = await sendWhatsAppWebJsText({ to, body, channel });
+    const result = await sendWhatsAppWebJsText({ to, body, channel, chatId });
     await logOutgoingWhatsApp({ to, body, channel, result });
     return result;
   }

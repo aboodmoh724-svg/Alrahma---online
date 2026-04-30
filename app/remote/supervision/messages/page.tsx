@@ -37,6 +37,7 @@ type IncomingMessage = {
   student: { fullName: string; parentWhatsapp: string | null } | null;
   registrationRequest: { studentName: string; parentWhatsapp: string } | null;
   lastOutgoingMessage: { body: string; category: IncomingMessage["category"]; createdAt: string } | null;
+  canReplyDirectly?: boolean;
 };
 
 type RecipientMode = "SELECTED_PARENTS" | "ALL_PARENTS" | "SELECTED_TEACHERS" | "ALL_TEACHERS";
@@ -221,6 +222,7 @@ export default function RemoteSupervisionMessagesPage() {
   };
 
   const canReplyToIncoming = (item: IncomingMessage) => {
+    if (typeof item.canReplyDirectly === "boolean") return item.canReplyDirectly;
     if (item.student?.parentWhatsapp || item.registrationRequest?.parentWhatsapp) return true;
     return item.fromNumber.replace(/\D/g, "").length <= 13;
   };

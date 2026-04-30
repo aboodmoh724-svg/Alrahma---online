@@ -186,13 +186,14 @@ app.post("/send-message", requireToken, async (req, res) => {
       return;
     }
 
-    const phone = normalizePhone(req.body.phone);
+    const directChatId = String(req.body.chatId || "").trim();
+    const phone = normalizePhone(req.body.phone || req.body.to || req.body.number);
     const message = String(req.body.message || "").trim();
 
-    if (!phone) {
+    if (!phone && !directChatId) {
       res.status(400).json({
         success: false,
-        error: "Invalid or missing phone.",
+        error: "Invalid or missing phone/chatId.",
       });
       return;
     }
@@ -205,12 +206,13 @@ app.post("/send-message", requireToken, async (req, res) => {
       return;
     }
 
-    const chatId = `${phone}@c.us`;
+    const chatId = directChatId || `${phone}@c.us`;
     const result = await client.sendMessage(chatId, message);
 
     res.json({
       success: true,
-      phone,
+      phone: phone || null,
+      chatId,
       messageId: result.id?._serialized || null,
     });
   } catch (error) {

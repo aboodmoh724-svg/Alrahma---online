@@ -191,16 +191,17 @@ app.post("/send-message", requireToken, async (req, res) => {
       return;
     }
 
+    const directChatId = String(req.body.chatId || "").trim();
     const to = normalizePhone(req.body.to || req.body.phone || req.body.number);
     const message = String(req.body.message || req.body.body || "").trim();
     const documentUrl = String(req.body.documentUrl || "").trim();
     const fileName = String(req.body.fileName || "").trim();
     const caption = String(req.body.caption || message || "").trim();
 
-    if (!to) {
+    if (!to && !directChatId) {
       res.status(400).json({
         success: false,
-        error: "Invalid or missing 'to' phone number.",
+        error: "Invalid or missing 'to' phone number/chatId.",
       });
       return;
     }
@@ -213,7 +214,7 @@ app.post("/send-message", requireToken, async (req, res) => {
       return;
     }
 
-    const chatId = `${to}@c.us`;
+    const chatId = directChatId || `${to}@c.us`;
     let result;
 
     if (documentUrl) {
@@ -232,7 +233,8 @@ app.post("/send-message", requireToken, async (req, res) => {
 
     res.json({
       success: true,
-      to,
+      to: to || null,
+      chatId,
       messageId: result.id?._serialized || null,
       sentDocument: Boolean(documentUrl),
       timestamp: new Date().toISOString(),

@@ -112,6 +112,29 @@ function looksLikeReplyablePhone(value: string) {
   return digits.length >= 8 && digits.length <= 13;
 }
 
+function incomingRawChatId(raw: unknown) {
+  if (!raw || typeof raw !== "object") return "";
+
+  const payload = raw as { fromId?: unknown; from?: unknown };
+  const value = String(payload.fromId || payload.from || "").trim();
+
+  return value.includes("@") ? value : "";
+}
+
+function canReplyToIncomingMessage(message: {
+  fromNumber: string;
+  raw: unknown;
+  student?: { parentWhatsapp: string | null } | null;
+  registrationRequest?: { parentWhatsapp: string | null } | null;
+}) {
+  return Boolean(
+    normalizeWhatsAppNumber(message.student?.parentWhatsapp || "") ||
+      normalizeWhatsAppNumber(message.registrationRequest?.parentWhatsapp || "") ||
+      looksLikeReplyablePhone(message.fromNumber) ||
+      incomingRawChatId(message.raw)
+  );
+}
+
 export async function POST(request: Request) {
   try {
     if (!isAuthorizedIncoming(request)) {
@@ -238,7 +261,12 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json({ success: true, messages });
+    const normalizedMessages = messages.map((message) => ({
+      ...message,
+      canReplyDirectly: canReplyToIncomingMessage(message),
+    }));
+
+    return NextResponse.json({ success: true, messages: normalizedMessages });
   } catch (error) {
     console.error("GET WHATSAPP INCOMING ERROR =>", error);
 
@@ -295,8 +323,9 @@ export async function PATCH(request: Request) {
         normalizeWhatsAppNumber(target.student?.parentWhatsapp || "") ||
         normalizeWhatsAppNumber(target.registrationRequest?.parentWhatsapp || "") ||
         (looksLikeReplyablePhone(target.fromNumber) ? target.fromNumber : null);
+      const replyChatId = incomingRawChatId(target.raw);
 
-      if (!replyNumber) {
+      if (!replyNumber && !replyChatId) {
         return NextResponse.json(
           {
             error:
@@ -308,7 +337,8 @@ export async function PATCH(request: Request) {
 
       try {
         await sendWhatsAppText({
-          to: replyNumber,
+          to: replyNumber || target.fromNumber,
+          chatId: replyChatId || undefined,
           body: reply,
           channel: target.channel,
         });
