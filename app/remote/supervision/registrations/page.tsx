@@ -113,6 +113,7 @@ export default function RemoteSupervisionRegistrationsPage() {
   const [interviewDate, setInterviewDate] = useState("");
   const [interviewTime, setInterviewTime] = useState("");
   const [interviewZoomUrl, setInterviewZoomUrl] = useState("");
+  const [interviewMessage, setInterviewMessage] = useState("");
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
 
   const forwardedRequests = useMemo(
@@ -126,13 +127,46 @@ export default function RemoteSupervisionRegistrationsPage() {
       ),
     [forwardedRequests]
   );
-  const completedRequests = useMemo(
-    () =>
-      forwardedRequests.filter(
-        (request) => request.supervisionStatus === "PLACED" || Boolean(request.createdStudentId)
-      ),
-    [forwardedRequests]
+  const selectedInterviewRequest = useMemo(
+    () => forwardedRequests.find((request) => request.id === interviewModalOpen) || null,
+    [forwardedRequests, interviewModalOpen]
   );
+
+  const buildInterviewMessage = (
+    request: RegistrationRequest,
+    nextDate = interviewDate,
+    nextTime = interviewTime,
+    nextZoomUrl = interviewZoomUrl
+  ) => {
+    return [
+      "السلام عليكم ورحمة الله وبركاته",
+      "",
+      "أهلاً بكم في منصة الرحمة لتعليم القرآن الكريم.",
+      `تم تحديد موعد المقابلة الأولى لتحديد مستوى الطالب/ة: *${request.studentName}*`,
+      "",
+      `*التاريخ:* ${nextDate || "-"}`,
+      `*الوقت:* ${nextTime || "-"} بتوقيت مكة المكرمة`,
+      nextZoomUrl ? `*رابط المقابلة:* ${nextZoomUrl}` : "",
+      "",
+      "نرجو الدخول في الموعد المحدد، وإذا كان الموعد غير مناسب لكم فنرجو الرد على هذه الرسالة عبر الواتساب.",
+      "",
+      "إدارة منصة الرحمة لتعليم القرآن الكريم",
+    ]
+      .filter((line, index, lines) => line || lines[index - 1])
+      .join("\n");
+  };
+
+  const openInterviewModal = (request: RegistrationRequest) => {
+    const currentDate = request.interviewDate ? request.interviewDate.slice(0, 10) : "";
+    const currentTime = request.interviewDate ? request.interviewDate.slice(11, 16) : "";
+    const currentLink = request.interviewLink || "";
+
+    setInterviewDate(currentDate);
+    setInterviewTime(currentTime);
+    setInterviewZoomUrl(currentLink);
+    setInterviewMessage(buildInterviewMessage(request, currentDate, currentTime, currentLink));
+    setInterviewModalOpen(request.id);
+  };
 
   const fetchData = async () => {
     try {
@@ -270,7 +304,12 @@ export default function RemoteSupervisionRegistrationsPage() {
       const response = await fetch(`/api/supervision/registrations/${requestId}/interview`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ interviewDate, interviewTime, zoomUrl: interviewZoomUrl }),
+        body: JSON.stringify({
+          interviewDate,
+          interviewTime,
+          zoomUrl: interviewZoomUrl,
+          message: interviewMessage,
+        }),
       });
       const data = await response.json();
 
@@ -284,6 +323,7 @@ export default function RemoteSupervisionRegistrationsPage() {
       setInterviewDate("");
       setInterviewTime("");
       setInterviewZoomUrl("");
+      setInterviewMessage("");
       await fetchData();
     } catch (error) {
       console.error("SCHEDULE INTERVIEW ERROR =>", error);
@@ -494,7 +534,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setInterviewModalOpen(request.id)}
+                        onClick={() => openInterviewModal(request)}
                         className="w-full rounded-xl border-2 border-[#1f6358] bg-transparent px-4 py-3 text-sm font-black text-[#1f6358] transition hover:bg-[#1f6358] hover:text-white"
                       >
                         تحديد موعد مقابلة
@@ -507,56 +547,73 @@ export default function RemoteSupervisionRegistrationsPage() {
           </div>
         )}
 
-        {!loading && completedRequests.length > 0 ? (
+        {!loading ? (
           <details className="rounded-[2rem] bg-white/78 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
             <summary className="cursor-pointer text-lg font-black text-[#1c2d31]">
-              سجل الطلبات المنتهية ({completedRequests.length})
+              سجل الطلبات المحولة من الإدارة ({forwardedRequests.length})
             </summary>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
-              {completedRequests.map((request) => (
-                <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-black text-[#1c2d31]">{request.studentName}</h3>
-                    <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
-                      {STATUS_LABELS[request.supervisionStatus]}
-                    </span>
-                  </div>
-                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]/65">
-                    {request.requestedTracks || "لم يحدد المسار"} - {request.parentWhatsapp}
-                  </p>
-                  {request.supervisionNote ? (
-                    <p className="mt-2 line-clamp-3 text-xs leading-6 text-[#1c2d31]/55">
-                      {request.supervisionNote}
-                    </p>
-                  ) : null}
-                  {request.createdStudentId ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_ACCEPTANCE_MESSAGE")}
-                        disabled={sendingAcceptanceId === request.id}
-                        className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
-                      >
-                        {sendingAcceptanceId === request.id ? "جارٍ إرسال القبول..." : "إرسال رسالة القبول"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE")}
-                        disabled={sendingDetailsId === request.id}
-                        className="rounded-xl bg-[#8a6335] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
-                      >
-                        {sendingDetailsId === request.id ? "جارٍ إرسال التفاصيل..." : "إرسال تفاصيل الحلقة"}
-                      </button>
-                      <Link
-                        href="/remote/supervision/students"
-                        className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
-                      >
-                        فتح سجل الطلاب
-                      </Link>
-                    </div>
-                  ) : null}
+              {forwardedRequests.length === 0 ? (
+                <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-bold text-[#1c2d31]/60">
+                  لا توجد طلبات محولة من الإدارة حتى الآن.
                 </div>
-              ))}
+              ) : (
+                forwardedRequests.map((request) => (
+                  <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-lg font-black text-[#1c2d31]">{request.studentName}</h3>
+                      <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
+                        {STATUS_LABELS[request.supervisionStatus]}
+                      </span>
+                      {request.createdStudentId ? (
+                        <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                          تم إنشاء الطالب
+                        </span>
+                      ) : null}
+                    </div>
+                    <p className="mt-2 text-sm leading-7 text-[#1c2d31]/65">
+                      {request.requestedTracks || "لم يحدد المسار"} - {request.parentWhatsapp}
+                    </p>
+                    {request.interviewDate ? (
+                      <p className="mt-1 text-xs font-bold text-[#1f6358]">
+                        موعد المقابلة: {formatDate(request.interviewDate)}
+                        {request.interviewLink ? ` - ${request.interviewLink}` : ""}
+                      </p>
+                    ) : null}
+                    {request.supervisionNote ? (
+                      <p className="mt-2 line-clamp-3 text-xs leading-6 text-[#1c2d31]/55">
+                        {request.supervisionNote}
+                      </p>
+                    ) : null}
+                    {request.createdStudentId ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_ACCEPTANCE_MESSAGE")}
+                          disabled={sendingAcceptanceId === request.id}
+                          className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          {sendingAcceptanceId === request.id ? "جارٍ إرسال القبول..." : "إرسال رسالة القبول"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE")}
+                          disabled={sendingDetailsId === request.id}
+                          className="rounded-xl bg-[#8a6335] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          {sendingDetailsId === request.id ? "جارٍ إرسال التفاصيل..." : "إرسال تفاصيل الحلقة"}
+                        </button>
+                        <Link
+                          href="/remote/supervision/students"
+                          className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
+                        >
+                          فتح سجل الطلاب
+                        </Link>
+                      </div>
+                    ) : null}
+                  </div>
+                ))
+              )}
             </div>
           </details>
         ) : null}
@@ -564,7 +621,7 @@ export default function RemoteSupervisionRegistrationsPage() {
 
       {interviewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c2d31]/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-[2rem] bg-[#fffaf2] p-8 shadow-xl" dir="rtl">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-[#fffaf2] p-8 shadow-xl" dir="rtl">
             <h2 className="mb-6 text-2xl font-black text-[#1c2d31]">تحديد موعد المقابلة</h2>
             <div className="space-y-4">
               <div>
@@ -594,6 +651,34 @@ export default function RemoteSupervisionRegistrationsPage() {
                   placeholder="https://zoom.us/j/..."
                   className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-left outline-none"
                   dir="ltr"
+                />
+              </div>
+              <div>
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <label className="text-sm font-bold text-[#1c2d31]/80">نص رسالة الواتساب</label>
+                  {selectedInterviewRequest ? (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setInterviewMessage(
+                          buildInterviewMessage(
+                            selectedInterviewRequest,
+                            interviewDate,
+                            interviewTime,
+                            interviewZoomUrl
+                          )
+                        )
+                      }
+                      className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-black text-[#1c2d31]"
+                    >
+                      تحديث النص من البيانات
+                    </button>
+                  ) : null}
+                </div>
+                <textarea
+                  value={interviewMessage}
+                  onChange={(e) => setInterviewMessage(e.target.value)}
+                  className="min-h-48 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
                 />
               </div>
               <div className="mt-8 flex gap-3">
