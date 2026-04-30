@@ -80,6 +80,106 @@ function getExpectedTuitionAmount(requestedTracks: string | null | undefined, ci
   return firstPricedTrack ? TRACK_TUITION[firstPricedTrack] : DEFAULT_TUITION_AMOUNT;
 }
 
+function buildRegistrationSupervisionNote(request: {
+  studentName: string;
+  parentWhatsapp: string;
+  parentEmail: string | null;
+  preferredPeriod: string | null;
+  requestedTracks: string | null;
+  readingLevel: string | null;
+  tajweedLevel: string | null;
+  memorizedAmount: string | null;
+  previousStudy: string | null;
+  hasLearningIssues: boolean;
+  learningIssuesNote: string | null;
+  hasDevice: boolean;
+  notes: string | null;
+}, adminNote: string) {
+  const lines = [
+    `بيانات التسجيل المحولة للإشراف:`,
+    `الطالب: ${request.studentName}`,
+    `واتساب ولي الأمر: ${request.parentWhatsapp}`,
+    `البريد: ${request.parentEmail || "-"}`,
+    `الفترة المفضلة: ${request.preferredPeriod || "-"}`,
+    `المسارات المطلوبة: ${request.requestedTracks || "-"}`,
+    `مستوى القراءة: ${request.readingLevel || "-"}`,
+    `مستوى التجويد: ${request.tajweedLevel || "-"}`,
+    `المحفوظ السابق: ${request.memorizedAmount || "-"}`,
+    `الدراسة السابقة: ${request.previousStudy || "-"}`,
+    `مشكلات تعلم: ${request.hasLearningIssues ? "نعم" : "لا"}`,
+    `تفصيل مشكلات التعلم: ${request.learningIssuesNote || "-"}`,
+    `توفر الجهاز: ${request.hasDevice ? "نعم" : "لا"}`,
+    `ملاحظات التسجيل: ${request.notes || "-"}`,
+  ];
+
+  if (adminNote) {
+    lines.push(`ملاحظة الإدارة: ${adminNote}`);
+  }
+
+  return lines.join("\n");
+}
+
+function registrationStudentDetailData(request: {
+  id: string;
+  studentName: string;
+  parentEmail: string | null;
+  parentWhatsapp: string;
+  birthDate: Date | null;
+  grade: string | null;
+  livingWith: string | null;
+  nationality: string | null;
+  country: string | null;
+  fatherAlive: boolean | null;
+  motherAlive: boolean | null;
+  fatherEducation: string | null;
+  motherEducation: string | null;
+  idImageUrl: string | null;
+  readingLevel: string | null;
+  tajweedLevel: string | null;
+  memorizedAmount: string | null;
+  previousStudy: string | null;
+  preferredPeriod: string | null;
+  requestedTracks: string | null;
+  hasLearningIssues: boolean;
+  learningIssuesNote: string | null;
+  hasDevice: boolean;
+  notes: string | null;
+}) {
+  return {
+    source: "REGISTRATION_REQUEST",
+    matchedName: request.studentName,
+    idImageUrl: request.idImageUrl,
+    birthDate: request.birthDate ? request.birthDate.toISOString().slice(0, 10) : null,
+    nationality: request.nationality,
+    generalLevel: [request.readingLevel, request.tajweedLevel, request.memorizedAmount]
+      .filter(Boolean)
+      .join(" | ") || null,
+    livingWith: request.livingWith,
+    grade: request.grade,
+    guardianPhone: request.parentWhatsapp,
+    fatherAlive: request.fatherAlive === null ? null : request.fatherAlive ? "نعم" : "لا",
+    motherAlive: request.motherAlive === null ? null : request.motherAlive ? "نعم" : "لا",
+    fatherEducation: request.fatherEducation,
+    motherEducation: request.motherEducation,
+    homeLocation: request.country,
+    notes: request.notes || request.learningIssuesNote || null,
+    rawData: {
+      registrationRequestId: request.id,
+      parentEmail: request.parentEmail,
+      previousStudy: request.previousStudy,
+      preferredPeriod: request.preferredPeriod,
+      requestedTracks: request.requestedTracks,
+      readingLevel: request.readingLevel,
+      tajweedLevel: request.tajweedLevel,
+      memorizedAmount: request.memorizedAmount,
+      hasLearningIssues: request.hasLearningIssues,
+      learningIssuesNote: request.learningIssuesNote,
+      hasDevice: request.hasDevice,
+      notes: request.notes,
+    },
+  };
+}
+
 function isAllowedFileType(file: File, allowedTypes: string[]) {
   return allowedTypes.some((type) =>
     type.endsWith("/") ? file.type.startsWith(type) : file.type === type
@@ -412,24 +512,146 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true });
     }
 
-    if (action === "FORWARD_TO_SUPERVISION") {
-      if (request.status !== "ACCEPTED" || !request.createdStudentId) {
+    if (action === "ACCEPT_AND_FORWARD_TO_SUPERVISION") {
+      if (request.status === "REJECTED") {
+        return NextResponse.json({ error: "لا يمكن تحويل طلب مرفوض إلى الإشراف" }, { status: 400 });
+      }
+
+      if (request.createdStudentId) {
         return NextResponse.json(
-          { error: "يجب قبول الطلب وإنشاء الطالب أولًا قبل تحويله إلى الإشراف" },
+          { error: "تم إنشاء الطالب مسبقًا. استخدم تحويل الطلب إلى الإشراف من بطاقة الطالب المقبول." },
           { status: 400 }
         );
       }
 
+      const adminNote = String(body.supervisionNote || "").trim();
       const updatedRequest = await prisma.registrationRequest.update({
         where: { id: request.id },
         data: {
-          forwardedToSupervisionAt: new Date(),
+          status: "ACCEPTED",
+          forwardedToSupervisionAt: request.forwardedToSupervisionAt || new Date(),
           supervisionStatus: "UNDER_REVIEW",
-          supervisionNote: String(body.supervisionNote || "").trim() || null,
+          supervisionNote: buildRegistrationSupervisionNote(request, adminNote),
         },
       });
 
       return NextResponse.json({ success: true, request: updatedRequest });
+    }
+
+    if (action === "FORWARD_TO_SUPERVISION") {
+      if (request.status !== "ACCEPTED") {
+        return NextResponse.json(
+          { error: "يجب قبول الطلب قبل تحويله إلى الإشراف" },
+          { status: 400 }
+        );
+      }
+
+      const adminNote = String(body.supervisionNote || "").trim();
+      const updatedRequest = await prisma.registrationRequest.update({
+        where: { id: request.id },
+        data: {
+          forwardedToSupervisionAt: request.forwardedToSupervisionAt || new Date(),
+          supervisionStatus: "UNDER_REVIEW",
+          supervisionNote: buildRegistrationSupervisionNote(request, adminNote),
+        },
+      });
+
+      return NextResponse.json({ success: true, request: updatedRequest });
+    }
+
+    if (action === "PLACE_BY_SUPERVISION") {
+      if (request.status !== "ACCEPTED" || !request.forwardedToSupervisionAt) {
+        return NextResponse.json({ error: "الطلب غير محول إلى الإشراف بعد" }, { status: 400 });
+      }
+
+      if (request.createdStudentId) {
+        return NextResponse.json({ error: "تم تسكين هذا الطلب وإنشاء الطالب مسبقًا" }, { status: 400 });
+      }
+
+      const circleId = String(body.circleId || "").trim();
+      const teacherIdFromBody = String(body.teacherId || "").trim();
+      const hasFinanceAmountOverride =
+        body.financeAmount !== undefined && body.financeAmount !== null && String(body.financeAmount).trim() !== "";
+      const financeAmountFromBody = parseAmount(body.financeAmount);
+      const financeCurrency = String(body.financeCurrency || "USD").trim() || "USD";
+
+      const circle = circleId
+        ? await prisma.circle.findUnique({
+            where: { id: circleId },
+            select: { id: true, teacherId: true, studyMode: true, track: true },
+          })
+        : null;
+
+      const teacherId = circle?.teacherId || teacherIdFromBody;
+
+      if (!teacherId) {
+        return NextResponse.json(
+          { error: "اختر حلقة لها معلم أو اختر معلما قبل تسكين الطالب" },
+          { status: 400 }
+        );
+      }
+
+      const expectedTuitionAmount =
+        hasFinanceAmountOverride
+          ? financeAmountFromBody
+          : getExpectedTuitionAmount(request.requestedTracks, circle?.track);
+
+      const studentCode = await generateStudentCode(circle?.studyMode || "REMOTE");
+      const { student, updatedRequest } = await prisma.$transaction(async (tx) => {
+        const createdStudent = await tx.student.create({
+          data: {
+            studentCode,
+            fullName: request.studentName,
+            parentWhatsapp: request.parentWhatsapp,
+            parentEmail: request.parentEmail,
+            teacherId,
+            circleId: circle?.id || null,
+            studyMode: circle?.studyMode || "REMOTE",
+            isActive: true,
+          },
+        });
+
+        await tx.studentDetail.create({
+          data: {
+            studentId: createdStudent.id,
+            ...registrationStudentDetailData(request),
+          },
+        });
+
+        await tx.studentFinanceAccount.create({
+          data: {
+            studentId: createdStudent.id,
+            totalAmount: expectedTuitionAmount,
+            discountAmount: 0,
+            currency: financeCurrency,
+            notes: `تم إنشاء الرسوم تلقائيا بعد تسكين طلب التسجيل. المسارات المطلوبة: ${request.requestedTracks || "-"}`,
+          },
+        });
+
+        const placedRequest = await tx.registrationRequest.update({
+          where: { id: request.id },
+          data: {
+            createdStudentId: createdStudent.id,
+            supervisionStatus: "PLACED",
+            supervisionNote: String(body.supervisionNote || request.supervisionNote || "").trim() || request.supervisionNote,
+          },
+        });
+
+        return {
+          student: createdStudent,
+          updatedRequest: placedRequest,
+        };
+      });
+
+      return NextResponse.json({
+        success: true,
+        request: updatedRequest,
+        student,
+        finance: {
+          totalAmount: expectedTuitionAmount,
+          currency: financeCurrency,
+        },
+      });
     }
 
     if (action === "UPDATE_SUPERVISION_STATUS") {
@@ -502,6 +724,13 @@ export async function PATCH(req: Request) {
           circleId: circle?.id || null,
           studyMode: circle?.studyMode || "REMOTE",
           isActive: true,
+        },
+      });
+
+      await tx.studentDetail.create({
+        data: {
+          studentId: createdStudent.id,
+          ...registrationStudentDetailData(request),
         },
       });
 

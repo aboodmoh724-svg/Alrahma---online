@@ -249,14 +249,14 @@ export function remoteDailyReportWhatsAppMessage(input: {
 
 function memorizationStatusLabel(value: boolean | null | undefined) {
   if (value === true) {
-    return "*Ø­Ø§ÙØ¸*";
+    return "*حافظ*";
   }
 
   if (value === false) {
-    return "*ØºÙŠØ± Ø­Ø§ÙØ¸*";
+    return "*غير حافظ*";
   }
 
-  return "ØºÙŠØ± Ù…Ø³Ø¬Ù„";
+  return "غير مسجل";
 }
 
 export function remoteReportMemorizationSummary(input: {
@@ -265,10 +265,10 @@ export function remoteReportMemorizationSummary(input: {
   reviewMemorized?: boolean | null;
 }) {
   return (
-    `*Ù†ØªÙŠØ¬Ø© Ø§Ù„ØªÙ‚ÙŠÙŠÙ…:*\n` +
-    `- *Ø§Ù„Ø¯Ø±Ø³ Ø§Ù„Ø¬Ø¯ÙŠØ¯:* ${memorizationStatusLabel(input.lessonMemorized)}\n` +
-    `- *Ø¢Ø®Ø± Ø®Ù…Ø³ ØµÙØ­Ø§Øª:* ${memorizationStatusLabel(input.lastFiveMemorized)}\n` +
-    `- *Ø§Ù„Ù…Ø±Ø§Ø¬Ø¹Ø©:* ${memorizationStatusLabel(input.reviewMemorized)}`
+    `*نتيجة التقييم:*\n` +
+    `- *الدرس الجديد:* ${memorizationStatusLabel(input.lessonMemorized)}\n` +
+    `- *آخر خمس صفحات:* ${memorizationStatusLabel(input.lastFiveMemorized)}\n` +
+    `- *المراجعة:* ${memorizationStatusLabel(input.reviewMemorized)}`
   );
 }
 
@@ -280,14 +280,14 @@ export function registrationAcceptedWhatsAppMessage(input: {
   scheduleDetails?: string | null;
 }) {
   return (
-    `Ø§Ù„Ø³Ù„Ø§Ù… Ø¹Ù„ÙŠÙƒÙ… ÙˆØ±Ø­Ù…Ø© Ø§Ù„Ù„Ù‡ ÙˆØ¨Ø±ÙƒØ§ØªÙ‡\n\n` +
-    `Ù†Ø­ÙŠØ·ÙƒÙ… Ø¹Ù„Ù…Ù‹Ø§ Ø¨Ø£Ù†Ù‡ ØªÙ… Ù‚Ø¨ÙˆÙ„ Ø§Ù„Ø·Ø§Ù„Ø¨ *${input.studentName}* ÙÙŠ Ù…Ù†ØµØ© Ø§Ù„Ø±Ø­Ù…Ø©.\n\n` +
-    `*Ø§Ù„Ø­Ù„Ù‚Ø©:* ${input.circleName?.trim() || "-"}\n` +
-    `*Ø§Ù„Ù…Ø¹Ù„Ù…:* ${input.teacherName?.trim() || "-"}\n` +
-    `*ØªÙØ§ØµÙŠÙ„ Ø§Ù„Ù…ÙˆØ¹Ø¯:* ${input.scheduleDetails?.trim() || "-"}\n` +
-    `*Ø±Ø§Ø¨Ø· Ø§Ù„Ø­Ù„Ù‚Ø©:* ${input.zoomUrl?.trim() || "-"}\n\n` +
-    `Ù†Ø³Ø£Ù„ Ø§Ù„Ù„Ù‡ Ù„Ù‡ Ø§Ù„ØªÙˆÙÙŠÙ‚ ÙˆØ§Ù„Ø¨Ø±ÙƒØ© ÙÙŠ Ø±Ø­Ù„ØªÙ‡ Ù…Ø¹ ÙƒØªØ§Ø¨ Ø§Ù„Ù„Ù‡.\n\n` +
-    `Ø¥Ø¯Ø§Ø±Ø© Ù…Ù†ØµØ© Ø§Ù„Ø±Ø­Ù…Ø© Ù„ØªØ¹Ù„ÙŠÙ… Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…`
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نحيطكم علمًا بأنه تم قبول الطالب *${input.studentName}* في منصة الرحمة.\n\n` +
+    `*الحلقة:* ${input.circleName?.trim() || "-"}\n` +
+    `*المعلم:* ${input.teacherName?.trim() || "-"}\n` +
+    `*تفاصيل الموعد:* ${input.scheduleDetails?.trim() || "-"}\n` +
+    `*رابط الحلقة:* ${input.zoomUrl?.trim() || "-"}\n\n` +
+    `نسأل الله له التوفيق والبركة في رحلته مع كتاب الله.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
 }
 
@@ -298,12 +298,12 @@ export function fullPaymentReceivedWhatsAppMessage(input: {
   circleName?: string | null;
 }) {
   return (
-    `Ø§Ù„Ø³Ù„Ø§Ù… Ø¹Ù„ÙŠÙƒÙ… ÙˆØ±Ø­Ù…Ø© Ø§Ù„Ù„Ù‡ ÙˆØ¨Ø±ÙƒØ§ØªÙ‡\n\n` +
-    `ØªÙ… Ø§Ø³ØªÙ„Ø§Ù… Ø§Ù„Ø±Ø³ÙˆÙ… ÙƒØ§Ù…Ù„Ø© Ù„Ù„Ø·Ø§Ù„Ø¨ *${input.studentName}* Ø¨Ù†Ø¬Ø§Ø­.\n\n` +
-    `*Ø§Ù„Ù…Ø¨Ù„Øº Ø§Ù„Ù…Ø³Ø¯Ø¯:* ${input.amount} ${input.currency}\n` +
-    `*Ø§Ù„Ø­Ù„Ù‚Ø©:* ${input.circleName?.trim() || "-"}\n\n` +
-    `Ø¬Ø²Ø§ÙƒÙ… Ø§Ù„Ù„Ù‡ Ø®ÙŠØ±Ù‹Ø§ ÙˆØ¨Ø§Ø±Ùƒ Ø§Ù„Ù„Ù‡ ÙÙŠÙƒÙ….\n\n` +
-    `Ø¥Ø¯Ø§Ø±Ø© Ù…Ù†ØµØ© Ø§Ù„Ø±Ø­Ù…Ø© Ù„ØªØ¹Ù„ÙŠÙ… Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…`
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `تم استلام الرسوم كاملة للطالب *${input.studentName}* بنجاح.\n\n` +
+    `*المبلغ المسدد:* ${input.amount} ${input.currency}\n` +
+    `*الحلقة:* ${input.circleName?.trim() || "-"}\n\n` +
+    `جزاكم الله خيرًا وبارك الله فيكم.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
   );
 }
 

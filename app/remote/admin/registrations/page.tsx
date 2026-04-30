@@ -134,7 +134,10 @@ export default function RemoteAdminRegistrationsPage() {
     });
   }, []);
 
-  const updateRequest = async (requestId: string, action: "ACCEPT" | "REJECT") => {
+  const updateRequest = async (
+    requestId: string,
+    action: "ACCEPT" | "REJECT" | "ACCEPT_AND_FORWARD_TO_SUPERVISION"
+  ) => {
     const response = await fetch("/api/registration-requests", {
       method: "PATCH",
       headers: {
@@ -147,6 +150,7 @@ export default function RemoteAdminRegistrationsPage() {
         teacherId: selectedTeacher[requestId] || "",
         financeAmount: financeAmount[requestId] || "",
         financeCurrency: "USD",
+        supervisionNote: supervisionNotesByRequestId[requestId] || "",
       }),
     });
     const data = await response.json();
@@ -555,8 +559,9 @@ export default function RemoteAdminRegistrationsPage() {
                 </div>
 
                 {request.status === "PENDING" ? (
-                  <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_0.8fr_auto_auto] md:items-end">
-                    <div>
+                  <div className="mt-4 space-y-3">
+                    <div className="grid gap-3 md:grid-cols-[1fr_1fr_0.8fr_auto_auto] md:items-end">
+                      <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">الحلقة</label>
                       <select
                         value={selectedCircle[request.id] || ""}
@@ -579,8 +584,8 @@ export default function RemoteAdminRegistrationsPage() {
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div>
+                      </div>
+                      <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">أو اختر معلما</label>
                       <select
                         value={selectedTeacher[request.id] || ""}
@@ -594,8 +599,8 @@ export default function RemoteAdminRegistrationsPage() {
                           </option>
                         ))}
                       </select>
-                    </div>
-                    <div>
+                      </div>
+                      <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">المبلغ المطلوب</label>
                       <div className="flex overflow-hidden rounded-2xl border border-[#d9c8ad] bg-white">
                         <input
@@ -619,21 +624,51 @@ export default function RemoteAdminRegistrationsPage() {
                         <span className="bg-[#fffaf2] px-3 py-3 text-sm font-black text-[#8a6335]">USD</span>
                       </div>
                       <p className="mt-1 text-xs text-[#1c2d31]/55">يمكن تعديله قبل القبول.</p>
-                    </div>
-                    <button
+                      </div>
+                      <button
                       type="button"
                       onClick={() => updateRequest(request.id, "ACCEPT")}
                       className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white"
-                    >
-                      قبول
-                    </button>
-                    <button
+                      >
+                        قبول مباشر
+                      </button>
+                      <button
                       type="button"
                       onClick={() => updateRequest(request.id, "REJECT")}
                       className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700"
-                    >
-                      رفض
-                    </button>
+                      >
+                        رفض
+                      </button>
+                    </div>
+                    <div className="grid gap-3 rounded-[1.5rem] border border-[#d9c8ad] bg-[#fffaf2] p-4 md:grid-cols-[1fr_auto] md:items-end">
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          ملاحظة للإشراف عند التحويل
+                        </label>
+                        <textarea
+                          value={supervisionNotesByRequestId[request.id] || ""}
+                          onChange={(event) =>
+                            setSupervisionNotesByRequestId((prev) => ({
+                              ...prev,
+                              [request.id]: event.target.value,
+                            }))
+                          }
+                          rows={3}
+                          placeholder="مثال: تم التحقق من الدفع، يرجى اختبار الطالب وتسكينه في الحلقة المناسبة."
+                          className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                        />
+                        <p className="mt-1 text-xs leading-6 text-[#1c2d31]/55">
+                          هذا الخيار يقبل الطلب إداريًا ويرسله للإشراف مع نسخة من بيانات التسجيل، ثم يختار المشرف الحلقة والمعلم.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => updateRequest(request.id, "ACCEPT_AND_FORWARD_TO_SUPERVISION")}
+                        className="rounded-2xl bg-[#8a6335] px-5 py-3 text-sm font-black text-white"
+                      >
+                        قبول وتحويل للإشراف
+                      </button>
+                    </div>
                   </div>
                 ) : null}
 
@@ -702,6 +737,20 @@ export default function RemoteAdminRegistrationsPage() {
                         </button>
                       </div>
                     </div>
+                  </div>
+                ) : null}
+
+                {request.status === "ACCEPTED" && !request.createdStudentId ? (
+                  <div className="mt-4 rounded-[1.75rem] border border-amber-200 bg-amber-50/70 p-4">
+                    <p className="text-sm font-black text-[#8a6335]">تم قبول الطلب وتحويله للإشراف</p>
+                    <p className="mt-2 text-sm leading-7 text-[#1c2d31]/65">
+                      ينتظر الطالب الآن اختيار الحلقة والمعلم من لوحة الإشراف. بعد التسكين سيظهر الطالب في النظام ويمكن إرسال رسالة القبول النهائية لولي الأمر.
+                    </p>
+                    {request.supervisionNote ? (
+                      <pre className="mt-3 whitespace-pre-wrap rounded-2xl bg-white p-4 text-xs leading-6 text-[#1c2d31]/70">
+                        {request.supervisionNote}
+                      </pre>
+                    ) : null}
                   </div>
                 ) : null}
               </article>
