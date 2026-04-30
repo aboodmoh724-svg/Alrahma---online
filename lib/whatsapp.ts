@@ -23,6 +23,79 @@ type WhatsAppTemplateInput = {
   bodyVariables: string[];
 };
 
+function inferWhatsAppCategory(body: string) {
+  const text = body.replace(/\s+/g, " ").trim();
+
+  if (/مقابلة|تحديد مستوى|موعد/.test(text)) return "INTERVIEW_RESCHEDULE";
+  if (/غياب|غائب|عذر/.test(text)) return "ABSENCE_EXCUSE";
+  if (/تعثر|متابعة إضافية|مراجعة/.test(text)) return "STRUGGLE_REPLY";
+  if (/شكوى|مشكلة|غير راض|تقصير|تأخير/.test(text)) return "COMPLAINT";
+  if (/استفسار|سؤال|كيف|متى|أين/.test(text)) return "INQUIRY";
+  if (/شكرا|جزاكم|بارك/.test(text)) return "THANKS";
+  if (/موافق|تم|مناسب|حاضر|بإذن الله/.test(text)) return "CONFIRMATION";
+
+  return "GENERAL";
+}
+
+async function inferWhatsAppEntities(toNumber: string, channel?: WhatsAppChannel) {
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const studyMode = channel === "ONSITE" ? "ONSITE" : "REMOTE";
+    const [students, requests] = await Promise.all([
+      prisma.student.findMany({
+        where: { studyMode, parentWhatsapp: { not: null } },
+        select: { id: true, parentWhatsapp: true },
+      }),
+      prisma.registrationRequest.findMany({
+        where: { parentWhatsapp: { not: "" } },
+        orderBy: { createdAt: "desc" },
+        take: 200,
+        select: { id: true, parentWhatsapp: true, createdStudentId: true },
+      }),
+    ]);
+    const student = students.find((item) => normalizeWhatsAppNumber(item.parentWhatsapp || "") === toNumber);
+    const request = requests.find((item) => normalizeWhatsAppNumber(item.parentWhatsapp || "") === toNumber);
+
+    return {
+      studentId: student?.id || null,
+      registrationRequestId: request && (!request.createdStudentId || !student) ? request.id : null,
+    };
+  } catch (error) {
+    console.error("WHATSAPP ENTITY INFERENCE ERROR =>", error);
+    return { studentId: null, registrationRequestId: null };
+  }
+}
+
+async function logOutgoingWhatsApp(input: {
+  to: string;
+  body: string;
+  channel?: WhatsAppChannel;
+  result: unknown;
+}) {
+  try {
+    const { prisma } = await import("@/lib/prisma");
+    const toNumber = normalizeWhatsAppNumber(input.to);
+    if (!toNumber) return;
+
+    const result = input.result as { messageId?: string | null; id?: { _serialized?: string } } | null;
+    const linked = await inferWhatsAppEntities(toNumber, input.channel);
+
+    await prisma.whatsAppOutgoingMessage.create({
+      data: {
+        toNumber,
+        body: input.body,
+        channel: input.channel === "ONSITE" ? "ONSITE" : "REMOTE",
+        category: inferWhatsAppCategory(input.body),
+        messageId: result?.messageId || result?.id?._serialized || null,
+        studentId: linked.studentId,
+        registrationRequestId: linked.registrationRequestId,
+      },
+    });
+  } catch (error) {
+    console.error("WHATSAPP OUTGOING LOG ERROR =>", error);
+  }
+}
+
 const DEFAULT_WEBJS_API_URL = "http://185.182.8.94/send-message";
 
 function resolveWebJsApiUrl(channel?: WhatsAppChannel) {
@@ -595,7 +668,9 @@ export async function sendWhatsAppTemplate({
 
 export async function sendWhatsAppText({ to, body, channel }: WhatsAppTextInput) {
   if (isWhatsAppWebJsConfigured(channel)) {
-    return sendWhatsAppWebJsText({ to, body, channel });
+    const result = await sendWhatsAppWebJsText({ to, body, channel });
+    await logOutgoingWhatsApp({ to, body, channel, result });
+    return result;
   }
 
   const token = process.env.WHATSAPP_TOKEN;
@@ -639,7 +714,9 @@ export async function sendWhatsAppText({ to, body, channel }: WhatsAppTextInput)
     throw new Error(parsedMessage);
   }
 
-  return response.json();
+  const result = await response.json();
+  await logOutgoingWhatsApp({ to, body, channel, result });
+  return result;
 }
 
 export async function sendWhatsAppDocument({

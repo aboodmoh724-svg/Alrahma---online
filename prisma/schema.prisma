@@ -61,6 +61,7 @@ model Student {
   supervisionTasks SupervisionTask[]
   followUpActions StudentFollowUpAction[]
   incomingWhatsAppMessages WhatsAppIncomingMessage[]
+  outgoingWhatsAppMessages WhatsAppOutgoingMessage[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
@@ -396,6 +397,7 @@ model RegistrationRequest {
   interviewLevel     String?
   interviewDecision  String?
   incomingWhatsAppMessages WhatsAppIncomingMessage[]
+  outgoingWhatsAppMessages WhatsAppOutgoingMessage[]
 }
 
 model WhatsAppIncomingMessage {
@@ -407,15 +409,39 @@ model WhatsAppIncomingMessage {
   category              WhatsAppIncomingCategory @default(GENERAL)
   isRead                Boolean                  @default(false)
   raw                   Json?
+  followUpStatus        WhatsAppFollowUpStatus   @default(NEW)
+  supervisorNote        String?
+  lastOutgoingMessageId String?
   studentId             String?
   registrationRequestId String?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
   student               Student?                 @relation(fields: [studentId], references: [id], onDelete: SetNull)
   registrationRequest   RegistrationRequest?     @relation(fields: [registrationRequestId], references: [id], onDelete: SetNull)
+  lastOutgoingMessage   WhatsAppOutgoingMessage?  @relation(fields: [lastOutgoingMessageId], references: [id], onDelete: SetNull)
 
   @@index([channel, isRead, createdAt])
   @@index([fromNumber])
+  @@index([studentId])
+  @@index([registrationRequestId])
+  @@index([lastOutgoingMessageId])
+}
+
+model WhatsAppOutgoingMessage {
+  id                    String                   @id @default(cuid())
+  messageId             String?
+  channel               StudyMode
+  toNumber              String
+  body                  String
+  category              WhatsAppIncomingCategory @default(GENERAL)
+  studentId             String?
+  registrationRequestId String?
+  createdAt             DateTime                 @default(now())
+  student               Student?                 @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  registrationRequest   RegistrationRequest?     @relation(fields: [registrationRequestId], references: [id], onDelete: SetNull)
+  incomingReplies       WhatsAppIncomingMessage[]
+
+  @@index([channel, toNumber, createdAt])
   @@index([studentId])
   @@index([registrationRequestId])
 }
@@ -512,6 +538,19 @@ enum WhatsAppIncomingCategory {
   GENERAL
   INTERVIEW_RESCHEDULE
   ABSENCE_EXCUSE
+  COMPLAINT
+  INQUIRY
+  THANKS
+  CONFIRMATION
+  STRUGGLE_REPLY
+}
+
+enum WhatsAppFollowUpStatus {
+  NEW
+  IN_REVIEW
+  REPLIED
+  CLOSED
+  ESCALATED
 }
 
 enum TeacherRequestType {

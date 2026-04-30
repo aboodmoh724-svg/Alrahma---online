@@ -22,10 +22,21 @@ type IncomingMessage = {
   id: string;
   fromNumber: string;
   body: string;
-  category: "GENERAL" | "INTERVIEW_RESCHEDULE" | "ABSENCE_EXCUSE";
+  category:
+    | "GENERAL"
+    | "INTERVIEW_RESCHEDULE"
+    | "ABSENCE_EXCUSE"
+    | "COMPLAINT"
+    | "INQUIRY"
+    | "THANKS"
+    | "CONFIRMATION"
+    | "STRUGGLE_REPLY";
+  followUpStatus: "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED";
+  supervisorNote: string | null;
   createdAt: string;
   student: { fullName: string } | null;
   registrationRequest: { studentName: string } | null;
+  lastOutgoingMessage: { body: string; category: IncomingMessage["category"]; createdAt: string } | null;
 };
 
 type RecipientMode = "SELECTED_PARENTS" | "ALL_PARENTS" | "SELECTED_TEACHERS" | "ALL_TEACHERS";
@@ -82,6 +93,9 @@ export default function RemoteSupervisionMessagesPage() {
   const [customMessage, setCustomMessage] = useState("");
   const [selectedTemplateKey, setSelectedTemplateKey] = useState(templates[0].key);
   const [message, setMessage] = useState(templates[0].body);
+  const [quickReplies, setQuickReplies] = useState<Record<string, string>>({});
+  const [messageNotes, setMessageNotes] = useState<Record<string, string>>({});
+  const [handlingMessageId, setHandlingMessageId] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
 
   const selectedTemplate = useMemo(
@@ -122,7 +136,7 @@ export default function RemoteSupervisionMessagesPage() {
         const [studentsResponse, teachersResponse, incomingResponse] = await Promise.all([
           fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
           fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
-          fetch("/api/whatsapp/incoming?channel=REMOTE&unreadOnly=true&limit=60", { cache: "no-store" }),
+          fetch("/api/whatsapp/incoming?channel=REMOTE&openOnly=true&limit=80", { cache: "no-store" }),
         ]);
         const [studentsData, teachersData, incomingData] = await Promise.all([
           studentsResponse.json(),
@@ -158,6 +172,110 @@ export default function RemoteSupervisionMessagesPage() {
       setIncomingMessages((prev) => prev.filter((message) => message.id !== messageId));
     } catch (error) {
       console.error("MARK INCOMING MESSAGE READ ERROR =>", error);
+    }
+  };
+
+  const categoryLabel = (category: IncomingMessage["category"]) => {
+    const labels: Record<IncomingMessage["category"], string> = {
+      GENERAL: "عام",
+      INTERVIEW_RESCHEDULE: "موعد مقابلة",
+      ABSENCE_EXCUSE: "عذر غياب",
+      COMPLAINT: "شكوى",
+      INQUIRY: "استفسار",
+      THANKS: "شكر",
+      CONFIRMATION: "تأكيد",
+      STRUGGLE_REPLY: "متابعة تعثر",
+    };
+
+    return labels[category] || "عام";
+  };
+
+  const statusLabel = (status: IncomingMessage["followUpStatus"]) => {
+    const labels: Record<IncomingMessage["followUpStatus"], string> = {
+      NEW: "جديد",
+      IN_REVIEW: "قيد المتابعة",
+      REPLIED: "تم الرد",
+      CLOSED: "مغلق",
+      ESCALATED: "محول للإدارة",
+    };
+
+    return labels[status] || "جديد";
+  };
+
+  const suggestedReply = (item: IncomingMessage) => {
+    const studentName = item.student?.fullName || item.registrationRequest?.studentName || "الطالب";
+
+    if (item.category === "INTERVIEW_RESCHEDULE") {
+      return `السلام عليكم ورحمة الله وبركاته\n\nشكرًا لتواصلكم بخصوص موعد مقابلة ${studentName}.\nنرجو تزويدنا بالأوقات المناسبة لكم خلال اليومين القادمين، وسنرتب موعدًا بديلًا بإذن الله.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم`;
+    }
+
+    if (item.category === "ABSENCE_EXCUSE") {
+      return `السلام عليكم ورحمة الله وبركاته\n\nتم استلام عذر غياب ${studentName}، شكرًا لتواصلكم.\nسيتم إبلاغ الإشراف ومتابعة انتظام الطالب بإذن الله.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم`;
+    }
+
+    if (item.category === "COMPLAINT") {
+      return `السلام عليكم ورحمة الله وبركاته\n\nوصلتنا ملاحظتكم بخصوص ${studentName}، ونقدر لكم تنبيهكم.\nسيتم مراجعة الأمر من الإشراف والرد عليكم بعد التحقق بإذن الله.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم`;
+    }
+
+    return `السلام عليكم ورحمة الله وبركاته\n\nوصلتنا رسالتكم، وسيتم متابعتها من الإشراف بإذن الله.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم`;
+  };
+
+  const updateIncomingStatus = async (
+    messageId: string,
+    status: IncomingMessage["followUpStatus"]
+  ) => {
+    try {
+      setHandlingMessageId(messageId);
+      const response = await fetch("/api/whatsapp/incoming", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "UPDATE_STATUS",
+          messageId,
+          status,
+          supervisorNote: messageNotes[messageId] || "",
+        }),
+      });
+
+      if (!response.ok) return;
+
+      setIncomingMessages((prev) =>
+        status === "CLOSED"
+          ? prev.filter((item) => item.id !== messageId)
+          : prev.map((item) =>
+              item.id === messageId ? { ...item, followUpStatus: status, supervisorNote: messageNotes[messageId] || null } : item
+            )
+      );
+    } finally {
+      setHandlingMessageId(null);
+    }
+  };
+
+  const sendQuickReply = async (item: IncomingMessage) => {
+    try {
+      setHandlingMessageId(item.id);
+      const reply = quickReplies[item.id] || suggestedReply(item);
+      const response = await fetch("/api/whatsapp/incoming", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "REPLY",
+          messageId: item.id,
+          reply,
+          supervisorNote: messageNotes[item.id] || "",
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر إرسال الرد");
+        return;
+      }
+
+      setIncomingMessages((prev) => prev.filter((message) => message.id !== item.id));
+      alert("تم إرسال الرد وحفظ المتابعة");
+    } finally {
+      setHandlingMessageId(null);
     }
   };
 
@@ -230,44 +348,112 @@ export default function RemoteSupervisionMessagesPage() {
         <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h2 className="text-2xl font-black text-[#1c2d31]">الوارد من واتساب</h2>
+              <h2 className="text-2xl font-black text-[#1c2d31]">مركز متابعة رسائل أولياء الأمور</h2>
               <p className="mt-1 text-sm text-[#1c2d31]/60">
-                الرسائل الجديدة من أولياء الأمور تظهر هنا وترتبط تلقائياً بالطالب أو طلب التسجيل عند تطابق الرقم.
+                كل رد وارد يظهر هنا مع الطالب والسياق والخطوة التالية، دون انتقال بين صفحات متعددة.
               </p>
             </div>
             <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
               {incomingMessages.length}
             </span>
           </div>
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          <div className="mt-4 grid gap-3 xl:grid-cols-2">
             {incomingMessages.length === 0 ? (
               <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-bold text-[#1c2d31]/60">
                 لا توجد رسائل واردة جديدة.
               </div>
             ) : (
               incomingMessages.map((message) => (
-                <div key={message.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#e5d7bd]">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
-                      {message.category === "INTERVIEW_RESCHEDULE"
-                        ? "تعديل موعد"
-                        : message.category === "ABSENCE_EXCUSE"
-                          ? "عذر غياب"
-                          : "عام"}
-                    </span>
-                    <span className="text-xs font-bold text-[#1c2d31]/50">{message.fromNumber}</span>
+                <div
+                  key={message.id}
+                  className={`rounded-2xl p-4 ring-1 ${
+                    message.category === "COMPLAINT"
+                      ? "bg-red-50 ring-red-200"
+                      : message.category === "INTERVIEW_RESCHEDULE"
+                        ? "bg-amber-50 ring-amber-200"
+                        : "bg-[#fffaf2] ring-[#e5d7bd]"
+                  }`}
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
+                        {categoryLabel(message.category)}
+                      </span>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#173d42] ring-1 ring-[#e5d7bd]">
+                        {statusLabel(message.followUpStatus)}
+                      </span>
+                      <span className="text-xs font-bold text-[#1c2d31]/50">{message.fromNumber}</span>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={handlingMessageId === message.id}
+                      onClick={() => updateIncomingStatus(message.id, "CLOSED")}
+                      className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-black text-[#173d42] disabled:opacity-60"
+                    >
+                      إغلاق
+                    </button>
                   </div>
-                  <p className="mt-2 text-sm font-black text-[#1c2d31]">
-                    {message.student?.fullName || message.registrationRequest?.studentName || "رقم غير مرتبط"}
+
+                  <p className="mt-3 text-base font-black text-[#1c2d31]">
+                    {message.student?.fullName || message.registrationRequest?.studentName || "رقم غير مرتبط بطالب"}
                   </p>
-                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{message.body}</p>
-                  <button
-                    type="button"
-                    onClick={() => markIncomingAsRead(message.id)}
-                    className="mt-3 rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#173d42]"
-                  >
-                    تم الاطلاع
-                  </button>
+
+                  {message.lastOutgoingMessage ? (
+                    <div className="mt-3 rounded-xl bg-white/80 p-3 text-xs leading-6 text-[#1c2d31]/65 ring-1 ring-[#eadcc4]">
+                      <p className="font-black text-[#1c2d31]">
+                        آخر رسالة من النظام: {categoryLabel(message.lastOutgoingMessage.category)}
+                      </p>
+                      <p className="mt-1 line-clamp-2">{message.lastOutgoingMessage.body}</p>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-3 rounded-xl bg-white p-3 text-sm leading-7 text-[#1c2d31]">
+                    {message.body}
+                  </div>
+
+                  <textarea
+                    value={quickReplies[message.id] ?? suggestedReply(message)}
+                    onChange={(event) =>
+                      setQuickReplies((prev) => ({ ...prev, [message.id]: event.target.value }))
+                    }
+                    className="mt-3 min-h-32 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
+                  />
+
+                  <input
+                    value={messageNotes[message.id] || ""}
+                    onChange={(event) =>
+                      setMessageNotes((prev) => ({ ...prev, [message.id]: event.target.value }))
+                    }
+                    placeholder="ملاحظة داخلية للمشرف"
+                    className="mt-3 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                  />
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={handlingMessageId === message.id}
+                      onClick={() => sendQuickReply(message)}
+                      className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                    >
+                      إرسال الرد وحفظ
+                    </button>
+                    <button
+                      type="button"
+                      disabled={handlingMessageId === message.id}
+                      onClick={() => updateIncomingStatus(message.id, "IN_REVIEW")}
+                      className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#173d42] disabled:opacity-60"
+                    >
+                      قيد المتابعة
+                    </button>
+                    <button
+                      type="button"
+                      disabled={handlingMessageId === message.id}
+                      onClick={() => updateIncomingStatus(message.id, "ESCALATED")}
+                      className="rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-black text-red-700 disabled:opacity-60"
+                    >
+                      تحويل للإدارة
+                    </button>
+                  </div>
                 </div>
               ))
             )}

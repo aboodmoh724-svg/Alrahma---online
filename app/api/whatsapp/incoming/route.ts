@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { StudyMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
+import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
 function normalizeChannel(value: unknown): StudyMode {
   return value === "ONSITE" ? "ONSITE" : "REMOTE";
@@ -11,6 +11,10 @@ function normalizeChannel(value: unknown): StudyMode {
 function resolveCategory(body: string) {
   const text = body.replace(/\s+/g, " ").trim();
 
+  if (/شكوى|مشكلة|غير\s*راض|تقصير|تأخير|تأخر|سيئ|سيئة|لم\s*يتم/.test(text)) {
+    return "COMPLAINT" as const;
+  }
+
   if (/لا\s*يناسب|غير\s*مناسب|ما\s*يناسب|موعد\s*آخر|تغيير\s*الموعد|لا\s*نستطيع|لا\s*نقدر/.test(text)) {
     return "INTERVIEW_RESCHEDULE" as const;
   }
@@ -18,6 +22,10 @@ function resolveCategory(body: string) {
   if (/عذر|معذور|مريض|مرض|سفر|ظرف|غياب|تعبان|تعبانة/.test(text)) {
     return "ABSENCE_EXCUSE" as const;
   }
+
+  if (/شكرا|شكر|جزاكم|بارك/.test(text)) return "THANKS" as const;
+  if (/موافق|مناسب|تمام|تم|حاضر|بإذن الله/.test(text)) return "CONFIRMATION" as const;
+  if (/استفسار|سؤال|كيف|متى|أين|هل/.test(text)) return "INQUIRY" as const;
 
   return "GENERAL" as const;
 }
@@ -58,12 +66,29 @@ async function resolveLinkedEntities(fromNumber: string, channel: StudyMode) {
     (request) => normalizeWhatsAppNumber(request.parentWhatsapp || "") === fromNumber
   );
 
+  const latestOutgoing = await prisma.whatsAppOutgoingMessage.findFirst({
+    where: {
+      channel,
+      toNumber: fromNumber,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    select: {
+      id: true,
+      category: true,
+      studentId: true,
+      registrationRequestId: true,
+    },
+  });
+
   return {
     studentId: matchedStudent?.id || null,
     registrationRequestId:
       matchedRequest && (!matchedRequest.createdStudentId || !matchedStudent)
         ? matchedRequest.id
         : null,
+    latestOutgoing,
   };
 }
 
@@ -104,15 +129,21 @@ export async function POST(request: Request) {
     }
 
     const linked = await resolveLinkedEntities(fromNumber, channel);
+    const resolvedCategory = resolveCategory(messageBody);
     const data = {
       channel,
       fromNumber,
       body: messageBody,
       messageId,
-      category: resolveCategory(messageBody),
+      category:
+        resolvedCategory === "GENERAL" && linked.latestOutgoing?.category
+          ? linked.latestOutgoing.category
+          : resolvedCategory,
       raw: body,
-      studentId: linked.studentId,
-      registrationRequestId: linked.registrationRequestId,
+      studentId: linked.studentId || linked.latestOutgoing?.studentId || null,
+      registrationRequestId:
+        linked.registrationRequestId || linked.latestOutgoing?.registrationRequestId || null,
+      lastOutgoingMessageId: linked.latestOutgoing?.id || null,
     };
 
     const message = messageId
@@ -163,12 +194,14 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const channel = normalizeChannel(url.searchParams.get("channel") || admin.studyMode);
     const unreadOnly = url.searchParams.get("unreadOnly") === "true";
+    const openOnly = url.searchParams.get("openOnly") !== "false";
     const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 80), 1), 200);
 
     const messages = await prisma.whatsAppIncomingMessage.findMany({
       where: {
         channel,
         ...(unreadOnly ? { isRead: false } : {}),
+        ...(openOnly ? { followUpStatus: { not: "CLOSED" } } : {}),
       },
       orderBy: {
         createdAt: "desc",
@@ -187,6 +220,14 @@ export async function GET(request: Request) {
             id: true,
             studentName: true,
             parentWhatsapp: true,
+          },
+        },
+        lastOutgoingMessage: {
+          select: {
+            id: true,
+            body: true,
+            category: true,
+            createdAt: true,
           },
         },
       },
@@ -213,9 +254,62 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
+    const action = String(body.action || "MARK_READ").trim();
     const ids = Array.isArray(body.ids)
       ? body.ids.map((value: unknown) => String(value || "").trim()).filter(Boolean)
       : [];
+    const messageId = String(body.messageId || "").trim();
+
+    if (action === "REPLY") {
+      const reply = String(body.reply || "").trim();
+      const target = await prisma.whatsAppIncomingMessage.findUnique({
+        where: { id: messageId },
+      });
+
+      if (!target) {
+        return NextResponse.json({ error: "الرسالة غير موجودة" }, { status: 404 });
+      }
+
+      if (!reply) {
+        return NextResponse.json({ error: "نص الرد مطلوب" }, { status: 400 });
+      }
+
+      await sendWhatsAppText({
+        to: target.fromNumber,
+        body: reply,
+        channel: target.channel,
+      });
+
+      await prisma.whatsAppIncomingMessage.update({
+        where: { id: target.id },
+        data: {
+          isRead: true,
+          followUpStatus: "REPLIED",
+          supervisorNote: String(body.supervisorNote || "").trim() || target.supervisorNote,
+        },
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "UPDATE_STATUS") {
+      const status = String(body.status || "").trim();
+
+      if (!["NEW", "IN_REVIEW", "REPLIED", "CLOSED", "ESCALATED"].includes(status)) {
+        return NextResponse.json({ error: "حالة المتابعة غير صالحة" }, { status: 400 });
+      }
+
+      await prisma.whatsAppIncomingMessage.update({
+        where: { id: messageId },
+        data: {
+          followUpStatus: status as "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED",
+          isRead: status !== "NEW",
+          supervisorNote: String(body.supervisorNote || "").trim() || null,
+        },
+      });
+
+      return NextResponse.json({ success: true });
+    }
 
     if (ids.length === 0) {
       return NextResponse.json({ error: "لم يتم تحديد رسائل" }, { status: 400 });
