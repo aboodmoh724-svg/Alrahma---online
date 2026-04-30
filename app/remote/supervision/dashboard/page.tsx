@@ -24,6 +24,12 @@ const sections = [
     tone: "bg-[#173d42] text-white",
   },
   {
+    href: "/remote/supervision/messages",
+    title: "رسائل أولياء الأمور",
+    description: "قوالب واتساب جاهزة للتعثر والغياب والتعميمات الإشرافية مع تعديل النص قبل الإرسال.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/supervision/reports",
     title: "تقارير الطلاب",
     description: "إحصائيات عامة وتفاصيل كل طالب في صفحة واحدة سهلة القراءة.",

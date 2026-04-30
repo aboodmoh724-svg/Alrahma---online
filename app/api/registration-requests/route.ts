@@ -11,6 +11,8 @@ import {
   normalizeWhatsAppNumber,
   registrationAcceptedWhatsAppMessage,
   sendWhatsAppText,
+  supervisionCircleDetailsWhatsAppMessage,
+  supervisionStudentAcceptanceWhatsAppMessage,
 } from "@/lib/whatsapp";
 
 const MAX_AUDIO_SIZE = 5 * 1024 * 1024;
@@ -506,6 +508,75 @@ export async function PATCH(req: Request) {
           zoomUrl: createdStudent.circle?.zoomUrl || null,
           scheduleDetails: String(body.scheduleDetails || "").trim() || null,
         }),
+        channel: "REMOTE",
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" || action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE") {
+      if (request.status !== "ACCEPTED" || !request.createdStudentId) {
+        return NextResponse.json(
+          { error: "يجب وضع الطالب في الحلقة وإنشاؤه قبل إرسال الرسالة" },
+          { status: 400 }
+        );
+      }
+
+      if (!isWhatsAppConfigured()) {
+        return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
+      }
+
+      const createdStudent = await prisma.student.findUnique({
+        where: {
+          id: request.createdStudentId,
+        },
+        select: {
+          fullName: true,
+          parentWhatsapp: true,
+          circle: {
+            select: {
+              name: true,
+              periodLabel: true,
+              startsAt: true,
+              endsAt: true,
+              zoomUrl: true,
+            },
+          },
+          teacher: {
+            select: {
+              fullName: true,
+            },
+          },
+        },
+      });
+
+      if (!createdStudent) {
+        return NextResponse.json({ error: "الطالب المرتبط بالطلب غير موجود" }, { status: 404 });
+      }
+
+      const normalizedWhatsapp = normalizeWhatsAppNumber(createdStudent.parentWhatsapp || "");
+
+      if (!normalizedWhatsapp) {
+        return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });
+      }
+
+      const studentName = createdStudent.fullName || request.studentName;
+      const bodyText =
+        action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE"
+          ? supervisionStudentAcceptanceWhatsAppMessage({ studentName })
+          : supervisionCircleDetailsWhatsAppMessage({
+              studentName,
+              circleName: createdStudent.circle?.name || null,
+              teacherName: createdStudent.teacher?.fullName || null,
+              periodLabel: createdStudent.circle?.periodLabel || null,
+              startsAt: createdStudent.circle?.startsAt || null,
+              endsAt: createdStudent.circle?.endsAt || null,
+              zoomUrl: createdStudent.circle?.zoomUrl || null,
+            });
+
+      await sendWhatsAppText({
+        to: normalizedWhatsapp,
+        body: bodyText,
         channel: "REMOTE",
       });
 

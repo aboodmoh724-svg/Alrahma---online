@@ -18,9 +18,21 @@ const ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS = new Set([
   "/remote/admin/teacher-requests",
   "/remote/admin/reports",
   "/remote/admin/statistics#unassigned-students",
+  "/remote/admin/supervisors",
+  "/remote/admin/supervision-tasks",
+  "/remote/admin/students",
+  "/remote/admin/circles",
+  "/remote/admin/teachers",
+  "/remote/admin/resources",
 ]);
 
 const sections: DashboardSection[] = [
+  {
+    href: "/remote/admin/education",
+    title: "إدارة التعليم والحلقات",
+    description: "مدخل واحد للطلاب والمعلمين والحلقات والمسارات وملفات المسارات ومهام الإشراف.",
+    tone: "bg-[#1f6358] text-white",
+  },
   {
     href: "/remote/admin/supervisors",
     requiresFinanceAccess: true,
@@ -51,8 +63,8 @@ const sections: DashboardSection[] = [
   {
     href: "/remote/admin/admins",
     requiresFinanceAccess: true,
-    title: "الإداريون والصلاحيات",
-    description: "إضافة إداريين للأونلاين وتحديد من يستطيع دخول الحسابات المالية.",
+    title: "الإداريون والمشرفون والصلاحيات",
+    description: "إدارة حسابات الإدارة والمشرفين وصلاحيات الإشراف والمالية من مدخل واحد.",
     tone: "bg-[#8a6335] text-white",
   },
   {

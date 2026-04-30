@@ -291,6 +291,41 @@ export function registrationAcceptedWhatsAppMessage(input: {
   );
 }
 
+export function supervisionStudentAcceptanceWhatsAppMessage(input: {
+  studentName: string;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نحيطكم علمًا بأنه تم قبول الطالب *${input.studentName}* في منصة الرحمة لتعليم القرآن الكريم.\n\n` +
+    `ستصلكم رسالة أخرى بتفاصيل الحلقة والمعلم وموعد الدخول بإذن الله.\n\n` +
+    `نسأل الله أن يفتح عليه، وأن يجعل رحلته مع كتاب الله مباركة نافعة.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
+export function supervisionCircleDetailsWhatsAppMessage(input: {
+  studentName: string;
+  circleName?: string | null;
+  teacherName?: string | null;
+  periodLabel?: string | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  zoomUrl?: string | null;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `تفاصيل حلقة الطالب *${input.studentName}* في منصة الرحمة:\n\n` +
+    `*الحلقة:* ${input.circleName?.trim() || "-"}\n` +
+    `*المعلم:* ${input.teacherName?.trim() || "-"}\n` +
+    `*الفترة:* ${input.periodLabel?.trim() || "-"}\n` +
+    `*وقت الدخول:* ${input.startsAt?.trim() || "-"}\n` +
+    `*وقت الخروج:* ${input.endsAt?.trim() || "-"}\n` +
+    `*رابط الحلقة:* ${input.zoomUrl?.trim() || "-"}\n\n` +
+    `نرجو الحرص على دخول الطالب في الموعد المحدد، ونسأل الله له التوفيق والثبات.\n\n` +
+    `إدارة منصة الرحمة لتعليم القرآن الكريم`
+  );
+}
+
 export function fullPaymentReceivedWhatsAppMessage(input: {
   studentName: string;
   amount: string;

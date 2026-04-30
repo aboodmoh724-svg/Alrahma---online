@@ -68,13 +68,6 @@ const STATUS_LABELS: Record<RegistrationRequest["supervisionStatus"], string> = 
   ON_HOLD: "معلق",
 };
 
-const TRACK_TUITION: Record<string, number> = {
-  HIJAA: 250,
-  TILAWA: 250,
-  RUBAI: 250,
-  FARDI: 600,
-};
-
 function formatDate(date: string) {
   return new Date(date).toLocaleString("en-US", {
     month: "short",
@@ -88,21 +81,6 @@ function formatDate(date: string) {
 function yesNo(value: boolean | null | undefined) {
   if (value === null || value === undefined) return "-";
   return value ? "نعم" : "لا";
-}
-
-function getExpectedTuition(requestedTracks?: string | null, circleTrack?: string | null) {
-  const tracks = [
-    ...(circleTrack ? [circleTrack] : []),
-    ...String(requestedTracks || "")
-      .split(",")
-      .map((track) => track.trim())
-      .filter(Boolean),
-  ];
-
-  if (tracks.includes("FARDI")) return 600;
-  const firstPricedTrack = tracks.find((track) => TRACK_TUITION[track]);
-
-  return firstPricedTrack ? TRACK_TUITION[firstPricedTrack] : 250;
 }
 
 function InfoItem({ label, value }: { label: string; value?: string | null }) {
@@ -125,7 +103,8 @@ export default function RemoteSupervisionRegistrationsPage() {
   const [statuses, setStatuses] = useState<Record<string, RegistrationRequest["supervisionStatus"]>>({});
   const [selectedCircle, setSelectedCircle] = useState<Record<string, string>>({});
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
-  const [financeAmount, setFinanceAmount] = useState<Record<string, string>>({});
+  const [sendingAcceptanceId, setSendingAcceptanceId] = useState<string | null>(null);
+  const [sendingDetailsId, setSendingDetailsId] = useState<string | null>(null);
 
   const forwardedRequests = useMemo(
     () => requests.filter((request) => request.status === "ACCEPTED" && request.forwardedToSupervisionAt),
@@ -223,8 +202,6 @@ export default function RemoteSupervisionRegistrationsPage() {
           action: "PLACE_BY_SUPERVISION",
           circleId: selectedCircle[request.id] || "",
           teacherId: selectedTeacher[request.id] || "",
-          financeAmount:
-            financeAmount[request.id] || String(getExpectedTuition(request.requestedTracks, circle?.track)),
           financeCurrency: "USD",
           supervisionNote: notes[request.id] || request.supervisionNote || "",
         }),
@@ -243,6 +220,39 @@ export default function RemoteSupervisionRegistrationsPage() {
       alert("حدث خطأ أثناء وضع الطالب في الحلقة");
     } finally {
       setPlacingId(null);
+    }
+  };
+
+  const sendSupervisorMessage = async (
+    requestId: string,
+    action: "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" | "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE"
+  ) => {
+    const setSending =
+      action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" ? setSendingAcceptanceId : setSendingDetailsId;
+
+    try {
+      setSending(requestId);
+      const response = await fetch("/api/registration-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId,
+          action,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر إرسال الرسالة");
+        return;
+      }
+
+      alert("تم إرسال الرسالة بنجاح");
+    } catch (error) {
+      console.error("SEND SUPERVISION REGISTRATION MESSAGE ERROR =>", error);
+      alert("حدث خطأ أثناء إرسال الرسالة");
+    } finally {
+      setSending(null);
     }
   };
 
@@ -276,8 +286,6 @@ export default function RemoteSupervisionRegistrationsPage() {
         ) : (
           <div className="space-y-4">
             {activeRequests.map((request) => {
-              const selectedCircleData = circles.find((circle) => circle.id === selectedCircle[request.id]);
-
               return (
                 <div key={request.id} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
                   <div className="flex flex-wrap items-center gap-2">
@@ -391,13 +399,8 @@ export default function RemoteSupervisionRegistrationsPage() {
                             value={selectedCircle[request.id] || ""}
                             onChange={(event) => {
                               const circleId = event.target.value;
-                              const circleTrack = circles.find((circle) => circle.id === circleId)?.track;
 
                               setSelectedCircle((prev) => ({ ...prev, [request.id]: circleId }));
-                              setFinanceAmount((prev) => ({
-                                ...prev,
-                                [request.id]: String(getExpectedTuition(request.requestedTracks, circleTrack)),
-                              }));
                             }}
                             className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
                           >
@@ -425,23 +428,6 @@ export default function RemoteSupervisionRegistrationsPage() {
                               </option>
                             ))}
                           </select>
-
-                          <div className="flex overflow-hidden rounded-xl border border-[#d9c8ad] bg-white">
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={
-                                financeAmount[request.id] ??
-                                String(getExpectedTuition(request.requestedTracks, selectedCircleData?.track))
-                              }
-                              onChange={(event) =>
-                                setFinanceAmount((prev) => ({ ...prev, [request.id]: event.target.value }))
-                              }
-                              className="w-full px-4 py-3 text-sm outline-none"
-                            />
-                            <span className="bg-[#fffaf2] px-3 py-3 text-sm font-black text-[#8a6335]">USD</span>
-                          </div>
 
                           <button
                             type="button"
@@ -500,12 +486,30 @@ export default function RemoteSupervisionRegistrationsPage() {
                     </p>
                   ) : null}
                   {request.createdStudentId ? (
-                    <Link
-                      href="/remote/supervision/students"
-                      className="mt-3 inline-flex rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
-                    >
-                      فتح سجل الطلاب
-                    </Link>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_ACCEPTANCE_MESSAGE")}
+                        disabled={sendingAcceptanceId === request.id}
+                        className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                      >
+                        {sendingAcceptanceId === request.id ? "جارٍ إرسال القبول..." : "إرسال رسالة القبول"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE")}
+                        disabled={sendingDetailsId === request.id}
+                        className="rounded-xl bg-[#8a6335] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                      >
+                        {sendingDetailsId === request.id ? "جارٍ إرسال التفاصيل..." : "إرسال تفاصيل الحلقة"}
+                      </button>
+                      <Link
+                        href="/remote/supervision/students"
+                        className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
+                      >
+                        فتح سجل الطلاب
+                      </Link>
+                    </div>
                   ) : null}
                 </div>
               ))}

@@ -171,9 +171,14 @@ export default async function RemoteAdminsPage() {
                 من هنا لا تحتاج لإضافة الإداري من Supabase. النظام سينشئ المعرّف تلقائياً، ويمكنك إعطاء صلاحية المالية أو سحبها من الحساب.
               </p>
             </div>
-            <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173d42]">
-              الرجوع للوحة الإدارة
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link href="/remote/admin/supervisors" className="rounded-full bg-[#f1d39d] px-5 py-3 text-sm font-black text-[#173d42]">
+                إدارة المشرفين
+              </Link>
+              <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173d42]">
+                الرجوع للوحة الإدارة
+              </Link>
+            </div>
           </div>
         </section>
 
