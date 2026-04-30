@@ -116,9 +116,18 @@ async function forwardIncomingMessage(message) {
     return;
   }
 
+  let contactNumber = "";
+  try {
+    const contact = await message.getContact();
+    contactNumber = normalizePhone(contact?.number || "");
+  } catch (error) {
+    console.error("INCOMING CONTACT LOOKUP ERROR:", error);
+  }
+
   const payload = {
     messageId: message.id?._serialized || null,
-    from: message.from,
+    from: contactNumber ? `${contactNumber}@c.us` : message.from,
+    fromId: message.from,
     body: message.body || "",
     timestamp: message.timestamp || null,
     channel: whatsappChannel,

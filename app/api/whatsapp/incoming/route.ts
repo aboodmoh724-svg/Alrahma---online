@@ -107,6 +107,11 @@ function isAuthorizedIncoming(request: Request) {
   return token === expectedToken;
 }
 
+function looksLikeReplyablePhone(value: string) {
+  const digits = value.replace(/\D/g, "");
+  return digits.length >= 8 && digits.length <= 13;
+}
+
 export async function POST(request: Request) {
   try {
     if (!isAuthorizedIncoming(request)) {
@@ -264,6 +269,18 @@ export async function PATCH(request: Request) {
       const reply = String(body.reply || "").trim();
       const target = await prisma.whatsAppIncomingMessage.findUnique({
         where: { id: messageId },
+        include: {
+          student: {
+            select: {
+              parentWhatsapp: true,
+            },
+          },
+          registrationRequest: {
+            select: {
+              parentWhatsapp: true,
+            },
+          },
+        },
       });
 
       if (!target) {
@@ -274,9 +291,24 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "نص الرد مطلوب" }, { status: 400 });
       }
 
+      const replyNumber =
+        normalizeWhatsAppNumber(target.student?.parentWhatsapp || "") ||
+        normalizeWhatsAppNumber(target.registrationRequest?.parentWhatsapp || "") ||
+        (looksLikeReplyablePhone(target.fromNumber) ? target.fromNumber : null);
+
+      if (!replyNumber) {
+        return NextResponse.json(
+          {
+            error:
+              "لا يمكن إرسال الرد لأن الرسالة لا تحمل رقم جوال واضحاً وليست مرتبطة بطالب. يمكن وضعها قيد المتابعة أو إغلاقها بعد مراجعة الرقم.",
+          },
+          { status: 400 }
+        );
+      }
+
       try {
         await sendWhatsAppText({
-          to: target.fromNumber,
+          to: replyNumber,
           body: reply,
           channel: target.channel,
         });

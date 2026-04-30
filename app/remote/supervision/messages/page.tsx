@@ -34,8 +34,8 @@ type IncomingMessage = {
   followUpStatus: "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED";
   supervisorNote: string | null;
   createdAt: string;
-  student: { fullName: string } | null;
-  registrationRequest: { studentName: string } | null;
+  student: { fullName: string; parentWhatsapp: string | null } | null;
+  registrationRequest: { studentName: string; parentWhatsapp: string } | null;
   lastOutgoingMessage: { body: string; category: IncomingMessage["category"]; createdAt: string } | null;
 };
 
@@ -218,6 +218,11 @@ export default function RemoteSupervisionMessagesPage() {
     }
 
     return `السلام عليكم ورحمة الله وبركاته\n\nوصلتنا رسالتكم، وسيتم متابعتها من الإشراف بإذن الله.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم`;
+  };
+
+  const canReplyToIncoming = (item: IncomingMessage) => {
+    if (item.student?.parentWhatsapp || item.registrationRequest?.parentWhatsapp) return true;
+    return item.fromNumber.replace(/\D/g, "").length <= 13;
   };
 
   const updateIncomingStatus = async (
@@ -414,12 +419,19 @@ export default function RemoteSupervisionMessagesPage() {
                     {message.body}
                   </div>
 
+                  {!canReplyToIncoming(message) ? (
+                    <p className="mt-3 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold leading-6 text-red-700 ring-1 ring-red-100">
+                      لا يمكن الرد مباشرة لأن واتساب أرسل معرّفاً داخلياً لا رقم جوال واضحاً. استخدم قيد المتابعة أو أغلق البطاقة بعد مراجعة الرقم.
+                    </p>
+                  ) : null}
+
                   <textarea
+                    disabled={!canReplyToIncoming(message)}
                     value={quickReplies[message.id] ?? suggestedReply(message)}
                     onChange={(event) =>
                       setQuickReplies((prev) => ({ ...prev, [message.id]: event.target.value }))
                     }
-                    className="mt-3 min-h-32 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
+                    className="mt-3 min-h-32 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none disabled:opacity-60"
                   />
 
                   <input
@@ -434,7 +446,7 @@ export default function RemoteSupervisionMessagesPage() {
                   <div className="mt-3 flex flex-wrap gap-2">
                     <button
                       type="button"
-                      disabled={handlingMessageId === message.id}
+                      disabled={handlingMessageId === message.id || !canReplyToIncoming(message)}
                       onClick={() => sendQuickReply(message)}
                       className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                     >
