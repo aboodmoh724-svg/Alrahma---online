@@ -189,11 +189,27 @@ export async function POST(req: Request) {
       }
     }
 
-    const savedAudio = await saveUploadedFile(audio, "registration-audio", "student-audio");
-    const savedIdImage =
-      idImage instanceof File && idImage.size > 0
-        ? await saveUploadedFile(idImage, "registration-ids", "student-id")
-        : null;
+    let savedAudio: { fileName: string; url: string } | null = null;
+    let savedIdImage: { fileName: string; url: string } | null = null;
+    let uploadWarning: string | null = null;
+
+    try {
+      savedAudio = await saveUploadedFile(audio, "registration-audio", "student-audio");
+    } catch (uploadError) {
+      console.error("REGISTRATION AUDIO UPLOAD ERROR =>", uploadError);
+      uploadWarning = "تم استلام الطلب، لكن تعذر حفظ التسجيل الصوتي. ستتواصل الإدارة معكم عند الحاجة.";
+    }
+
+    if (idImage instanceof File && idImage.size > 0) {
+      try {
+        savedIdImage = await saveUploadedFile(idImage, "registration-ids", "student-id");
+      } catch (uploadError) {
+        console.error("REGISTRATION ID UPLOAD ERROR =>", uploadError);
+        uploadWarning = uploadWarning
+          ? `${uploadWarning}\nوتعذر أيضا حفظ ملف الهوية أو الإقامة.`
+          : "تم استلام الطلب، لكن تعذر حفظ ملف الهوية أو الإقامة.";
+      }
+    }
 
     const request = await prisma.registrationRequest.create({
       data: {
@@ -223,9 +239,9 @@ export async function POST(req: Request) {
         hasDevice: getBoolean(formData, "hasDevice"),
         requestedTracks: formData.getAll("requestedTracks").join(",") || null,
         readGuidelines: getBoolean(formData, "readGuidelines"),
-        audioUrl: savedAudio.url,
-        audioFileName: savedAudio.fileName,
-        notes: getString(formData, "notes") || null,
+        audioUrl: savedAudio?.url || null,
+        audioFileName: savedAudio?.fileName || null,
+        notes: [getString(formData, "notes"), uploadWarning].filter(Boolean).join("\n") || null,
       },
     });
 
@@ -281,6 +297,7 @@ export async function POST(req: Request) {
       emailWarning,
       whatsappSent,
       whatsappWarning,
+      uploadWarning,
     });
   } catch (error) {
     console.error("CREATE REGISTRATION REQUEST ERROR =>", error);

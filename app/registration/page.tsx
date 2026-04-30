@@ -176,7 +176,7 @@ export default function RegistrationPage() {
         return;
       }
 
-      setSubmissionWarning([data?.emailWarning, data?.whatsappWarning].filter(Boolean).join("\n"));
+      setSubmissionWarning([data?.uploadWarning, data?.emailWarning, data?.whatsappWarning].filter(Boolean).join("\n"));
       setSubmitted(true);
     } catch (error) {
       console.error("REGISTRATION SUBMIT ERROR =>", error);

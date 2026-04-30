@@ -47,6 +47,13 @@ export default function RemoteAdminStudentsPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     parentWhatsapp: "",
+    parentEmail: "",
+    birthDate: "",
+    grade: "",
+    livingWith: "",
+    nationality: "",
+    generalLevel: "",
+    notes: "",
     teacherId: "",
     circleId: "",
     studyMode: "REMOTE",
@@ -109,7 +116,7 @@ export default function RemoteAdminStudentsPage() {
   };
 
   const handleChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = event.target;
     setFormData((prev) => ({
@@ -151,6 +158,13 @@ export default function RemoteAdminStudentsPage() {
       setFormData({
         fullName: "",
         parentWhatsapp: "",
+        parentEmail: "",
+        birthDate: "",
+        grade: "",
+        livingWith: "",
+        nationality: "",
+        generalLevel: "",
+        notes: "",
         teacherId: "",
         circleId: "",
         studyMode: "REMOTE",
@@ -269,6 +283,62 @@ export default function RemoteAdminStudentsPage() {
                 placeholder="رقم ولي الأمر"
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                 dir="ltr"
+              />
+              <input
+                type="email"
+                name="parentEmail"
+                value={formData.parentEmail}
+                onChange={handleChange}
+                placeholder="بريد ولي الأمر"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+                dir="ltr"
+              />
+              <input
+                type="date"
+                name="birthDate"
+                value={formData.birthDate}
+                onChange={handleChange}
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <input
+                type="text"
+                name="grade"
+                value={formData.grade}
+                onChange={handleChange}
+                placeholder="الصف الدراسي"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <input
+                type="text"
+                name="livingWith"
+                value={formData.livingWith}
+                onChange={handleChange}
+                placeholder="مع من يسكن الطالب"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <input
+                type="text"
+                name="nationality"
+                value={formData.nationality}
+                onChange={handleChange}
+                placeholder="الجنسية"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <textarea
+                name="generalLevel"
+                value={formData.generalLevel}
+                onChange={handleChange}
+                placeholder="المستوى وبداية الطالب المختصرة"
+                rows={3}
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                placeholder="ملاحظات إدارية مختصرة"
+                rows={3}
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
               />
               <select
                 name="circleId"

@@ -31,8 +31,23 @@ type Student = {
   id: string;
   studentCode: string | null;
   fullName: string;
+  parentWhatsapp: string | null;
+  parentEmail: string | null;
   studyMode: "REMOTE" | "ONSITE";
   isActive: boolean;
+  detail: {
+    birthDate: string | null;
+    nationality: string | null;
+    livingWith: string | null;
+    grade: string | null;
+    generalLevel: string | null;
+    notes: string | null;
+  } | null;
+  reports: Array<{
+    lessonName: string;
+    review: string | null;
+    createdAt: string;
+  }>;
   teacher: Pick<Teacher, "id" | "fullName" | "email">;
   circle: {
     id: string;
@@ -63,6 +78,7 @@ export default function RemoteSupervisionTeachersPage() {
   const [loading, setLoading] = useState(true);
   const [creatingCircle, setCreatingCircle] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [circleForm, setCircleForm] = useState({
     name: "",
     teacherId: "",
@@ -452,13 +468,15 @@ export default function RemoteSupervisionTeachersPage() {
                                 <span className="text-xs text-[#1c2d31]/55">لا يوجد طلاب في هذه الحلقة.</span>
                               ) : (
                                 circleStudents.map((student) => (
-                                  <span
+                                  <button
+                                    type="button"
                                     key={student.id}
+                                    onClick={() => setSelectedStudent(student)}
                                     className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#1c2d31] ring-1 ring-[#d9c8ad]"
                                   >
                                     {student.fullName}
                                     {student.studentCode ? ` - ${student.studentCode}` : ""}
-                                  </span>
+                                  </button>
                                 ))
                               )}
                             </div>
@@ -472,6 +490,71 @@ export default function RemoteSupervisionTeachersPage() {
             })}
           </section>
         )}
+
+        {selectedStudent ? (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+            <section className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-black text-[#9b7039]">بيانات الطالب المختصرة</p>
+                  <h2 className="mt-1 text-2xl font-black text-[#1c2d31]">{selectedStudent.fullName}</h2>
+                  <p className="mt-1 text-sm text-[#1c2d31]/60">
+                    {selectedStudent.studentCode || "بدون رقم"} - {selectedStudent.circle?.name || "بدون حلقة"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setSelectedStudent(null)}
+                  className="grid h-9 w-9 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="mt-5 grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl bg-[#fffaf2] p-4">
+                  <p className="text-xs font-black text-[#8a6335]">ولي الأمر</p>
+                  <p className="mt-2 text-sm font-bold text-[#1c2d31]">{selectedStudent.parentWhatsapp || "-"}</p>
+                  <p className="mt-1 text-xs text-[#1c2d31]/60">{selectedStudent.parentEmail || "-"}</p>
+                </div>
+                <div className="rounded-2xl bg-[#fffaf2] p-4">
+                  <p className="text-xs font-black text-[#8a6335]">المعلم والحلقة</p>
+                  <p className="mt-2 text-sm font-bold text-[#1c2d31]">{selectedStudent.teacher.fullName}</p>
+                  <p className="mt-1 text-xs text-[#1c2d31]/60">{selectedStudent.circle?.name || "-"}</p>
+                </div>
+                <div className="rounded-2xl bg-[#fffaf2] p-4">
+                  <p className="text-xs font-black text-[#8a6335]">البيانات الأولية</p>
+                  <div className="mt-2 space-y-1 text-sm text-[#1c2d31]/75">
+                    <p>الميلاد: {selectedStudent.detail?.birthDate || "-"}</p>
+                    <p>الجنسية: {selectedStudent.detail?.nationality || "-"}</p>
+                    <p>السكن: {selectedStudent.detail?.livingWith || "-"}</p>
+                    <p>الصف: {selectedStudent.detail?.grade || "-"}</p>
+                  </div>
+                </div>
+                <div className="rounded-2xl bg-[#fffaf2] p-4">
+                  <p className="text-xs font-black text-[#8a6335]">المستوى الحالي</p>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]/75">
+                    {selectedStudent.detail?.generalLevel || selectedStudent.detail?.notes || "-"}
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-[#f4fbf8] p-4 md:col-span-2">
+                  <p className="text-xs font-black text-[#1f6358]">آخر وصول في التقارير</p>
+                  {selectedStudent.reports?.[0] ? (
+                    <div className="mt-2 space-y-1 text-sm text-[#1c2d31]/75">
+                      <p>الدرس: {selectedStudent.reports[0].lessonName}</p>
+                      <p>المراجعة: {selectedStudent.reports[0].review || "-"}</p>
+                      <p>
+                        التاريخ: {new Date(selectedStudent.reports[0].createdAt).toLocaleDateString("en-US")}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-sm text-[#1c2d31]/60">لا يوجد تقرير سابق لهذا الطالب.</p>
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        ) : null}
       </div>
     </main>
   );

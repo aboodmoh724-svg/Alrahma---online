@@ -31,6 +31,10 @@ export async function GET(req: Request) {
         fullName: true,
         email: true,
         whatsapp: true,
+        teacherCertification: true,
+        teacherAvailableTimes: true,
+        teacherAvailableTracks: true,
+        teacherWorkScope: true,
         studyMode: true,
         isActive: true,
         createdAt: true,
@@ -58,6 +62,10 @@ export async function POST(req: Request) {
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "").trim();
     const whatsapp = String(body.whatsapp || "").trim();
+    const teacherCertification = String(body.teacherCertification || "").trim();
+    const teacherAvailableTimes = String(body.teacherAvailableTimes || "").trim();
+    const teacherAvailableTracks = String(body.teacherAvailableTracks || "").trim();
+    const teacherWorkScope = String(body.teacherWorkScope || "").trim();
     const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!fullName) {
@@ -98,6 +106,10 @@ export async function POST(req: Request) {
         email,
         password,
         whatsapp: whatsapp || null,
+        teacherCertification: teacherCertification || null,
+        teacherAvailableTimes: teacherAvailableTimes || null,
+        teacherAvailableTracks: teacherAvailableTracks || null,
+        teacherWorkScope: teacherWorkScope || null,
         role: "TEACHER",
         studyMode,
         isActive: true,
@@ -107,6 +119,10 @@ export async function POST(req: Request) {
         fullName: true,
         email: true,
         whatsapp: true,
+        teacherCertification: true,
+        teacherAvailableTimes: true,
+        teacherAvailableTracks: true,
+        teacherWorkScope: true,
         studyMode: true,
         isActive: true,
         createdAt: true,
@@ -170,6 +186,10 @@ export async function PATCH(req: Request) {
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
     const whatsapp = String(body.whatsapp || "").trim();
+    const teacherCertification = String(body.teacherCertification || "").trim();
+    const teacherAvailableTimes = String(body.teacherAvailableTimes || "").trim();
+    const teacherAvailableTracks = String(body.teacherAvailableTracks || "").trim();
+    const teacherWorkScope = String(body.teacherWorkScope || "").trim();
     const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!teacherId) {
@@ -223,12 +243,20 @@ export async function PATCH(req: Request) {
         fullName,
         email,
         whatsapp: whatsapp || null,
+        teacherCertification: teacherCertification || null,
+        teacherAvailableTimes: teacherAvailableTimes || null,
+        teacherAvailableTracks: teacherAvailableTracks || null,
+        teacherWorkScope: teacherWorkScope || null,
       },
       select: {
         id: true,
         fullName: true,
         email: true,
         whatsapp: true,
+        teacherCertification: true,
+        teacherAvailableTimes: true,
+        teacherAvailableTracks: true,
+        teacherWorkScope: true,
         studyMode: true,
         isActive: true,
         createdAt: true,

@@ -46,6 +46,25 @@ export async function GET(req: Request) {
         createdAt: true,
         parentWhatsapp: true,
         parentEmail: true,
+        detail: {
+          select: {
+            birthDate: true,
+            nationality: true,
+            livingWith: true,
+            grade: true,
+            generalLevel: true,
+            notes: true,
+          },
+        },
+        reports: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+          select: {
+            lessonName: true,
+            review: true,
+            createdAt: true,
+          },
+        },
         teacher: {
           select: {
             id: true,
@@ -84,6 +103,13 @@ export async function POST(req: Request) {
     const circleId = String(body.circleId || "").trim();
     const teacherIdFromBody = String(body.teacherId || "").trim();
     const parentWhatsapp = String(body.parentWhatsapp || "").trim() || null;
+    const parentEmail = String(body.parentEmail || "").trim() || null;
+    const birthDate = String(body.birthDate || "").trim();
+    const grade = String(body.grade || "").trim();
+    const livingWith = String(body.livingWith || "").trim();
+    const nationality = String(body.nationality || "").trim();
+    const generalLevel = String(body.generalLevel || "").trim();
+    const notes = String(body.notes || "").trim();
     const studyMode = body.studyMode === "ONSITE" ? "ONSITE" : "REMOTE";
 
     if (!fullName) {
@@ -148,6 +174,7 @@ export async function POST(req: Request) {
         studentCode,
         fullName,
         parentWhatsapp,
+        parentEmail,
         teacherId,
         circleId: resolvedCircleId,
         studyMode: resolvedStudyMode,
@@ -162,6 +189,7 @@ export async function POST(req: Request) {
         createdAt: true,
         parentWhatsapp: true,
         parentEmail: true,
+        detail: true,
         teacher: {
           select: {
             id: true,
@@ -178,6 +206,31 @@ export async function POST(req: Request) {
         },
       },
     });
+
+    if (parentEmail || birthDate || grade || livingWith || nationality || generalLevel || notes) {
+      await prisma.studentDetail.create({
+        data: {
+          studentId: student.id,
+          source: "MANUAL_ADMIN",
+          matchedName: fullName,
+          birthDate: birthDate || null,
+          grade: grade || null,
+          livingWith: livingWith || null,
+          nationality: nationality || null,
+          generalLevel: generalLevel || null,
+          notes: notes || null,
+          rawData: {
+            parentEmail,
+            birthDate,
+            grade,
+            livingWith,
+            nationality,
+            generalLevel,
+            notes,
+          },
+        },
+      });
+    }
 
     if (await isMessageAutomationEnabled("STUDENT_ASSIGNED_NOTIFICATION")) {
       await createTeacherNotification({

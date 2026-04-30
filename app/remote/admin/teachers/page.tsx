@@ -9,6 +9,10 @@ type Teacher = {
   fullName: string;
   email: string;
   whatsapp: string | null;
+  teacherCertification: string | null;
+  teacherAvailableTimes: string | null;
+  teacherAvailableTracks: string | null;
+  teacherWorkScope: string | null;
   studyMode: "REMOTE" | "ONSITE";
   isActive: boolean;
   createdAt: string;
@@ -23,12 +27,24 @@ export default function RemoteAdminTeachersPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
-  const [editData, setEditData] = useState({ fullName: "", email: "", whatsapp: "" });
+  const [editData, setEditData] = useState({
+    fullName: "",
+    email: "",
+    whatsapp: "",
+    teacherCertification: "",
+    teacherAvailableTimes: "",
+    teacherAvailableTracks: "",
+    teacherWorkScope: "",
+  });
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
     password: "",
     whatsapp: "",
+    teacherCertification: "",
+    teacherAvailableTimes: "",
+    teacherAvailableTracks: "",
+    teacherWorkScope: "",
     studyMode: "REMOTE",
   });
 
@@ -53,7 +69,7 @@ export default function RemoteAdminTeachersPage() {
     fetchTeachers();
   }, []);
 
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
@@ -83,7 +99,17 @@ export default function RemoteAdminTeachersPage() {
         alert("تمت إضافة المعلم بنجاح");
       }
 
-      setFormData({ fullName: "", email: "", password: "", whatsapp: "", studyMode: "REMOTE" });
+      setFormData({
+        fullName: "",
+        email: "",
+        password: "",
+        whatsapp: "",
+        teacherCertification: "",
+        teacherAvailableTimes: "",
+        teacherAvailableTracks: "",
+        teacherWorkScope: "",
+        studyMode: "REMOTE",
+      });
       await fetchTeachers();
     } catch (error) {
       console.error("CREATE REMOTE TEACHER ERROR =>", error);
@@ -99,6 +125,10 @@ export default function RemoteAdminTeachersPage() {
       fullName: teacher.fullName,
       email: teacher.email,
       whatsapp: teacher.whatsapp || "",
+      teacherCertification: teacher.teacherCertification || "",
+      teacherAvailableTimes: teacher.teacherAvailableTimes || "",
+      teacherAvailableTracks: teacher.teacherAvailableTracks || "",
+      teacherWorkScope: teacher.teacherWorkScope || "",
     });
   };
 
@@ -215,6 +245,51 @@ export default function RemoteAdminTeachersPage() {
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                 dir="ltr"
               />
+              <select
+                name="teacherCertification"
+                value={formData.teacherCertification}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, teacherCertification: event.target.value }))
+                }
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              >
+                <option value="">حالة الحفظ والإجازة</option>
+                <option value="حافظ">حافظ</option>
+                <option value="متقن">متقن</option>
+                <option value="مجاز">مجاز</option>
+                <option value="معلم هجاء">معلم هجاء</option>
+                <option value="معلم تلاوة">معلم تلاوة</option>
+              </select>
+              <textarea
+                name="teacherAvailableTimes"
+                value={formData.teacherAvailableTimes}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, teacherAvailableTimes: event.target.value }))
+                }
+                placeholder="الأوقات المتاحة للمعلم"
+                rows={3}
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <textarea
+                name="teacherAvailableTracks"
+                value={formData.teacherAvailableTracks}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, teacherAvailableTracks: event.target.value }))
+                }
+                placeholder="المسارات المتاحة للمعلم"
+                rows={3}
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
+              <textarea
+                name="teacherWorkScope"
+                value={formData.teacherWorkScope}
+                onChange={(event) =>
+                  setFormData((prev) => ({ ...prev, teacherWorkScope: event.target.value }))
+                }
+                placeholder="نطاق العمل الذي يمكن تكليف المعلم به"
+                rows={3}
+                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
+              />
               <button
                 type="submit"
                 disabled={submitting}
@@ -268,7 +343,15 @@ export default function RemoteAdminTeachersPage() {
                               className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                             />
                           ) : (
-                            teacher.fullName
+                            <div>
+                              <p>{teacher.fullName}</p>
+                              <div className="mt-2 space-y-1 text-xs font-normal text-gray-500">
+                                <p>المؤهل: {teacher.teacherCertification || "-"}</p>
+                                <p>الأوقات: {teacher.teacherAvailableTimes || "-"}</p>
+                                <p>المسارات: {teacher.teacherAvailableTracks || "-"}</p>
+                                <p>نطاق العمل: {teacher.teacherWorkScope || "-"}</p>
+                              </div>
+                            </div>
                           )}
                         </td>
                         <td className="px-4 py-3 text-gray-700">
