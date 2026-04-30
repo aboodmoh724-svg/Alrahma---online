@@ -274,11 +274,25 @@ export async function PATCH(request: Request) {
         return NextResponse.json({ error: "نص الرد مطلوب" }, { status: 400 });
       }
 
-      await sendWhatsAppText({
-        to: target.fromNumber,
-        body: reply,
-        channel: target.channel,
-      });
+      try {
+        await sendWhatsAppText({
+          to: target.fromNumber,
+          body: reply,
+          channel: target.channel,
+        });
+      } catch (whatsappError) {
+        console.error("WHATSAPP INCOMING REPLY SEND ERROR =>", whatsappError);
+
+        return NextResponse.json(
+          {
+            error:
+              whatsappError instanceof Error
+                ? `تعذر إرسال الرد عبر واتساب: ${whatsappError.message}`
+                : "تعذر إرسال الرد عبر واتساب",
+          },
+          { status: 502 }
+        );
+      }
 
       await prisma.whatsAppIncomingMessage.update({
         where: { id: target.id },

@@ -274,6 +274,9 @@ export default function RemoteSupervisionMessagesPage() {
 
       setIncomingMessages((prev) => prev.filter((message) => message.id !== item.id));
       alert("تم إرسال الرد وحفظ المتابعة");
+    } catch (error) {
+      console.error("SEND QUICK REPLY ERROR =>", error);
+      alert("حدث خطأ أثناء إرسال الرد عبر واتساب");
     } finally {
       setHandlingMessageId(null);
     }
