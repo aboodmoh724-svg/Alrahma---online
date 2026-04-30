@@ -300,6 +300,13 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "الطلب غير موجود" }, { status: 404 });
     }
 
+    if (existingRequest.status === "RESOLVED" || existingRequest.status === "REJECTED") {
+      return NextResponse.json(
+        { error: "تم إغلاق هذا الطلب مسبقًا ولا يمكن إرسال إجراء جديد عليه" },
+        { status: 400 }
+      );
+    }
+
     const updatedRequest = await prisma.teacherRequest.update({
       where: {
         id: existingRequest.id,

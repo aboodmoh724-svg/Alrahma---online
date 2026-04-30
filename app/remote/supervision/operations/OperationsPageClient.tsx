@@ -111,6 +111,7 @@ export default function OperationsPageClient() {
       const requestList = Array.isArray(requestsData.requests)
         ? (requestsData.requests as TeacherRequest[])
         : [];
+      const openRequestList = requestList.filter((request) => ["NEW", "IN_REVIEW"].includes(request.status));
 
       setRequests(requestList);
       setTasks(Array.isArray(tasksData.tasks) ? tasksData.tasks : []);
@@ -124,7 +125,11 @@ export default function OperationsPageClient() {
       setNotes(Object.fromEntries(requestList.map((request) => [request.id, request.adminNote || ""])));
       setStatusDrafts(Object.fromEntries(requestList.map((request) => [request.id, request.status])));
       setActionDrafts(Object.fromEntries(requestList.map((request) => [request.id, ""])));
-      setActiveRequestId((current) => current || requestList[0]?.id || null);
+      setActiveRequestId((current) =>
+        current && openRequestList.some((request) => request.id === current)
+          ? current
+          : openRequestList[0]?.id || null
+      );
     } catch (error) {
       console.error("FETCH SUPERVISION OPERATIONS ERROR =>", error);
       setRequests([]);
@@ -139,8 +144,9 @@ export default function OperationsPageClient() {
     fetchData();
   }, []);
 
-  const activeRequest = requests.find((request) => request.id === activeRequestId) || requests[0] || null;
   const openRequests = requests.filter((request) => ["NEW", "IN_REVIEW"].includes(request.status));
+  const closedRequests = requests.filter((request) => ["RESOLVED", "REJECTED"].includes(request.status));
+  const activeRequest = openRequests.find((request) => request.id === activeRequestId) || openRequests[0] || null;
   const openTasks = tasks.filter((task) => ["NEW", "IN_PROGRESS", "WAITING"].includes(task.status));
   const pendingRegistrations = registrations.filter((item) =>
     ["PENDING", "UNDER_REVIEW", "ON_HOLD"].includes(item.supervisionStatus)
@@ -242,13 +248,13 @@ export default function OperationsPageClient() {
               <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
-            ) : requests.length === 0 ? (
+            ) : openRequests.length === 0 ? (
               <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
-                لا توجد طلبات حالياً.
+                لا توجد طلبات جديدة تحتاج إجراء الآن.
               </div>
             ) : (
               <div className="mt-4 max-h-[720px] space-y-3 overflow-y-auto pl-1">
-                {requests.map((request) => (
+                {openRequests.map((request) => (
                   <button
                     key={request.id}
                     type="button"
@@ -364,19 +370,19 @@ export default function OperationsPageClient() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() => saveRequest(activeRequest.id, "IN_REVIEW")}
-                        disabled={savingId === activeRequest.id}
-                        className="rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
-                      >
-                        حفظ للمتابعة
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => saveRequest(activeRequest.id, "RESOLVED")}
                         disabled={savingId === activeRequest.id}
                         className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
                       >
-                        تم الإجراء
+                        حفظ الإجراء وإنهاء الطلب
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => saveRequest(activeRequest.id, "IN_REVIEW")}
+                        disabled={savingId === activeRequest.id}
+                        className="rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                      >
+                        إبقاء قيد المتابعة
                       </button>
                       <button
                         type="button"
@@ -403,6 +409,33 @@ export default function OperationsPageClient() {
                 </div>
               ))}
             </section>
+
+            {closedRequests.length > 0 ? (
+              <details className="rounded-[1.5rem] bg-white/88 p-4 ring-1 ring-[#d9c8ad]">
+                <summary className="cursor-pointer text-sm font-black text-[#1c2d31]">
+                  سجل طلبات المعلمين المنتهية ({closedRequests.length})
+                </summary>
+                <div className="mt-3 max-h-72 space-y-2 overflow-y-auto">
+                  {closedRequests.map((request) => (
+                    <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-black text-[#1c2d31]">{request.subject}</p>
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
+                          {request.status === "RESOLVED" ? "تم الإجراء" : "أغلق بلا إجراء"}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs leading-6 text-[#1c2d31]/60">
+                        {request.teacher.fullName}
+                        {request.student ? ` - ${request.student.fullName}` : ""} - {formatDate(request.createdAt)}
+                      </p>
+                      {request.adminNote ? (
+                        <p className="mt-1 text-xs leading-6 text-[#1c2d31]/55">{request.adminNote}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </details>
+            ) : null}
           </div>
         </section>
       </div>

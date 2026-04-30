@@ -8,13 +8,14 @@ import {
   type WhatsAppChannel,
 } from "@/lib/whatsapp";
 
-type RecipientType = "ALL_PARENTS" | "ALL_TEACHERS" | "SELECTED_PARENTS";
+type RecipientType = "ALL_PARENTS" | "ALL_TEACHERS" | "SELECTED_PARENTS" | "SELECTED_TEACHERS";
 
 function normalizeRecipientType(value: unknown): RecipientType | null {
   if (
     value === "ALL_PARENTS" ||
     value === "ALL_TEACHERS" ||
-    value === "SELECTED_PARENTS"
+    value === "SELECTED_PARENTS" ||
+    value === "SELECTED_TEACHERS"
   ) {
     return value;
   }
@@ -74,6 +75,9 @@ export async function POST(request: Request) {
     const selectedParentIds = Array.isArray(body.selectedParentIds)
       ? body.selectedParentIds.map((value: unknown) => String(value || "").trim()).filter(Boolean)
       : [];
+    const selectedTeacherIds = Array.isArray(body.selectedTeacherIds)
+      ? body.selectedTeacherIds.map((value: unknown) => String(value || "").trim()).filter(Boolean)
+      : [];
 
     if (!rawMessage) {
       return NextResponse.json({ error: "Ù†Øµ Ø§Ù„Ø±Ø³Ø§Ù„Ø© Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
@@ -110,12 +114,13 @@ export async function POST(request: Request) {
       }
     }
 
-    if (recipientType === "ALL_TEACHERS") {
+    if (recipientType === "ALL_TEACHERS" || recipientType === "SELECTED_TEACHERS") {
       const teachers = await prisma.user.findMany({
         where: {
           role: "TEACHER",
           isActive: true,
           studyMode: scope,
+          ...(recipientType === "SELECTED_TEACHERS" ? { id: { in: selectedTeacherIds } } : {}),
         },
         select: {
           fullName: true,
