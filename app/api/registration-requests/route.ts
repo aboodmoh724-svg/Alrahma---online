@@ -747,6 +747,38 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true, request: updatedRequest });
     }
 
+    if (action === "UPDATE_INTERVIEW_RESULT") {
+      if (request.status !== "ACCEPTED" || !request.forwardedToSupervisionAt) {
+        return NextResponse.json(
+          { error: "لا يمكن حفظ نتيجة المقابلة إلا للطلبات المحولة إلى الإشراف" },
+          { status: 400 }
+        );
+      }
+
+      const interviewLevel = String(body.interviewLevel || "").trim();
+      const interviewDecision = String(body.interviewDecision || "").trim();
+      const interviewResult = String(body.interviewResult || "").trim();
+      const noteLines = [
+        request.supervisionNote?.trim(),
+        interviewLevel ? `مستوى الطالب في المقابلة: ${interviewLevel}` : null,
+        interviewDecision ? `قرار المقابلة: ${interviewDecision}` : null,
+        interviewResult ? `ملاحظات المقابلة: ${interviewResult}` : null,
+      ].filter(Boolean);
+
+      const updatedRequest = await prisma.registrationRequest.update({
+        where: { id: request.id },
+        data: {
+          interviewLevel: interviewLevel || null,
+          interviewDecision: interviewDecision || null,
+          interviewResult: interviewResult || null,
+          supervisionStatus: "UNDER_REVIEW",
+          supervisionNote: noteLines.join("\n") || request.supervisionNote,
+        },
+      });
+
+      return NextResponse.json({ success: true, request: updatedRequest });
+    }
+
     if (action !== "ACCEPT") {
       return NextResponse.json({ error: "الإجراء غير معروف" }, { status: 400 });
     }

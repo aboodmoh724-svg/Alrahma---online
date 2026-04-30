@@ -60,6 +60,7 @@ model Student {
   teacherRequests TeacherRequest[]
   supervisionTasks SupervisionTask[]
   followUpActions StudentFollowUpAction[]
+  incomingWhatsAppMessages WhatsAppIncomingMessage[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
@@ -391,6 +392,32 @@ model RegistrationRequest {
   idImageFileName    String?
   interviewDate      DateTime?
   interviewLink      String?
+  interviewResult    String?
+  interviewLevel     String?
+  interviewDecision  String?
+  incomingWhatsAppMessages WhatsAppIncomingMessage[]
+}
+
+model WhatsAppIncomingMessage {
+  id                    String                   @id @default(cuid())
+  messageId             String?                  @unique
+  channel               StudyMode
+  fromNumber            String
+  body                  String
+  category              WhatsAppIncomingCategory @default(GENERAL)
+  isRead                Boolean                  @default(false)
+  raw                   Json?
+  studentId             String?
+  registrationRequestId String?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  student               Student?                 @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  registrationRequest   RegistrationRequest?     @relation(fields: [registrationRequestId], references: [id], onDelete: SetNull)
+
+  @@index([channel, isRead, createdAt])
+  @@index([fromNumber])
+  @@index([studentId])
+  @@index([registrationRequestId])
 }
 
 model Report {
@@ -479,6 +506,12 @@ enum SupervisionStatus {
   UNDER_REVIEW
   PLACED
   ON_HOLD
+}
+
+enum WhatsAppIncomingCategory {
+  GENERAL
+  INTERVIEW_RESCHEDULE
+  ABSENCE_EXCUSE
 }
 
 enum TeacherRequestType {

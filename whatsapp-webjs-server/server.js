@@ -13,6 +13,11 @@ const allowedOrigin = String(process.env.ALLOWED_ORIGIN || "*").trim() || "*";
 const serviceName = String(process.env.WHATSAPP_SERVICE_NAME || "alrahma-whatsapp-webjs-server").trim();
 const clientId = String(process.env.WHATSAPP_CLIENT_ID || "alrahma-main").trim();
 const authDataPath = String(process.env.WHATSAPP_AUTH_DATA_PATH || ".wwebjs_auth").trim();
+const incomingWebhookUrl = String(process.env.APP_INCOMING_WHATSAPP_WEBHOOK_URL || "").trim();
+const incomingWebhookToken = String(process.env.APP_INCOMING_WHATSAPP_WEBHOOK_TOKEN || "").trim();
+const whatsappChannel = String(process.env.WHATSAPP_CHANNEL || "REMOTE").trim().toUpperCase() === "ONSITE"
+  ? "ONSITE"
+  : "REMOTE";
 
 let clientReady = false;
 let lastQrAt = null;
@@ -106,11 +111,48 @@ client.on("disconnected", (reason) => {
   console.warn("WhatsApp disconnected:", reason);
 });
 
+async function forwardIncomingMessage(message) {
+  if (!incomingWebhookUrl || message.fromMe || String(message.from || "").includes("@g.us")) {
+    return;
+  }
+
+  const payload = {
+    messageId: message.id?._serialized || null,
+    from: message.from,
+    body: message.body || "",
+    timestamp: message.timestamp || null,
+    channel: whatsappChannel,
+    hasMedia: Boolean(message.hasMedia),
+  };
+
+  try {
+    const response = await fetch(incomingWebhookUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(incomingWebhookToken ? { Authorization: `Bearer ${incomingWebhookToken}` } : {}),
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("INCOMING WEBHOOK ERROR:", response.status, text);
+    }
+  } catch (error) {
+    console.error("FORWARD INCOMING MESSAGE ERROR:", error);
+  }
+}
+
+client.on("message", forwardIncomingMessage);
+
 app.get("/", (_req, res) => {
   res.json({
     success: true,
     service: serviceName,
     clientId,
+    channel: whatsappChannel,
+    incomingWebhookEnabled: Boolean(incomingWebhookUrl),
     ready: clientReady,
     lastQrAt,
     lastReadyAt,
@@ -122,6 +164,8 @@ app.get("/status", (_req, res) => {
     success: true,
     service: serviceName,
     clientId,
+    channel: whatsappChannel,
+    incomingWebhookEnabled: Boolean(incomingWebhookUrl),
     ready: clientReady,
     lastQrAt,
     lastReadyAt,

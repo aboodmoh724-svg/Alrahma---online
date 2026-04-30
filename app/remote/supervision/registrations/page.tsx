@@ -55,6 +55,20 @@ type RegistrationRequest = {
   createdAt: string;
   interviewDate?: string | null;
   interviewLink?: string | null;
+  interviewResult?: string | null;
+  interviewLevel?: string | null;
+  interviewDecision?: string | null;
+};
+
+type IncomingMessage = {
+  id: string;
+  fromNumber: string;
+  body: string;
+  category: "GENERAL" | "INTERVIEW_RESCHEDULE" | "ABSENCE_EXCUSE";
+  isRead: boolean;
+  createdAt: string;
+  registrationRequestId: string | null;
+  studentId: string | null;
 };
 
 const STATUS_OPTIONS = [
@@ -98,10 +112,15 @@ export default function RemoteSupervisionRegistrationsPage() {
   const [requests, setRequests] = useState<RegistrationRequest[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [circles, setCircles] = useState<Circle[]>([]);
+  const [incomingMessages, setIncomingMessages] = useState<IncomingMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState<string | null>(null);
+  const [savingInterviewResultId, setSavingInterviewResultId] = useState<string | null>(null);
   const [placingId, setPlacingId] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
+  const [interviewResults, setInterviewResults] = useState<Record<string, string>>({});
+  const [interviewLevels, setInterviewLevels] = useState<Record<string, string>>({});
+  const [interviewDecisions, setInterviewDecisions] = useState<Record<string, string>>({});
   const [statuses, setStatuses] = useState<Record<string, RegistrationRequest["supervisionStatus"]>>({});
   const [selectedCircle, setSelectedCircle] = useState<Record<string, string>>({});
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
@@ -131,6 +150,13 @@ export default function RemoteSupervisionRegistrationsPage() {
     () => forwardedRequests.find((request) => request.id === interviewModalOpen) || null,
     [forwardedRequests, interviewModalOpen]
   );
+  const incomingByRequestId = useMemo(() => {
+    return incomingMessages.reduce<Record<string, IncomingMessage[]>>((acc, message) => {
+      if (!message.registrationRequestId || message.isRead) return acc;
+      acc[message.registrationRequestId] = [...(acc[message.registrationRequestId] || []), message];
+      return acc;
+    }, {});
+  }, [incomingMessages]);
 
   const buildInterviewMessage = (
     request: RegistrationRequest,
@@ -171,22 +197,28 @@ export default function RemoteSupervisionRegistrationsPage() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [requestsResponse, teachersResponse, circlesResponse] = await Promise.all([
+      const [requestsResponse, teachersResponse, circlesResponse, incomingResponse] = await Promise.all([
         fetch("/api/registration-requests", { cache: "no-store" }),
         fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
         fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/whatsapp/incoming?channel=REMOTE&unreadOnly=true&limit=120", { cache: "no-store" }),
       ]);
-      const [requestsData, teachersData, circlesData] = await Promise.all([
+      const [requestsData, teachersData, circlesData, incomingData] = await Promise.all([
         requestsResponse.json(),
         teachersResponse.json(),
         circlesResponse.json(),
+        incomingResponse.json(),
       ]);
       const list = Array.isArray(requestsData.requests) ? (requestsData.requests as RegistrationRequest[]) : [];
 
       setRequests(list);
       setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
       setCircles(Array.isArray(circlesData.circles) ? circlesData.circles : []);
+      setIncomingMessages(Array.isArray(incomingData.messages) ? incomingData.messages : []);
       setNotes(Object.fromEntries(list.map((request) => [request.id, request.supervisionNote || ""])));
+      setInterviewResults(Object.fromEntries(list.map((request) => [request.id, request.interviewResult || ""])));
+      setInterviewLevels(Object.fromEntries(list.map((request) => [request.id, request.interviewLevel || ""])));
+      setInterviewDecisions(Object.fromEntries(list.map((request) => [request.id, request.interviewDecision || ""])));
       setStatuses(
         Object.fromEntries(
           list.map((request) => [request.id, request.supervisionStatus || "PENDING"])
@@ -197,6 +229,55 @@ export default function RemoteSupervisionRegistrationsPage() {
       setRequests([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const markIncomingAsRead = async (ids: string[]) => {
+    if (ids.length === 0) return;
+
+    try {
+      const response = await fetch("/api/whatsapp/incoming", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+
+      if (!response.ok) return;
+
+      setIncomingMessages((prev) => prev.filter((message) => !ids.includes(message.id)));
+    } catch (error) {
+      console.error("MARK INCOMING MESSAGE READ ERROR =>", error);
+    }
+  };
+
+  const saveInterviewResult = async (requestId: string) => {
+    try {
+      setSavingInterviewResultId(requestId);
+      const response = await fetch("/api/registration-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestId,
+          action: "UPDATE_INTERVIEW_RESULT",
+          interviewLevel: interviewLevels[requestId] || "",
+          interviewDecision: interviewDecisions[requestId] || "",
+          interviewResult: interviewResults[requestId] || "",
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر حفظ نتيجة المقابلة");
+        return;
+      }
+
+      alert("تم حفظ نتيجة المقابلة");
+      await fetchData();
+    } catch (error) {
+      console.error("SAVE INTERVIEW RESULT ERROR =>", error);
+      alert("حدث خطأ أثناء حفظ نتيجة المقابلة");
+    } finally {
+      setSavingInterviewResultId(null);
     }
   };
 
@@ -363,6 +444,8 @@ export default function RemoteSupervisionRegistrationsPage() {
         ) : (
           <div className="space-y-4">
             {activeRequests.map((request) => {
+              const requestIncoming = incomingByRequestId[request.id] || [];
+
               return (
                 <div key={request.id} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
                   <div className="flex flex-wrap items-center gap-2">
@@ -382,11 +465,52 @@ export default function RemoteSupervisionRegistrationsPage() {
                   <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_360px]">
                     <div className="space-y-4">
                       <div>
-                        <h2 className="text-2xl font-black text-[#1c2d31]">{request.studentName}</h2>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h2 className="text-2xl font-black text-[#1c2d31]">{request.studentName}</h2>
+                          {requestIncoming.length > 0 ? (
+                            <span className="rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white">
+                              رد جديد من ولي الأمر
+                            </span>
+                          ) : null}
+                        </div>
                         <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
                           ولي الأمر: {request.parentWhatsapp} - البريد: {request.parentEmail || "-"}
                         </p>
                       </div>
+
+                      {requestIncoming.length > 0 ? (
+                        <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <p className="text-sm font-black text-red-800">رسائل واتساب واردة تحتاج متابعة</p>
+                            <button
+                              type="button"
+                              onClick={() => markIncomingAsRead(requestIncoming.map((message) => message.id))}
+                              className="rounded-xl bg-white px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-200"
+                            >
+                              تم الاطلاع
+                            </button>
+                          </div>
+                          <div className="mt-3 space-y-2">
+                            {requestIncoming.slice(0, 3).map((message) => (
+                              <div key={message.id} className="rounded-xl bg-white p-3 text-sm leading-6 text-[#1c2d31]">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="rounded-full bg-red-100 px-2 py-1 text-[11px] font-black text-red-700">
+                                    {message.category === "INTERVIEW_RESCHEDULE"
+                                      ? "الموعد غير مناسب"
+                                      : message.category === "ABSENCE_EXCUSE"
+                                        ? "عذر غياب"
+                                        : "رسالة عامة"}
+                                  </span>
+                                  <span className="text-xs font-bold text-[#1c2d31]/45">
+                                    {formatDate(message.createdAt)}
+                                  </span>
+                                </div>
+                                <p className="mt-2">{message.body}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
 
                       <div className="grid gap-3 md:grid-cols-4">
                         <InfoItem label="الميلاد/الصف" value={`${request.birthDate ? new Date(request.birthDate).toLocaleDateString("ar-EG") : "-"} / ${request.grade || "-"}`} />
@@ -438,6 +562,63 @@ export default function RemoteSupervisionRegistrationsPage() {
                           </a>
                         ) : null}
                       </div>
+
+                      {request.interviewDate ? (
+                        <div className="rounded-2xl border border-[#d9c8ad] bg-white p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                              <p className="text-lg font-black text-[#1c2d31]">نتيجة المقابلة وتحديد المستوى</p>
+                              <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                                موعد المقابلة: {formatDate(request.interviewDate)}
+                              </p>
+                            </div>
+                            {request.interviewLink ? (
+                              <a
+                                href={request.interviewLink}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                              >
+                                فتح رابط المقابلة
+                              </a>
+                            ) : null}
+                          </div>
+                          <div className="mt-4 grid gap-3 md:grid-cols-2">
+                            <input
+                              value={interviewLevels[request.id] || ""}
+                              onChange={(event) =>
+                                setInterviewLevels((prev) => ({ ...prev, [request.id]: event.target.value }))
+                              }
+                              placeholder="مستوى الطالب: جيد، متوسط، يحتاج تأسيس..."
+                              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                            />
+                            <input
+                              value={interviewDecisions[request.id] || ""}
+                              onChange={(event) =>
+                                setInterviewDecisions((prev) => ({ ...prev, [request.id]: event.target.value }))
+                              }
+                              placeholder="قرار المقابلة: مناسب للمسار كذا..."
+                              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                            />
+                          </div>
+                          <textarea
+                            value={interviewResults[request.id] || ""}
+                            onChange={(event) =>
+                              setInterviewResults((prev) => ({ ...prev, [request.id]: event.target.value }))
+                            }
+                            placeholder="ملاحظات المقابلة: قراءة الطالب، قوة الحفظ، موضع البداية المناسب، أي توصية للمعلم..."
+                            className="mt-3 min-h-28 w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm leading-7 outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => saveInterviewResult(request.id)}
+                            disabled={savingInterviewResultId === request.id}
+                            className="mt-3 rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                          >
+                            {savingInterviewResultId === request.id ? "جارٍ حفظ النتيجة..." : "حفظ نتيجة المقابلة"}
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="space-y-3 rounded-[1.6rem] bg-[#fffaf2] p-4 ring-1 ring-[#e7dcc8]">

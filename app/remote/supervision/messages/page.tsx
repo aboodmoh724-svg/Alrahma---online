@@ -18,6 +18,16 @@ type Teacher = {
   whatsapp: string | null;
 };
 
+type IncomingMessage = {
+  id: string;
+  fromNumber: string;
+  body: string;
+  category: "GENERAL" | "INTERVIEW_RESCHEDULE" | "ABSENCE_EXCUSE";
+  createdAt: string;
+  student: { fullName: string } | null;
+  registrationRequest: { studentName: string } | null;
+};
+
 type RecipientMode = "SELECTED_PARENTS" | "ALL_PARENTS" | "SELECTED_TEACHERS" | "ALL_TEACHERS";
 
 const templates = [
@@ -62,6 +72,7 @@ function applyTemplate(template: string, values: { studentName: string; message:
 export default function RemoteSupervisionMessagesPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [incomingMessages, setIncomingMessages] = useState<IncomingMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [recipientMode, setRecipientMode] = useState<RecipientMode>("SELECTED_PARENTS");
   const [studentQuery, setStudentQuery] = useState("");
@@ -108,17 +119,20 @@ export default function RemoteSupervisionMessagesPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [studentsResponse, teachersResponse] = await Promise.all([
+        const [studentsResponse, teachersResponse, incomingResponse] = await Promise.all([
           fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
           fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
+          fetch("/api/whatsapp/incoming?channel=REMOTE&unreadOnly=true&limit=60", { cache: "no-store" }),
         ]);
-        const [studentsData, teachersData] = await Promise.all([
+        const [studentsData, teachersData, incomingData] = await Promise.all([
           studentsResponse.json(),
           teachersResponse.json(),
+          incomingResponse.json(),
         ]);
 
         setStudents(Array.isArray(studentsData.students) ? studentsData.students : []);
         setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
+        setIncomingMessages(Array.isArray(incomingData.messages) ? incomingData.messages : []);
       } catch (error) {
         console.error("FETCH SUPERVISION MESSAGE RECIPIENTS ERROR =>", error);
         setStudents([]);
@@ -130,6 +144,22 @@ export default function RemoteSupervisionMessagesPage() {
 
     fetchData();
   }, []);
+
+  const markIncomingAsRead = async (messageId: string) => {
+    try {
+      const response = await fetch("/api/whatsapp/incoming", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: [messageId] }),
+      });
+
+      if (!response.ok) return;
+
+      setIncomingMessages((prev) => prev.filter((message) => message.id !== messageId));
+    } catch (error) {
+      console.error("MARK INCOMING MESSAGE READ ERROR =>", error);
+    }
+  };
 
   const fillSelectedTemplate = (templateKey: string) => {
     const template = templates.find((item) => item.key === templateKey) || templates[0];
@@ -196,6 +226,53 @@ export default function RemoteSupervisionMessagesPage() {
             الرجوع إلى لوحة الإشراف
           </Link>
         </div>
+
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h2 className="text-2xl font-black text-[#1c2d31]">الوارد من واتساب</h2>
+              <p className="mt-1 text-sm text-[#1c2d31]/60">
+                الرسائل الجديدة من أولياء الأمور تظهر هنا وترتبط تلقائياً بالطالب أو طلب التسجيل عند تطابق الرقم.
+              </p>
+            </div>
+            <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+              {incomingMessages.length}
+            </span>
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {incomingMessages.length === 0 ? (
+              <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-bold text-[#1c2d31]/60">
+                لا توجد رسائل واردة جديدة.
+              </div>
+            ) : (
+              incomingMessages.map((message) => (
+                <div key={message.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#e5d7bd]">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
+                      {message.category === "INTERVIEW_RESCHEDULE"
+                        ? "تعديل موعد"
+                        : message.category === "ABSENCE_EXCUSE"
+                          ? "عذر غياب"
+                          : "عام"}
+                    </span>
+                    <span className="text-xs font-bold text-[#1c2d31]/50">{message.fromNumber}</span>
+                  </div>
+                  <p className="mt-2 text-sm font-black text-[#1c2d31]">
+                    {message.student?.fullName || message.registrationRequest?.studentName || "رقم غير مرتبط"}
+                  </p>
+                  <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{message.body}</p>
+                  <button
+                    type="button"
+                    onClick={() => markIncomingAsRead(message.id)}
+                    className="mt-3 rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#173d42]"
+                  >
+                    تم الاطلاع
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
 
         <section className="grid gap-4 xl:grid-cols-[380px_1fr]">
           <div className="space-y-4 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
