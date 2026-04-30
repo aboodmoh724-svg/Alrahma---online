@@ -229,11 +229,11 @@ export async function GET() {
       success: true,
       requests: requestsWithSignedUrls,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("GET REGISTRATION REQUESTS ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء جلب طلبات التسجيل" },
+      { error: error?.message || "حدث خطأ أثناء جلب طلبات التسجيل" },
       { status: 500 }
     );
   }
@@ -401,11 +401,11 @@ export async function POST(req: Request) {
       whatsappWarning,
       uploadWarning,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("CREATE REGISTRATION REQUEST ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء إرسال طلب التسجيل" },
+      { error: error?.message || "حدث خطأ أثناء إرسال طلب التسجيل" },
       { status: 500 }
     );
   }
