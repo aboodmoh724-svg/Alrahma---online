@@ -64,7 +64,7 @@ function trackLabel(track: string | null) {
 }
 
 const PERIOD_DEFAULTS: Record<string, { startsAt: string; endsAt: string }> = {
-  "الفترة الصباحية": { startsAt: "09:00", endsAt: "11:00" },
+  "الفترة الصباحية": { startsAt: "09:00", endsAt: "12:00" },
   "الفترة المسائية الأولى": { startsAt: "15:00", endsAt: "18:00" },
   "الفترة المسائية الثانية": { startsAt: "19:00", endsAt: "22:00" },
   "الفترة المسائية الثالثة": { startsAt: "23:00", endsAt: "02:00" },

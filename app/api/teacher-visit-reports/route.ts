@@ -163,6 +163,8 @@ export async function POST(req: Request) {
     const overallEvaluation = normalizeEvaluation(body.overallEvaluation);
     const finalRecommendation = String(body.finalRecommendation || "").trim();
     const generalNotes = String(body.generalNotes || "").trim();
+    const positiveNotesEnabled = body.positiveNotesEnabled === true;
+    const positiveNotes = positiveNotesEnabled ? String(body.positiveNotes || "").trim() : "";
     const mainItems = normalizeMainItems(body.mainItems);
     const generalItems = normalizeGeneralItems(body.generalItems);
 
@@ -236,6 +238,7 @@ export async function POST(req: Request) {
       overallEvaluation,
       finalRecommendation,
       generalNotes,
+      positiveNotes,
       mainItems,
       generalItems,
     });

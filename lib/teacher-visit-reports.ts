@@ -6,9 +6,11 @@ export const TEACHER_VISIT_TRACK_OPTIONS = [
 ] as const;
 
 export const TEACHER_VISIT_PERIOD_OPTIONS = [
-  "الفترة الأولى",
-  "الفترة الثانية",
-  "الفترة الثالثة",
+  "الفترة الصباحية 09:00 - 12:00",
+  "الفترة المسائية الأولى 15:00 - 18:00",
+  "الفترة المسائية الثانية 19:00 - 22:00",
+  "الفترة المسائية الثالثة 23:00 - 02:00",
+  "الفترة المسائية الرابعة 03:00 - 06:00",
 ] as const;
 
 export const TEACHER_VISIT_EVALUATION_OPTIONS = [
@@ -19,7 +21,7 @@ export const TEACHER_VISIT_EVALUATION_OPTIONS = [
 ] as const;
 
 export const TEACHER_VISIT_MAIN_ITEMS = [
-  "تسمية الدرس الجديد",
+  "تسميع الدرس الجديد بالعين",
   "تسميع آخر خمس صفحات",
   "المراجعة",
   "تصحيح وتلقين الدرس الجديد",

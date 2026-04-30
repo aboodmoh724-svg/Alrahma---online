@@ -72,6 +72,7 @@ function teacherVisitHtml(input: {
   overallEvaluation?: string | null;
   finalRecommendation?: string | null;
   generalNotes?: string | null;
+  positiveNotes?: string | null;
   mainItems: TeacherVisitMainItem[];
   generalItems: TeacherVisitGeneralItem[];
   logoSrc: string;
@@ -87,6 +88,9 @@ function teacherVisitHtml(input: {
       `
     )
     .join("");
+  const positiveSection = input.positiveNotes?.trim()
+    ? `<div class="highlight-box"><h3>نقاط إيجابية لدى المعلم</h3><p>${escapeHtml(input.positiveNotes)}</p></div>`
+    : "";
 
   const generalItemsRows = input.generalItems
     .map(
@@ -106,25 +110,29 @@ function teacherVisitHtml(input: {
   <meta charset="utf-8" />
   <title>تقرير زيارة المعلم رقم ${input.visitNumber}</title>
   <style>
-    body { font-family: Arial, "Noto Naskh Arabic", "Segoe UI", sans-serif; margin: 0; padding: 24px; color: #173d42; background: #fffaf2; }
-    .sheet { background: white; border: 2px solid #d9c8ad; border-radius: 24px; padding: 28px; }
-    .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #eadcc6; padding-bottom: 18px; margin-bottom: 18px; gap: 16px; }
+    @page { size: A4; margin: 14mm; }
+    body { font-family: Arial, "Noto Naskh Arabic", "Segoe UI", sans-serif; margin: 0; color: #173d42; background: #fffaf2; }
+    .sheet { background: white; border: 1px solid #d9c8ad; border-radius: 18px; padding: 24px; }
+    .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #eadcc6; padding-bottom: 16px; margin-bottom: 18px; gap: 16px; }
     .title { text-align: right; flex: 1; }
-    .title h1 { margin: 0; font-size: 28px; }
-    .title p { margin: 8px 0 0; color: #8a6335; font-weight: bold; }
-    .logo { width: 84px; height: 84px; object-fit: contain; }
+    .title h1 { margin: 0; font-size: 30px; line-height: 1.4; }
+    .title p { margin: 8px 0 0; color: #8a6335; font-size: 15px; font-weight: bold; }
+    .logo { width: 78px; height: 78px; object-fit: contain; }
     .meta { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-    .meta td { border: 1px solid #e7dcc8; padding: 10px 12px; font-size: 14px; width: 25%; }
+    .meta td { border: 1px solid #e7dcc8; padding: 10px 12px; font-size: 13px; width: 25%; }
     .meta .heading { background: #f4eee1; font-weight: bold; color: #8a6335; }
-    .section { margin-top: 22px; }
-    .section h2 { margin: 0 0 10px; font-size: 20px; color: #1f6358; }
+    .section { margin-top: 20px; page-break-inside: avoid; }
+    .section h2 { margin: 0 0 10px; border-right: 5px solid #1f6358; padding-right: 10px; font-size: 21px; color: #1f6358; }
     .table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-    .table th, .table td { border: 1px solid #e7dcc8; padding: 10px 12px; vertical-align: top; font-size: 14px; }
-    .table th { background: #f4eee1; color: #8a6335; font-size: 13px; }
+    .table th, .table td { border: 1px solid #e7dcc8; padding: 10px 12px; vertical-align: top; font-size: 13px; }
+    .table th { background: #f4eee1; color: #8a6335; font-size: 12px; }
     .index { width: 8%; text-align: center; font-weight: bold; }
     .label { width: 36%; font-weight: bold; }
     .note { width: 56%; line-height: 1.8; white-space: pre-wrap; }
     .eval { width: 24%; text-align: center; font-weight: bold; }
+    .highlight-box { margin-top: 20px; border: 1px solid #b8d7cb; border-radius: 16px; background: #eef7f5; padding: 14px 16px; page-break-inside: avoid; }
+    .highlight-box h3 { margin: 0 0 8px; font-size: 17px; color: #1f6358; }
+    .highlight-box p { margin: 0; line-height: 1.9; white-space: pre-wrap; }
     .footer-box { margin-top: 18px; border: 1px solid #e7dcc8; border-radius: 18px; background: #fffaf2; padding: 14px 16px; }
     .footer-box h3 { margin: 0 0 8px; font-size: 16px; color: #8a6335; }
     .footer-box p { margin: 0; line-height: 1.9; white-space: pre-wrap; }
@@ -159,6 +167,7 @@ function teacherVisitHtml(input: {
         <tbody>${generalItemsRows}</tbody>
       </table>
     </div>
+    ${positiveSection}
     <div class="footer-box"><h3>التوصية النهائية</h3><p>${escapeHtml(input.finalRecommendation || "-")}</p></div>
     <div class="footer-box"><h3>ملاحظات عامة</h3><p>${escapeHtml(input.generalNotes || "-")}</p></div>
   </div>
@@ -178,6 +187,7 @@ export async function generateTeacherVisitPdf(input: {
   overallEvaluation?: string | null;
   finalRecommendation?: string | null;
   generalNotes?: string | null;
+  positiveNotes?: string | null;
   mainItems: TeacherVisitMainItem[];
   generalItems: TeacherVisitGeneralItem[];
 }) {

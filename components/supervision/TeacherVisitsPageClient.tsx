@@ -51,6 +51,8 @@ type FormState = {
   overallEvaluation: string;
   finalRecommendation: string;
   generalNotes: string;
+  positiveNotesEnabled: boolean;
+  positiveNotes: string;
   mainItems: Array<{ label: string; note: string }>;
   generalItems: Array<{ label: string; evaluation: string }>;
 };
@@ -92,6 +94,8 @@ export default function TeacherVisitsPageClient({
     overallEvaluation: TEACHER_VISIT_EVALUATION_OPTIONS[1],
     finalRecommendation: "",
     generalNotes: "",
+    positiveNotesEnabled: false,
+    positiveNotes: "",
     mainItems: TEACHER_VISIT_MAIN_ITEMS.map((label) => ({ label, note: "" })),
     generalItems: TEACHER_VISIT_GENERAL_ITEMS.map((label) => ({
       label,
@@ -157,6 +161,8 @@ export default function TeacherVisitsPageClient({
         overallEvaluation: TEACHER_VISIT_EVALUATION_OPTIONS[1],
         finalRecommendation: "",
         generalNotes: "",
+        positiveNotesEnabled: false,
+        positiveNotes: "",
         mainItems: TEACHER_VISIT_MAIN_ITEMS.map((label) => ({ label, note: "" })),
         generalItems: TEACHER_VISIT_GENERAL_ITEMS.map((label) => ({
           label,
@@ -334,6 +340,33 @@ export default function TeacherVisitsPageClient({
           </section>
 
           <section className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6] md:col-span-2">
+              <label className="flex items-center gap-3 text-sm font-black text-[#173d42]">
+                <input
+                  type="checkbox"
+                  checked={formData.positiveNotesEnabled}
+                  onChange={(event) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      positiveNotesEnabled: event.target.checked,
+                      positiveNotes: event.target.checked ? prev.positiveNotes : "",
+                    }))
+                  }
+                  className="h-5 w-5"
+                />
+                إظهار قسم نقاط إيجابية لدى المعلم في التقرير
+              </label>
+              {formData.positiveNotesEnabled ? (
+                <textarea
+                  value={formData.positiveNotes}
+                  onChange={(event) =>
+                    setFormData((prev) => ({ ...prev, positiveNotes: event.target.value }))
+                  }
+                  placeholder="اكتب النقاط الإيجابية التي ظهرت أثناء الزيارة..."
+                  className="mt-3 min-h-28 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
+                />
+              ) : null}
+            </div>
             <div>
               <label className="mb-2 block text-sm font-bold text-[#1c2d31]">التوصية النهائية</label>
               <textarea
