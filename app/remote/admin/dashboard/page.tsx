@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 import { prisma } from "@/lib/prisma";
 
 const REGISTRATION_REQUESTS_LAST_SEEN_KEY = "registration_requests:last_seen_at";
@@ -128,6 +129,12 @@ const sections: DashboardSection[] = [
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
+    href: "/remote/admin/escalated-messages",
+    title: "متابعات محولة من الإشراف",
+    description: "رسائل وشكاوى يحولها المشرف للإدارة للرد أو التوجيه أو مراسلة المعلم.",
+    tone: "bg-[#fffaf2] text-[#173d42]",
+  },
+  {
     href: "/remote/admin/statistics#unassigned-students",
     title: "طلاب بلا حلقة",
     description: "قسم مهم لمتابعة الطلاب الذين لم يتم ربطهم بحلقة بعد.",
@@ -214,10 +221,37 @@ async function getOpenTeacherRequestsCount() {
 }
 
 export default async function RemoteAdminDashboardPage() {
-  const [currentAdmin, newRegistrationsCount, openTeacherRequestsCount] = await Promise.all([
+  const [
+    currentAdmin,
+    newRegistrationsCount,
+    openTeacherRequestsCount,
+    escalatedMessagesCount,
+    escalatedComplaintsCount,
+    unassignedStudentsCount,
+  ] = await Promise.all([
     getCurrentRemoteAdmin(),
     getNewRegistrationRequestsCount(),
     getOpenTeacherRequestsCount(),
+    prisma.whatsAppIncomingMessage.count({
+      where: {
+        channel: "REMOTE",
+        followUpStatus: "ESCALATED",
+      },
+    }),
+    prisma.whatsAppIncomingMessage.count({
+      where: {
+        channel: "REMOTE",
+        followUpStatus: "ESCALATED",
+        category: "COMPLAINT",
+      },
+    }),
+    prisma.student.count({
+      where: {
+        studyMode: "REMOTE",
+        isActive: true,
+        circleId: null,
+      },
+    }),
   ]);
 
   const visibleSections = sections.filter(
@@ -225,6 +259,41 @@ export default async function RemoteAdminDashboardPage() {
       !ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS.has(section.href) &&
       (!section.requiresFinanceAccess || currentAdmin?.canAccessFinance)
   );
+
+  const notificationItems = [
+    {
+      key: "new-registrations",
+      title: "طلبات تسجيل جديدة",
+      description: "طلبات تحتاج مراجعة الإدارة أو تحويلها للإشراف.",
+      href: "/remote/admin/registrations",
+      count: newRegistrationsCount,
+      tone: "amber" as const,
+    },
+    {
+      key: "escalated-messages",
+      title: "متابعات محولة من الإشراف",
+      description: "رسائل تحتاج قرار الإدارة أو الرد على ولي الأمر.",
+      href: "/remote/admin/escalated-messages",
+      count: escalatedMessagesCount,
+      tone: "green" as const,
+    },
+    {
+      key: "escalated-complaints",
+      title: "شكاوى محولة للإدارة",
+      description: "شكاوى وصلت من ولي أمر وتحتاج عناية إدارية.",
+      href: "/remote/admin/escalated-messages",
+      count: escalatedComplaintsCount,
+      tone: "red" as const,
+    },
+    {
+      key: "unassigned-students",
+      title: "طلاب بلا حلقة",
+      description: "طلاب يحتاجون مراجعة بيانات الحلقة أو المعلم.",
+      href: "/remote/admin/students",
+      count: unassignedStudentsCount,
+      tone: "neutral" as const,
+    },
+  ];
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -237,6 +306,7 @@ export default async function RemoteAdminDashboardPage() {
               <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
                 لوحة الإدارة
               </p>
+              <NotificationDropdown items={notificationItems} />
               <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
@@ -260,6 +330,10 @@ export default async function RemoteAdminDashboardPage() {
                 {section.href === "/remote/admin/registrations" && newRegistrationsCount > 0 ? (
                   <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white">
                     {newRegistrationsCount}
+                  </span>
+                ) : section.href === "/remote/admin/escalated-messages" && escalatedMessagesCount > 0 ? (
+                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
+                    {escalatedMessagesCount}
                   </span>
                 ) : section.href === "/remote/supervision/dashboard" &&
                   openTeacherRequestsCount > 0 ? (

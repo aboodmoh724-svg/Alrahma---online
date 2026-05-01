@@ -147,7 +147,11 @@ export default function RemoteSupervisionMessagesPage() {
 
         setStudents(Array.isArray(studentsData.students) ? studentsData.students : []);
         setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
-        setIncomingMessages(Array.isArray(incomingData.messages) ? incomingData.messages : []);
+        setIncomingMessages(
+          Array.isArray(incomingData.messages)
+            ? incomingData.messages.filter((message: IncomingMessage) => message.followUpStatus !== "ESCALATED")
+            : []
+        );
       } catch (error) {
         console.error("FETCH SUPERVISION MESSAGE RECIPIENTS ERROR =>", error);
         setStudents([]);

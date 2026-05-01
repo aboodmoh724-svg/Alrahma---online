@@ -223,13 +223,19 @@ export async function GET(request: Request) {
     const channel = normalizeChannel(url.searchParams.get("channel") || admin.studyMode);
     const unreadOnly = url.searchParams.get("unreadOnly") === "true";
     const openOnly = url.searchParams.get("openOnly") !== "false";
+    const status = String(url.searchParams.get("status") || "").trim();
     const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 80), 1), 200);
+    const validStatuses = ["NEW", "IN_REVIEW", "REPLIED", "CLOSED", "ESCALATED"];
 
     const messages = await prisma.whatsAppIncomingMessage.findMany({
       where: {
         channel,
         ...(unreadOnly ? { isRead: false } : {}),
-        ...(openOnly ? { followUpStatus: { not: "CLOSED" } } : {}),
+        ...(status && validStatuses.includes(status)
+          ? { followUpStatus: status as "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED" }
+          : openOnly
+            ? { followUpStatus: { not: "CLOSED" } }
+            : {}),
       },
       orderBy: {
         createdAt: "desc",
@@ -241,6 +247,13 @@ export async function GET(request: Request) {
             id: true,
             fullName: true,
             parentWhatsapp: true,
+            teacher: {
+              select: {
+                id: true,
+                fullName: true,
+                whatsapp: true,
+              },
+            },
           },
         },
         registrationRequest: {
@@ -381,6 +394,54 @@ export async function PATCH(request: Request) {
           followUpStatus: status as "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED",
           isRead: status !== "NEW",
           supervisorNote: String(body.supervisorNote || "").trim() || null,
+        },
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    if (action === "MESSAGE_TEACHER") {
+      const teacherMessage = String(body.teacherMessage || "").trim();
+      const target = await prisma.whatsAppIncomingMessage.findUnique({
+        where: { id: messageId },
+        include: {
+          student: {
+            select: {
+              fullName: true,
+              teacher: {
+                select: {
+                  fullName: true,
+                  whatsapp: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!target) {
+        return NextResponse.json({ error: "الرسالة غير موجودة" }, { status: 404 });
+      }
+
+      const teacherPhone = normalizeWhatsAppNumber(target.student?.teacher?.whatsapp || "");
+      if (!teacherMessage || !teacherPhone) {
+        return NextResponse.json(
+          { error: "لا يوجد معلم مرتبط برقم واتساب صالح أو أن نص الرسالة فارغ" },
+          { status: 400 }
+        );
+      }
+
+      await sendWhatsAppText({
+        to: teacherPhone,
+        body: teacherMessage,
+        channel: target.channel,
+      });
+
+      await prisma.whatsAppIncomingMessage.update({
+        where: { id: target.id },
+        data: {
+          followUpStatus: "IN_REVIEW",
+          supervisorNote: String(body.supervisorNote || "").trim() || target.supervisorNote,
         },
       });
 

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
+import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 import DashboardSectionLink from "@/components/supervision/DashboardSectionLink";
 import { prisma } from "@/lib/prisma";
 
@@ -68,6 +69,8 @@ export default async function RemoteSupervisionDashboardPage() {
     openTeacherRequestsCount,
     forwardedRegistrationsCount,
     supervisionTasksCount,
+    unreadParentMessagesCount,
+    complaintsCount,
   ] = await Promise.all([
     prisma.student.count({ where: { studyMode: "REMOTE", isActive: true } }),
     prisma.user.count({ where: { studyMode: "REMOTE", role: "TEACHER", isActive: true } }),
@@ -88,7 +91,63 @@ export default async function RemoteSupervisionDashboardPage() {
         status: { in: ["NEW", "IN_PROGRESS", "WAITING"] },
       },
     }),
+    prisma.whatsAppIncomingMessage.count({
+      where: {
+        channel: "REMOTE",
+        followUpStatus: { in: ["NEW", "IN_REVIEW"] },
+      },
+    }),
+    prisma.whatsAppIncomingMessage.count({
+      where: {
+        channel: "REMOTE",
+        category: "COMPLAINT",
+        followUpStatus: { in: ["NEW", "IN_REVIEW"] },
+      },
+    }),
   ]);
+
+  const notificationItems = [
+    {
+      key: "registrations",
+      title: "طلبات تسجيل بانتظار الإشراف",
+      description: "طلاب محولون من الإدارة يحتاجون مقابلة أو وضعا في حلقة.",
+      href: "/remote/supervision/registrations",
+      count: forwardedRegistrationsCount,
+      tone: "amber" as const,
+    },
+    {
+      key: "parent-messages",
+      title: "رسائل أولياء الأمور",
+      description: "ردود جديدة تحتاج متابعة من الإشراف.",
+      href: "/remote/supervision/messages",
+      count: unreadParentMessagesCount,
+      tone: "green" as const,
+    },
+    {
+      key: "complaints",
+      title: "شكاوى تحتاج عناية",
+      description: "رسائل مصنفة كشكوى من أولياء الأمور.",
+      href: "/remote/supervision/messages",
+      count: complaintsCount,
+      tone: "red" as const,
+    },
+    {
+      key: "teacher-requests",
+      title: "طلبات المعلمين",
+      description: "طلبات جديدة أو قيد المتابعة من المعلمين.",
+      href: "/remote/supervision/teacher-requests",
+      count: openTeacherRequestsCount,
+      tone: "neutral" as const,
+    },
+    {
+      key: "tasks",
+      title: "مهام إشرافية مفتوحة",
+      description: "مهام جديدة أو قيد العمل تنتظر إجراء المشرف.",
+      href: "/remote/supervision/operations",
+      count: supervisionTasksCount,
+      tone: "neutral" as const,
+    },
+  ];
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -115,6 +174,7 @@ export default async function RemoteSupervisionDashboardPage() {
                   لوحة الإدارة
                 </Link>
               ) : null}
+              <NotificationDropdown items={notificationItems} />
               <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
@@ -164,6 +224,8 @@ export default async function RemoteSupervisionDashboardPage() {
                   ? circlesCount
                   : section.href === "/remote/supervision/operations"
                     ? openTeacherRequestsCount + forwardedRegistrationsCount + supervisionTasksCount
+                    : section.href === "/remote/supervision/messages"
+                      ? unreadParentMessagesCount + complaintsCount
                     : null;
 
             return <DashboardSectionLink key={section.href} {...section} badge={badge} />;
