@@ -95,6 +95,38 @@ async function updateSupervisor(formData: FormData) {
   revalidatePath("/remote/admin/supervisors");
 }
 
+async function deleteSupervisor(formData: FormData) {
+  "use server";
+
+  const currentAdmin = await requireFinanceAdmin();
+  if (!currentAdmin) return;
+
+  const adminId = String(formData.get("adminId") || "").trim();
+  if (!adminId || adminId === currentAdmin.id) return;
+
+  const targetAdmin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "REMOTE",
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!targetAdmin) return;
+
+  await prisma.user.delete({
+    where: {
+      id: targetAdmin.id,
+    },
+  });
+
+  revalidatePath("/remote/admin/supervisors");
+  revalidatePath("/remote/admin/admins");
+}
+
 export default async function RemoteAdminSupervisorsPage() {
   const currentAdmin = await requireFinanceAdmin();
 
@@ -202,9 +234,19 @@ export default async function RemoteAdminSupervisorsPage() {
                         الحساب مفعل
                       </label>
                     </div>
-                    <ConfirmSubmitButton confirmMessage="هل تريد حفظ الصلاحيات الجديدة لهذا الحساب؟" className="w-fit rounded-xl bg-[#1f6358] px-5 py-2 text-xs font-black text-white">
-                      حفظ التعديلات
-                    </ConfirmSubmitButton>
+                    <div className="flex flex-wrap gap-2">
+                      <ConfirmSubmitButton confirmMessage="هل تريد حفظ الصلاحيات الجديدة لهذا الحساب؟" className="w-fit rounded-xl bg-[#1f6358] px-5 py-2 text-xs font-black text-white">
+                        حفظ التعديلات
+                      </ConfirmSubmitButton>
+                      <ConfirmSubmitButton
+                        formAction={deleteSupervisor}
+                        disabled={admin.id === currentAdmin.id}
+                        confirmMessage="هل تريد حذف هذا الحساب نهائيا؟"
+                        className="w-fit rounded-xl border border-red-200 bg-red-50 px-5 py-2 text-xs font-black text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        حذف الحساب
+                      </ConfirmSubmitButton>
+                    </div>
                   </form>
                 </article>
               ))}

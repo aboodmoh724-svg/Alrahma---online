@@ -120,6 +120,38 @@ async function updateRemoteAdmin(formData: FormData) {
   revalidatePath("/remote/admin/admins");
 }
 
+async function deleteRemoteAdmin(formData: FormData) {
+  "use server";
+
+  const currentAdmin = await requireRemoteAdmin();
+  if (!currentAdmin) return;
+
+  const adminId = String(formData.get("adminId") || "").trim();
+  if (!adminId || adminId === currentAdmin.id) return;
+
+  const targetAdmin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "REMOTE",
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  if (!targetAdmin) return;
+
+  await prisma.user.delete({
+    where: {
+      id: targetAdmin.id,
+    },
+  });
+
+  revalidatePath("/remote/admin/admins");
+  revalidatePath("/remote/admin/supervisors");
+}
+
 export default async function RemoteAdminsPage() {
   const currentAdmin = await requireRemoteAdmin();
 
@@ -256,12 +288,22 @@ export default async function RemoteAdminsPage() {
                         {admin.canAccessFinance ? "يرى المالية" : "لا يرى المالية"}
                       </span>
                     </div>
-                    <ConfirmSubmitButton
-                      confirmMessage="هل تريد حفظ تعديل بيانات وصلاحيات هذا الإداري؟"
-                      className="w-fit rounded-xl bg-[#1f6358] px-5 py-2 text-xs font-black text-white"
-                    >
-                      حفظ التعديلات
-                    </ConfirmSubmitButton>
+                    <div className="flex flex-wrap gap-2">
+                      <ConfirmSubmitButton
+                        confirmMessage="هل تريد حفظ تعديل بيانات وصلاحيات هذا الإداري؟"
+                        className="w-fit rounded-xl bg-[#1f6358] px-5 py-2 text-xs font-black text-white"
+                      >
+                        حفظ التعديلات
+                      </ConfirmSubmitButton>
+                      <ConfirmSubmitButton
+                        formAction={deleteRemoteAdmin}
+                        disabled={admin.id === currentAdmin.id}
+                        confirmMessage="هل تريد حذف هذا الإداري نهائيا؟"
+                        className="w-fit rounded-xl border border-red-200 bg-red-50 px-5 py-2 text-xs font-black text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        حذف الحساب
+                      </ConfirmSubmitButton>
+                    </div>
                   </form>
                 </article>
               ))}
