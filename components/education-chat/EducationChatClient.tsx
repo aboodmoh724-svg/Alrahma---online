@@ -56,9 +56,16 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingSeconds, setRecordingSeconds] = useState(0);
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordingChunksRef = useRef<BlobPart[]>([]);
+  const recordingCancelledRef = useRef(false);
+  const recordingStreamRef = useRef<MediaStream | null>(null);
+  const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const phone = `${countryCode.trim()}${localPhone.replace(/[^\d]/g, "")}`;
 
   const selectedConversation = useMemo(
@@ -70,6 +77,48 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
     if (mode === "TEACHER") return `ولي أمر ${conversation.student.fullName}`;
     if (conversation.type === "SUPERVISION") return "الإشراف";
     return conversation.teacher?.fullName || "المعلم";
+  };
+
+  const formatRecordingTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${String(remainingSeconds).padStart(2, "0")}`;
+  };
+
+  const getAudioMimeType = () => {
+    if (typeof MediaRecorder === "undefined") return "";
+    if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) return "audio/webm;codecs=opus";
+    if (MediaRecorder.isTypeSupported("audio/webm")) return "audio/webm";
+    if (MediaRecorder.isTypeSupported("audio/mp4")) return "audio/mp4";
+    return "";
+  };
+
+  const getAudioExtension = (mimeType: string) => {
+    if (mimeType.includes("mp4")) return "m4a";
+    return "webm";
+  };
+
+  const getDisplayUrl = (url: string) => url.replace(/^https?:\/\//i, "").replace(/^www\./i, "").replace(/\/$/, "");
+
+  const renderMessageBody = (body: string) => {
+    const linkPattern = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+    return body.split(linkPattern).map((part, index) => {
+      if (!/^(https?:\/\/[^\s]+|www\.[^\s]+)$/i.test(part)) return <span key={`${part}-${index}`}>{part}</span>;
+      const href = part.startsWith("http") ? part : `https://${part}`;
+      const isYouTube = /(?:youtube\.com|youtu\.be)/i.test(href);
+      return (
+        <a
+          key={`${part}-${index}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-black text-[#12695d] underline decoration-[#12695d]/30 underline-offset-4"
+          dir="ltr"
+        >
+          {isYouTube ? "رابط يوتيوب" : getDisplayUrl(part)}
+        </a>
+      );
+    });
   };
 
   const loadConversations = async () => {
@@ -120,6 +169,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   useEffect(() => {
     loadMessages(selectedConversationId);
   }, [selectedConversationId]);
+
+  useEffect(() => {
+    return () => {
+      if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
 
   const requestCode = async () => {
     try {
@@ -180,13 +236,14 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
     setSelectedConversationId(data.conversationId);
   };
 
-  const sendMessage = async () => {
-    if (!selectedConversationId || (!draft.trim() && !attachment)) return;
+  const sendMessage = async (voiceAttachment?: File) => {
+    const fileToSend = voiceAttachment || attachment;
+    if (!selectedConversationId || (!draft.trim() && !fileToSend)) return;
     try {
       setSending(true);
       const formData = new FormData();
-      formData.append("body", draft);
-      if (attachment) formData.append("attachment", attachment);
+      formData.append("body", voiceAttachment ? "" : draft);
+      if (fileToSend) formData.append("attachment", fileToSend);
 
       const response = await fetch(`/api/education-conversations/${selectedConversationId}/messages`, {
         method: "POST",
@@ -197,13 +254,73 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
         setFeedback(data.error || "تعذر إرسال الرسالة");
         return;
       }
-      setDraft("");
-      setAttachment(null);
+      if (!voiceAttachment) {
+        setDraft("");
+        setAttachment(null);
+      }
       await loadMessages(selectedConversationId);
       await loadConversations();
     } finally {
       setSending(false);
     }
+  };
+
+  const startVoiceRecording = async () => {
+    if (isRecording || sending) return;
+    if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
+      setFeedback("تسجيل الصوت غير مدعوم في هذا المتصفح.");
+      return;
+    }
+
+    try {
+      setFeedback("");
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mimeType = getAudioMimeType();
+      const recorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+      recordingChunksRef.current = [];
+      recordingCancelledRef.current = false;
+      recordingStreamRef.current = stream;
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) recordingChunksRef.current.push(event.data);
+      };
+
+      recorder.onstop = async () => {
+        const chunks = recordingChunksRef.current;
+        const type = recorder.mimeType || mimeType || "audio/webm";
+        recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+        recordingStreamRef.current = null;
+        mediaRecorderRef.current = null;
+        if (recordingTimerRef.current) clearInterval(recordingTimerRef.current);
+        recordingTimerRef.current = null;
+        setIsRecording(false);
+        setRecordingSeconds(0);
+
+        if (recordingCancelledRef.current || !chunks.length) return;
+        const audioBlob = new Blob(chunks, { type });
+        const audioFile = new File([audioBlob], `voice-message-${Date.now()}.${getAudioExtension(type)}`, { type });
+        await sendMessage(audioFile);
+      };
+
+      recorder.start();
+      setIsRecording(true);
+      setRecordingSeconds(0);
+      recordingTimerRef.current = setInterval(() => setRecordingSeconds((value) => value + 1), 1000);
+    } catch (error) {
+      console.error("VOICE RECORDING ERROR =>", error);
+      setFeedback("تعذر تشغيل الميكروفون. تأكد من السماح للتطبيق باستخدام الميكروفون.");
+      recordingStreamRef.current?.getTracks().forEach((track) => track.stop());
+      recordingStreamRef.current = null;
+      setIsRecording(false);
+    }
+  };
+
+  const stopVoiceRecording = (cancelled = false) => {
+    const recorder = mediaRecorderRef.current;
+    if (!recorder || recorder.state === "inactive") return;
+    recordingCancelledRef.current = cancelled;
+    recorder.stop();
   };
 
   if (mode === "PARENT" && authStep !== "READY") {
@@ -391,15 +508,34 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                           {mode === "ADMIN" ? (
                             <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
                           ) : null}
-                          {message.body ? <p className="whitespace-pre-wrap text-sm leading-7 text-[#173d42]">{message.body}</p> : null}
+                          {message.body ? (
+                            <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#173d42]">
+                              {renderMessageBody(message.body)}
+                            </p>
+                          ) : null}
                           {message.attachmentUrl ? (
-                            <a
-                              href={message.attachmentUrl}
-                              target="_blank"
-                              className="mt-2 block rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#173d42]"
-                            >
-                              {message.attachmentType?.startsWith("audio/") ? "تشغيل/تحميل الصوت" : "فتح المرفق"}: {message.attachmentName}
-                            </a>
+                            message.attachmentType?.startsWith("audio/") ? (
+                              <div className="mt-2 rounded-xl bg-black/5 p-2">
+                                <audio controls src={message.attachmentUrl} className="h-10 w-full max-w-[260px]" />
+                                <a
+                                  href={message.attachmentUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="mt-1 block text-xs font-black text-[#173d42]/70"
+                                >
+                                  تحميل الصوت
+                                </a>
+                              </div>
+                            ) : (
+                              <a
+                                href={message.attachmentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-2 block rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#173d42]"
+                              >
+                                فتح المرفق: {message.attachmentName}
+                              </a>
+                            )
                           ) : null}
                           <p className="mt-2 text-[10px] text-[#173d42]/45">
                             {new Date(message.createdAt).toLocaleString("en-US")}
@@ -417,6 +553,12 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       <button type="button" onClick={() => setAttachment(null)} className="font-black text-red-700">إزالة</button>
                     </div>
                   ) : null}
+                  {isRecording ? (
+                    <div className="mb-2 flex items-center justify-between rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-100">
+                      <span>جار تسجيل الصوت... {formatRecordingTime(recordingSeconds)}</span>
+                      <span>اترك الزر للإرسال</span>
+                    </div>
+                  ) : null}
                   <div className="flex items-end gap-2">
                     <label className="cursor-pointer rounded-full bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#173d42] ring-1 ring-[#d9c8ad]">
                       ملف
@@ -427,6 +569,31 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                         onChange={(event) => setAttachment(event.target.files?.[0] || null)}
                       />
                     </label>
+                    <button
+                      type="button"
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        startVoiceRecording();
+                      }}
+                      onPointerUp={(event) => {
+                        event.preventDefault();
+                        stopVoiceRecording();
+                      }}
+                      onPointerCancel={() => stopVoiceRecording(true)}
+                      onPointerLeave={(event) => {
+                        if (event.pointerType === "mouse") stopVoiceRecording();
+                      }}
+                      onContextMenu={(event) => event.preventDefault()}
+                      disabled={sending}
+                      className={`select-none rounded-full px-4 py-3 text-sm font-black shadow-sm ring-1 ${
+                        isRecording
+                          ? "bg-red-600 text-white ring-red-600"
+                          : "bg-[#fffaf2] text-[#173d42] ring-[#d9c8ad]"
+                      } disabled:opacity-60`}
+                      title="اضغط مطولا لتسجيل الصوت، واتركه للإرسال"
+                    >
+                      صوت
+                    </button>
                     <textarea
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
@@ -435,7 +602,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     />
                     <button
                       type="button"
-                      onClick={sendMessage}
+                      onClick={() => sendMessage()}
                       disabled={sending}
                       className="rounded-full bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
                     >
