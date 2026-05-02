@@ -126,6 +126,8 @@ export default function RemoteSupervisionRegistrationsPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
   const [sendingAcceptanceId, setSendingAcceptanceId] = useState<string | null>(null);
   const [sendingDetailsId, setSendingDetailsId] = useState<string | null>(null);
+  const [sendingParentGuideId, setSendingParentGuideId] = useState<string | null>(null);
+  const [sendingTeacherGuideId, setSendingTeacherGuideId] = useState<string | null>(null);
 
   // Interview Modal State
   const [interviewModalOpen, setInterviewModalOpen] = useState<string | null>(null);
@@ -349,10 +351,20 @@ export default function RemoteSupervisionRegistrationsPage() {
 
   const sendSupervisorMessage = async (
     requestId: string,
-    action: "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" | "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE"
+    action:
+      | "SEND_SUPERVISION_ACCEPTANCE_MESSAGE"
+      | "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE"
+      | "SEND_PARENT_EDUCATION_CHAT_GUIDE"
+      | "SEND_TEACHER_EDUCATION_CHAT_GUIDE"
   ) => {
     const setSending =
-      action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" ? setSendingAcceptanceId : setSendingDetailsId;
+      action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE"
+        ? setSendingAcceptanceId
+        : action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE"
+          ? setSendingDetailsId
+          : action === "SEND_PARENT_EDUCATION_CHAT_GUIDE"
+            ? setSendingParentGuideId
+            : setSendingTeacherGuideId;
 
     try {
       setSending(requestId);
@@ -783,6 +795,22 @@ export default function RemoteSupervisionRegistrationsPage() {
                           className="rounded-xl bg-[#8a6335] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                         >
                           {sendingDetailsId === request.id ? "جارٍ إرسال التفاصيل..." : "إرسال تفاصيل الحلقة"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => sendSupervisorMessage(request.id, "SEND_PARENT_EDUCATION_CHAT_GUIDE")}
+                          disabled={sendingParentGuideId === request.id}
+                          className="rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          {sendingParentGuideId === request.id ? "جارٍ إرسال شرح المراسلات..." : "شرح المراسلات لولي الأمر"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => sendSupervisorMessage(request.id, "SEND_TEACHER_EDUCATION_CHAT_GUIDE")}
+                          disabled={sendingTeacherGuideId === request.id}
+                          className="rounded-xl border border-[#1f6358] bg-white px-4 py-2 text-sm font-black text-[#1f6358] disabled:opacity-60"
+                        >
+                          {sendingTeacherGuideId === request.id ? "جارٍ إرسال شرح المعلم..." : "شرح المراسلات للمعلم"}
                         </button>
                         <Link
                           href="/remote/supervision/students"

@@ -1,6 +1,7 @@
 import path from "path";
 import { NextResponse } from "next/server";
 import { registrationReceivedEmail, sendEmail } from "@/lib/email";
+import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
@@ -9,10 +10,12 @@ import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
+  parentEducationChatGuideWhatsAppMessage,
   registrationAcceptedWhatsAppMessage,
   sendWhatsAppText,
   supervisionCircleDetailsWhatsAppMessage,
   supervisionStudentAcceptanceWhatsAppMessage,
+  teacherEducationChatGuideWhatsAppMessage,
 } from "@/lib/whatsapp";
 
 const MAX_AUDIO_SIZE = 5 * 1024 * 1024;
@@ -514,7 +517,12 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true });
     }
 
-    if (action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" || action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE") {
+    if (
+      action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" ||
+      action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE" ||
+      action === "SEND_PARENT_EDUCATION_CHAT_GUIDE" ||
+      action === "SEND_TEACHER_EDUCATION_CHAT_GUIDE"
+    ) {
       if (request.status !== "ACCEPTED" || !request.createdStudentId) {
         return NextResponse.json(
           { error: "يجب وضع الطالب في الحلقة وإنشاؤه قبل إرسال الرسالة" },
@@ -545,6 +553,7 @@ export async function PATCH(req: Request) {
           teacher: {
             select: {
               fullName: true,
+              whatsapp: true,
             },
           },
         },
@@ -554,17 +563,25 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "الطالب المرتبط بالطلب غير موجود" }, { status: 404 });
       }
 
-      const normalizedWhatsapp = normalizeWhatsAppNumber(createdStudent.parentWhatsapp || "");
+      const parentWhatsapp = normalizeWhatsAppNumber(createdStudent.parentWhatsapp || "");
+      const teacherWhatsapp = normalizeWhatsAppNumber(createdStudent.teacher?.whatsapp || "");
 
-      if (!normalizedWhatsapp) {
+      if (action !== "SEND_TEACHER_EDUCATION_CHAT_GUIDE" && !parentWhatsapp) {
         return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });
       }
 
+      if (action === "SEND_TEACHER_EDUCATION_CHAT_GUIDE" && !teacherWhatsapp) {
+        return NextResponse.json({ error: "لا يوجد رقم واتساب صالح للمعلم المرتبط بالطالب" }, { status: 400 });
+      }
+
       const studentName = createdStudent.fullName || request.studentName;
-      const bodyText =
-        action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE"
-          ? supervisionStudentAcceptanceWhatsAppMessage({ studentName })
-          : supervisionCircleDetailsWhatsAppMessage({
+      let to = parentWhatsapp || "";
+      let bodyText = "";
+
+      if (action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE") {
+        bodyText = supervisionStudentAcceptanceWhatsAppMessage({ studentName });
+      } else if (action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE") {
+        bodyText = supervisionCircleDetailsWhatsAppMessage({
               studentName,
               circleName: createdStudent.circle?.name || null,
               teacherName: createdStudent.teacher?.fullName || null,
@@ -573,9 +590,22 @@ export async function PATCH(req: Request) {
               endsAt: createdStudent.circle?.endsAt || null,
               zoomUrl: createdStudent.circle?.zoomUrl || null,
             });
+      } else if (action === "SEND_PARENT_EDUCATION_CHAT_GUIDE") {
+        bodyText = parentEducationChatGuideWhatsAppMessage({
+          studentName,
+          chatUrl: appUrl("/parent/daily-messages"),
+        });
+      } else {
+        to = teacherWhatsapp || "";
+        bodyText = teacherEducationChatGuideWhatsAppMessage({
+          teacherName: createdStudent.teacher?.fullName || null,
+          studentName,
+          parentPhone: createdStudent.parentWhatsapp || null,
+        });
+      }
 
       await sendWhatsAppText({
-        to: normalizedWhatsapp,
+        to,
         body: bodyText,
         channel: "REMOTE",
       });
