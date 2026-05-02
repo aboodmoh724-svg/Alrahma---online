@@ -4,7 +4,7 @@ import { getAppBaseUrl } from "@/lib/app-url";
 
 const appBaseUrl = getAppBaseUrl();
 const pageUrl = `${appBaseUrl}/parent/daily-messages`;
-const previewImage = `${pageUrl}/opengraph-image`;
+const previewImage = `${appBaseUrl}/parent-daily-messages-preview.png`;
 
 export const metadata: Metadata = {
   title: "المراسلات اليومية مع المعلم | منصة الرحمة",
