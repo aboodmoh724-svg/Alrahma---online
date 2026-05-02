@@ -3,18 +3,18 @@ import EducationChatClient from "@/components/education-chat/EducationChatClient
 import { getAppBaseUrl } from "@/lib/app-url";
 
 const appBaseUrl = getAppBaseUrl();
-const messagesUrl = `${appBaseUrl}/parent/daily-messages`;
-const previewImage = `${appBaseUrl}/parent/daily-messages/opengraph-image`;
+const pageUrl = `${appBaseUrl}/parent/daily-messages`;
+const previewImage = `${pageUrl}/opengraph-image`;
 
 export const metadata: Metadata = {
   title: "المراسلات اليومية مع المعلم | منصة الرحمة",
   description: "رابط خاص للتواصل اليومي بين ولي الأمر والمعلم بخصوص متابعة الطالب التعليمية.",
   alternates: {
-    canonical: messagesUrl,
+    canonical: pageUrl,
   },
   openGraph: {
     type: "website",
-    url: messagesUrl,
+    url: pageUrl,
     title: "المراسلات اليومية مع المعلم",
     description: "رابط خاص لمحادثات ولي الأمر مع المعلم والإشراف داخل منصة الرحمة.",
     siteName: "منصة الرحمة",
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ParentMessagesPage() {
+export default function ParentDailyMessagesPage() {
   return (
     <EducationChatClient
       mode="PARENT"
