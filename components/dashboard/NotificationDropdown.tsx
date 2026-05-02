@@ -45,7 +45,7 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
       </button>
 
       {open ? (
-        <div className="absolute left-0 z-30 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-[#d9c8ad] bg-white text-[#173d42] shadow-2xl">
+        <div className="absolute right-0 z-30 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-[#d9c8ad] bg-white text-[#173d42] shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#eadcc6] px-4 py-3">
             <p className="font-black">{title}</p>
             <button
