@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import {
   DEFAULT_TEACHER_REMINDER_SETTINGS,
+  deleteMessageTemplate,
   getTeacherReminderSettings,
   getTemplateDefinitionsWithValues,
   MessageTemplateKey,
@@ -80,6 +81,21 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
+
+    if (body.deleteTemplateKey) {
+      const templateKey = String(body.deleteTemplateKey) as MessageTemplateKey;
+      const exists = TEMPLATE_DEFINITIONS.some((item) => item.key === templateKey);
+
+      if (!exists) {
+        return NextResponse.json({ error: "قالب الرسالة غير صالح" }, { status: 400 });
+      }
+
+      await deleteMessageTemplate(templateKey);
+
+      return NextResponse.json({
+        success: true,
+      });
+    }
 
     if (body.templateKey) {
       const templateKey = String(body.templateKey) as MessageTemplateKey;

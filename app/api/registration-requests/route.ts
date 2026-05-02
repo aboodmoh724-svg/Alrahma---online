@@ -10,12 +10,7 @@ import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
-  parentEducationChatGuideWhatsAppMessage,
-  registrationAcceptedWhatsAppMessage,
   sendWhatsAppText,
-  supervisionCircleDetailsWhatsAppMessage,
-  supervisionStudentAcceptanceWhatsAppMessage,
-  teacherEducationChatGuideWhatsAppMessage,
 } from "@/lib/whatsapp";
 
 const MAX_AUDIO_SIZE = 5 * 1024 * 1024;
@@ -471,6 +466,10 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
       }
 
+      if (!(await isMessageAutomationEnabled("REGISTRATION_ACCEPTED_DETAILS_WHATSAPP"))) {
+        return NextResponse.json({ error: "رسالة قبول الطالب مع التفاصيل مغلقة من إعدادات الرسائل" }, { status: 400 });
+      }
+
       const createdStudent = await prisma.student.findUnique({
         where: {
           id: request.createdStudentId,
@@ -504,7 +503,7 @@ export async function PATCH(req: Request) {
 
       await sendWhatsAppText({
         to: normalizedWhatsapp,
-        body: registrationAcceptedWhatsAppMessage({
+        body: await renderMessageTemplate("REGISTRATION_ACCEPTED_DETAILS", {
           studentName: createdStudent.fullName || request.studentName,
           circleName: createdStudent.circle?.name || null,
           teacherName: createdStudent.teacher?.fullName || null,
@@ -579,9 +578,15 @@ export async function PATCH(req: Request) {
       let bodyText = "";
 
       if (action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE") {
-        bodyText = supervisionStudentAcceptanceWhatsAppMessage({ studentName });
+        if (!(await isMessageAutomationEnabled("SUPERVISION_ACCEPTANCE_WHATSAPP"))) {
+          return NextResponse.json({ error: "رسالة قبول الطالب من الإشراف مغلقة من إعدادات الرسائل" }, { status: 400 });
+        }
+        bodyText = await renderMessageTemplate("SUPERVISION_ACCEPTANCE", { studentName });
       } else if (action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE") {
-        bodyText = supervisionCircleDetailsWhatsAppMessage({
+        if (!(await isMessageAutomationEnabled("SUPERVISION_CIRCLE_DETAILS_WHATSAPP"))) {
+          return NextResponse.json({ error: "رسالة تفاصيل الحلقة مغلقة من إعدادات الرسائل" }, { status: 400 });
+        }
+        bodyText = await renderMessageTemplate("SUPERVISION_CIRCLE_DETAILS", {
               studentName,
               circleName: createdStudent.circle?.name || null,
               teacherName: createdStudent.teacher?.fullName || null,
@@ -591,13 +596,19 @@ export async function PATCH(req: Request) {
               zoomUrl: createdStudent.circle?.zoomUrl || null,
             });
       } else if (action === "SEND_PARENT_EDUCATION_CHAT_GUIDE") {
-        bodyText = parentEducationChatGuideWhatsAppMessage({
+        if (!(await isMessageAutomationEnabled("PARENT_EDUCATION_CHAT_GUIDE_WHATSAPP"))) {
+          return NextResponse.json({ error: "رسالة آلية تواصل ولي الأمر مغلقة من إعدادات الرسائل" }, { status: 400 });
+        }
+        bodyText = await renderMessageTemplate("PARENT_EDUCATION_CHAT_GUIDE", {
           studentName,
           chatUrl: appUrl("/parent/daily-messages"),
         });
       } else {
+        if (!(await isMessageAutomationEnabled("TEACHER_EDUCATION_CHAT_GUIDE_WHATSAPP"))) {
+          return NextResponse.json({ error: "رسالة آلية تواصل المعلم مغلقة من إعدادات الرسائل" }, { status: 400 });
+        }
         to = teacherWhatsapp || "";
-        bodyText = teacherEducationChatGuideWhatsAppMessage({
+        bodyText = await renderMessageTemplate("TEACHER_EDUCATION_CHAT_GUIDE", {
           teacherName: createdStudent.teacher?.fullName || null,
           studentName,
           parentPhone: createdStudent.parentWhatsapp || null,

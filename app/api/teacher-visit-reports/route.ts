@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
+import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { generateTeacherVisitPdf } from "@/lib/teacher-visit-report-pdf";
@@ -21,7 +22,6 @@ import {
   normalizeWhatsAppNumber,
   sendWhatsAppDocument,
   sendWhatsAppText,
-  teacherVisitReportWhatsAppMessage,
 } from "@/lib/whatsapp";
 
 function normalizeVisitType(value: unknown): TeacherVisitTypeValue | null {
@@ -252,19 +252,21 @@ export async function POST(req: Request) {
       teacherWhatsapp &&
       (await isMessageAutomationEnabled("TEACHER_VISIT_REPORT_WHATSAPP"))
     ) {
+      const visitMessage = await renderMessageTemplate("TEACHER_VISIT_REPORT", {
+        teacherName: teacher.fullName,
+        supervisorName: supervisor.fullName,
+        visitNumber: createdReport.visitNumber,
+        visitType: teacherVisitTypeLabel(visitType),
+        visitDate: teacherVisitDateLabel(visitAt),
+      });
+
       try {
         await sendWhatsAppDocument({
           to: teacherWhatsapp,
           channel: "REMOTE",
           documentUrl: pdf.pdfUrl,
           fileName: `teacher-visit-${createdReport.visitNumber}.pdf`,
-          caption: teacherVisitReportWhatsAppMessage({
-            teacherName: teacher.fullName,
-            supervisorName: supervisor.fullName,
-            visitNumber: createdReport.visitNumber,
-            visitType: teacherVisitTypeLabel(visitType),
-            visitDate: teacherVisitDateLabel(visitAt),
-          }),
+          caption: visitMessage,
         });
 
         sentToTeacherAt = new Date();
@@ -275,14 +277,7 @@ export async function POST(req: Request) {
         await sendWhatsAppText({
           to: teacherWhatsapp,
           channel: "REMOTE",
-          body:
-            teacherVisitReportWhatsAppMessage({
-              teacherName: teacher.fullName,
-              supervisorName: supervisor.fullName,
-              visitNumber: createdReport.visitNumber,
-              visitType: teacherVisitTypeLabel(visitType),
-              visitDate: teacherVisitDateLabel(visitAt),
-            }) + `\n\nرابط التقرير:\n${pdf.pdfUrl}`,
+          body: visitMessage + `\n\nرابط التقرير:\n${pdf.pdfUrl}`,
         }).catch((fallbackError) => {
           console.error("TEACHER VISIT WHATSAPP FALLBACK ERROR =>", fallbackError);
         });

@@ -61,6 +61,7 @@ export default function RemoteAdminMessagesPage() {
   });
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [savingReminder, setSavingReminder] = useState(false);
   const [savingNotePresets, setSavingNotePresets] = useState(false);
   const [savingAutomation, setSavingAutomation] = useState(false);
@@ -147,6 +148,38 @@ export default function RemoteAdminMessagesPage() {
   const restoreDefault = async (template: TemplateItem) => {
     updateTemplateBody(template.key, template.defaultBody);
     await saveTemplate({ ...template, body: template.defaultBody });
+  };
+
+  const deleteSavedTemplate = async (template: TemplateItem) => {
+    const confirmed = window.confirm(`هل تريد حذف النص المحفوظ لقالب: ${template.title}؟ سيعود القالب إلى النص الافتراضي.`);
+    if (!confirmed) return;
+
+    try {
+      setDeletingKey(template.key);
+      setFeedback(null);
+
+      const response = await fetch("/api/admin/message-settings", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deleteTemplateKey: template.key,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "تعذر حذف النص المحفوظ");
+      }
+
+      await loadSettings();
+      setFeedback(`تم حذف النص المحفوظ لقالب: ${template.title}`);
+    } catch (error) {
+      setFeedback(error instanceof Error ? error.message : "تعذر حذف النص المحفوظ");
+    } finally {
+      setDeletingKey(null);
+    }
   };
 
   const saveReminderSettings = async () => {
@@ -647,6 +680,14 @@ export default function RemoteAdminMessagesPage() {
                       className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf2]"
                     >
                       استرجاع النص الافتراضي
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => deleteSavedTemplate(template)}
+                      disabled={deletingKey === template.key}
+                      className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                    >
+                      {deletingKey === template.key ? "جارٍ الحذف..." : "حذف النص المحفوظ"}
                     </button>
                   </div>
                 </div>

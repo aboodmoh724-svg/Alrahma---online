@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
+import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
-  registrationInterviewWhatsAppMessage,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
@@ -72,14 +73,18 @@ export async function PATCH(
       );
     }
 
+    if (!(await isMessageAutomationEnabled("REGISTRATION_INTERVIEW_WHATSAPP"))) {
+      return NextResponse.json({ error: "رسالة تحديد موعد المقابلة مغلقة من إعدادات الرسائل" }, { status: 400 });
+    }
+
     const messageBody =
       customMessage ||
-      registrationInterviewWhatsAppMessage({
+      (await renderMessageTemplate("REGISTRATION_INTERVIEW", {
         studentName: requestItem.studentName,
         interviewDate,
         interviewTime,
         zoomUrl,
-      });
+      }));
 
     const noteLines = [
       requestItem.supervisionNote?.trim(),

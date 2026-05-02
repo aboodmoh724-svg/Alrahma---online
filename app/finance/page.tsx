@@ -4,8 +4,8 @@ import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
+import { renderMessageTemplate } from "@/lib/message-templates";
 import {
-  fullPaymentReceivedWhatsAppMessage,
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
   sendWhatsAppText,
@@ -278,7 +278,7 @@ async function notifyIfStudentFullyPaid(studentId: string) {
 
     await sendWhatsAppText({
       to: normalizedWhatsapp,
-      body: fullPaymentReceivedWhatsAppMessage({
+      body: await renderMessageTemplate("FULL_PAYMENT_RECEIVED", {
         studentName: student.fullName,
         amount: requiredAmount.toFixed(2),
         currency,

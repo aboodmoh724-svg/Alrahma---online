@@ -2,6 +2,12 @@ import { prisma } from "@/lib/prisma";
 
 export type MessageAutomationKey =
   | "REGISTRATION_RECEIVED_WHATSAPP"
+  | "REGISTRATION_ACCEPTED_DETAILS_WHATSAPP"
+  | "REGISTRATION_INTERVIEW_WHATSAPP"
+  | "SUPERVISION_ACCEPTANCE_WHATSAPP"
+  | "SUPERVISION_CIRCLE_DETAILS_WHATSAPP"
+  | "PARENT_EDUCATION_CHAT_GUIDE_WHATSAPP"
+  | "TEACHER_EDUCATION_CHAT_GUIDE_WHATSAPP"
   | "TEACHER_WELCOME_WHATSAPP"
   | "TEACHER_MISSING_REPORT_REMINDER_WHATSAPP"
   | "FULL_PAYMENT_RECEIVED_WHATSAPP"
@@ -54,6 +60,66 @@ export const MESSAGE_AUTOMATION_RULES: MessageAutomationRule[] = [
     defaultEnabled: true,
   },
   {
+    key: "REGISTRATION_ACCEPTED_DETAILS_WHATSAPP",
+    title: "قبول الطالب مع تفاصيل الحلقة",
+    trigger: "عند إرسال الإدارة رسالة قبول الطالب مع تفاصيل الحلقة.",
+    recipient: "ولي أمر الطالب",
+    channel: "WHATSAPP",
+    location: "طلبات التسجيل في الإدارة",
+    templateKey: "REGISTRATION_ACCEPTED_DETAILS",
+    defaultEnabled: true,
+  },
+  {
+    key: "REGISTRATION_INTERVIEW_WHATSAPP",
+    title: "تحديد موعد المقابلة",
+    trigger: "عند تحديد الإشراف موعد مقابلة أو اختبار مستوى للطالب.",
+    recipient: "ولي أمر الطالب",
+    channel: "WHATSAPP",
+    location: "طلبات التسجيل في الإشراف",
+    templateKey: "REGISTRATION_INTERVIEW",
+    defaultEnabled: true,
+  },
+  {
+    key: "SUPERVISION_ACCEPTANCE_WHATSAPP",
+    title: "قبول الطالب من الإشراف",
+    trigger: "عند ضغط المشرف زر إرسال رسالة القبول بعد وضع الطالب في الحلقة.",
+    recipient: "ولي أمر الطالب",
+    channel: "WHATSAPP",
+    location: "سجل الطلبات المحولة للإشراف",
+    templateKey: "SUPERVISION_ACCEPTANCE",
+    defaultEnabled: true,
+  },
+  {
+    key: "SUPERVISION_CIRCLE_DETAILS_WHATSAPP",
+    title: "تفاصيل الحلقة من الإشراف",
+    trigger: "عند ضغط المشرف زر إرسال تفاصيل الحلقة.",
+    recipient: "ولي أمر الطالب",
+    channel: "WHATSAPP",
+    location: "سجل الطلبات المحولة للإشراف",
+    templateKey: "SUPERVISION_CIRCLE_DETAILS",
+    defaultEnabled: true,
+  },
+  {
+    key: "PARENT_EDUCATION_CHAT_GUIDE_WHATSAPP",
+    title: "شرح مراسلات ولي الأمر",
+    trigger: "عند ضغط المشرف زر شرح المراسلات لولي الأمر.",
+    recipient: "ولي أمر الطالب",
+    channel: "WHATSAPP",
+    location: "سجل الطلبات المحولة للإشراف",
+    templateKey: "PARENT_EDUCATION_CHAT_GUIDE",
+    defaultEnabled: true,
+  },
+  {
+    key: "TEACHER_EDUCATION_CHAT_GUIDE_WHATSAPP",
+    title: "شرح مراسلات المعلم",
+    trigger: "عند ضغط المشرف زر شرح المراسلات للمعلم.",
+    recipient: "معلم الطالب",
+    channel: "WHATSAPP",
+    location: "سجل الطلبات المحولة للإشراف",
+    templateKey: "TEACHER_EDUCATION_CHAT_GUIDE",
+    defaultEnabled: true,
+  },
+  {
     key: "TEACHER_WELCOME_WHATSAPP",
     title: "ترحيب المعلم الجديد",
     trigger: "عند إضافة معلم جديد من الإدارة وكان له رقم واتساب.",
@@ -81,6 +147,7 @@ export const MESSAGE_AUTOMATION_RULES: MessageAutomationRule[] = [
     recipient: "ولي أمر الطالب",
     channel: "WHATSAPP",
     location: "الحسابات المالية",
+    templateKey: "FULL_PAYMENT_RECEIVED",
     defaultEnabled: true,
   },
   {
@@ -90,6 +157,7 @@ export const MESSAGE_AUTOMATION_RULES: MessageAutomationRule[] = [
     recipient: "المعلم المزور",
     channel: "WHATSAPP",
     location: "زيارات المعلمين",
+    templateKey: "TEACHER_VISIT_REPORT",
     defaultEnabled: true,
     notes: "يرسل ملف PDF، وإن تعذر الإرسال كمستند يحاول إرسال رابط نصي.",
   },
