@@ -112,7 +112,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="font-black text-[#12695d] underline decoration-[#12695d]/30 underline-offset-4"
+          className="break-all font-black text-[#12695d] underline decoration-[#12695d]/30 underline-offset-4"
           dir="ltr"
         >
           {isYouTube ? "رابط يوتيوب" : getDisplayUrl(part)}
@@ -478,7 +478,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
             </div>
           </aside>
 
-          <section className={`${selectedConversationId ? "flex" : "hidden"} min-h-[620px] flex-col bg-[#efe7d8] lg:flex`}>
+          <section className={`${selectedConversationId ? "flex" : "hidden"} min-h-[620px] min-w-0 flex-col bg-[#efe7d8] lg:flex`}>
             {selectedConversation ? (
               <>
                 <div className="flex items-center justify-between gap-3 border-b border-[#d9c8ad] bg-white px-5 py-4">
@@ -496,7 +496,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     المحادثات
                   </button>
                 </div>
-                <div className="flex-1 space-y-3 overflow-auto p-4">
+                <div className="flex-1 space-y-3 overflow-auto p-3 sm:p-4">
                   {messages.map((message) => {
                     const mine =
                       (mode === "PARENT" && message.senderRole === "PARENT") ||
@@ -504,19 +504,19 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       (mode === "ADMIN" && message.senderRole === "ADMIN");
                     return (
                       <div key={message.id} className={`flex ${mine ? "justify-start" : "justify-end"}`}>
-                        <div className={`max-w-[78%] rounded-2xl px-4 py-3 shadow-sm ${mine ? "bg-[#dcf8c6]" : "bg-white"}`}>
+                        <div className={`max-w-[92%] overflow-hidden rounded-2xl px-4 py-3 shadow-sm sm:max-w-[78%] ${mine ? "bg-[#dcf8c6]" : "bg-white"}`}>
                           {mode === "ADMIN" ? (
                             <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
                           ) : null}
                           {message.body ? (
-                            <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#173d42]">
+                            <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#173d42] [overflow-wrap:anywhere]">
                               {renderMessageBody(message.body)}
                             </p>
                           ) : null}
                           {message.attachmentUrl ? (
                             message.attachmentType?.startsWith("audio/") ? (
                               <div className="mt-2 rounded-xl bg-black/5 p-2">
-                                <audio controls src={message.attachmentUrl} className="h-10 w-full max-w-[260px]" />
+                                <audio controls src={message.attachmentUrl} className="h-10 w-full max-w-[240px] sm:max-w-[260px]" />
                                 <a
                                   href={message.attachmentUrl}
                                   target="_blank"
@@ -531,7 +531,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                                 href={message.attachmentUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-2 block rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#173d42]"
+                                className="mt-2 block break-words rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#173d42] [overflow-wrap:anywhere]"
                               >
                                 فتح المرفق: {message.attachmentName}
                               </a>
@@ -546,7 +546,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                   })}
                   <div ref={messagesEndRef} />
                 </div>
-                <div className="border-t border-[#d9c8ad] bg-white p-3">
+                <div className="border-t border-[#d9c8ad] bg-white p-2 sm:p-3">
                   {attachment ? (
                     <div className="mb-2 flex items-center justify-between rounded-xl bg-[#fffaf2] px-3 py-2 text-xs font-bold text-[#173d42]">
                       <span>{attachment.name}</span>
@@ -554,13 +554,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     </div>
                   ) : null}
                   {isRecording ? (
-                    <div className="mb-2 flex items-center justify-between rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-100">
+                    <div className="mb-2 flex flex-col gap-1 rounded-xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-100 sm:flex-row sm:items-center sm:justify-between">
                       <span>جار تسجيل الصوت... {formatRecordingTime(recordingSeconds)}</span>
                       <span>اترك الزر للإرسال</span>
                     </div>
                   ) : null}
-                  <div className="flex items-end gap-2">
-                    <label className="cursor-pointer rounded-full bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#173d42] ring-1 ring-[#d9c8ad]">
+                  <div className="flex flex-wrap items-end gap-2">
+                    <label className="order-2 shrink-0 cursor-pointer rounded-full bg-[#fffaf2] px-4 py-3 text-sm font-black leading-none text-[#173d42] ring-1 ring-[#d9c8ad]">
                       ملف
                       <input
                         type="file"
@@ -585,7 +585,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       }}
                       onContextMenu={(event) => event.preventDefault()}
                       disabled={sending}
-                      className={`select-none rounded-full px-4 py-3 text-sm font-black shadow-sm ring-1 ${
+                      className={`order-2 shrink-0 select-none rounded-full px-4 py-3 text-sm font-black leading-none shadow-sm ring-1 ${
                         isRecording
                           ? "bg-red-600 text-white ring-red-600"
                           : "bg-[#fffaf2] text-[#173d42] ring-[#d9c8ad]"
@@ -598,13 +598,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
                       placeholder="اكتب رسالة..."
-                      className="min-h-12 flex-1 resize-none rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                      className="order-1 min-h-12 w-full min-w-0 basis-full resize-none rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm leading-7 outline-none sm:order-2 sm:w-auto sm:basis-auto sm:flex-1"
                     />
                     <button
                       type="button"
                       onClick={() => sendMessage()}
                       disabled={sending}
-                      className="rounded-full bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                      className="order-2 shrink-0 rounded-full bg-[#1f6358] px-5 py-3 text-sm font-black leading-none text-white disabled:opacity-60"
                     >
                       إرسال
                     </button>
