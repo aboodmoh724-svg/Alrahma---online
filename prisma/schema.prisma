@@ -39,6 +39,8 @@ model User {
   supervisionActions StudentFollowUpAction[] @relation("StudentFollowUpActor")
   teacherVisitReportsAsTeacher TeacherVisitReport[] @relation("TeacherVisitTeacher")
   teacherVisitReportsAsSupervisor TeacherVisitReport[] @relation("TeacherVisitSupervisor")
+  educationConversationsAsTeacher EducationConversation[] @relation("EducationConversationTeacher")
+  educationMessages EducationMessage[] @relation("EducationMessageUser")
 }
 
 model Student {
@@ -62,8 +64,61 @@ model Student {
   followUpActions StudentFollowUpAction[]
   incomingWhatsAppMessages WhatsAppIncomingMessage[]
   outgoingWhatsAppMessages WhatsAppOutgoingMessage[]
+  educationConversations EducationConversation[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model ParentPortalCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([phone, createdAt])
+}
+
+model EducationConversation {
+  id          String             @id @default(cuid())
+  studentId   String
+  teacherId   String?
+  parentPhone String
+  type        String             @default("TEACHER")
+  status      String             @default("OPEN")
+  lastMessageAt DateTime?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  student     Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher     User?              @relation("EducationConversationTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  messages    EducationMessage[]
+
+  @@index([studentId, updatedAt])
+  @@index([teacherId, updatedAt])
+  @@index([parentPhone, updatedAt])
+  @@unique([studentId, teacherId, type])
+}
+
+model EducationMessage {
+  id             String                @id @default(cuid())
+  conversationId String
+  senderRole     String
+  senderUserId   String?
+  senderPhone    String?
+  body           String?
+  attachmentUrl  String?
+  attachmentName String?
+  attachmentType String?
+  createdAt      DateTime              @default(now())
+  readByParentAt DateTime?
+  readByTeacherAt DateTime?
+  readByAdminAt   DateTime?
+  conversation   EducationConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderUser     User?                 @relation("EducationMessageUser", fields: [senderUserId], references: [id], onDelete: SetNull)
+
+  @@index([conversationId, createdAt])
+  @@index([senderUserId])
 }
 
 model StudentFinanceAccount {

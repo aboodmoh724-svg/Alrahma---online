@@ -1,0 +1,420 @@
+"use client";
+
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type Conversation = {
+  id: string;
+  type: string;
+  parentPhone: string;
+  student: { id: string; fullName: string; circle?: { name: string | null } | null };
+  teacher: { id: string; fullName: string } | null;
+  lastMessageAt: string;
+  lastMessage: { body: string | null; attachmentName: string | null; senderRole: string; createdAt: string } | null;
+};
+
+type Message = {
+  id: string;
+  senderRole: string;
+  senderName: string;
+  body: string | null;
+  attachmentUrl: string | null;
+  attachmentName: string | null;
+  attachmentType: string | null;
+  createdAt: string;
+};
+
+type TeacherOption = {
+  teacherId: string;
+  teacherName: string;
+  circleName: string | null;
+};
+
+type StudentOption = {
+  studentId: string;
+  studentName: string;
+  circleName: string | null;
+};
+
+type Props = {
+  mode: "PARENT" | "TEACHER" | "ADMIN";
+  title: string;
+  subtitle: string;
+  backHref?: string;
+};
+
+export default function EducationChatClient({ mode, title, subtitle, backHref }: Props) {
+  const [phone, setPhone] = useState("");
+  const [code, setCode] = useState("");
+  const [authStep, setAuthStep] = useState<"PHONE" | "CODE" | "READY">(mode === "PARENT" ? "PHONE" : "READY");
+  const [loading, setLoading] = useState(true);
+  const [sendingCode, setSendingCode] = useState(false);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [teacherOptions, setTeacherOptions] = useState<TeacherOption[]>([]);
+  const [studentOptions, setStudentOptions] = useState<StudentOption[]>([]);
+  const [selectedConversationId, setSelectedConversationId] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [draft, setDraft] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [sending, setSending] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const selectedConversation = useMemo(
+    () => conversations.find((item) => item.id === selectedConversationId) || null,
+    [conversations, selectedConversationId]
+  );
+
+  const loadConversations = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/education-conversations", { cache: "no-store" });
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (mode === "PARENT") setAuthStep("PHONE");
+        else setFeedback(data.error || "تعذر تحميل المحادثات");
+        return;
+      }
+
+      setConversations(Array.isArray(data.conversations) ? data.conversations : []);
+      setTeacherOptions(Array.isArray(data.teacherOptions) ? data.teacherOptions : []);
+      setStudentOptions(Array.isArray(data.studentOptions) ? data.studentOptions : []);
+      if (mode === "PARENT") setAuthStep("READY");
+      if (!selectedConversationId && data.conversations?.[0]?.id) {
+        setSelectedConversationId(data.conversations[0].id);
+      }
+    } catch (error) {
+      console.error("LOAD EDUCATION CHAT ERROR =>", error);
+      setFeedback("تعذر تحميل المحادثات");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadMessages = async (conversationId: string) => {
+    if (!conversationId) return;
+    const response = await fetch(`/api/education-conversations/${conversationId}/messages`, { cache: "no-store" });
+    const data = await response.json();
+    setMessages(Array.isArray(data.messages) ? data.messages : []);
+    setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 80);
+  };
+
+  useEffect(() => {
+    if (mode !== "PARENT" || authStep === "READY") {
+      loadConversations();
+    } else {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMessages(selectedConversationId);
+  }, [selectedConversationId]);
+
+  const requestCode = async () => {
+    try {
+      setSendingCode(true);
+      setFeedback("");
+      const response = await fetch("/api/parent-chat/request-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setFeedback(data.error || "تعذر إرسال الرمز");
+        return;
+      }
+      setAuthStep("CODE");
+      setFeedback("تم إرسال الرمز إلى واتساب.");
+    } finally {
+      setSendingCode(false);
+    }
+  };
+
+  const verifyCode = async () => {
+    const response = await fetch("/api/parent-chat/verify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ phone, code }),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setFeedback(data.error || "تعذر التحقق");
+      return;
+    }
+    setAuthStep("READY");
+    await loadConversations();
+  };
+
+  const createConversation = async (payload: Record<string, string>) => {
+    const response = await fetch("/api/education-conversations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      setFeedback(data.error || "تعذر فتح المحادثة");
+      return;
+    }
+    await loadConversations();
+    setSelectedConversationId(data.conversationId);
+  };
+
+  const sendMessage = async () => {
+    if (!selectedConversationId || (!draft.trim() && !attachment)) return;
+    try {
+      setSending(true);
+      const formData = new FormData();
+      formData.append("body", draft);
+      if (attachment) formData.append("attachment", attachment);
+
+      const response = await fetch(`/api/education-conversations/${selectedConversationId}/messages`, {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setFeedback(data.error || "تعذر إرسال الرسالة");
+        return;
+      }
+      setDraft("");
+      setAttachment(null);
+      await loadMessages(selectedConversationId);
+      await loadConversations();
+    } finally {
+      setSending(false);
+    }
+  };
+
+  if (mode === "PARENT" && authStep !== "READY") {
+    return (
+      <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
+        <div className="mx-auto flex min-h-[70vh] max-w-lg items-center">
+          <section className="w-full rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-[#d9c8ad]">
+            <p className="text-sm font-black text-[#9b7039]">مراسلات التعليم</p>
+            <h1 className="mt-2 text-3xl font-black text-[#173d42]">دخول ولي الأمر</h1>
+            <p className="mt-2 text-sm leading-7 text-[#173d42]/60">
+              أدخل رقم واتساب المسجل لدينا، ثم اكتب الرمز المرسل لك.
+            </p>
+            {authStep === "PHONE" ? (
+              <>
+                <input
+                  value={phone}
+                  onChange={(event) => setPhone(event.target.value)}
+                  placeholder="رقم واتساب ولي الأمر"
+                  className="mt-5 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={requestCode}
+                  disabled={sendingCode}
+                  className="mt-3 w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                >
+                  إرسال رمز الدخول
+                </button>
+              </>
+            ) : (
+              <>
+                <input
+                  value={code}
+                  onChange={(event) => setCode(event.target.value)}
+                  placeholder="رمز الدخول"
+                  className="mt-5 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={verifyCode}
+                  className="mt-3 w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white"
+                >
+                  دخول المحادثات
+                </button>
+              </>
+            )}
+            {feedback ? <p className="mt-3 rounded-2xl bg-[#fffaf2] p-3 text-sm font-bold text-[#173d42]">{feedback}</p> : null}
+          </section>
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <header className="flex flex-col gap-3 rounded-[2rem] bg-[#173d42] p-5 text-white shadow-sm md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-black text-[#f1d39d]">مراسلات التعليم</p>
+            <h1 className="mt-1 text-3xl font-black">{title}</h1>
+            <p className="mt-2 text-sm leading-7 text-white/70">{subtitle}</p>
+          </div>
+          {backHref ? (
+            <a href={backHref} className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173d42]">
+              رجوع
+            </a>
+          ) : null}
+        </header>
+
+        {feedback ? <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm font-bold text-[#173d42] ring-1 ring-[#d9c8ad]">{feedback}</div> : null}
+
+        <section className="grid min-h-[620px] overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#d9c8ad] lg:grid-cols-[360px_1fr]">
+          <aside className="border-l border-[#eadcc6] bg-[#fffaf2]">
+            <div className="space-y-3 border-b border-[#eadcc6] p-4">
+              {mode === "PARENT" ? (
+                <>
+                  <p className="text-sm font-black text-[#173d42]">ابدأ محادثة</p>
+                  <div className="flex flex-wrap gap-2">
+                    {teacherOptions.map((teacher) => (
+                      <button
+                        key={teacher.teacherId}
+                        type="button"
+                        onClick={() => createConversation({ type: "TEACHER", teacherId: teacher.teacherId })}
+                        className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#173d42] ring-1 ring-[#d9c8ad]"
+                      >
+                        {teacher.teacherName}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => createConversation({ type: "SUPERVISION" })}
+                      className="rounded-full bg-[#173d42] px-3 py-2 text-xs font-black text-white"
+                    >
+                      الإشراف
+                    </button>
+                  </div>
+                </>
+              ) : mode === "TEACHER" ? (
+                <>
+                  <p className="text-sm font-black text-[#173d42]">فتح محادثة مع ولي أمر</p>
+                  <select
+                    onChange={(event) => event.target.value && createConversation({ studentId: event.target.value })}
+                    className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm"
+                    defaultValue=""
+                  >
+                    <option value="">اختر الطالب</option>
+                    {studentOptions.map((student) => (
+                      <option key={student.studentId} value={student.studentId}>
+                        {student.studentName}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : (
+                <p className="text-sm font-black text-[#173d42]">مراقبة كل المحادثات</p>
+              )}
+            </div>
+            <div className="max-h-[540px] overflow-auto p-3">
+              {loading ? (
+                <p className="rounded-2xl bg-white p-4 text-sm text-[#173d42]/60">جاري التحميل...</p>
+              ) : conversations.length === 0 ? (
+                <p className="rounded-2xl bg-white p-4 text-sm text-[#173d42]/60">لا توجد محادثات بعد.</p>
+              ) : (
+                conversations.map((conversation) => (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() => setSelectedConversationId(conversation.id)}
+                    className={`mb-2 w-full rounded-2xl p-4 text-right transition ${
+                      selectedConversationId === conversation.id ? "bg-[#173d42] text-white" : "bg-white text-[#173d42]"
+                    }`}
+                  >
+                    <p className="font-black">
+                      {conversation.type === "SUPERVISION"
+                        ? "الإشراف"
+                        : conversation.teacher?.fullName || "المعلم"}
+                    </p>
+                    <p className="mt-1 text-xs opacity-70">{conversation.student.fullName}</p>
+                    <p className="mt-2 line-clamp-1 text-xs opacity-70">
+                      {conversation.lastMessage?.body || conversation.lastMessage?.attachmentName || "محادثة جديدة"}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
+          </aside>
+
+          <section className="flex min-h-[620px] flex-col bg-[#efe7d8]">
+            {selectedConversation ? (
+              <>
+                <div className="border-b border-[#d9c8ad] bg-white px-5 py-4">
+                  <p className="text-lg font-black text-[#173d42]">
+                    {selectedConversation.type === "SUPERVISION"
+                      ? "الإشراف"
+                      : selectedConversation.teacher?.fullName || "المعلم"}
+                  </p>
+                  <p className="text-xs font-bold text-[#173d42]/60">الطالب: {selectedConversation.student.fullName}</p>
+                </div>
+                <div className="flex-1 space-y-3 overflow-auto p-4">
+                  {messages.map((message) => {
+                    const mine =
+                      (mode === "PARENT" && message.senderRole === "PARENT") ||
+                      (mode === "TEACHER" && message.senderRole === "TEACHER") ||
+                      (mode === "ADMIN" && message.senderRole === "ADMIN");
+                    return (
+                      <div key={message.id} className={`flex ${mine ? "justify-start" : "justify-end"}`}>
+                        <div className={`max-w-[78%] rounded-2xl px-4 py-3 shadow-sm ${mine ? "bg-[#dcf8c6]" : "bg-white"}`}>
+                          <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
+                          {message.body ? <p className="whitespace-pre-wrap text-sm leading-7 text-[#173d42]">{message.body}</p> : null}
+                          {message.attachmentUrl ? (
+                            <a
+                              href={message.attachmentUrl}
+                              target="_blank"
+                              className="mt-2 block rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#173d42]"
+                            >
+                              {message.attachmentType?.startsWith("audio/") ? "تشغيل/تحميل الصوت" : "فتح المرفق"}: {message.attachmentName}
+                            </a>
+                          ) : null}
+                          <p className="mt-2 text-[10px] text-[#173d42]/45">
+                            {new Date(message.createdAt).toLocaleString("en-US")}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </div>
+                <div className="border-t border-[#d9c8ad] bg-white p-3">
+                  {attachment ? (
+                    <div className="mb-2 flex items-center justify-between rounded-xl bg-[#fffaf2] px-3 py-2 text-xs font-bold text-[#173d42]">
+                      <span>{attachment.name}</span>
+                      <button type="button" onClick={() => setAttachment(null)} className="font-black text-red-700">إزالة</button>
+                    </div>
+                  ) : null}
+                  <div className="flex items-end gap-2">
+                    <label className="cursor-pointer rounded-full bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#173d42] ring-1 ring-[#d9c8ad]">
+                      ملف
+                      <input
+                        type="file"
+                        accept="image/*,application/pdf,audio/*,video/*"
+                        className="hidden"
+                        onChange={(event) => setAttachment(event.target.files?.[0] || null)}
+                      />
+                    </label>
+                    <textarea
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      placeholder="اكتب رسالة..."
+                      className="min-h-12 flex-1 resize-none rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={sendMessage}
+                      disabled={sending}
+                      className="rounded-full bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                    >
+                      إرسال
+                    </button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-1 items-center justify-center p-6 text-center text-[#173d42]/60">
+                اختر محادثة أو ابدأ محادثة جديدة.
+              </div>
+            )}
+          </section>
+        </section>
+      </div>
+    </main>
+  );
+}

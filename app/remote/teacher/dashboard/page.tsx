@@ -310,6 +310,13 @@ export default async function RemoteTeacherDashboardPage({
                   </span>
                 ) : null}
               </Link>
+              <Link
+                href="/remote/teacher/messages"
+                className="flex items-center justify-between rounded-2xl bg-[#173d42] px-4 py-3 text-white hover:bg-[#1f6358]"
+              >
+                <span>مراسلات أولياء الأمور</span>
+                <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-black">جديد</span>
+              </Link>
             </div>
           </section>
         </aside>

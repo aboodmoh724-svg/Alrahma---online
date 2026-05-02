@@ -129,6 +129,12 @@ const sections: DashboardSection[] = [
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
+    href: "/remote/admin/conversations",
+    title: "مراقبة مراسلات التعليم",
+    description: "متابعة المحادثات المصغرة بين أولياء الأمور والمعلمين والإشراف.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
     href: "/remote/admin/escalated-messages",
     title: "متابعات محولة من الإشراف",
     description: "رسائل وشكاوى يحولها المشرف للإدارة للرد أو التوجيه أو مراسلة المعلم.",
