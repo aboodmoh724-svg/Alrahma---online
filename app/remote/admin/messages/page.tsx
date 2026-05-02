@@ -135,6 +135,7 @@ export default function RemoteAdminMessagesPage() {
         throw new Error(data.error || "تعذر حفظ القالب");
       }
 
+      await loadSettings();
       setFeedback(`تم حفظ قالب: ${template.title}`);
     } catch (error) {
       setFeedback(error instanceof Error ? error.message : "تعذر حفظ القالب");
@@ -143,8 +144,9 @@ export default function RemoteAdminMessagesPage() {
     }
   };
 
-  const restoreDefault = (template: TemplateItem) => {
+  const restoreDefault = async (template: TemplateItem) => {
     updateTemplateBody(template.key, template.defaultBody);
+    await saveTemplate({ ...template, body: template.defaultBody });
   };
 
   const saveReminderSettings = async () => {
@@ -168,6 +170,7 @@ export default function RemoteAdminMessagesPage() {
         throw new Error(data.error || "تعذر حفظ إعدادات التذكير");
       }
 
+      await loadSettings();
       setFeedback("تم حفظ إعدادات التذكير التلقائي.");
     } catch (error) {
       setFeedback(
@@ -354,6 +357,9 @@ export default function RemoteAdminMessagesPage() {
                   <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
                     هذه الخانات توضح متى يرسل النظام تلقائيا، ولمن، ومن أي موضع. إغلاق أي خانة يوقف الإرسال الآلي المرتبط بها.
                   </p>
+                  <p className="mt-2 rounded-2xl bg-[#fffaf2] px-4 py-3 text-xs font-bold leading-6 text-[#8a6335] ring-1 ring-[#eadcc6]">
+                    تنبيه مهم: الخانات النظامية فقط مرتبطة فعليًا بإرسال تلقائي داخل الكود. أما الخانات التي تضيفها الإدارة هنا فهي للتوثيق والمتابعة والتخطيط، ولا ترسل تلقائيًا حتى يتم ربطها بحدث واضح داخل النظام.
+                  </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -412,6 +418,9 @@ export default function RemoteAdminMessagesPage() {
               {automationSettings.customRules.length > 0 ? (
                 <div className="mt-5 space-y-3">
                   <h3 className="text-lg font-black text-[#1c2d31]">خانات مضافة من الإدارة</h3>
+                  <p className="text-sm leading-7 text-[#1c2d31]/60">
+                    حفظ هذه الخانات يجعلها ظاهرة في السجل فقط. لكي تصبح رسالة تلقائية فعليًا يجب تحويلها إلى قاعدة نظامية مبرمجة تحدد الحدث، والمستلم، والقالب، ووقت الإرسال.
+                  </p>
                   {automationSettings.customRules.map((rule) => (
                     <div key={rule.id} className="rounded-[1.5rem] bg-[#f4fbf8] p-4 ring-1 ring-[#cfe3d9]">
                       <div className="grid gap-3 md:grid-cols-2">
