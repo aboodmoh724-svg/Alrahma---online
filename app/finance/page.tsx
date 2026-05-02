@@ -62,6 +62,17 @@ function normalizeFinanceTab(value: unknown): FinanceTab {
   return financeTabs.some((item) => item.key === tab) ? (tab as FinanceTab) : "summary";
 }
 
+function normalizeExpenseRecurrence(value: unknown) {
+  const recurrence = String(value || "").trim();
+  return ["ONE_TIME", "MONTHLY", "YEARLY"].includes(recurrence) ? recurrence : "ONE_TIME";
+}
+
+function expenseRecurrenceLabel(value: string) {
+  if (value === "MONTHLY") return "شهري";
+  if (value === "YEARLY") return "سنوي";
+  return "مرة واحدة";
+}
+
 function getMonthRange(monthKey: string) {
   const [yearText, monthText] = monthKey.split("-");
   const year = Number(yearText);
@@ -95,6 +106,42 @@ function getMonthDateKeys(monthKey: string) {
 
 function formatMoney(amount: number, currency = defaultCurrency) {
   return `${amount.toFixed(2)} ${currency}`;
+}
+
+function daysInUtcMonth(year: number, month: number) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function expenseDueDateForMonth(expense: {
+  recurrence: string;
+  expenseDate: Date;
+  nextDueDate: Date | null;
+  dueDay: number | null;
+}, monthKey: string) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const baseDate = expense.nextDueDate || expense.expenseDate;
+
+  if (expense.recurrence === "MONTHLY") {
+    const day = Math.min(Math.max(expense.dueDay || baseDate.getUTCDate() || 1, 1), daysInUtcMonth(year, month));
+    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+  }
+
+  if (expense.recurrence === "YEARLY") {
+    const dueMonth = baseDate.getUTCMonth() + 1;
+    if (dueMonth !== month) return null;
+    const day = Math.min(baseDate.getUTCDate(), daysInUtcMonth(year, month));
+    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+  }
+
+  const expenseMonthKey = expense.expenseDate.toISOString().slice(0, 7);
+  return expenseMonthKey === monthKey ? expense.expenseDate : null;
+}
+
+function daysUntil(date: Date) {
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const targetUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  return Math.ceil((targetUtc - todayUtc) / 86400000);
 }
 
 function getTeacherAttendanceLabel(status: string | null, hasReport: boolean) {
@@ -464,6 +511,11 @@ async function addPlatformExpense(formData: FormData) {
   const amount = parseAmount(formData.get("amount"));
   const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
   const expenseDate = parseDate(formData.get("expenseDate"));
+  const recurrence = normalizeExpenseRecurrence(formData.get("recurrence"));
+  const dueDayRaw = Number(formData.get("dueDay") || "");
+  const dueDay = Number.isFinite(dueDayRaw) && dueDayRaw >= 1 && dueDayRaw <= 31 ? Math.floor(dueDayRaw) : null;
+  const nextDueDate = parseDate(formData.get("nextDueDate") || formData.get("expenseDate"));
+  const isActive = formData.get("isActive") !== "false";
   const paymentMethod = String(formData.get("paymentMethod") || "").trim() || null;
   const receiptUrl = String(formData.get("receiptUrl") || "").trim() || null;
   const note = String(formData.get("note") || "").trim() || null;
@@ -477,6 +529,10 @@ async function addPlatformExpense(formData: FormData) {
       amount,
       currency,
       expenseDate,
+      recurrence,
+      dueDay,
+      nextDueDate,
+      isActive,
       paymentMethod,
       receiptUrl,
       note,
@@ -495,6 +551,10 @@ async function addPlatformExpense(formData: FormData) {
       amount,
       currency,
       expenseDate: expenseDate.toISOString(),
+      recurrence,
+      dueDay,
+      nextDueDate: nextDueDate.toISOString(),
+      isActive,
       paymentMethod,
       receiptUrl,
       note,
@@ -516,6 +576,11 @@ async function updatePlatformExpense(formData: FormData) {
   const amount = parseAmount(formData.get("amount"));
   const currency = String(formData.get("currency") || defaultCurrency).trim() || defaultCurrency;
   const expenseDate = parseDate(formData.get("expenseDate"));
+  const recurrence = normalizeExpenseRecurrence(formData.get("recurrence"));
+  const dueDayRaw = Number(formData.get("dueDay") || "");
+  const dueDay = Number.isFinite(dueDayRaw) && dueDayRaw >= 1 && dueDayRaw <= 31 ? Math.floor(dueDayRaw) : null;
+  const nextDueDate = parseDate(formData.get("nextDueDate") || formData.get("expenseDate"));
+  const isActive = formData.get("isActive") === "on" || formData.get("isActive") === "true";
   const paymentMethod = String(formData.get("paymentMethod") || "").trim() || null;
   const receiptUrl = String(formData.get("receiptUrl") || "").trim() || null;
   const note = String(formData.get("note") || "").trim() || null;
@@ -536,6 +601,10 @@ async function updatePlatformExpense(formData: FormData) {
       amount,
       currency,
       expenseDate,
+      recurrence,
+      dueDay,
+      nextDueDate,
+      isActive,
       paymentMethod,
       receiptUrl,
       note,
@@ -555,6 +624,10 @@ async function updatePlatformExpense(formData: FormData) {
         amount: toNumber(existing.amount),
         currency: existing.currency,
         expenseDate: existing.expenseDate.toISOString(),
+        recurrence: existing.recurrence,
+        dueDay: existing.dueDay,
+        nextDueDate: existing.nextDueDate?.toISOString() || null,
+        isActive: existing.isActive,
         paymentMethod: existing.paymentMethod,
         receiptUrl: existing.receiptUrl,
         note: existing.note,
@@ -565,6 +638,10 @@ async function updatePlatformExpense(formData: FormData) {
         amount,
         currency,
         expenseDate: expenseDate.toISOString(),
+        recurrence,
+        dueDay,
+        nextDueDate: nextDueDate.toISOString(),
+        isActive,
         paymentMethod,
         receiptUrl,
         note,
@@ -990,7 +1067,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     }),
     prisma.platformExpense.findMany({
       orderBy: { expenseDate: "desc" },
-      take: 20,
+      take: 200,
     }),
     prisma.user.findMany({
       where: {
@@ -1128,6 +1205,22 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   });
 
   const platformExpensesTotal = expenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
+  const expenseObligations = expenses
+    .filter((expense) => expense.isActive)
+    .map((expense) => {
+      const dueDate = expenseDueDateForMonth(expense, currentMonth);
+      return dueDate
+        ? {
+            expense,
+            dueDate,
+            daysUntil: daysUntil(dueDate),
+            amount: toNumber(expense.amount),
+          }
+        : null;
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item))
+    .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
+  const platformObligationsTotal = expenseObligations.reduce((sum, item) => sum + item.amount, 0);
   const teacherPayoutRows = teachers
     .flatMap((teacher) =>
       teacher.teacherPayouts.map((payout) => ({
@@ -1139,10 +1232,23 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   const teacherPayoutsTotal = teacherRows.reduce((sum, row) => sum + row.paid, 0);
   const teacherEstimatedDueTotal = teacherRows.reduce((sum, row) => sum + row.estimatedDue, 0);
   const teacherRemainingTotal = teacherRows.reduce((sum, row) => sum + row.remaining, 0);
+  const monthEndDueDate = new Date(Date.UTC(Number(currentMonth.slice(0, 4)), Number(currentMonth.slice(5, 7)), 0, 12, 0, 0, 0));
+  const teacherObligationRows = teacherRows
+    .filter((row) => row.remaining > 0)
+    .map((row) => ({
+      title: `مكافأة ${row.teacher.fullName}`,
+      category: "مكافآت المعلمين",
+      amount: row.remaining,
+      currency: row.currency,
+      dueDate: monthEndDueDate,
+      daysUntil: daysUntil(monthEndDueDate),
+    }));
+  const monthlyObligationsTotal = platformObligationsTotal + teacherRemainingTotal;
   const totalExpenses = platformExpensesTotal + teacherPayoutsTotal;
   const currentBalance = receivedIncome - totalExpenses;
   const projectedBalance = expectedIncome - totalExpenses;
   const balanceAfterTeacherDues = currentBalance - teacherRemainingTotal;
+  const balanceAfterMonthlyObligations = currentBalance - monthlyObligationsTotal;
   const today = new Date().toISOString().slice(0, 10);
 
   const cards = [
@@ -1156,6 +1262,10 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     { label: "متبقي مكافآت المعلمين", value: teacherRemainingTotal, hint: "مستحقات لم يتم دفعها بعد" },
     { label: "الرصيد بعد المستحقات", value: balanceAfterTeacherDues, hint: "الرصيد الحالي بعد احتساب المتبقي للمعلمين" },
   ];
+  cards.push(
+    { label: "التزامات هذا الشهر", value: monthlyObligationsTotal, hint: "مصروفات متكررة ومتبقي مكافآت المعلمين" },
+    { label: "الرصيد بعد التزامات الشهر", value: balanceAfterMonthlyObligations, hint: "الرصيد الحالي بعد كل ما يجب دفعه هذا الشهر" }
+  );
 
   return (
     <main className="min-h-screen bg-[#f6efe3] px-4 py-6 text-[#173d42]" dir="rtl">
@@ -1281,6 +1391,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           ) : null}
 
           {activeTab === "expenses" ? (
+          <>
           <form action={addPlatformExpense} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تسجيل مصروف</h2>
             <p className="mt-2 text-sm leading-6 text-[#173d42]/60">مثل Zoom، الإعلام، الأنشطة، أو أي مصروف إداري.</p>
@@ -1290,6 +1401,17 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <input name="expenseDate" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <select name="recurrence" defaultValue="ONE_TIME" className="rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm">
+                <option value="ONE_TIME">مصروف مرة واحدة</option>
+                <option value="MONTHLY">التزام شهري</option>
+                <option value="YEARLY">التزام سنوي</option>
+              </select>
+              <input name="dueDay" type="number" min="1" max="31" placeholder="يوم الاستحقاق الشهري" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="nextDueDate" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <select name="isActive" defaultValue="true" className="rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm">
+                <option value="true">يدخل ضمن الالتزامات القادمة</option>
+                <option value="false">مصروف مسجل فقط</option>
+              </select>
             </div>
             <input name="paymentMethod" placeholder="طريقة الدفع" className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
             <input name="receiptUrl" placeholder="رابط إيصال إن وجد" className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
@@ -1298,6 +1420,74 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               إضافة المصروف
             </button>
           </form>
+          <div className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm xl:col-span-2">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black">التزامات نهاية الشهر</h2>
+                <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
+                  يضم المصروفات الشهرية والسنوية المستحقة في {currentMonth} مع متبقي مكافآت المعلمين.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-[#173d42] px-4 py-3 text-sm font-black text-white">
+                المطلوب: {formatMoney(monthlyObligationsTotal)}
+              </div>
+            </div>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <div className="rounded-2xl bg-[#fffaf2] p-4">
+                <p className="text-xs font-black text-[#173d42]/60">التزامات المنصة</p>
+                <p className="mt-2 text-2xl font-black">{formatMoney(platformObligationsTotal)}</p>
+              </div>
+              <div className="rounded-2xl bg-[#fffaf2] p-4">
+                <p className="text-xs font-black text-[#173d42]/60">مكافآت المعلمين المتبقية</p>
+                <p className="mt-2 text-2xl font-black">{formatMoney(teacherRemainingTotal)}</p>
+              </div>
+              <div className={`rounded-2xl p-4 ${balanceAfterMonthlyObligations >= 0 ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`}>
+                <p className="text-xs font-black opacity-70">الرصيد بعد الدفع</p>
+                <p className="mt-2 text-2xl font-black">{formatMoney(balanceAfterMonthlyObligations)}</p>
+              </div>
+            </div>
+            <div className="mt-4 space-y-2">
+              {[...expenseObligations.map((item) => ({
+                key: item.expense.id,
+                title: item.expense.title,
+                category: `${item.expense.category} - ${expenseRecurrenceLabel(item.expense.recurrence)}`,
+                amount: item.amount,
+                currency: item.expense.currency,
+                dueDate: item.dueDate,
+                daysUntil: item.daysUntil,
+              })), ...teacherObligationRows].length === 0 ? (
+                <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60">لا توجد التزامات مستحقة لهذا الشهر.</p>
+              ) : (
+                [...expenseObligations.map((item) => ({
+                  key: item.expense.id,
+                  title: item.expense.title,
+                  category: `${item.expense.category} - ${expenseRecurrenceLabel(item.expense.recurrence)}`,
+                  amount: item.amount,
+                  currency: item.expense.currency,
+                  dueDate: item.dueDate,
+                  daysUntil: item.daysUntil,
+                })), ...teacherObligationRows].map((item) => (
+                  <div key={`${item.title}-${item.dueDate.toISOString()}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#eadcc6] p-4">
+                    <div>
+                      <p className="font-black">{item.title}</p>
+                      <p className="mt-1 text-xs text-[#173d42]/60">
+                        {item.category} - يستحق في {item.dueDate.toISOString().slice(0, 10)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`rounded-full px-3 py-1 text-xs font-black ${item.daysUntil <= 5 ? "bg-red-50 text-red-700" : "bg-[#fffaf2] text-[#8a6335]"}`}>
+                        {item.daysUntil < 0 ? "متأخر" : `بعد ${item.daysUntil} يوم`}
+                      </span>
+                      <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                        {formatMoney(item.amount, item.currency)}
+                      </span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+          </>
           ) : null}
         </section>
         ) : null}
@@ -1777,6 +1967,34 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                           defaultValue={formatDateInput(expense.expenseDate)}
                           className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
                         />
+                        <select
+                          name="recurrence"
+                          defaultValue={expense.recurrence}
+                          className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs"
+                        >
+                          <option value="ONE_TIME">مرة واحدة</option>
+                          <option value="MONTHLY">شهري</option>
+                          <option value="YEARLY">سنوي</option>
+                        </select>
+                        <input
+                          name="dueDay"
+                          type="number"
+                          min="1"
+                          max="31"
+                          defaultValue={expense.dueDay || ""}
+                          placeholder="يوم الاستحقاق"
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <input
+                          name="nextDueDate"
+                          type="date"
+                          defaultValue={formatDateInput(expense.nextDueDate || expense.expenseDate)}
+                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        />
+                        <label className="flex items-center gap-2 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-black">
+                          <input name="isActive" type="checkbox" defaultChecked={expense.isActive} />
+                          نشط للالتزامات
+                        </label>
                       </div>
                       <input
                         name="paymentMethod"

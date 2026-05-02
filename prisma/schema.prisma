@@ -100,6 +100,10 @@ model PlatformExpense {
   amount        Decimal  @db.Decimal(10, 2)
   currency      String   @default("USD")
   expenseDate   DateTime @default(now())
+  recurrence    String   @default("ONE_TIME")
+  dueDay        Int?
+  nextDueDate   DateTime?
+  isActive      Boolean  @default(true)
   paymentMethod String?
   receiptUrl    String?
   note          String?

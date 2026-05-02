@@ -220,6 +220,78 @@ async function getOpenTeacherRequestsCount() {
   return teacherRequestsCount + forwardedRegistrationsCount;
 }
 
+function daysInUtcMonth(year: number, month: number) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function dueDateForExpense(expense: {
+  recurrence: string;
+  expenseDate: Date;
+  nextDueDate: Date | null;
+  dueDay: number | null;
+}) {
+  const today = new Date();
+  const year = today.getUTCFullYear();
+  const month = today.getUTCMonth() + 1;
+  const baseDate = expense.nextDueDate || expense.expenseDate;
+
+  if (expense.recurrence === "MONTHLY") {
+    const day = Math.min(Math.max(expense.dueDay || baseDate.getUTCDate() || 1, 1), daysInUtcMonth(year, month));
+    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+  }
+
+  if (expense.recurrence === "YEARLY") {
+    const dueMonth = baseDate.getUTCMonth() + 1;
+    const day = Math.min(baseDate.getUTCDate(), daysInUtcMonth(year, dueMonth));
+    return new Date(Date.UTC(year, dueMonth - 1, day, 12, 0, 0, 0));
+  }
+
+  return expense.expenseDate;
+}
+
+function isDueSoon(date: Date) {
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const targetUtc = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const diffDays = Math.ceil((targetUtc - todayUtc) / 86400000);
+  return diffDays <= 7;
+}
+
+async function getFinanceObligationsDueSoonCount() {
+  const [expenses, teachers] = await Promise.all([
+    prisma.platformExpense.findMany({
+      where: {
+        isActive: true,
+        recurrence: {
+          in: ["MONTHLY", "YEARLY"],
+        },
+      },
+      select: {
+        recurrence: true,
+        expenseDate: true,
+        nextDueDate: true,
+        dueDay: true,
+      },
+    }),
+    prisma.user.findMany({
+      where: {
+        role: "TEACHER",
+        studyMode: "REMOTE",
+        isActive: true,
+        compensationRule: {
+          isNot: null,
+        },
+      },
+      select: {
+        id: true,
+      },
+    }),
+  ]);
+
+  const expensesDueSoon = expenses.filter((expense) => isDueSoon(dueDateForExpense(expense))).length;
+  return expensesDueSoon + teachers.length;
+}
+
 export default async function RemoteAdminDashboardPage() {
   const [
     currentAdmin,
@@ -228,6 +300,7 @@ export default async function RemoteAdminDashboardPage() {
     escalatedMessagesCount,
     escalatedComplaintsCount,
     unassignedStudentsCount,
+    financeObligationsDueSoonCount,
   ] = await Promise.all([
     getCurrentRemoteAdmin(),
     getNewRegistrationRequestsCount(),
@@ -252,6 +325,7 @@ export default async function RemoteAdminDashboardPage() {
         circleId: null,
       },
     }),
+    getFinanceObligationsDueSoonCount(),
   ]);
 
   const visibleSections = sections.filter(
@@ -292,6 +366,14 @@ export default async function RemoteAdminDashboardPage() {
       href: "/remote/admin/students",
       count: unassignedStudentsCount,
       tone: "neutral" as const,
+    },
+    {
+      key: "finance-obligations",
+      title: "التزامات مالية قريبة",
+      description: "مصروفات شهرية أو سنوية ومكافآت معلمين تحتاج دفعا قريبا.",
+      href: "/finance?tab=expenses",
+      count: financeObligationsDueSoonCount,
+      tone: "amber" as const,
     },
   ];
 
@@ -334,6 +416,10 @@ export default async function RemoteAdminDashboardPage() {
                 ) : section.href === "/remote/admin/escalated-messages" && escalatedMessagesCount > 0 ? (
                   <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
                     {escalatedMessagesCount}
+                  </span>
+                ) : section.href === "/finance" && financeObligationsDueSoonCount > 0 ? (
+                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white">
+                    {financeObligationsDueSoonCount}
                   </span>
                 ) : section.href === "/remote/supervision/dashboard" &&
                   openTeacherRequestsCount > 0 ? (
