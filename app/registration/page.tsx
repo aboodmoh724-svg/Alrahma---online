@@ -317,17 +317,28 @@ export default function RegistrationPage() {
                 <div className="grid grid-cols-[96px_1fr] gap-2">
                   <input
                     value={formData.parentCountryCode}
-                    onChange={(e) => setField("parentCountryCode", e.target.value)}
+                    onChange={(e) =>
+                      setField(
+                        "parentCountryCode",
+                        e.target.value.startsWith("+") ? e.target.value : `+${e.target.value.replace(/[^\d]/g, "")}`
+                      )
+                    }
                     placeholder="+90"
-                    className={inputClass}
+                    type="tel"
+                    inputMode="tel"
+                    lang="en"
+                    className={`${inputClass} text-left font-mono`}
                     dir="ltr"
                     required
                   />
                   <input
                     value={formData.parentWhatsapp}
-                    onChange={(e) => setField("parentWhatsapp", e.target.value)}
+                    onChange={(e) => setField("parentWhatsapp", e.target.value.replace(/[^\d]/g, ""))}
                     placeholder="5xxxxxxxxx"
-                    className={inputClass}
+                    type="tel"
+                    inputMode="tel"
+                    lang="en"
+                    className={`${inputClass} text-left font-mono`}
                     dir="ltr"
                     required
                   />

@@ -43,7 +43,8 @@ type Props = {
 };
 
 export default function EducationChatClient({ mode, title, subtitle, backHref }: Props) {
-  const [phone, setPhone] = useState("");
+  const [countryCode, setCountryCode] = useState("+90");
+  const [localPhone, setLocalPhone] = useState("");
   const [code, setCode] = useState("");
   const [authStep, setAuthStep] = useState<"PHONE" | "CODE" | "READY">(mode === "PARENT" ? "PHONE" : "READY");
   const [loading, setLoading] = useState(true);
@@ -58,11 +59,18 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   const [sending, setSending] = useState(false);
   const [feedback, setFeedback] = useState("");
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const phone = `${countryCode.trim()}${localPhone.replace(/[^\d]/g, "")}`;
 
   const selectedConversation = useMemo(
     () => conversations.find((item) => item.id === selectedConversationId) || null,
     [conversations, selectedConversationId]
   );
+
+  const getConversationTitle = (conversation: Conversation) => {
+    if (mode === "TEACHER") return `ولي أمر ${conversation.student.fullName}`;
+    if (conversation.type === "SUPERVISION") return "الإشراف";
+    return conversation.teacher?.fullName || "المعلم";
+  };
 
   const loadConversations = async () => {
     try {
@@ -100,11 +108,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   };
 
   useEffect(() => {
-    if (mode !== "PARENT" || authStep === "READY") {
-      loadConversations();
-    } else {
-      setLoading(false);
+    if (mode === "PARENT") {
+      const savedCountryCode = localStorage.getItem("parentChatCountryCode");
+      const savedLocalPhone = localStorage.getItem("parentChatLocalPhone");
+      if (savedCountryCode) setCountryCode(savedCountryCode);
+      if (savedLocalPhone) setLocalPhone(savedLocalPhone);
     }
+    loadConversations();
   }, []);
 
   useEffect(() => {
@@ -115,6 +125,10 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
     try {
       setSendingCode(true);
       setFeedback("");
+      if (!localPhone.trim()) {
+        setFeedback("يرجى كتابة رقم واتساب ولي الأمر.");
+        return;
+      }
       const response = await fetch("/api/parent-chat/request-code", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,6 +139,8 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
         setFeedback(data.error || "تعذر إرسال الرمز");
         return;
       }
+      localStorage.setItem("parentChatCountryCode", countryCode);
+      localStorage.setItem("parentChatLocalPhone", localPhone);
       setAuthStep("CODE");
       setFeedback("تم إرسال الرمز إلى واتساب.");
     } finally {
@@ -143,6 +159,8 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
       setFeedback(data.error || "تعذر التحقق");
       return;
     }
+    localStorage.setItem("parentChatCountryCode", countryCode);
+    localStorage.setItem("parentChatLocalPhone", localPhone);
     setAuthStep("READY");
     await loadConversations();
   };
@@ -200,12 +218,26 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
             </p>
             {authStep === "PHONE" ? (
               <>
-                <input
-                  value={phone}
-                  onChange={(event) => setPhone(event.target.value)}
-                  placeholder="رقم واتساب ولي الأمر"
-                  className="mt-5 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
-                />
+                <div className="mt-5 grid grid-cols-[92px_1fr] gap-2" dir="ltr">
+                  <input
+                    value={countryCode}
+                    onChange={(event) => setCountryCode(event.target.value.startsWith("+") ? event.target.value : `+${event.target.value.replace(/[^\d]/g, "")}`)}
+                    placeholder="+90"
+                    type="tel"
+                    inputMode="tel"
+                    lang="en"
+                    className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left font-mono text-sm outline-none"
+                  />
+                  <input
+                    value={localPhone}
+                    onChange={(event) => setLocalPhone(event.target.value.replace(/[^\d]/g, ""))}
+                    placeholder="5xxxxxxxxx"
+                    type="tel"
+                    inputMode="tel"
+                    lang="en"
+                    className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left font-mono text-sm outline-none"
+                  />
+                </div>
                 <button
                   type="button"
                   onClick={requestCode}
@@ -258,7 +290,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
         {feedback ? <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm font-bold text-[#173d42] ring-1 ring-[#d9c8ad]">{feedback}</div> : null}
 
         <section className="grid min-h-[620px] overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#d9c8ad] lg:grid-cols-[360px_1fr]">
-          <aside className="border-l border-[#eadcc6] bg-[#fffaf2]">
+          <aside className={`${selectedConversationId ? "hidden" : "block"} border-l border-[#eadcc6] bg-[#fffaf2] lg:block`}>
             <div className="space-y-3 border-b border-[#eadcc6] p-4">
               {mode === "PARENT" ? (
                 <>
@@ -318,12 +350,8 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       selectedConversationId === conversation.id ? "bg-[#173d42] text-white" : "bg-white text-[#173d42]"
                     }`}
                   >
-                    <p className="font-black">
-                      {conversation.type === "SUPERVISION"
-                        ? "الإشراف"
-                        : conversation.teacher?.fullName || "المعلم"}
-                    </p>
-                    <p className="mt-1 text-xs opacity-70">{conversation.student.fullName}</p>
+                    <p className="font-black">{getConversationTitle(conversation)}</p>
+                    {mode === "ADMIN" ? <p className="mt-1 text-xs opacity-70">{conversation.student.fullName}</p> : null}
                     <p className="mt-2 line-clamp-1 text-xs opacity-70">
                       {conversation.lastMessage?.body || conversation.lastMessage?.attachmentName || "محادثة جديدة"}
                     </p>
@@ -333,16 +361,23 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
             </div>
           </aside>
 
-          <section className="flex min-h-[620px] flex-col bg-[#efe7d8]">
+          <section className={`${selectedConversationId ? "flex" : "hidden"} min-h-[620px] flex-col bg-[#efe7d8] lg:flex`}>
             {selectedConversation ? (
               <>
-                <div className="border-b border-[#d9c8ad] bg-white px-5 py-4">
-                  <p className="text-lg font-black text-[#173d42]">
-                    {selectedConversation.type === "SUPERVISION"
-                      ? "الإشراف"
-                      : selectedConversation.teacher?.fullName || "المعلم"}
-                  </p>
-                  <p className="text-xs font-bold text-[#173d42]/60">الطالب: {selectedConversation.student.fullName}</p>
+                <div className="flex items-center justify-between gap-3 border-b border-[#d9c8ad] bg-white px-5 py-4">
+                  <div>
+                    <p className="text-lg font-black text-[#173d42]">{getConversationTitle(selectedConversation)}</p>
+                    {mode === "ADMIN" ? (
+                      <p className="text-xs font-bold text-[#173d42]/60">الطالب: {selectedConversation.student.fullName}</p>
+                    ) : null}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedConversationId("")}
+                    className="rounded-full bg-[#fffaf2] px-4 py-2 text-xs font-black text-[#173d42] ring-1 ring-[#d9c8ad] lg:hidden"
+                  >
+                    المحادثات
+                  </button>
                 </div>
                 <div className="flex-1 space-y-3 overflow-auto p-4">
                   {messages.map((message) => {
@@ -353,7 +388,9 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     return (
                       <div key={message.id} className={`flex ${mine ? "justify-start" : "justify-end"}`}>
                         <div className={`max-w-[78%] rounded-2xl px-4 py-3 shadow-sm ${mine ? "bg-[#dcf8c6]" : "bg-white"}`}>
-                          <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
+                          {mode === "ADMIN" ? (
+                            <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
+                          ) : null}
                           {message.body ? <p className="whitespace-pre-wrap text-sm leading-7 text-[#173d42]">{message.body}</p> : null}
                           {message.attachmentUrl ? (
                             <a
