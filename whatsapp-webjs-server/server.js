@@ -214,7 +214,18 @@ app.post("/send-message", requireToken, async (req, res) => {
       return;
     }
 
-    const chatId = directChatId || `${to}@c.us`;
+    let chatId = directChatId;
+    if (!chatId) {
+      const numberId = await client.getNumberId(to);
+      if (!numberId?._serialized) {
+        res.status(404).json({
+          success: false,
+          error: "The phone number is not registered on WhatsApp or the country code is incorrect.",
+        });
+        return;
+      }
+      chatId = numberId._serialized;
+    }
     let result;
 
     if (documentUrl) {

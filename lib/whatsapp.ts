@@ -160,6 +160,10 @@ function extractWhatsAppErrorMessage(raw: string) {
     return "Ø®Ø§Ø¯Ù… ÙˆØ§ØªØ³Ø§Ø¨ Ø£Ø¹Ø§Ø¯ ØµÙØ­Ø© ØºÙŠØ± Ù…ØªÙˆÙ‚Ø¹Ø©. ØªØ£ÙƒØ¯ Ù…Ù† Ø±Ø§Ø¨Ø· Ø®Ø§Ø¯Ù… ÙˆØ§ØªØ³Ø§Ø¨ ÙÙŠ Vercel Ø£Ùˆ Ù…Ù† Ø£Ù† Ø§Ù„Ø®Ø¯Ù…Ø© ØªØ¹Ù…Ù„ Ø¨Ø´ÙƒÙ„ ØµØ­ÙŠØ­.";
   }
 
+  if (/No LID for user|not registered|not a WhatsApp user|not found in WhatsApp|country code is incorrect/i.test(text)) {
+    return "تعذر إرسال واتساب: رقم ولي الأمر غير مسجل في واتساب أو مكتوب بصيغة غير صحيحة. يرجى التأكد من رمز الدولة والرقم ثم المحاولة مرة أخرى.";
+  }
+
   try {
     const parsed = JSON.parse(text) as {
       error?: string | { message?: string };
@@ -228,7 +232,11 @@ export function normalizeWhatsAppNumber(raw: string) {
   }
 
   const normalized = digits.startsWith("+") ? digits.slice(1) : digits;
-  const justDigits = normalized.replace(/\D/g, "");
+  let justDigits = normalized.replace(/\D/g, "");
+
+  if (justDigits.startsWith("00")) {
+    justDigits = justDigits.slice(2);
+  }
 
   if (justDigits.length < 8) {
     return null;
