@@ -3,10 +3,20 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  findNoorAlBayanLesson,
+  formatNoorAlBayanRange,
+  noorAlBayanReviewOptions,
+} from "@/lib/noor-al-bayan-lessons";
 
 type Student = {
   id: string;
   fullName: string;
+  circle?: {
+    id: string;
+    name: string;
+    track?: string | null;
+  } | null;
 };
 
 const surahNames = [
@@ -243,6 +253,12 @@ function NewReportForm() {
     nextReviewTo: "",
     nextReviewPagesCount: "",
     nextReviewHomeworkText: "",
+    noorLinesCount: "",
+    noorReviewScope: "مراجعة آخر درس",
+    noorReviewCustom: "",
+    noorNextPageFrom: "",
+    noorNextPageTo: "",
+    noorNextLinesCount: "",
     note: "",
   });
 
@@ -362,11 +378,34 @@ function NewReportForm() {
     (student) => student.id === formData.studentId
   );
 
-  const selectedStudentName = useMemo(
-    () =>
-      students.find((student) => student.id === formData.studentId)?.fullName ||
-      "الطالب",
+  const selectedStudent = useMemo(
+    () => students.find((student) => student.id === formData.studentId) || null,
     [formData.studentId, students]
+  );
+
+  const selectedStudentName = useMemo(
+    () => selectedStudent?.fullName || "الطالب",
+    [selectedStudent]
+  );
+
+  const isNoorAlBayanReport = useMemo(() => {
+    const circleName = selectedStudent?.circle?.name || "";
+    const circleTrack = selectedStudent?.circle?.track || "";
+
+    return (
+      circleTrack === "ONSITE_NOUR_AL_BAYAN" ||
+      /نور|بيان/i.test(circleName)
+    );
+  }, [selectedStudent]);
+
+  const currentNoorLesson = useMemo(
+    () => findNoorAlBayanLesson(formData.pageFrom),
+    [formData.pageFrom]
+  );
+
+  const nextNoorLesson = useMemo(
+    () => findNoorAlBayanLesson(formData.noorNextPageFrom),
+    [formData.noorNextPageFrom]
   );
 
   const setField = (name: keyof typeof formData, value: string | boolean) => {
@@ -458,56 +497,122 @@ function NewReportForm() {
     return parts.join(" | ");
   };
 
+  const calculatePageCount = (from: string, to: string, fallback: string) => {
+    if (fallback.trim()) {
+      return fallback.trim();
+    }
+
+    const fromNumber = Number(from);
+    const toNumber = Number(to || from);
+
+    if (!Number.isFinite(fromNumber) || !Number.isFinite(toNumber)) {
+      return "";
+    }
+
+    return String(Math.max(1, toNumber - fromNumber + 1));
+  };
+
+  const buildNoorNextLessonHomework = () => {
+    const typedText = formData.nextLessonHomeworkText.trim();
+
+    if (typedText) {
+      return typedText;
+    }
+
+    return formatNoorAlBayanRange({
+      pageFrom: formData.noorNextPageFrom,
+      pageTo: formData.noorNextPageTo,
+      linesCount: formData.noorNextLinesCount,
+    });
+  };
+
+  const buildNoorNextHomework = () => {
+    const nextLessonHomework = buildNoorNextLessonHomework();
+
+    return nextLessonHomework ? `واجب نور البيان: ${nextLessonHomework}` : "";
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const nextHomework = buildNextHomework();
+    const nextHomework = isNoorAlBayanReport
+      ? buildNoorNextHomework()
+      : buildNextHomework();
     const nextLessonHomework =
-      formData.nextLessonHomeworkText.trim() ||
-      buildHomeworkRange({
-        startSurah: formData.nextLessonStartSurah,
-        endSurah: formData.nextLessonEndSurah,
-        from: formData.nextLessonFrom,
-        to: formData.nextLessonTo,
-        pagesCount: formData.nextLessonPagesCount,
-      });
+      isNoorAlBayanReport
+        ? buildNoorNextLessonHomework()
+        : formData.nextLessonHomeworkText.trim() ||
+          buildHomeworkRange({
+            startSurah: formData.nextLessonStartSurah,
+            endSurah: formData.nextLessonEndSurah,
+            from: formData.nextLessonFrom,
+            to: formData.nextLessonTo,
+            pagesCount: formData.nextLessonPagesCount,
+          });
     const nextReviewHomework =
-      formData.nextReviewHomeworkText.trim() ||
-      buildHomeworkRange({
-        startSurah: formData.nextReviewStartSurah,
-        endSurah: formData.nextReviewEndSurah,
-        from: formData.nextReviewFrom,
-        to: formData.nextReviewTo,
-        pagesCount: formData.nextReviewPagesCount,
-      });
+      isNoorAlBayanReport
+        ? ""
+        : formData.nextReviewHomeworkText.trim() ||
+          buildHomeworkRange({
+            startSurah: formData.nextReviewStartSurah,
+            endSurah: formData.nextReviewEndSurah,
+            from: formData.nextReviewFrom,
+            to: formData.nextReviewTo,
+            pagesCount: formData.nextReviewPagesCount,
+          });
+    const noorLessonTitle = currentNoorLesson
+      ? `${currentNoorLesson.section}: ${currentNoorLesson.title}`
+      : "نور البيان";
+    const noorReviewScope =
+      formData.noorReviewScope === "مراجعة مخصصة"
+        ? formData.noorReviewCustom.trim() || formData.noorReviewScope
+        : formData.noorReviewScope;
     const lessonName = formData.isAbsent
       ? "غياب"
-      : `الدرس الجديد: سورة ${formData.lessonSurah}`;
+      : isNoorAlBayanReport
+        ? `نور البيان: ${noorLessonTitle}`
+        : `الدرس الجديد: سورة ${formData.lessonSurah}`;
 
     const payload = {
       studentId: formData.studentId,
       status: formData.isAbsent ? "ABSENT" : "PRESENT",
       lessonName,
-      lessonSurah: formData.lessonSurah,
+      lessonSurah: isNoorAlBayanReport ? noorLessonTitle : formData.lessonSurah,
       pageFrom: formData.pageFrom,
       pageTo: formData.pageTo,
-      pagesCount: formData.pagesCount,
+      pagesCount: calculatePageCount(
+        formData.pageFrom,
+        formData.pageTo,
+        formData.pagesCount
+      ),
       lessonMemorized: toBooleanOrNull(formData.lessonMemorized),
-      lastFiveMemorized: toBooleanOrNull(formData.lastFiveMemorized),
-      review:
-        formData.reviewSurah || formData.reviewFrom || formData.reviewTo
+      lastFiveMemorized: isNoorAlBayanReport
+        ? null
+        : toBooleanOrNull(formData.lastFiveMemorized),
+      review: isNoorAlBayanReport
+        ? noorReviewScope
+          ? `${noorReviewScope} - ${formData.reviewMemorized === "true" ? "حافظ" : formData.reviewMemorized === "false" ? "غير حافظ" : "لم تحدد الحالة"}`
+          : ""
+        : formData.reviewSurah || formData.reviewFrom || formData.reviewTo
           ? `سورة ${formData.reviewSurah} من ${formData.reviewFrom || "-"} إلى ${formData.reviewTo || "-"}`
           : "",
-      reviewSurah: formData.reviewSurah,
-      reviewFrom: formData.reviewFrom,
-      reviewTo: formData.reviewTo,
-      reviewPagesCount: formData.reviewPagesCount,
+      reviewSurah: isNoorAlBayanReport ? noorReviewScope : formData.reviewSurah,
+      reviewFrom: isNoorAlBayanReport ? "" : formData.reviewFrom,
+      reviewTo: isNoorAlBayanReport ? "" : formData.reviewTo,
+      reviewPagesCount: isNoorAlBayanReport ? "" : formData.reviewPagesCount,
       reviewMemorized: toBooleanOrNull(formData.reviewMemorized),
       homework: suggestedHomework || "-",
       nextHomework,
       nextLessonHomework,
       nextReviewHomework,
-      note: formData.note,
+      note: [
+        formData.note,
+        isNoorAlBayanReport && formData.noorLinesCount
+          ? `عدد أسطر الدرس: ${formData.noorLinesCount}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
     };
 
     try {
@@ -631,125 +736,230 @@ function NewReportForm() {
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
-                  الدرس الجديد
+                  {isNoorAlBayanReport ? "درس نور البيان" : "الدرس الجديد"}
                 </h2>
-                <div className="grid gap-4 md:grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr]">
-                  <SurahInput
-                    id="lesson-surah-list"
-                    label="اسم السورة"
-                    value={formData.lessonSurah}
-                    onChange={(value) => setField("lessonSurah", value)}
-                    required
-                  />
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                      من
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.pageFrom}
-                      onChange={(e) => setField("pageFrom", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                      إلى
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.pageTo}
-                      onChange={(e) => setField("pageTo", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                      عدد الصفحات
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.pagesCount}
-                      onChange={(e) => setField("pagesCount", e.target.value)}
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
-                <div className="mt-4 max-w-xs">
-                  <MemorizedSelect
-                    label="حالة الدرس"
-                    value={formData.lessonMemorized}
-                    onChange={(value) => setField("lessonMemorized", value)}
-                  />
-                </div>
+                {isNoorAlBayanReport ? (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-[0.8fr_0.8fr_0.8fr_1.4fr]">
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          من صفحة
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.pageFrom}
+                          onChange={(e) => setField("pageFrom", e.target.value)}
+                          className={inputClass}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          إلى صفحة
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.pageTo}
+                          onChange={(e) => setField("pageTo", e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          عدد الأسطر
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.noorLinesCount}
+                          onChange={(e) =>
+                            setField("noorLinesCount", e.target.value)
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="rounded-2xl bg-[#f7f0e6] p-4">
+                        <p className="text-xs font-black text-[#1f6358]">
+                          الدرس التلقائي
+                        </p>
+                        <p className="mt-2 text-sm font-black leading-7 text-[#1c2d31]">
+                          {currentNoorLesson
+                            ? `${currentNoorLesson.section}: ${currentNoorLesson.title}`
+                            : "أدخل رقم الصفحة ليظهر عنوان الدرس"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 max-w-xs">
+                      <MemorizedSelect
+                        label="حالة الدرس"
+                        value={formData.lessonMemorized}
+                        onChange={(value) => setField("lessonMemorized", value)}
+                      />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid gap-4 md:grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr]">
+                      <SurahInput
+                        id="lesson-surah-list"
+                        label="اسم السورة"
+                        value={formData.lessonSurah}
+                        onChange={(value) => setField("lessonSurah", value)}
+                        required
+                      />
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          من
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.pageFrom}
+                          onChange={(e) => setField("pageFrom", e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          إلى
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.pageTo}
+                          onChange={(e) => setField("pageTo", e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          عدد الصفحات
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.pagesCount}
+                          onChange={(e) => setField("pagesCount", e.target.value)}
+                          className={inputClass}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-4 max-w-xs">
+                      <MemorizedSelect
+                        label="حالة الدرس"
+                        value={formData.lessonMemorized}
+                        onChange={(value) => setField("lessonMemorized", value)}
+                      />
+                    </div>
+                  </>
+                )}
               </section>
 
-              <section className={sectionClass}>
-                <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
-                  آخر خمس صفحات
-                </h2>
-                <div className="max-w-xs">
-                  <MemorizedSelect
-                    label="هل أتقن آخر خمس صفحات؟"
-                    value={formData.lastFiveMemorized}
-                    onChange={(value) => setField("lastFiveMemorized", value)}
-                  />
-                </div>
-              </section>
+              {!isNoorAlBayanReport ? (
+                <section className={sectionClass}>
+                  <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
+                    آخر خمس صفحات
+                  </h2>
+                  <div className="max-w-xs">
+                    <MemorizedSelect
+                      label="هل أتقن آخر خمس صفحات؟"
+                      value={formData.lastFiveMemorized}
+                      onChange={(value) => setField("lastFiveMemorized", value)}
+                    />
+                  </div>
+                </section>
+              ) : null}
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
                   المراجعة
                 </h2>
-                <div className="grid gap-4 md:grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr]">
-                  <SurahInput
-                    id="review-surah-list"
-                    label="اسم السورة"
-                    value={formData.reviewSurah}
-                    onChange={(value) => setField("reviewSurah", value)}
-                  />
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                      من
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.reviewFrom}
-                      onChange={(e) => setField("reviewFrom", e.target.value)}
-                      className={inputClass}
-                    />
+                {isNoorAlBayanReport ? (
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                        نطاق المراجعة
+                      </label>
+                      <select
+                        value={formData.noorReviewScope}
+                        onChange={(e) =>
+                          setField("noorReviewScope", e.target.value)
+                        }
+                        className={inputClass}
+                      >
+                        {noorAlBayanReviewOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {formData.noorReviewScope === "مراجعة مخصصة" ? (
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          وصف المراجعة
+                        </label>
+                        <input
+                          value={formData.noorReviewCustom}
+                          onChange={(e) =>
+                            setField("noorReviewCustom", e.target.value)
+                          }
+                          placeholder="مثال: مراجعة من صفحة 12 إلى صفحة 18"
+                          className={inputClass}
+                        />
+                      </div>
+                    ) : null}
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                      إلى
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.reviewTo}
-                      onChange={(e) => setField("reviewTo", e.target.value)}
-                      className={inputClass}
+                ) : (
+                  <div className="grid gap-4 md:grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr]">
+                    <SurahInput
+                      id="review-surah-list"
+                      label="اسم السورة"
+                      value={formData.reviewSurah}
+                      onChange={(value) => setField("reviewSurah", value)}
                     />
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                        من
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.reviewFrom}
+                        onChange={(e) => setField("reviewFrom", e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                        إلى
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.reviewTo}
+                        onChange={(e) => setField("reviewTo", e.target.value)}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                        عدد الصفحات
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={formData.reviewPagesCount}
+                        onChange={(e) =>
+                          setField("reviewPagesCount", e.target.value)
+                        }
+                        className={inputClass}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                      عدد الصفحات
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.reviewPagesCount}
-                      onChange={(e) =>
-                        setField("reviewPagesCount", e.target.value)
-                      }
-                      className={inputClass}
-                    />
-                  </div>
-                </div>
+                )}
                 <div className="mt-4 max-w-xs">
                   <MemorizedSelect
                     label="حالة المراجعة"
@@ -763,14 +973,14 @@ function NewReportForm() {
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
                   واجب غدا
                 </h2>
-                <div className="grid gap-4 xl:grid-cols-2">
+                {isNoorAlBayanReport ? (
                   <div className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
                     <div className="mb-4">
                       <h3 className="text-base font-black text-[#1c2d31]">
-                        واجب الدرس الجديد
+                        واجب نور البيان القادم
                       </h3>
                       <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
-                        عند الانتقال بين سورتين اختر سورة البداية وسورة النهاية.
+                        أدخل الصفحة أو عدد الأسطر، وسيظهر عنوان الدرس تلقائيًا حسب الكتاب.
                       </p>
                     </div>
                     <div className="mb-4">
@@ -787,139 +997,238 @@ function NewReportForm() {
                         className={inputClass}
                       />
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <SurahInput
-                        id="next-lesson-start-surah-list"
-                        label="سورة البداية"
-                        value={formData.nextLessonStartSurah}
-                        onChange={(value) => setField("nextLessonStartSurah", value)}
-                      />
-                      <SurahInput
-                        id="next-lesson-end-surah-list"
-                        label="سورة النهاية"
-                        value={formData.nextLessonEndSurah}
-                        onChange={(value) => setField("nextLessonEndSurah", value)}
-                      />
+                    <div className="grid gap-4 md:grid-cols-[0.8fr_0.8fr_0.8fr_1.4fr]">
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          من
-                        </label>
-                        <input
-                          value={formData.nextLessonFrom}
-                          onChange={(e) => setField("nextLessonFrom", e.target.value)}
-                          placeholder="مثال: آية 1 أو نهاية السورة"
-                          className={inputClass}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          إلى
-                        </label>
-                        <input
-                          value={formData.nextLessonTo}
-                          onChange={(e) => setField("nextLessonTo", e.target.value)}
-                          placeholder="مثال: آية 10 أو بداية السورة"
-                          className={inputClass}
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          عدد الصفحات
+                          من صفحة
                         </label>
                         <input
                           type="number"
                           min="1"
-                          value={formData.nextLessonPagesCount}
+                          value={formData.noorNextPageFrom}
                           onChange={(e) =>
-                            setField("nextLessonPagesCount", e.target.value)
+                            setField("noorNextPageFrom", e.target.value)
                           }
                           className={inputClass}
                         />
                       </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          إلى صفحة
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.noorNextPageTo}
+                          onChange={(e) =>
+                            setField("noorNextPageTo", e.target.value)
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          عدد الأسطر
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          value={formData.noorNextLinesCount}
+                          onChange={(e) =>
+                            setField("noorNextLinesCount", e.target.value)
+                          }
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                        <p className="text-xs font-black text-[#1f6358]">
+                          درس الواجب
+                        </p>
+                        <p className="mt-2 text-sm font-black leading-7 text-[#1c2d31]">
+                          {nextNoorLesson
+                            ? `${nextNoorLesson.section}: ${nextNoorLesson.title}`
+                            : "أدخل رقم صفحة الواجب ليظهر الدرس"}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  <div className="grid gap-4 xl:grid-cols-2">
+                    <div className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                      <div className="mb-4">
+                        <h3 className="text-base font-black text-[#1c2d31]">
+                          واجب الدرس الجديد
+                        </h3>
+                        <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
+                          عند الانتقال بين سورتين اختر سورة البداية وسورة النهاية.
+                        </p>
+                      </div>
+                      <div className="mb-4">
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          الواجب السابق أو النص المعدل
+                        </label>
+                        <textarea
+                          value={formData.nextLessonHomeworkText}
+                          onChange={(e) =>
+                            setField("nextLessonHomeworkText", e.target.value)
+                          }
+                          rows={3}
+                          placeholder="يظهر هنا واجب التقرير السابق تلقائيًا، ويمكن تعديله مباشرة."
+                          className={inputClass}
+                        />
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <SurahInput
+                          id="next-lesson-start-surah-list"
+                          label="سورة البداية"
+                          value={formData.nextLessonStartSurah}
+                          onChange={(value) =>
+                            setField("nextLessonStartSurah", value)
+                          }
+                        />
+                        <SurahInput
+                          id="next-lesson-end-surah-list"
+                          label="سورة النهاية"
+                          value={formData.nextLessonEndSurah}
+                          onChange={(value) =>
+                            setField("nextLessonEndSurah", value)
+                          }
+                        />
+                        <div>
+                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                            من
+                          </label>
+                          <input
+                            value={formData.nextLessonFrom}
+                            onChange={(e) =>
+                              setField("nextLessonFrom", e.target.value)
+                            }
+                            placeholder="مثال: آية 1 أو نهاية السورة"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                            إلى
+                          </label>
+                          <input
+                            value={formData.nextLessonTo}
+                            onChange={(e) =>
+                              setField("nextLessonTo", e.target.value)
+                            }
+                            placeholder="مثال: آية 10 أو بداية السورة"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                            عدد الصفحات
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={formData.nextLessonPagesCount}
+                            onChange={(e) =>
+                              setField("nextLessonPagesCount", e.target.value)
+                            }
+                            className={inputClass}
+                          />
+                        </div>
+                      </div>
+                    </div>
 
-                  <div className="rounded-[1.5rem] bg-[#f4fbf8] p-4 ring-1 ring-[#cfe3d9]">
-                    <div className="mb-4">
-                      <h3 className="text-base font-black text-[#1c2d31]">
-                        واجب المراجعة
-                      </h3>
-                      <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
-                        يصلح للمراجعة داخل سورة واحدة أو من نهاية سورة إلى بداية سورة أخرى.
-                      </p>
-                    </div>
-                    <div className="mb-4">
-                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                        الواجب السابق أو النص المعدل
-                      </label>
-                      <textarea
-                        value={formData.nextReviewHomeworkText}
-                        onChange={(e) =>
-                          setField("nextReviewHomeworkText", e.target.value)
-                        }
-                        rows={3}
-                        placeholder="يظهر هنا واجب المراجعة السابق تلقائيًا، ويمكن تعديله مباشرة."
-                        className={inputClass}
-                      />
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <SurahInput
-                        id="next-review-start-surah-list"
-                        label="سورة البداية"
-                        value={formData.nextReviewStartSurah}
-                        onChange={(value) => setField("nextReviewStartSurah", value)}
-                      />
-                      <SurahInput
-                        id="next-review-end-surah-list"
-                        label="سورة النهاية"
-                        value={formData.nextReviewEndSurah}
-                        onChange={(value) => setField("nextReviewEndSurah", value)}
-                      />
-                      <div>
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          من
-                        </label>
-                        <input
-                          value={formData.nextReviewFrom}
-                          onChange={(e) => setField("nextReviewFrom", e.target.value)}
-                          placeholder="مثال: آية 30 أو نهاية السورة"
-                          className={inputClass}
-                        />
+                    <div className="rounded-[1.5rem] bg-[#f4fbf8] p-4 ring-1 ring-[#cfe3d9]">
+                      <div className="mb-4">
+                        <h3 className="text-base font-black text-[#1c2d31]">
+                          واجب المراجعة
+                        </h3>
+                        <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
+                          يصلح للمراجعة داخل سورة واحدة أو من نهاية سورة إلى بداية سورة أخرى.
+                        </p>
                       </div>
-                      <div>
+                      <div className="mb-4">
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          إلى
+                          الواجب السابق أو النص المعدل
                         </label>
-                        <input
-                          value={formData.nextReviewTo}
-                          onChange={(e) => setField("nextReviewTo", e.target.value)}
-                          placeholder="مثال: آية 5 أو بداية السورة"
-                          className={inputClass}
-                        />
-                      </div>
-                      <div className="md:col-span-2">
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          عدد الصفحات
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={formData.nextReviewPagesCount}
+                        <textarea
+                          value={formData.nextReviewHomeworkText}
                           onChange={(e) =>
-                            setField("nextReviewPagesCount", e.target.value)
+                            setField("nextReviewHomeworkText", e.target.value)
                           }
+                          rows={3}
+                          placeholder="يظهر هنا واجب المراجعة السابق تلقائيًا، ويمكن تعديله مباشرة."
                           className={inputClass}
                         />
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <SurahInput
+                          id="next-review-start-surah-list"
+                          label="سورة البداية"
+                          value={formData.nextReviewStartSurah}
+                          onChange={(value) =>
+                            setField("nextReviewStartSurah", value)
+                          }
+                        />
+                        <SurahInput
+                          id="next-review-end-surah-list"
+                          label="سورة النهاية"
+                          value={formData.nextReviewEndSurah}
+                          onChange={(value) =>
+                            setField("nextReviewEndSurah", value)
+                          }
+                        />
+                        <div>
+                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                            من
+                          </label>
+                          <input
+                            value={formData.nextReviewFrom}
+                            onChange={(e) =>
+                              setField("nextReviewFrom", e.target.value)
+                            }
+                            placeholder="مثال: آية 30 أو نهاية السورة"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                            إلى
+                          </label>
+                          <input
+                            value={formData.nextReviewTo}
+                            onChange={(e) =>
+                              setField("nextReviewTo", e.target.value)
+                            }
+                            placeholder="مثال: آية 5 أو بداية السورة"
+                            className={inputClass}
+                          />
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                            عدد الصفحات
+                          </label>
+                          <input
+                            type="number"
+                            min="1"
+                            value={formData.nextReviewPagesCount}
+                            onChange={(e) =>
+                              setField("nextReviewPagesCount", e.target.value)
+                            }
+                            className={inputClass}
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                )}
                 <div className="mt-4 rounded-2xl bg-[#173d42] p-4 text-sm leading-7 text-white">
                   <p className="text-xs font-black text-[#f1d39d]">
                     صيغة الواجب التي ستحفظ في التقرير
                   </p>
                   <p className="mt-2 font-bold">
-                    {buildNextHomework() || "لم يتم تحديد واجب الغد بعد"}
+                    {(isNoorAlBayanReport
+                      ? buildNoorNextHomework()
+                      : buildNextHomework()) || "لم يتم تحديد واجب الغد بعد"}
                   </p>
                 </div>
               </section>
