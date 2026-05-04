@@ -170,7 +170,7 @@ export default async function OnsiteEducationSupervisionPage({
               فكل متابعة صادقة لبنة في بناء جيل يحمل القرآن خلقًا وعملاً.
             </p>
             <p className="mt-3 text-sm font-black text-[#f1d39d]">
-              د. معاذ قحاح
+              د.معاذ قدح
             </p>
           </div>
         </section>
