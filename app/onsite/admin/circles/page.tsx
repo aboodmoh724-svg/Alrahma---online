@@ -21,6 +21,12 @@ type Circle = {
   _count: { students: number };
 };
 
+const onsiteTrackOptions = [
+  { value: "ONSITE_QURAN", label: "حلقات القرآن الكريم" },
+  { value: "ONSITE_NOUR_AL_BAYAN", label: "حلقات نور البيان" },
+  { value: "ONSITE_ALL", label: "حضوري عام" },
+];
+
 export default function OnsiteAdminCirclesPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -35,7 +41,7 @@ export default function OnsiteAdminCirclesPage() {
   const [formData, setFormData] = useState({
     name: "",
     teacherId: "",
-    track: "ONSITE_ALL",
+    track: "ONSITE_QURAN",
     studyMode: "ONSITE",
     zoomUrl: "",
   });
@@ -105,7 +111,7 @@ export default function OnsiteAdminCirclesPage() {
       setFormData({
         name: "",
         teacherId: "",
-        track: "ONSITE_ALL",
+        track: "ONSITE_QURAN",
         studyMode: "ONSITE",
         zoomUrl: "",
       });
@@ -211,15 +217,6 @@ export default function OnsiteAdminCirclesPage() {
     await fetchData();
   };
 
-  const trackLabel = (track: string | null) => {
-    if (track === "ONSITE_ALL") return "حضوري للكل";
-    if (track === "HIJAA") return "مسار الهجاء";
-    if (track === "RUBAI") return "المسار الرباعي";
-    if (track === "FARDI") return "المسار الفردي";
-    if (track === "TILAWA") return "مسار التلاوة";
-    return "لم يحدد";
-  };
-
   const teacherOptions = useMemo(() => teachers, [teachers]);
 
   return (
@@ -293,7 +290,11 @@ export default function OnsiteAdminCirclesPage() {
                   onChange={handleChange}
                   className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
                 >
-                  <option value="ONSITE_ALL">حضوري للكل</option>
+                  {onsiteTrackOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -379,7 +380,11 @@ export default function OnsiteAdminCirclesPage() {
                             }
                             className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
                           >
-                            <option value="ONSITE_ALL">حضوري للكل</option>
+                            {onsiteTrackOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
                           </select>
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">

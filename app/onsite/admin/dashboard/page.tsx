@@ -21,6 +21,12 @@ const sections = [
     tone: "bg-[#c39a62] text-white",
   },
   {
+    href: "/onsite/admin/education-supervision",
+    title: "الإشراف التعليمي",
+    description: "متابعة تقارير حلقات نور البيان والقرآن الكريم ومعرفة حالة إدخال التقارير وسير الطلاب.",
+    tone: "bg-[#173d42] text-white",
+  },
+  {
     href: "/onsite/admin/absences",
     title: "غياب اليوم",
     description: "عرض الطلاب الغائبين وإرسال رسائل الغياب الجماعية مباشرة إلى أولياء الأمور.",
