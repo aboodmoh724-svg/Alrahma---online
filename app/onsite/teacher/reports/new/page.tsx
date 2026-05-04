@@ -254,11 +254,13 @@ function NewReportForm() {
     nextReviewPagesCount: "",
     nextReviewHomeworkText: "",
     noorLinesCount: "",
+    noorProgressUnit: "PAGE",
     noorReviewScope: "مراجعة آخر درس",
     noorReviewCustom: "",
     noorNextPageFrom: "",
     noorNextPageTo: "",
     noorNextLinesCount: "",
+    noorNextUnit: "PAGE",
     note: "",
   });
 
@@ -512,17 +514,22 @@ function NewReportForm() {
     return String(Math.max(1, toNumber - fromNumber + 1));
   };
 
-  const buildNoorNextLessonHomework = () => {
-    const typedText = formData.nextLessonHomeworkText.trim();
+  const noorAmountLabel = (amount: string, unit: string) => {
+    const value = amount.trim();
 
-    if (typedText) {
-      return typedText;
+    if (!value) {
+      return "";
     }
 
+    return `${value} ${unit === "PAGE" ? "صفحة" : "سطر"}`;
+  };
+
+  const buildNoorNextLessonHomework = () => {
     return formatNoorAlBayanRange({
       pageFrom: formData.noorNextPageFrom,
       pageTo: formData.noorNextPageTo,
       linesCount: formData.noorNextLinesCount,
+      amountUnit: formData.noorNextUnit,
     });
   };
 
@@ -580,11 +587,15 @@ function NewReportForm() {
       lessonSurah: isNoorAlBayanReport ? noorLessonTitle : formData.lessonSurah,
       pageFrom: formData.pageFrom,
       pageTo: formData.pageTo,
-      pagesCount: calculatePageCount(
-        formData.pageFrom,
-        formData.pageTo,
-        formData.pagesCount
-      ),
+      pagesCount: isNoorAlBayanReport
+        ? formData.noorProgressUnit === "PAGE"
+          ? formData.noorLinesCount || calculatePageCount(formData.pageFrom, formData.pageTo, "")
+          : ""
+        : calculatePageCount(
+            formData.pageFrom,
+            formData.pageTo,
+            formData.pagesCount
+          ),
       lessonMemorized: toBooleanOrNull(formData.lessonMemorized),
       lastFiveMemorized: isNoorAlBayanReport
         ? null
@@ -608,7 +619,7 @@ function NewReportForm() {
       note: [
         formData.note,
         isNoorAlBayanReport && formData.noorLinesCount
-          ? `عدد أسطر الدرس: ${formData.noorLinesCount}`
+          ? `إنجاز نور البيان: ${noorAmountLabel(formData.noorLinesCount, formData.noorProgressUnit)}`
           : "",
       ]
         .filter(Boolean)
@@ -740,7 +751,7 @@ function NewReportForm() {
                 </h2>
                 {isNoorAlBayanReport ? (
                   <>
-                    <div className="grid gap-4 md:grid-cols-[0.8fr_0.8fr_0.8fr_1.4fr]">
+                    <div className="grid gap-4 md:grid-cols-[0.75fr_0.75fr_0.75fr_0.75fr_1.4fr]">
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                           من صفحة
@@ -768,7 +779,7 @@ function NewReportForm() {
                       </div>
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          عدد الأسطر
+                          الكمية
                         </label>
                         <input
                           type="number"
@@ -779,6 +790,21 @@ function NewReportForm() {
                           }
                           className={inputClass}
                         />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          نوع الكمية
+                        </label>
+                        <select
+                          value={formData.noorProgressUnit}
+                          onChange={(e) =>
+                            setField("noorProgressUnit", e.target.value)
+                          }
+                          className={inputClass}
+                        >
+                          <option value="PAGE">صفحة</option>
+                          <option value="LINE">سطر</option>
+                        </select>
                       </div>
                       <div className="rounded-2xl bg-[#f7f0e6] p-4">
                         <p className="text-xs font-black text-[#1f6358]">
@@ -983,21 +1009,7 @@ function NewReportForm() {
                         أدخل الصفحة أو عدد الأسطر، وسيظهر عنوان الدرس تلقائيًا حسب الكتاب.
                       </p>
                     </div>
-                    <div className="mb-4">
-                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                        الواجب السابق أو النص المعدل
-                      </label>
-                      <textarea
-                        value={formData.nextLessonHomeworkText}
-                        onChange={(e) =>
-                          setField("nextLessonHomeworkText", e.target.value)
-                        }
-                        rows={3}
-                        placeholder="يظهر هنا واجب التقرير السابق تلقائيًا، ويمكن تعديله مباشرة."
-                        className={inputClass}
-                      />
-                    </div>
-                    <div className="grid gap-4 md:grid-cols-[0.8fr_0.8fr_0.8fr_1.4fr]">
+                    <div className="grid gap-4 md:grid-cols-[0.75fr_0.75fr_0.75fr_0.75fr_1.4fr]">
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                           من صفحة
@@ -1028,7 +1040,7 @@ function NewReportForm() {
                       </div>
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          عدد الأسطر
+                          الكمية
                         </label>
                         <input
                           type="number"
@@ -1039,6 +1051,19 @@ function NewReportForm() {
                           }
                           className={inputClass}
                         />
+                      </div>
+                      <div>
+                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                          نوع الكمية
+                        </label>
+                        <select
+                          value={formData.noorNextUnit}
+                          onChange={(e) => setField("noorNextUnit", e.target.value)}
+                          className={inputClass}
+                        >
+                          <option value="PAGE">صفحة</option>
+                          <option value="LINE">سطر</option>
+                        </select>
                       </div>
                       <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
                         <p className="text-xs font-black text-[#1f6358]">

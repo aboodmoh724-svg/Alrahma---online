@@ -62,10 +62,12 @@ export function formatNoorAlBayanRange({
   pageFrom,
   pageTo,
   linesCount,
+  amountUnit,
 }: {
   pageFrom: string;
   pageTo: string;
   linesCount?: string;
+  amountUnit?: string;
 }) {
   const from = pageFrom.trim();
   const to = pageTo.trim();
@@ -73,9 +75,10 @@ export function formatNoorAlBayanRange({
   const lesson = findNoorAlBayanLesson(from || to);
   const pageText =
     from || to ? `من صفحة ${from || "-"} إلى صفحة ${to || from || "-"}` : "";
-  const linesText = lines ? `عدد الأسطر: ${lines}` : "";
+  const unitLabel = amountUnit === "PAGE" ? "صفحة" : "سطر";
+  const amountText = lines ? `الكمية: ${lines} ${unitLabel}` : "";
 
-  return [lesson ? `${lesson.section}: ${lesson.title}` : "", pageText, linesText]
+  return [lesson ? `${lesson.section}: ${lesson.title}` : "", pageText, amountText]
     .filter(Boolean)
     .join(" - ");
 }
