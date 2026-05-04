@@ -1,0 +1,93 @@
+"use client";
+
+import { useState } from "react";
+
+type Props = {
+  circleName?: string | null;
+  circleUrl?: string | null;
+};
+
+export default function InstantEntryRequestButtons({ circleName, circleUrl }: Props) {
+  const [sendingTarget, setSendingTarget] = useState<"SUPERVISION" | "ADMIN" | null>(null);
+  const [note, setNote] = useState("");
+  const [feedback, setFeedback] = useState("");
+
+  const sendRequest = async (target: "SUPERVISION" | "ADMIN") => {
+    try {
+      setSendingTarget(target);
+      setFeedback("");
+      const targetLabel = target === "SUPERVISION" ? "الإشراف" : "الإدارة";
+      const details = [
+        `طلب دخول فوري من ${targetLabel}.`,
+        circleName ? `الحلقة: ${circleName}` : "",
+        circleUrl ? `رابط الحلقة: ${circleUrl}` : "",
+        note.trim() ? `سبب الطلب: ${note.trim()}` : "لم يذكر المعلم سببًا مفصلًا.",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const response = await fetch("/api/teacher-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "GENERAL",
+          priority: "URGENT",
+          subject: `طلب دخول فوري من ${targetLabel}`,
+          details,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        setFeedback(data.error || "تعذر إرسال الطلب");
+        return;
+      }
+
+      setNote("");
+      setFeedback(`تم إرسال طلب الدخول الفوري إلى ${targetLabel}.`);
+    } catch (error) {
+      console.error("INSTANT ENTRY REQUEST ERROR =>", error);
+      setFeedback("حدث خطأ أثناء إرسال الطلب");
+    } finally {
+      setSendingTarget(null);
+    }
+  };
+
+  return (
+    <section className="rounded-[1.6rem] bg-red-50 p-4 text-red-900 shadow-sm ring-1 ring-red-100">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <h2 className="text-lg font-black">طلب دخول فوري</h2>
+          <p className="mt-1 text-sm leading-6 text-red-800/75">
+            عند الحاجة لدخول سريع إلى الحلقة، أرسل طلبًا عاجلًا يظهر للإشراف أو الإدارة في التنبيهات.
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            disabled={Boolean(sendingTarget)}
+            onClick={() => sendRequest("SUPERVISION")}
+            className="rounded-full bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+          >
+            {sendingTarget === "SUPERVISION" ? "جارٍ الإرسال..." : "طلب الإشراف"}
+          </button>
+          <button
+            type="button"
+            disabled={Boolean(sendingTarget)}
+            onClick={() => sendRequest("ADMIN")}
+            className="rounded-full bg-[#173d42] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+          >
+            {sendingTarget === "ADMIN" ? "جارٍ الإرسال..." : "طلب الإدارة"}
+          </button>
+        </div>
+      </div>
+      <textarea
+        value={note}
+        onChange={(event) => setNote(event.target.value)}
+        placeholder="سبب مختصر للطلب - اختياري"
+        className="mt-3 min-h-16 w-full resize-none rounded-2xl border border-red-100 bg-white px-4 py-3 text-sm text-[#173d42] outline-none focus:border-red-300"
+      />
+      {feedback ? <p className="mt-2 text-sm font-black">{feedback}</p> : null}
+    </section>
+  );
+}

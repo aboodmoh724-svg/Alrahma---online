@@ -87,12 +87,16 @@ export function conversationInclude() {
 
 export function serializeConversation(conversation: any) {
   const lastMessage = conversation.messages?.[0] || null;
+  const parentDisplayName = conversation.student?.fullName
+    ? `ولي أمر ${conversation.student.fullName}`
+    : "ولي الأمر";
 
   return {
     id: conversation.id,
     type: conversation.type,
     status: conversation.status,
     parentPhone: conversation.parentPhone,
+    parentDisplayName,
     student: conversation.student,
     teacher: conversation.teacher,
     lastMessageAt: conversation.lastMessageAt || conversation.updatedAt,

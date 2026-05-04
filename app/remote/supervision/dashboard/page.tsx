@@ -31,6 +31,12 @@ const sections = [
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
   {
+    href: "/remote/supervision/conversations",
+    title: "مراسلات التعليم اليومية",
+    description: "محادثات ولي الأمر مع المعلم أو الإشراف داخل النظام، مع عرض الأسماء والرد من الجوال بسهولة.",
+    tone: "bg-white text-[#173d42]",
+  },
+  {
     href: "/remote/supervision/reports",
     title: "تقارير الطلاب",
     description: "إحصائيات عامة وتفاصيل كل طالب في صفحة واحدة سهلة القراءة.",
@@ -67,6 +73,7 @@ export default async function RemoteSupervisionDashboardPage() {
     teachersCount,
     circlesCount,
     openTeacherRequestsCount,
+    urgentTeacherRequestsCount,
     forwardedRegistrationsCount,
     supervisionTasksCount,
     unreadParentMessagesCount,
@@ -77,6 +84,12 @@ export default async function RemoteSupervisionDashboardPage() {
     prisma.circle.count({ where: { studyMode: "REMOTE" } }),
     prisma.teacherRequest.count({
       where: {
+        status: { in: ["NEW", "IN_REVIEW"] },
+      },
+    }),
+    prisma.teacherRequest.count({
+      where: {
+        priority: "URGENT",
         status: { in: ["NEW", "IN_REVIEW"] },
       },
     }),
@@ -134,10 +147,10 @@ export default async function RemoteSupervisionDashboardPage() {
     {
       key: "teacher-requests",
       title: "طلبات المعلمين",
-      description: "طلبات جديدة أو قيد المتابعة من المعلمين.",
+      description: urgentTeacherRequestsCount > 0 ? "توجد طلبات دخول فوري عاجلة من المعلمين." : "طلبات جديدة أو قيد المتابعة من المعلمين.",
       href: "/remote/supervision/teacher-requests",
       count: openTeacherRequestsCount,
-      tone: "neutral" as const,
+      tone: urgentTeacherRequestsCount > 0 ? "red" as const : "neutral" as const,
     },
     {
       key: "tasks",

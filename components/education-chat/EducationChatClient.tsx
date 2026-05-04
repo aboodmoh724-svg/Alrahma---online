@@ -8,6 +8,7 @@ type Conversation = {
   id: string;
   type: string;
   parentPhone: string;
+  parentDisplayName?: string;
   student: { id: string; fullName: string; circle?: { name: string | null } | null };
   teacher: { id: string; fullName: string } | null;
   lastMessageAt: string;
@@ -44,6 +45,61 @@ type Props = {
   backHref?: string;
 };
 
+function ChatAudioPlayer({ src }: { src: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0);
+  const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 0;
+  const progress = safeDuration ? Math.min((currentTime / safeDuration) * 100, 100) : 0;
+
+  const format = (seconds: number) => {
+    if (!Number.isFinite(seconds) || seconds <= 0) return "0:00";
+    const minutes = Math.floor(seconds / 60);
+    return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
+  };
+
+  const toggle = async () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.paused) await audio.play();
+    else audio.pause();
+  };
+
+  return (
+    <div className="mt-2 flex min-w-[230px] max-w-full items-center gap-3 rounded-2xl bg-[#edf5e8] px-3 py-2 ring-1 ring-[#cfe0c8] sm:min-w-[280px]">
+      <audio
+        ref={audioRef}
+        src={src}
+        preload="metadata"
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
+        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime || 0)}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={toggle}
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#1f6358] text-sm font-black text-white"
+        aria-label={playing ? "إيقاف الصوت" : "تشغيل الصوت"}
+      >
+        {playing ? "II" : "▶"}
+      </button>
+      <div className="min-w-0 flex-1">
+        <div className="h-2 overflow-hidden rounded-full bg-white">
+          <div className="h-full rounded-full bg-[#1f6358]" style={{ width: `${progress}%` }} />
+        </div>
+        <div className="mt-1 flex justify-between text-[10px] font-bold text-[#173d42]/55" dir="ltr">
+          <span>{format(currentTime)}</span>
+          <span>{format(safeDuration)}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function EducationChatClient({ mode, title, subtitle, backHref }: Props) {
   const [countryCode, setCountryCode] = useState("+90");
   const [localPhone, setLocalPhone] = useState("");
@@ -76,7 +132,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   );
 
   const getConversationTitle = (conversation: Conversation) => {
-    if (mode === "TEACHER") return `ولي أمر ${conversation.student.fullName}`;
+    if (mode === "TEACHER") return conversation.parentDisplayName || `ولي أمر ${conversation.student.fullName}`;
     if (conversation.type === "SUPERVISION") return "الإشراف";
     return conversation.teacher?.fullName || "المعلم";
   };
@@ -509,7 +565,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                           {message.attachmentUrl ? (
                             message.attachmentType?.startsWith("audio/") ? (
                               <div className="mt-2 rounded-xl bg-black/5 p-2">
-                                <audio controls src={message.attachmentUrl} className="h-10 w-full max-w-[240px] sm:max-w-[260px]" />
+                                <ChatAudioPlayer src={message.attachmentUrl} />
                                 <a
                                   href={message.attachmentUrl}
                                   target="_blank"

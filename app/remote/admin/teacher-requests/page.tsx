@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -65,6 +65,25 @@ function formatDate(date: string) {
   });
 }
 
+function renderDetails(details: string) {
+  const linkPattern = /(https?:\/\/[^\s]+)/gi;
+  return details.split(linkPattern).map((part, index) => {
+    if (!/^https?:\/\//i.test(part)) return <span key={`${part}-${index}`}>{part}</span>;
+    return (
+      <a
+        key={`${part}-${index}`}
+        href={part}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-black text-[#1f6358] underline underline-offset-4"
+        dir="ltr"
+      >
+        رابط الحلقة
+      </a>
+    );
+  });
+}
+
 export default function RemoteAdminTeacherRequestsPage() {
   const pathname = usePathname();
   const dashboardHref = pathname.startsWith("/remote/supervision/")
@@ -77,7 +96,7 @@ export default function RemoteAdminTeacherRequestsPage() {
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [statusDrafts, setStatusDrafts] = useState<Record<string, TeacherRequest["status"]>>({});
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
       const suffix = statusFilter === "ALL" ? "" : `?status=${statusFilter}`;
@@ -98,11 +117,11 @@ export default function RemoteAdminTeacherRequestsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter]);
 
   useEffect(() => {
     fetchRequests();
-  }, [statusFilter]);
+  }, [fetchRequests]);
 
   const handleSave = async (requestId: string) => {
     try {
@@ -185,7 +204,14 @@ export default function RemoteAdminTeacherRequestsPage() {
           ) : (
             <div className="space-y-4">
               {requests.map((request) => (
-                <div key={request.id} className="rounded-[1.8rem] bg-[#fffaf2] p-4 ring-1 ring-[#e7dcc8]">
+                <div
+                  key={request.id}
+                  className={`rounded-[1.8rem] p-4 ring-1 ${
+                    request.priority === "URGENT"
+                      ? "bg-red-50 ring-red-200"
+                      : "bg-[#fffaf2] ring-[#e7dcc8]"
+                  }`}
+                >
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
                       {STATUS_LABELS[request.status]}
@@ -211,7 +237,9 @@ export default function RemoteAdminTeacherRequestsPage() {
                     ) : null}
                   </div>
 
-                  <p className="mt-3 text-sm leading-7 text-[#1c2d31]/72">{request.details}</p>
+                  <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-[#1c2d31]/72">
+                    {renderDetails(request.details)}
+                  </p>
 
                   <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr_auto]">
                     <select

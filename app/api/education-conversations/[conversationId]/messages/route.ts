@@ -95,7 +95,7 @@ export async function GET(_request: Request, context: RouteContext) {
         senderRole: message.senderRole,
         senderName:
           message.senderRole === "PARENT"
-            ? "ولي الأمر"
+            ? `ولي أمر ${allowed.conversation.student.fullName}`
             : message.senderUser?.fullName || (message.senderRole === "ADMIN" ? "الإدارة" : "المعلم"),
         body: message.body,
         attachmentUrl: await createSignedStorageUrl(message.attachmentUrl),
@@ -180,3 +180,4 @@ export async function POST(request: Request, context: RouteContext) {
     return NextResponse.json({ error: "تعذر إرسال الرسالة" }, { status: 500 });
   }
 }
+

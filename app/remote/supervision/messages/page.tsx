@@ -38,6 +38,9 @@ type IncomingMessage = {
   registrationRequest: { studentName: string; parentWhatsapp: string } | null;
   lastOutgoingMessage: { body: string; category: IncomingMessage["category"]; createdAt: string } | null;
   canReplyDirectly?: boolean;
+  contactName?: string | null;
+  contactRole?: "PARENT" | "TEACHER" | "UNKNOWN";
+  matchedTeacher?: { id: string; fullName: string; whatsapp: string | null } | null;
 };
 
 type RecipientMode = "SELECTED_PARENTS" | "ALL_PARENTS" | "SELECTED_TEACHERS" | "ALL_TEACHERS";
@@ -396,7 +399,10 @@ export default function RemoteSupervisionMessagesPage() {
                       <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#173d42] ring-1 ring-[#e5d7bd]">
                         {statusLabel(message.followUpStatus)}
                       </span>
-                      <span className="text-xs font-bold text-[#1c2d31]/50">{message.fromNumber}</span>
+                      <span className="text-xs font-bold text-[#1c2d31]/50">
+                        {message.contactName || message.fromNumber}
+                        {message.contactName ? ` - ${message.fromNumber}` : ""}
+                      </span>
                     </div>
                     <button
                       type="button"
@@ -409,8 +415,16 @@ export default function RemoteSupervisionMessagesPage() {
                   </div>
 
                   <p className="mt-3 text-base font-black text-[#1c2d31]">
-                    {message.student?.fullName || message.registrationRequest?.studentName || "رقم غير مرتبط بطالب"}
+                    {message.contactName ||
+                      message.student?.fullName ||
+                      message.registrationRequest?.studentName ||
+                      "رقم غير مرتبط بطالب أو معلم"}
                   </p>
+                  {message.matchedTeacher ? (
+                    <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
+                      معلم في النظام: {message.matchedTeacher.fullName}
+                    </p>
+                  ) : null}
 
                   {message.lastOutgoingMessage ? (
                     <div className="mt-3 rounded-xl bg-white/80 p-3 text-xs leading-6 text-[#1c2d31]/65 ring-1 ring-[#eadcc4]">

@@ -303,6 +303,7 @@ export default async function RemoteAdminDashboardPage() {
     currentAdmin,
     newRegistrationsCount,
     openTeacherRequestsCount,
+    urgentTeacherRequestsCount,
     escalatedMessagesCount,
     escalatedComplaintsCount,
     unassignedStudentsCount,
@@ -311,6 +312,12 @@ export default async function RemoteAdminDashboardPage() {
     getCurrentRemoteAdmin(),
     getNewRegistrationRequestsCount(),
     getOpenTeacherRequestsCount(),
+    prisma.teacherRequest.count({
+      where: {
+        priority: "URGENT",
+        status: { in: ["NEW", "IN_REVIEW"] },
+      },
+    }),
     prisma.whatsAppIncomingMessage.count({
       where: {
         channel: "REMOTE",
@@ -348,6 +355,14 @@ export default async function RemoteAdminDashboardPage() {
       href: "/remote/admin/registrations",
       count: newRegistrationsCount,
       tone: "amber" as const,
+    },
+    {
+      key: "urgent-teacher-requests",
+      title: "طلبات دخول فوري من المعلمين",
+      description: "طلبات عاجلة تحتاج دخول الإدارة أو الإشراف إلى الحلقة.",
+      href: "/remote/admin/teacher-requests",
+      count: urgentTeacherRequestsCount,
+      tone: "red" as const,
     },
     {
       key: "escalated-messages",

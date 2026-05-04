@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import ParentReportCheckbox from "@/components/reports/ParentReportCheckbox";
+import InstantEntryRequestButtons from "@/components/teacher/InstantEntryRequestButtons";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl } from "@/lib/supabase-storage";
 
@@ -399,6 +400,11 @@ export default async function RemoteTeacherDashboardPage({
           </section>
 
           <section className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+            <InstantEntryRequestButtons
+              circleName={activeCircle?.name || null}
+              circleUrl={latestZoomLink}
+            />
+
             <details className="group rounded-[1.6rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
               <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                 <div>

@@ -274,8 +274,42 @@ export async function GET(request: Request) {
       },
     });
 
+    const teacherPhones = messages.map((message) => message.fromNumber).filter(Boolean);
+    const matchedTeachers = teacherPhones.length
+      ? await prisma.user.findMany({
+          where: {
+            studyMode: channel,
+            role: "TEACHER",
+            isActive: true,
+            whatsapp: { not: null },
+          },
+          select: { id: true, fullName: true, whatsapp: true },
+        })
+      : [];
+    const teacherByPhone = new Map<
+      string,
+      { id: string; fullName: string; whatsapp: string | null }
+    >();
+    for (const teacher of matchedTeachers) {
+      const phone = normalizeWhatsAppNumber(teacher.whatsapp || "");
+      if (phone) teacherByPhone.set(phone, teacher);
+    }
+
     const normalizedMessages = messages.map((message) => ({
       ...message,
+      contactName:
+        message.student?.fullName
+          ? `ولي أمر ${message.student.fullName}`
+          : message.registrationRequest?.studentName
+            ? `ولي أمر ${message.registrationRequest.studentName}`
+            : teacherByPhone.get(message.fromNumber)?.fullName || null,
+      contactRole:
+        message.student || message.registrationRequest
+          ? "PARENT"
+          : teacherByPhone.has(message.fromNumber)
+            ? "TEACHER"
+            : "UNKNOWN",
+      matchedTeacher: teacherByPhone.get(message.fromNumber) || null,
       canReplyDirectly: canReplyToIncomingMessage(message),
     }));
 
