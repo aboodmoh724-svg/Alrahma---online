@@ -6,6 +6,7 @@ type PageProps = {
     track?: string;
     circleId?: string;
     day?: string;
+    view?: string;
   }>;
 };
 
@@ -35,6 +36,25 @@ function getLatestAttendanceWeekend(): AttendanceDay[] {
     { key: "saturday", label: "السبت", start: saturday, end: sunday },
     { key: "sunday", label: "الأحد", start: sunday, end: monday },
   ];
+}
+
+function getPerformanceAttendanceDays() {
+  const latest = getLatestAttendanceWeekend();
+  const previous = latest.map((day) => {
+    const start = new Date(day.start);
+    start.setDate(start.getDate() - 7);
+
+    const end = new Date(day.end);
+    end.setDate(end.getDate() - 7);
+
+    return {
+      ...day,
+      start,
+      end,
+    };
+  });
+
+  return [...previous, ...latest];
 }
 
 function trackGroup(circle: { name: string; track: string | null }) {
@@ -78,17 +98,31 @@ function formatShortDate(date: Date) {
   }).format(date);
 }
 
+function boundedPercent(value: number) {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function performanceTone(score: number) {
+  if (score >= 85) return "bg-emerald-100 text-emerald-800";
+  if (score >= 65) return "bg-amber-100 text-amber-800";
+  return "bg-red-50 text-red-700";
+}
+
 export default async function OnsiteEducationSupervisionPage({
   searchParams,
 }: PageProps) {
   const params = await searchParams;
+  const isPerformanceView = params?.view === "performance";
   const selectedTrack = params?.track === "nour" ? "nour" : "quran";
   const selectedCircleId = params?.circleId || "";
   const attendanceDays = getLatestAttendanceWeekend();
+  const performanceDays = getPerformanceAttendanceDays();
   const selectedDay =
     attendanceDays.find((day) => day.key === params?.day) || attendanceDays[0];
   const weekendStart = attendanceDays[0].start;
   const weekendEnd = attendanceDays[1].end;
+  const performanceStart = performanceDays[0].start;
 
   const circles = await prisma.circle.findMany({
     where: {
@@ -114,7 +148,7 @@ export default async function OnsiteEducationSupervisionPage({
           reports: {
             where: {
               createdAt: {
-                gte: weekendStart,
+                gte: performanceStart,
                 lt: weekendEnd,
               },
             },
@@ -131,7 +165,9 @@ export default async function OnsiteEducationSupervisionPage({
     (circle) => trackGroup(circle) === selectedTrack
   );
   const selectedCircle =
-    visibleCircles.find((circle) => circle.id === selectedCircleId) || null;
+    (isPerformanceView ? circles : visibleCircles).find(
+      (circle) => circle.id === selectedCircleId
+    ) || null;
 
   const selectedDayCompleted = selectedCircle
     ? selectedCircle.students.filter((student) =>
@@ -141,6 +177,51 @@ export default async function OnsiteEducationSupervisionPage({
         )
       ).length
     : 0;
+
+  const performanceExpectedDays = performanceDays.length;
+  const getReportsInPeriod = <T extends { createdAt: Date }>(reports: T[]) =>
+    reports.filter(
+      (report) => report.createdAt >= performanceStart && report.createdAt < weekendEnd
+    );
+  const circlePerformance = circles.map((circle) => {
+    const studentsCount = circle.students.length;
+    const expectedReports = studentsCount * performanceExpectedDays;
+    const reports = circle.students.flatMap((student) =>
+      getReportsInPeriod(student.reports)
+    );
+    const submittedReports = Math.min(reports.length, expectedReports);
+    const presentReports = reports.filter((report) => report.status === "PRESENT");
+    const memorizedReports = presentReports.filter(
+      (report) => report.lessonMemorized === true
+    ).length;
+    const pagesCount = presentReports.reduce(
+      (total, report) => total + (report.pagesCount || 0),
+      0
+    );
+    const completionRate = expectedReports
+      ? (submittedReports / expectedReports) * 100
+      : 0;
+    const memorizationRate = presentReports.length
+      ? (memorizedReports / presentReports.length) * 100
+      : 0;
+    const pagesRate = expectedReports ? Math.min((pagesCount / (expectedReports * 2)) * 100, 100) : 0;
+    const score = boundedPercent(
+      completionRate * 0.45 + memorizationRate * 0.35 + pagesRate * 0.2
+    );
+
+    return {
+      circle,
+      score,
+      completionRate: boundedPercent(completionRate),
+      memorizationRate: boundedPercent(memorizationRate),
+      pagesCount,
+      submittedReports,
+      expectedReports,
+    };
+  });
+  const selectedCirclePerformance = selectedCircle
+    ? circlePerformance.find((item) => item.circle.id === selectedCircle.id) || null
+    : null;
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -175,7 +256,7 @@ export default async function OnsiteEducationSupervisionPage({
           </div>
         </section>
 
-        <section className="grid gap-3 md:grid-cols-2">
+        <section className="grid gap-3 md:grid-cols-3">
           {[
             { key: "quran", title: "إشراف حلقات القرآن الكريم" },
             { key: "nour", title: "إشراف حلقات نور البيان" },
@@ -184,7 +265,7 @@ export default async function OnsiteEducationSupervisionPage({
               key={item.key}
               href={`/onsite/admin/education-supervision?track=${item.key}`}
               className={`rounded-[1.8rem] p-5 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${
-                selectedTrack === item.key
+                !isPerformanceView && selectedTrack === item.key
                   ? "bg-[#1f6358] text-white"
                   : "bg-white/88 text-[#173d42]"
               }`}
@@ -195,8 +276,211 @@ export default async function OnsiteEducationSupervisionPage({
               </p>
             </Link>
           ))}
+          <Link
+            href="/onsite/admin/education-supervision?view=performance"
+            className={`rounded-[1.8rem] p-5 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${
+              isPerformanceView
+                ? "bg-[#173d42] text-white"
+                : "bg-white/88 text-[#173d42]"
+            }`}
+          >
+            <h2 className="text-2xl font-black">متابعة أداء الحلقات</h2>
+            <p className="mt-3 text-sm leading-7 opacity-75">
+              مؤشر سريع لانتظام التقارير وجودة التسميع وعدد الصفحات.
+            </p>
+          </Link>
         </section>
 
+        {isPerformanceView ? (
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-[#1c2d31]">
+                  متابعة أداء الحلقات
+                </h2>
+                <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                  المؤشر محسوب على آخر أربعة أيام حضورية: آخر سبتين وأحدين.
+                  النسبة تجمع بين انتظام إدخال التقارير، جودة التسميع، وعدد
+                  الصفحات المنجزة.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+                {formatShortDate(performanceStart)} - {formatShortDate(attendanceDays[1].start)}
+              </span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {circlePerformance.map((item) => (
+                <Link
+                  key={item.circle.id}
+                  href={`/onsite/admin/education-supervision?view=performance&circleId=${item.circle.id}`}
+                  className={`rounded-[1.8rem] p-5 ring-1 transition hover:-translate-y-0.5 ${
+                    selectedCircle?.id === item.circle.id
+                      ? "bg-[#173d42] text-white ring-[#173d42]"
+                      : "bg-[#fffaf2] text-[#1c2d31] ring-[#eadcc6]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-black">{item.circle.name}</h3>
+                      <p className="mt-2 text-sm leading-7 opacity-70">
+                        المعلم: {item.circle.teacher?.fullName || "لم يحدد"}
+                      </p>
+                    </div>
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-black ${performanceTone(
+                        item.score
+                      )}`}
+                    >
+                      {item.score}%
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid gap-2 text-sm">
+                    <div className="flex items-center justify-between rounded-2xl bg-white/80 px-3 py-2 text-[#1c2d31]">
+                      <span className="font-bold">انتظام التقارير</span>
+                      <span className="font-black">{item.completionRate}%</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-2xl bg-white/80 px-3 py-2 text-[#1c2d31]">
+                      <span className="font-bold">جودة التسميع</span>
+                      <span className="font-black">{item.memorizationRate}%</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-2xl bg-white/80 px-3 py-2 text-[#1c2d31]">
+                      <span className="font-bold">الصفحات</span>
+                      <span className="font-black">{item.pagesCount}</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            {selectedCircle && selectedCirclePerformance ? (
+              <div className="mt-6 rounded-[1.8rem] bg-[#fffaf2] p-5 ring-1 ring-[#eadcc6]">
+                <div className="mb-5 grid gap-3 md:grid-cols-4">
+                  <div className="rounded-2xl bg-[#173d42] p-4 text-white">
+                    <p className="text-sm text-white/70">الحلقة</p>
+                    <p className="mt-2 text-xl font-black">{selectedCircle.name}</p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                    <p className="text-sm text-[#1c2d31]/55">مؤشر الأداء</p>
+                    <p className="mt-2 text-xl font-black text-[#173d42]">
+                      {selectedCirclePerformance.score}%
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                    <p className="text-sm text-[#1c2d31]/55">التقارير المدخلة</p>
+                    <p className="mt-2 text-xl font-black text-[#1f6358]">
+                      {selectedCirclePerformance.submittedReports}/
+                      {selectedCirclePerformance.expectedReports}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                    <p className="text-sm text-[#1c2d31]/55">الصفحات المنجزة</p>
+                    <p className="mt-2 text-xl font-black text-[#c39a62]">
+                      {selectedCirclePerformance.pagesCount}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="min-w-full overflow-hidden rounded-2xl text-sm">
+                    <thead>
+                      <tr className="bg-[#173d42] text-right text-white">
+                        <th className="px-4 py-3 font-black">الطالب</th>
+                        <th className="px-4 py-3 font-black">الأداء</th>
+                        <th className="px-4 py-3 font-black">التقارير</th>
+                        <th className="px-4 py-3 font-black">الصفحات</th>
+                        <th className="px-4 py-3 font-black">الحفظ المتقن</th>
+                        <th className="px-4 py-3 font-black">بدأ من</th>
+                        <th className="px-4 py-3 font-black">انتهى عند</th>
+                        <th className="px-4 py-3 font-black">آخر واجب</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedCircle.students.map((student) => {
+                        const reports = getReportsInPeriod(student.reports);
+                        const presentReports = reports.filter(
+                          (report) => report.status === "PRESENT"
+                        );
+                        const memorizedCount = presentReports.filter(
+                          (report) => report.lessonMemorized === true
+                        ).length;
+                        const pagesCount = presentReports.reduce(
+                          (total, report) => total + (report.pagesCount || 0),
+                          0
+                        );
+                        const completionRate =
+                          performanceExpectedDays > 0
+                            ? (Math.min(reports.length, performanceExpectedDays) /
+                                performanceExpectedDays) *
+                              100
+                            : 0;
+                        const memorizationRate = presentReports.length
+                          ? (memorizedCount / presentReports.length) * 100
+                          : 0;
+                        const pagesRate =
+                          performanceExpectedDays > 0
+                            ? Math.min(
+                                (pagesCount / (performanceExpectedDays * 2)) * 100,
+                                100
+                              )
+                            : 0;
+                        const score = boundedPercent(
+                          completionRate * 0.45 +
+                            memorizationRate * 0.35 +
+                            pagesRate * 0.2
+                        );
+                        const firstReport = [...presentReports].sort(
+                          (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+                        )[0];
+                        const lastReport = presentReports[0];
+
+                        return (
+                          <tr
+                            key={student.id}
+                            className="border-b border-[#eadcc6] bg-white"
+                          >
+                            <td className="px-4 py-3 font-black text-[#1c2d31]">
+                              {student.fullName}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`rounded-full px-3 py-1 text-xs font-black ${performanceTone(
+                                  score
+                                )}`}
+                              >
+                                {score}%
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-[#1c2d31]/70">
+                              {Math.min(reports.length, performanceExpectedDays)}/
+                              {performanceExpectedDays}
+                            </td>
+                            <td className="px-4 py-3 font-black text-[#173d42]">
+                              {pagesCount}
+                            </td>
+                            <td className="px-4 py-3 text-[#1c2d31]/70">
+                              {memorizedCount}/{presentReports.length}
+                            </td>
+                            <td className="px-4 py-3 text-[#1c2d31]/70">
+                              {firstReport?.lessonSurah || firstReport?.lessonName || "-"}
+                            </td>
+                            <td className="px-4 py-3 text-[#1c2d31]/70">
+                              {lastReport?.lessonSurah || lastReport?.lessonName || "-"}
+                            </td>
+                            <td className="min-w-64 px-4 py-3 text-[#1c2d31]/70">
+                              {lastReport?.nextHomework || "-"}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
+          </section>
+        ) : (
         <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
           <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
@@ -273,8 +557,9 @@ export default async function OnsiteEducationSupervisionPage({
             </div>
           )}
         </section>
+        )}
 
-        {selectedCircle ? (
+        {!isPerformanceView && selectedCircle ? (
           <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
             <div className="mb-5 grid gap-3 md:grid-cols-3">
               <div className="rounded-2xl bg-[#173d42] p-4 text-white">
