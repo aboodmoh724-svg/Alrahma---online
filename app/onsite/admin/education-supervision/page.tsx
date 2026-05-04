@@ -164,6 +164,15 @@ export default async function OnsiteEducationSupervisionPage({
             التحفيظ الحضوري يكون يومي السبت والأحد، لذلك تعرض هذه الصفحة حالة
             إدخال التقارير لهذين اليومين فقط، مع تفاصيل الحلقة والطلاب عند فتحها.
           </p>
+          <div className="mt-6 max-w-3xl rounded-[1.5rem] bg-white/10 p-5 ring-1 ring-white/15">
+            <p className="text-lg font-black leading-9 text-white md:text-2xl">
+              من شرف العمل القرآني أن تكون عينًا راعية لمسيرة طالب مع كتاب الله،
+              فكل متابعة صادقة لبنة في بناء جيل يحمل القرآن خلقًا وعملاً.
+            </p>
+            <p className="mt-3 text-sm font-black text-[#f1d39d]">
+              د. معاذ قحاح
+            </p>
+          </div>
         </section>
 
         <section className="grid gap-3 md:grid-cols-2">
