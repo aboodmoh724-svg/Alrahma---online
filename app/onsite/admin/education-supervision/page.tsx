@@ -109,6 +109,33 @@ function performanceTone(score: number) {
   return "bg-red-50 text-red-700";
 }
 
+function isRecitationReport(report: {
+  status: string;
+  lessonName: string;
+  lessonSurah: string | null;
+  lessonMemorized: boolean | null;
+  review: string | null;
+  reviewSurah: string | null;
+  pageFrom: number | null;
+  pageTo: number | null;
+  pagesCount: number | null;
+}) {
+  if (report.status !== "PRESENT") return false;
+
+  const lessonName = report.lessonName.trim();
+  if (lessonName === "غياب") return false;
+
+  return Boolean(
+    report.lessonSurah ||
+      report.lessonMemorized !== null ||
+      report.reviewSurah ||
+      report.review?.trim() ||
+      report.pageFrom ||
+      report.pageTo ||
+      report.pagesCount
+  );
+}
+
 export default async function OnsiteEducationSupervisionPage({
   searchParams,
 }: PageProps) {
@@ -173,7 +200,9 @@ export default async function OnsiteEducationSupervisionPage({
     ? selectedCircle.students.filter((student) =>
         student.reports.some(
           (report) =>
-            report.createdAt >= selectedDay.start && report.createdAt < selectedDay.end
+            report.createdAt >= selectedDay.start &&
+            report.createdAt < selectedDay.end &&
+            isRecitationReport(report)
         )
       ).length
     : 0;
@@ -187,22 +216,21 @@ export default async function OnsiteEducationSupervisionPage({
     const studentsCount = circle.students.length;
     const expectedReports = studentsCount * performanceExpectedDays;
     const reports = circle.students.flatMap((student) =>
-      getReportsInPeriod(student.reports)
+      getReportsInPeriod(student.reports).filter(isRecitationReport)
     );
     const submittedReports = Math.min(reports.length, expectedReports);
-    const presentReports = reports.filter((report) => report.status === "PRESENT");
-    const memorizedReports = presentReports.filter(
+    const memorizedReports = reports.filter(
       (report) => report.lessonMemorized === true
     ).length;
-    const pagesCount = presentReports.reduce(
+    const pagesCount = reports.reduce(
       (total, report) => total + (report.pagesCount || 0),
       0
     );
     const completionRate = expectedReports
       ? (submittedReports / expectedReports) * 100
       : 0;
-    const memorizationRate = presentReports.length
-      ? (memorizedReports / presentReports.length) * 100
+    const memorizationRate = reports.length
+      ? (memorizedReports / reports.length) * 100
       : 0;
     const pagesRate = expectedReports ? Math.min((pagesCount / (expectedReports * 2)) * 100, 100) : 0;
     const score = boundedPercent(
@@ -243,7 +271,7 @@ export default async function OnsiteEducationSupervisionPage({
           </h1>
           <p className="mt-4 max-w-3xl text-sm leading-8 text-white/72">
             التحفيظ الحضوري يكون يومي السبت والأحد، لذلك تعرض هذه الصفحة حالة
-            إدخال التقارير لهذين اليومين فقط، مع تفاصيل الحلقة والطلاب عند فتحها.
+            إدخال تقارير التسميع لهذين اليومين فقط، مع تفاصيل الحلقة والطلاب عند فتحها.
           </p>
           <div className="mt-6 max-w-3xl rounded-[1.5rem] bg-white/10 p-5 ring-1 ring-white/15">
             <p className="text-lg font-black leading-9 text-white md:text-2xl">
@@ -272,7 +300,7 @@ export default async function OnsiteEducationSupervisionPage({
             >
               <h2 className="text-2xl font-black">{item.title}</h2>
               <p className="mt-3 text-sm leading-7 opacity-75">
-                حالة تقارير السبت والأحد حسب الحلقات.
+                حالة تقارير التسميع يومي السبت والأحد حسب الحلقات.
               </p>
             </Link>
           ))}
@@ -286,7 +314,7 @@ export default async function OnsiteEducationSupervisionPage({
           >
             <h2 className="text-2xl font-black">متابعة أداء الحلقات</h2>
             <p className="mt-3 text-sm leading-7 opacity-75">
-              مؤشر سريع لانتظام التقارير وجودة التسميع وعدد الصفحات.
+              مؤشر سريع لانتظام تقارير التسميع وجودة التسميع وعدد الصفحات.
             </p>
           </Link>
         </section>
@@ -300,7 +328,7 @@ export default async function OnsiteEducationSupervisionPage({
                 </h2>
                 <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
                   المؤشر محسوب على آخر أربعة أيام حضورية: آخر سبتين وأحدين.
-                  النسبة تجمع بين انتظام إدخال التقارير، جودة التسميع، وعدد
+                  النسبة تجمع بين انتظام إدخال تقارير التسميع، جودة التسميع، وعدد
                   الصفحات المنجزة.
                 </p>
               </div>
@@ -338,7 +366,7 @@ export default async function OnsiteEducationSupervisionPage({
 
                   <div className="mt-4 grid gap-2 text-sm">
                     <div className="flex items-center justify-between rounded-2xl bg-white/80 px-3 py-2 text-[#1c2d31]">
-                      <span className="font-bold">انتظام التقارير</span>
+                      <span className="font-bold">انتظام التسميع</span>
                       <span className="font-black">{item.completionRate}%</span>
                     </div>
                     <div className="flex items-center justify-between rounded-2xl bg-white/80 px-3 py-2 text-[#1c2d31]">
@@ -368,7 +396,7 @@ export default async function OnsiteEducationSupervisionPage({
                     </p>
                   </div>
                   <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
-                    <p className="text-sm text-[#1c2d31]/55">التقارير المدخلة</p>
+                    <p className="text-sm text-[#1c2d31]/55">تقارير التسميع</p>
                     <p className="mt-2 text-xl font-black text-[#1f6358]">
                       {selectedCirclePerformance.submittedReports}/
                       {selectedCirclePerformance.expectedReports}
@@ -388,7 +416,7 @@ export default async function OnsiteEducationSupervisionPage({
                       <tr className="bg-[#173d42] text-right text-white">
                         <th className="px-4 py-3 font-black">الطالب</th>
                         <th className="px-4 py-3 font-black">الأداء</th>
-                        <th className="px-4 py-3 font-black">التقارير</th>
+                        <th className="px-4 py-3 font-black">تقارير التسميع</th>
                         <th className="px-4 py-3 font-black">الصفحات</th>
                         <th className="px-4 py-3 font-black">الحفظ المتقن</th>
                         <th className="px-4 py-3 font-black">بدأ من</th>
@@ -398,14 +426,13 @@ export default async function OnsiteEducationSupervisionPage({
                     </thead>
                     <tbody>
                       {selectedCircle.students.map((student) => {
-                        const reports = getReportsInPeriod(student.reports);
-                        const presentReports = reports.filter(
-                          (report) => report.status === "PRESENT"
+                        const reports = getReportsInPeriod(student.reports).filter(
+                          isRecitationReport
                         );
-                        const memorizedCount = presentReports.filter(
+                        const memorizedCount = reports.filter(
                           (report) => report.lessonMemorized === true
                         ).length;
-                        const pagesCount = presentReports.reduce(
+                        const pagesCount = reports.reduce(
                           (total, report) => total + (report.pagesCount || 0),
                           0
                         );
@@ -415,8 +442,8 @@ export default async function OnsiteEducationSupervisionPage({
                                 performanceExpectedDays) *
                               100
                             : 0;
-                        const memorizationRate = presentReports.length
-                          ? (memorizedCount / presentReports.length) * 100
+                        const memorizationRate = reports.length
+                          ? (memorizedCount / reports.length) * 100
                           : 0;
                         const pagesRate =
                           performanceExpectedDays > 0
@@ -430,10 +457,10 @@ export default async function OnsiteEducationSupervisionPage({
                             memorizationRate * 0.35 +
                             pagesRate * 0.2
                         );
-                        const firstReport = [...presentReports].sort(
+                        const firstReport = [...reports].sort(
                           (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
                         )[0];
-                        const lastReport = presentReports[0];
+                        const lastReport = reports[0];
 
                         return (
                           <tr
@@ -460,7 +487,7 @@ export default async function OnsiteEducationSupervisionPage({
                               {pagesCount}
                             </td>
                             <td className="px-4 py-3 text-[#1c2d31]/70">
-                              {memorizedCount}/{presentReports.length}
+                              {memorizedCount}/{reports.length}
                             </td>
                             <td className="px-4 py-3 text-[#1c2d31]/70">
                               {firstReport?.lessonSurah || firstReport?.lessonName || "-"}
@@ -509,7 +536,9 @@ export default async function OnsiteEducationSupervisionPage({
                   const completed = circle.students.filter((student) =>
                     student.reports.some(
                       (report) =>
-                        report.createdAt >= day.start && report.createdAt < day.end
+                        report.createdAt >= day.start &&
+                        report.createdAt < day.end &&
+                        isRecitationReport(report)
                     )
                   ).length;
 
@@ -603,7 +632,7 @@ export default async function OnsiteEducationSupervisionPage({
                 <thead>
                   <tr className="bg-[#173d42] text-right text-white">
                     <th className="px-4 py-3 font-black">الطالب</th>
-                    <th className="px-4 py-3 font-black">تقرير {selectedDay.label}</th>
+                    <th className="px-4 py-3 font-black">تسميع {selectedDay.label}</th>
                     <th className="px-4 py-3 font-black">الدرس</th>
                     <th className="px-4 py-3 font-black">المراجعة</th>
                     <th className="px-4 py-3 font-black">الحالة</th>
@@ -617,7 +646,8 @@ export default async function OnsiteEducationSupervisionPage({
                       student.reports.find(
                         (item) =>
                           item.createdAt >= selectedDay.start &&
-                          item.createdAt < selectedDay.end
+                          item.createdAt < selectedDay.end &&
+                          isRecitationReport(item)
                       ) || null;
 
                     return (
@@ -633,7 +663,7 @@ export default async function OnsiteEducationSupervisionPage({
                                 : "bg-red-50 text-red-700"
                             }`}
                           >
-                            {report ? "تم الإدخال" : "لم يدخل"}
+                            {report ? "تم التسميع" : "لم يدخل تسميع"}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
