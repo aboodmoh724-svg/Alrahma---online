@@ -42,7 +42,7 @@ type TeacherDashboardProps = {
 };
 
 function trackLabel(track: string | null) {
-  if (track === "ONSITE_ALL") return "حضوري للكل";
+  if (track === "ONSITE_ALL") return "حضوري";
   if (track === "HIJAA") return "مسار الهجاء";
   if (track === "RUBAI") return "المسار الرباعي";
   if (track === "FARDI") return "المسار الفردي";

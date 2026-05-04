@@ -570,6 +570,10 @@ function NewReportForm() {
     const noorLessonTitle = currentNoorLesson
       ? `${currentNoorLesson.section}: ${currentNoorLesson.title}`
       : "نور البيان";
+    const noorProgressText = noorAmountLabel(
+      formData.noorLinesCount,
+      formData.noorProgressUnit
+    );
     const noorReviewScope =
       formData.noorReviewScope === "مراجعة مخصصة"
         ? formData.noorReviewCustom.trim() || formData.noorReviewScope
@@ -577,7 +581,7 @@ function NewReportForm() {
     const lessonName = formData.isAbsent
       ? "غياب"
       : isNoorAlBayanReport
-        ? `نور البيان: ${noorLessonTitle}`
+        ? `نور البيان: ${noorLessonTitle}${noorProgressText ? ` - الإنجاز: ${noorProgressText}` : ""}`
         : `الدرس الجديد: سورة ${formData.lessonSurah}`;
 
     const payload = {
@@ -616,14 +620,7 @@ function NewReportForm() {
       nextHomework,
       nextLessonHomework,
       nextReviewHomework,
-      note: [
-        formData.note,
-        isNoorAlBayanReport && formData.noorLinesCount
-          ? `إنجاز نور البيان: ${noorAmountLabel(formData.noorLinesCount, formData.noorProgressUnit)}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join("\n"),
+      note: formData.note,
     };
 
     try {

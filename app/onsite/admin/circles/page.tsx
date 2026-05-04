@@ -24,7 +24,7 @@ type Circle = {
 const onsiteTrackOptions = [
   { value: "ONSITE_QURAN", label: "حلقات القرآن الكريم" },
   { value: "ONSITE_NOUR_AL_BAYAN", label: "حلقات نور البيان" },
-  { value: "ONSITE_ALL", label: "حضوري عام" },
+  { value: "ONSITE_ALL", label: "حضوري" },
 ];
 
 export default function OnsiteAdminCirclesPage() {
