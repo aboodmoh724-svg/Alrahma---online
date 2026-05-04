@@ -4,6 +4,7 @@ import type { Prisma, StudyMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 
 type RouteContext = {
   params: Promise<{
@@ -62,7 +63,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const parentWhatsapp = hasParentWhatsapp
       ? body.parentWhatsapp === null
         ? null
-        : normalizeString(body.parentWhatsapp)
+        : normalizePhoneDigits(body.parentWhatsapp) || null
       : undefined;
     const parentEmail = hasParentEmail
       ? body.parentEmail === null

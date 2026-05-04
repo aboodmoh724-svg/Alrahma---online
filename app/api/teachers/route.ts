@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import {
   isWhatsAppConfigured,
@@ -61,7 +62,7 @@ export async function POST(req: Request) {
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "").trim();
-    const whatsapp = String(body.whatsapp || "").trim();
+    const whatsapp = normalizePhoneDigits(body.whatsapp);
     const teacherCertification = String(body.teacherCertification || "").trim();
     const teacherAvailableTimes = String(body.teacherAvailableTimes || "").trim();
     const teacherAvailableTracks = String(body.teacherAvailableTracks || "").trim();
@@ -185,7 +186,7 @@ export async function PATCH(req: Request) {
     const teacherId = String(body.teacherId || "").trim();
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
-    const whatsapp = String(body.whatsapp || "").trim();
+    const whatsapp = normalizePhoneDigits(body.whatsapp);
     const teacherCertification = String(body.teacherCertification || "").trim();
     const teacherAvailableTimes = String(body.teacherAvailableTimes || "").trim();
     const teacherAvailableTracks = String(body.teacherAvailableTracks || "").trim();

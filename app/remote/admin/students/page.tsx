@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
 
 type Teacher = {
   id: string;
@@ -275,14 +276,13 @@ export default function RemoteAdminStudentsPage() {
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                 required
               />
-              <input
-                type="text"
+              <PhoneNumberInput
                 name="parentWhatsapp"
                 value={formData.parentWhatsapp}
-                onChange={handleChange}
-                placeholder="رقم ولي الأمر"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
-                dir="ltr"
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, parentWhatsapp: value }))
+                }
+                inputClassName="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
               />
               <input
                 type="email"
@@ -423,11 +423,10 @@ export default function RemoteAdminStudentsPage() {
                         </td>
                         <td className="px-4 py-3 text-gray-700">
                           {editingStudentId === student.id ? (
-                            <input
+                            <PhoneNumberInput
                               value={editParentWhatsapp}
-                              onChange={(event) => setEditParentWhatsapp(event.target.value)}
-                              className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
-                              dir="ltr"
+                              onChange={setEditParentWhatsapp}
+                              inputClassName="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                             />
                           ) : (
                             student.parentWhatsapp || "-"

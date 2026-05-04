@@ -10,6 +10,7 @@ export type MessageAutomationKey =
   | "TEACHER_EDUCATION_CHAT_GUIDE_WHATSAPP"
   | "TEACHER_WELCOME_WHATSAPP"
   | "TEACHER_MISSING_REPORT_REMINDER_WHATSAPP"
+  | "STUDENT_PAYMENT_RECEIVED_WHATSAPP"
   | "FULL_PAYMENT_RECEIVED_WHATSAPP"
   | "TEACHER_VISIT_REPORT_WHATSAPP"
   | "TEACHER_VISIT_REPORT_NOTIFICATION"
@@ -139,6 +140,16 @@ export const MESSAGE_AUTOMATION_RULES: MessageAutomationRule[] = [
     templateKey: "TEACHER_MISSING_REPORT_REMINDER",
     defaultEnabled: false,
     notes: "له وقت تشغيل مستقل محفوظ في إعدادات التذكير.",
+  },
+  {
+    key: "STUDENT_PAYMENT_RECEIVED_WHATSAPP",
+    title: "تأكيد تسجيل دفعة",
+    trigger: "عند تسجيل دفعة جديدة للطالب من الحسابات المالية، سواء كانت دفعة جزئية أو كاملة.",
+    recipient: "ولي أمر الطالب",
+    channel: "WHATSAPP",
+    location: "الحسابات المالية",
+    templateKey: "STUDENT_PAYMENT_RECEIVED",
+    defaultEnabled: true,
   },
   {
     key: "FULL_PAYMENT_RECEIVED_WHATSAPP",

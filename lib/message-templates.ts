@@ -8,6 +8,7 @@ export type MessageTemplateKey =
   | "SUPERVISION_CIRCLE_DETAILS"
   | "PARENT_EDUCATION_CHAT_GUIDE"
   | "TEACHER_EDUCATION_CHAT_GUIDE"
+  | "STUDENT_PAYMENT_RECEIVED"
   | "FULL_PAYMENT_RECEIVED"
   | "TEACHER_VISIT_REPORT"
   | "TEACHER_WELCOME"
@@ -92,6 +93,14 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     variables: ["teacherName", "studentName", "parentPhone"],
     defaultBody:
       "السلام عليكم ورحمة الله وبركاته\n\nأستاذنا *{{teacherName}}*، تم تفعيل قناة المراسلات التعليمية مع ولي أمر الطالب/ـة *{{studentName}}* داخل منصة الرحمة.\n\nالهدف من القناة أن يكون التواصل التعليمي محفوظًا وواضحًا وتحت متابعة الإشراف، مثل:\n- التنبيه على الغياب أو التأخر.\n- متابعة التعثر أو الضعف في الواجب.\n- إرسال ملاحظة مختصرة أو تسجيل صوتي عند الحاجة.\n- استقبال رد ولي الأمر بما يخدم انتظام الطالب.\n\nيمكنكم الدخول من لوحة المعلم ثم قسم *مراسلات أولياء الأمور*، واختيار ولي أمر الطالب وبدء المحادثة.\n\nرقم ولي الأمر المسجل: {{parentPhone}}\n\nنرجو أن يبقى التواصل مختصرًا ومباشرًا ومرتبطًا بالعملية التعليمية.\n\nإدارة منصة الرحمة",
+  },
+  {
+    key: "STUDENT_PAYMENT_RECEIVED",
+    title: "رسالة تسجيل دفعة",
+    description: "ترسل لولي الأمر عند تسجيل أي دفعة جديدة للطالب في الحسابات المالية.",
+    variables: ["studentName", "amount", "currency", "paidAmount", "remainingAmount", "circleName"],
+    defaultBody:
+      "السلام عليكم ورحمة الله وبركاته\n\nتم تسجيل دفعة للطالب *{{studentName}}* بنجاح.\n\n*قيمة الدفعة:* {{amount}} {{currency}}\n*إجمالي المدفوع:* {{paidAmount}} {{currency}}\n*المتبقي:* {{remainingAmount}} {{currency}}\n*الحلقة:* {{circleName}}\n\nنسأل الله أن يبارك لكم، وأن يفتح على الطالب في رحلته مع كتاب الله.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم",
   },
   {
     key: "FULL_PAYMENT_RECEIVED",

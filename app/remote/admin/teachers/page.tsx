@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
 
 type Teacher = {
   id: string;
@@ -236,14 +237,13 @@ export default function RemoteAdminTeachersPage() {
                 className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
                 required
               />
-              <input
-                type="text"
+              <PhoneNumberInput
                 name="whatsapp"
                 value={formData.whatsapp}
-                onChange={handleChange}
-                placeholder="رقم واتساب المعلم"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
-                dir="ltr"
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, whatsapp: value }))
+                }
+                inputClassName="w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-blue-500"
               />
               <select
                 name="teacherCertification"
@@ -373,17 +373,15 @@ export default function RemoteAdminTeachersPage() {
                         </td>
                         <td className="px-4 py-3 text-gray-700">
                           {editingTeacherId === teacher.id ? (
-                            <input
-                              type="text"
+                            <PhoneNumberInput
                               value={editData.whatsapp}
-                              onChange={(event) =>
+                              onChange={(value) =>
                                 setEditData((prev) => ({
                                   ...prev,
-                                  whatsapp: event.target.value,
+                                  whatsapp: value,
                                 }))
                               }
-                              className="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
-                              dir="ltr"
+                              inputClassName="w-full rounded-lg border border-gray-300 px-3 py-2 outline-none focus:border-blue-500"
                             />
                           ) : (
                             teacher.whatsapp || "-"

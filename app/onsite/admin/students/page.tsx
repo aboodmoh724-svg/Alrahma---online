@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import PhoneNumberBlurInput from "@/components/forms/PhoneNumberBlurInput";
 
 type Teacher = {
   id: string;
@@ -160,22 +161,6 @@ export default function OnsiteAdminStudentsPage() {
     } finally {
       setSubmitting(false);
     }
-  };
-
-  const handleTransferStudent = async (studentId: string, circleId: string) => {
-    const res = await fetch(`/api/students/${studentId}/circle`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ circleId }),
-    });
-
-    if (!res.ok) {
-      const data = await res.json();
-      alert(data.error || "تعذر نقل الطالب إلى الحلقة");
-      return;
-    }
-
-    await fetchData();
   };
 
   const updateStudent = async (
@@ -449,32 +434,23 @@ export default function OnsiteAdminStudentsPage() {
                         </td>
                         <td className="px-4 py-3 text-xs font-bold text-[#1c2d31]/70">
                           <div className="grid gap-2">
-                            <input
-                              defaultValue={student.parentWhatsapp || ""}
-                              placeholder="واتساب ولي الأمر"
-                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#1f6358]"
-                              onBlur={async (e) => {
-                                const next = e.target.value.trim();
+                            <PhoneNumberBlurInput
+                              value={student.parentWhatsapp || ""}
+                              placeholder="5xxxxxxxxx"
+                              inputClassName="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#1f6358]"
+                              onCommit={async (next) => {
                                 const previous = student.parentWhatsapp || "";
-                                if (previous === next) return;
-
                                 const confirmed = window.confirm(
                                   `هل تريد حفظ تغيير رقم ولي الأمر للطالب ${student.fullName}؟\n\nالرقم الحالي: ${previous || "لا يوجد"}\nالرقم الجديد: ${next || "حذف الرقم"}`
                                 );
 
-                                if (!confirmed) {
-                                  e.target.value = previous;
-                                  return;
-                                }
+                                if (!confirmed) return false;
 
                                 const ok = await updateStudent(student.id, {
                                   parentWhatsapp: next || null,
                                 });
-                                if (ok) {
-                                  await fetchData();
-                                } else {
-                                  e.target.value = previous;
-                                }
+                                if (ok) await fetchData();
+                                return ok;
                               }}
                             />
                             <input

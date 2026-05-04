@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateStudentCode } from "@/lib/student-code";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 
 export async function GET(req: Request) {
   try {
@@ -103,7 +104,7 @@ export async function POST(req: Request) {
     const fullName = String(body.fullName || "").trim();
     const circleId = String(body.circleId || "").trim();
     const teacherIdFromBody = String(body.teacherId || "").trim();
-    const parentWhatsapp = String(body.parentWhatsapp || "").trim() || null;
+    const parentWhatsapp = normalizePhoneDigits(body.parentWhatsapp) || null;
     const parentEmail = String(body.parentEmail || "").trim() || null;
     const birthDate = String(body.birthDate || "").trim();
     const grade = String(body.grade || "").trim();

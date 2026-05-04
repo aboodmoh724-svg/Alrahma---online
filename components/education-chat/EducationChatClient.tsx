@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
+import { splitInternationalPhone } from "@/lib/phone-number";
 
 type Conversation = {
   id: string;
@@ -335,26 +337,17 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
             </p>
             {authStep === "PHONE" ? (
               <>
-                <div className="mt-5 grid grid-cols-[92px_1fr] gap-2" dir="ltr">
-                  <input
-                    value={countryCode}
-                    onChange={(event) => setCountryCode(event.target.value.startsWith("+") ? event.target.value : `+${event.target.value.replace(/[^\d]/g, "")}`)}
-                    placeholder="+90"
-                    type="tel"
-                    inputMode="tel"
-                    lang="en"
-                    className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left font-mono text-sm outline-none"
-                  />
-                  <input
-                    value={localPhone}
-                    onChange={(event) => setLocalPhone(event.target.value.replace(/[^\d]/g, ""))}
-                    placeholder="5xxxxxxxxx"
-                    type="tel"
-                    inputMode="tel"
-                    lang="en"
-                    className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left font-mono text-sm outline-none"
-                  />
-                </div>
+                <PhoneNumberInput
+                  className="mt-5"
+                  value={`${countryCode}${localPhone}`}
+                  onChange={(value) => {
+                    const parts = splitInternationalPhone(value);
+                    setCountryCode(`+${parts.countryCode}`);
+                    setLocalPhone(parts.localNumber);
+                  }}
+                  inputClassName="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                  required
+                />
                 <button
                   type="button"
                   onClick={requestCode}

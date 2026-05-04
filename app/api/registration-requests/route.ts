@@ -4,6 +4,7 @@ import { registrationReceivedEmail, sendEmail } from "@/lib/email";
 import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import { generateStudentCode } from "@/lib/student-code";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
@@ -241,7 +242,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const studentName = getString(formData, "studentName");
-    const parentWhatsapp = getString(formData, "parentWhatsapp");
+    const parentWhatsapp = normalizePhoneDigits(getString(formData, "parentWhatsapp"));
     const audio = formData.get("audio");
     const idImage = formData.get("idImage");
 

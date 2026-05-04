@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
 
 type Teacher = {
   id: string;
@@ -260,14 +261,13 @@ export default function OnsiteAdminTeachersPage() {
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                   رقم واتساب المعلم
                 </label>
-                <input
-                  type="text"
+                <PhoneNumberInput
                   name="whatsapp"
                   value={formData.whatsapp}
-                  onChange={handleChange}
-                  placeholder="905xxxxxxxxx"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
-                  dir="ltr"
+                  onChange={(value) =>
+                    setFormData((prev) => ({ ...prev, whatsapp: value }))
+                  }
+                  inputClassName="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
                 />
               </div>
 
@@ -351,17 +351,15 @@ export default function OnsiteAdminTeachersPage() {
                         </td>
                         <td className="px-4 py-3 text-[#1c2d31]/70">
                           {editingTeacherId === teacher.id ? (
-                            <input
-                              type="text"
+                            <PhoneNumberInput
                               value={editData.whatsapp}
-                              onChange={(event) =>
+                              onChange={(value) =>
                                 setEditData((prev) => ({
                                   ...prev,
-                                  whatsapp: event.target.value,
+                                  whatsapp: value,
                                 }))
                               }
-                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
-                              dir="ltr"
+                              inputClassName="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
                             />
                           ) : (
                             teacher.whatsapp || "-"

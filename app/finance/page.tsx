@@ -312,6 +312,58 @@ async function notifyIfStudentFullyPaid(studentId: string) {
   }
 }
 
+async function notifyStudentPaymentReceived(paymentId: string) {
+  const payment = await prisma.studentPayment.findUnique({
+    where: { id: paymentId },
+    include: {
+      student: {
+        include: {
+          circle: { select: { name: true } },
+          financeAccount: true,
+          payments: true,
+        },
+      },
+    },
+  });
+
+  if (
+    !payment ||
+    payment.student.studyMode !== "REMOTE" ||
+    !payment.student.parentWhatsapp ||
+    !isWhatsAppConfigured() ||
+    !(await isMessageAutomationEnabled("STUDENT_PAYMENT_RECEIVED_WHATSAPP"))
+  ) {
+    return;
+  }
+
+  const phone = normalizeWhatsAppNumber(payment.student.parentWhatsapp);
+  if (!phone) return;
+
+  const totalAmount = toNumber(payment.student.financeAccount?.totalAmount);
+  const discountAmount = toNumber(payment.student.financeAccount?.discountAmount);
+  const requiredAmount = Math.max(totalAmount - discountAmount, 0);
+  const paidAmount = payment.student.payments.reduce((sum, item) => sum + toNumber(item.amount), 0);
+  const remainingAmount = Math.max(requiredAmount - paidAmount, 0);
+  const currency = payment.currency || payment.student.financeAccount?.currency || defaultCurrency;
+
+  try {
+    await sendWhatsAppText({
+      to: phone,
+      body: await renderMessageTemplate("STUDENT_PAYMENT_RECEIVED", {
+        studentName: payment.student.fullName,
+        amount: toNumber(payment.amount).toFixed(2),
+        currency,
+        paidAmount: paidAmount.toFixed(2),
+        remainingAmount: remainingAmount.toFixed(2),
+        circleName: payment.student.circle?.name || null,
+      }),
+      channel: "REMOTE",
+    });
+  } catch (error) {
+    console.error("STUDENT PAYMENT WHATSAPP ERROR =>", error);
+  }
+}
+
 async function saveStudentFinanceAccount(formData: FormData) {
   "use server";
 
@@ -401,6 +453,7 @@ async function addStudentPayment(formData: FormData) {
     details: { studentId, amount, currency, method, paidAt: paidAt.toISOString(), note },
   });
 
+  await notifyStudentPaymentReceived(payment.id);
   await notifyIfStudentFullyPaid(studentId);
   revalidatePath("/finance");
 }

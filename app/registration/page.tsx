@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
+import { splitInternationalPhone } from "@/lib/phone-number";
 
 const inputClass =
   "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-2.5 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10 sm:py-3";
@@ -314,35 +316,16 @@ export default function RegistrationPage() {
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">رقم هاتف ولي الأمر *</label>
-                <div className="grid grid-cols-[96px_1fr] gap-2">
-                  <input
-                    value={formData.parentCountryCode}
-                    onChange={(e) =>
-                      setField(
-                        "parentCountryCode",
-                        e.target.value.startsWith("+") ? e.target.value : `+${e.target.value.replace(/[^\d]/g, "")}`
-                      )
-                    }
-                    placeholder="+90"
-                    type="tel"
-                    inputMode="tel"
-                    lang="en"
-                    className={`${inputClass} text-left font-mono`}
-                    dir="ltr"
-                    required
-                  />
-                  <input
-                    value={formData.parentWhatsapp}
-                    onChange={(e) => setField("parentWhatsapp", e.target.value.replace(/[^\d]/g, ""))}
-                    placeholder="5xxxxxxxxx"
-                    type="tel"
-                    inputMode="tel"
-                    lang="en"
-                    className={`${inputClass} text-left font-mono`}
-                    dir="ltr"
-                    required
-                  />
-                </div>
+                <PhoneNumberInput
+                  value={`${formData.parentCountryCode}${formData.parentWhatsapp}`}
+                  onChange={(value) => {
+                    const parts = splitInternationalPhone(value);
+                    setField("parentCountryCode", `+${parts.countryCode}`);
+                    setField("parentWhatsapp", parts.localNumber);
+                  }}
+                  inputClassName={inputClass}
+                  required
+                />
                 <p className="mt-2 text-xs text-[#1c2d31]/55">اكتب رمز الدولة في الخانة الأولى، ثم رقم الهاتف بدون رمز الدولة.</p>
               </div>
               <div>
