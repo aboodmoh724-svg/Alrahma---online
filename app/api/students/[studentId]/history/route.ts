@@ -52,6 +52,8 @@ export async function GET(_request: Request, context: RouteContext) {
             reviewMemorized: true,
             homework: true,
             nextHomework: true,
+            nextLessonHomework: true,
+            nextReviewHomework: true,
             note: true,
             status: true,
             createdAt: true,

@@ -236,11 +236,13 @@ function NewReportForm() {
     nextLessonFrom: "",
     nextLessonTo: "",
     nextLessonPagesCount: "",
+    nextLessonHomeworkText: "",
     nextReviewStartSurah: "",
     nextReviewEndSurah: "",
     nextReviewFrom: "",
     nextReviewTo: "",
     nextReviewPagesCount: "",
+    nextReviewHomeworkText: "",
     note: "",
   });
 
@@ -305,6 +307,11 @@ function NewReportForm() {
   useEffect(() => {
     if (!formData.studentId) {
       setSuggestedHomework("");
+      setFormData((prev) => ({
+        ...prev,
+        nextLessonHomeworkText: "",
+        nextReviewHomeworkText: "",
+      }));
       return;
     }
 
@@ -321,11 +328,25 @@ function NewReportForm() {
           cache: "no-store",
         });
         const data = await res.json();
-        setSuggestedHomework(
+        const previousLessonHomework =
+          res.ok && typeof data.previousReport?.nextLessonHomework === "string"
+            ? data.previousReport.nextLessonHomework
+            : "";
+        const previousReviewHomework =
+          res.ok && typeof data.previousReport?.nextReviewHomework === "string"
+            ? data.previousReport.nextReviewHomework
+            : "";
+        const previousHomework =
           res.ok && typeof data.lastNextHomework === "string"
             ? data.lastNextHomework
-            : ""
-        );
+            : "";
+
+        setSuggestedHomework(previousHomework);
+        setFormData((prev) => ({
+          ...prev,
+          nextLessonHomeworkText: previousLessonHomework,
+          nextReviewHomeworkText: previousReviewHomework,
+        }));
       } catch (error) {
         console.error("FETCH STUDENT HISTORY ERROR =>", error);
         setSuggestedHomework("");
@@ -411,20 +432,24 @@ function NewReportForm() {
   };
 
   const buildNextHomework = () => {
-    const nextLessonHomework = buildHomeworkRange({
-      startSurah: formData.nextLessonStartSurah,
-      endSurah: formData.nextLessonEndSurah,
-      from: formData.nextLessonFrom,
-      to: formData.nextLessonTo,
-      pagesCount: formData.nextLessonPagesCount,
-    });
-    const nextReviewHomework = buildHomeworkRange({
-      startSurah: formData.nextReviewStartSurah,
-      endSurah: formData.nextReviewEndSurah,
-      from: formData.nextReviewFrom,
-      to: formData.nextReviewTo,
-      pagesCount: formData.nextReviewPagesCount,
-    });
+    const nextLessonHomework =
+      formData.nextLessonHomeworkText.trim() ||
+      buildHomeworkRange({
+        startSurah: formData.nextLessonStartSurah,
+        endSurah: formData.nextLessonEndSurah,
+        from: formData.nextLessonFrom,
+        to: formData.nextLessonTo,
+        pagesCount: formData.nextLessonPagesCount,
+      });
+    const nextReviewHomework =
+      formData.nextReviewHomeworkText.trim() ||
+      buildHomeworkRange({
+        startSurah: formData.nextReviewStartSurah,
+        endSurah: formData.nextReviewEndSurah,
+        from: formData.nextReviewFrom,
+        to: formData.nextReviewTo,
+        pagesCount: formData.nextReviewPagesCount,
+      });
     const parts = [
       nextLessonHomework ? `الدرس الجديد: ${nextLessonHomework}` : "",
       nextReviewHomework ? `المراجعة: ${nextReviewHomework}` : "",
@@ -437,20 +462,24 @@ function NewReportForm() {
     e.preventDefault();
 
     const nextHomework = buildNextHomework();
-    const nextLessonHomework = buildHomeworkRange({
-      startSurah: formData.nextLessonStartSurah,
-      endSurah: formData.nextLessonEndSurah,
-      from: formData.nextLessonFrom,
-      to: formData.nextLessonTo,
-      pagesCount: formData.nextLessonPagesCount,
-    });
-    const nextReviewHomework = buildHomeworkRange({
-      startSurah: formData.nextReviewStartSurah,
-      endSurah: formData.nextReviewEndSurah,
-      from: formData.nextReviewFrom,
-      to: formData.nextReviewTo,
-      pagesCount: formData.nextReviewPagesCount,
-    });
+    const nextLessonHomework =
+      formData.nextLessonHomeworkText.trim() ||
+      buildHomeworkRange({
+        startSurah: formData.nextLessonStartSurah,
+        endSurah: formData.nextLessonEndSurah,
+        from: formData.nextLessonFrom,
+        to: formData.nextLessonTo,
+        pagesCount: formData.nextLessonPagesCount,
+      });
+    const nextReviewHomework =
+      formData.nextReviewHomeworkText.trim() ||
+      buildHomeworkRange({
+        startSurah: formData.nextReviewStartSurah,
+        endSurah: formData.nextReviewEndSurah,
+        from: formData.nextReviewFrom,
+        to: formData.nextReviewTo,
+        pagesCount: formData.nextReviewPagesCount,
+      });
     const lessonName = formData.isAbsent
       ? "غياب"
       : `الدرس الجديد: سورة ${formData.lessonSurah}`;
@@ -744,6 +773,20 @@ function NewReportForm() {
                         عند الانتقال بين سورتين اختر سورة البداية وسورة النهاية.
                       </p>
                     </div>
+                    <div className="mb-4">
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                        الواجب السابق أو النص المعدل
+                      </label>
+                      <textarea
+                        value={formData.nextLessonHomeworkText}
+                        onChange={(e) =>
+                          setField("nextLessonHomeworkText", e.target.value)
+                        }
+                        rows={3}
+                        placeholder="يظهر هنا واجب التقرير السابق تلقائيًا، ويمكن تعديله مباشرة."
+                        className={inputClass}
+                      />
+                    </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <SurahInput
                         id="next-lesson-start-surah-list"
@@ -804,6 +847,20 @@ function NewReportForm() {
                       <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
                         يصلح للمراجعة داخل سورة واحدة أو من نهاية سورة إلى بداية سورة أخرى.
                       </p>
+                    </div>
+                    <div className="mb-4">
+                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                        الواجب السابق أو النص المعدل
+                      </label>
+                      <textarea
+                        value={formData.nextReviewHomeworkText}
+                        onChange={(e) =>
+                          setField("nextReviewHomeworkText", e.target.value)
+                        }
+                        rows={3}
+                        placeholder="يظهر هنا واجب المراجعة السابق تلقائيًا، ويمكن تعديله مباشرة."
+                        className={inputClass}
+                      />
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                       <SurahInput

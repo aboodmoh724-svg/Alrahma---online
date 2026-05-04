@@ -44,12 +44,6 @@ const sections = [
     description: "إرسال رسالة موحدة إلى أولياء الأمور أو المعلمين أو أولياء أمور محددين في الحضوري.",
     tone: "bg-[#fffaf2] text-[#173d42]",
   },
-  {
-    href: "/onsite/admin/import",
-    title: "استيراد Excel",
-    description: "رفع ملف الطلاب من Excel (قريبًا) لإنشاء الطلاب دفعة واحدة.",
-    tone: "bg-white text-[#173d42]",
-  },
 ];
 
 export default function OnsiteAdminDashboardPage() {
