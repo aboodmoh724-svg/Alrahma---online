@@ -398,38 +398,37 @@ export default async function RemoteTeacherDashboardPage({
             </div>
           </section>
 
-          <section className="grid gap-4 xl:grid-cols-[1.05fr_0.95fr]">
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-              <div className="mb-4 flex items-center justify-between gap-3">
+          <section className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
+            <details className="group rounded-[1.6rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+              <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-black text-[#1c2d31]">إشعارات سريعة</h2>
-                  <p className="mt-1 text-sm text-[#1c2d31]/58">
-                    أي طالب جديد أو تحديث على طلباتك سيظهر لك هنا مباشرة.
+                  <h2 className="text-lg font-black text-[#1c2d31]">تنبيهات المعلم</h2>
+                  <p className="mt-1 text-sm text-[#1c2d31]/55">
+                    آخر المستجدات تظهر هنا دون أن تشغل مساحة العمل اليومية.
                   </p>
                 </div>
-                <Link
-                  href="/remote/teacher/requests"
-                  className="rounded-xl border border-[#d9c8ad] px-4 py-2 text-sm font-black text-[#1c2d31] hover:bg-white"
-                >
-                  فتح الصفحة
-                </Link>
-              </div>
+                <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+                  {unreadNotificationsCount > 0
+                    ? `${unreadNotificationsCount} جديد`
+                    : "فتح التنبيهات"}
+                </span>
+              </summary>
 
-              {recentNotifications.length === 0 ? (
-                <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
-                  لا توجد إشعارات حتى الآن.
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {recentNotifications.map((notification) => (
+              <div className="mt-4 max-h-80 space-y-3 overflow-auto pl-1">
+                {recentNotifications.length === 0 ? (
+                  <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                    لا توجد إشعارات حتى الآن.
+                  </div>
+                ) : (
+                  recentNotifications.map((notification) => (
                     <Link
                       key={notification.id}
                       href={`/remote/teacher/requests?notificationId=${notification.id}`}
-                      className={`rounded-2xl p-4 ring-1 ${
+                      className={`block rounded-2xl p-4 ring-1 transition hover:ring-[#1f6358] ${
                         notification.isRead
                           ? "bg-[#fffaf2] ring-[#e7dcc8]"
                           : "bg-[#fff3df] ring-[#c39a62]"
-                      } block transition hover:ring-[#1f6358]`}
+                      }`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
                         <p className="font-black text-[#173d42]">{notification.title}</p>
@@ -446,36 +445,25 @@ export default async function RemoteTeacherDashboardPage({
                         {notification.body}
                       </p>
                     </Link>
-                  ))}
-                </div>
-              )}
-            </div>
+                  ))
+                )}
+              </div>
+            </details>
 
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h2 className="text-xl font-black text-[#1c2d31]">طلباتك المرفوعة</h2>
-                  <p className="mt-1 text-sm text-[#1c2d31]/58">
-                    لو احتجت اختبارًا أو دعمًا لطالب متعثر، ارفع الطلب من هنا بدل الرسائل المتفرقة.
-                  </p>
-                </div>
-                <span className="rounded-full bg-[#1f6358]/10 px-4 py-2 text-sm font-black text-[#1f6358]">
-                  {openRequestsCount} مفتوح
+            <Link
+              href="/remote/teacher/requests"
+              className="flex min-h-24 items-center justify-between gap-4 rounded-[1.6rem] bg-[#173d42] p-4 text-white shadow-sm transition hover:bg-[#1f6358] lg:min-w-72"
+            >
+              <span>
+                <span className="block text-lg font-black">طلبات الإشراف</span>
+                <span className="mt-1 block text-sm leading-6 text-white/70">
+                  رفع طلب جديد أو متابعة الردود
                 </span>
-              </div>
-
-              <div className="mt-5 rounded-[1.6rem] bg-[#fffaf2] p-4 ring-1 ring-[#e7dcc8]">
-                <p className="text-sm leading-8 text-[#1c2d31]/70">
-                  هذه البداية الأولى لنظام التواصل مع الإشراف. ستجد فيه طلباتك السابقة والإشعارات الخاصة بإضافة الطلاب والردود الجديدة.
-                </p>
-                <Link
-                  href="/remote/teacher/requests"
-                  className="mt-4 inline-flex rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42]"
-                >
-                  فتح طلبات المعلم والإشعارات
-                </Link>
-              </div>
-            </div>
+              </span>
+              <span className="rounded-full bg-white px-3 py-2 text-sm font-black text-[#173d42]">
+                {openRequestsCount} مفتوح
+              </span>
+            </Link>
           </section>
 
           <section id="students-details" className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
