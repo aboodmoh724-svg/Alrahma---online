@@ -29,6 +29,8 @@ const ALLOWED_REQUEST_STATUSES: TeacherRequestStatus[] = [
   "RESOLVED",
   "REJECTED",
 ];
+const ALLOWED_REQUEST_TARGETS = ["SUPERVISION", "ADMIN"] as const;
+type TeacherRequestTarget = (typeof ALLOWED_REQUEST_TARGETS)[number];
 
 function normalizeRequestType(value: unknown): TeacherRequestType {
   return ALLOWED_REQUEST_TYPES.includes(value as TeacherRequestType)
@@ -46,6 +48,20 @@ function normalizeRequestStatus(value: unknown): TeacherRequestStatus | null {
   return ALLOWED_REQUEST_STATUSES.includes(value as TeacherRequestStatus)
     ? (value as TeacherRequestStatus)
     : null;
+}
+
+function normalizeRequestTarget(value: unknown): TeacherRequestTarget {
+  return ALLOWED_REQUEST_TARGETS.includes(value as TeacherRequestTarget)
+    ? (value as TeacherRequestTarget)
+    : "SUPERVISION";
+}
+
+function todayRange() {
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start, end };
 }
 
 async function getCurrentRemoteUser() {
@@ -107,10 +123,12 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     const status = normalizeRequestStatus(url.searchParams.get("status"));
+    const target = normalizeRequestTarget(url.searchParams.get("target"));
 
     const requests = await prisma.teacherRequest.findMany({
       where: {
         ...(user.role === "TEACHER" ? { teacherId: user.id } : {}),
+        ...(user.role === "ADMIN" ? { target } : {}),
         ...(status ? { status } : {}),
       },
       orderBy: [
@@ -206,6 +224,8 @@ export async function POST(req: Request) {
     const details = String(body.details || "").trim();
     const type = normalizeRequestType(body.type);
     const priority = normalizeRequestPriority(body.priority);
+    const target = normalizeRequestTarget(body.target);
+    const instantEntry = Boolean(body.instantEntry);
 
     if (!subject) {
       return NextResponse.json({ error: "عنوان الطلب مطلوب" }, { status: 400 });
@@ -233,12 +253,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "الطالب غير موجود ضمن طلابك" }, { status: 400 });
     }
 
+    if (priority === "URGENT" && instantEntry) {
+      const { start, end } = todayRange();
+      const existingToday = await prisma.teacherRequest.findFirst({
+        where: {
+          teacherId: user.id,
+          target,
+          priority: "URGENT",
+          subject: { contains: "دخول فوري" },
+          createdAt: { gte: start, lt: end },
+        },
+        select: { id: true },
+      });
+
+      if (existingToday) {
+        const targetLabel = target === "ADMIN" ? "الإدارة" : "الإشراف";
+        return NextResponse.json(
+          { error: `تم إرسال طلب دخول فوري إلى ${targetLabel} اليوم بالفعل.` },
+          { status: 409 }
+        );
+      }
+    }
+
     const request = await prisma.teacherRequest.create({
       data: {
         teacherId: user.id,
         studentId: student?.id || null,
         type,
         priority,
+        target,
         subject,
         details,
       },

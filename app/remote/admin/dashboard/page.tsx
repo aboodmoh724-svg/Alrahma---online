@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
+import DashboardSectionLink from "@/components/supervision/DashboardSectionLink";
 import { prisma } from "@/lib/prisma";
 
 const REGISTRATION_REQUESTS_LAST_SEEN_KEY = "registration_requests:last_seen_at";
@@ -206,6 +207,7 @@ async function getOpenTeacherRequestsCount() {
   const [teacherRequestsCount, forwardedRegistrationsCount] = await Promise.all([
     prisma.teacherRequest.count({
       where: {
+        target: "ADMIN",
         status: {
           in: ["NEW", "IN_REVIEW"],
         },
@@ -314,6 +316,7 @@ export default async function RemoteAdminDashboardPage() {
     getOpenTeacherRequestsCount(),
     prisma.teacherRequest.count({
       where: {
+        target: "ADMIN",
         priority: "URGENT",
         status: { in: ["NEW", "IN_REVIEW"] },
       },
@@ -422,39 +425,20 @@ export default async function RemoteAdminDashboardPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {visibleSections.map((section) => (
-            <Link
-              key={section.href}
-              href={section.href}
-              className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-2xl font-black">{section.title}</h2>
-                {section.href === "/remote/admin/registrations" && newRegistrationsCount > 0 ? (
-                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-red-600 px-3 py-1 text-xs font-black text-white">
-                    {newRegistrationsCount}
-                  </span>
-                ) : section.href === "/remote/admin/escalated-messages" && escalatedMessagesCount > 0 ? (
-                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
-                    {escalatedMessagesCount}
-                  </span>
-                ) : section.href === "/finance" && financeObligationsDueSoonCount > 0 ? (
-                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white">
-                    {financeObligationsDueSoonCount}
-                  </span>
-                ) : section.href === "/remote/supervision/dashboard" &&
-                  openTeacherRequestsCount > 0 ? (
-                  <span className="inline-flex min-w-9 items-center justify-center rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
-                    {openTeacherRequestsCount}
-                  </span>
-                ) : null}
-              </div>
-              <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>
-              <span className="mt-6 inline-flex rounded-full bg-black/10 px-4 py-2 text-sm font-black">
-                فتح القسم
-              </span>
-            </Link>
-          ))}
+          {visibleSections.map((section) => {
+            const badge =
+              section.href === "/remote/admin/registrations"
+                ? newRegistrationsCount
+                : section.href === "/remote/admin/escalated-messages"
+                  ? escalatedMessagesCount
+                  : section.href === "/finance"
+                    ? financeObligationsDueSoonCount
+                    : section.href === "/remote/supervision/dashboard"
+                      ? openTeacherRequestsCount
+                      : null;
+
+            return <DashboardSectionLink key={section.href} {...section} badge={badge} />;
+          })}
         </section>
       </div>
     </main>

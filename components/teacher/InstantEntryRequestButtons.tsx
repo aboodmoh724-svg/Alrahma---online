@@ -11,6 +11,10 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
   const [sendingTarget, setSendingTarget] = useState<"SUPERVISION" | "ADMIN" | null>(null);
   const [note, setNote] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [sentToday, setSentToday] = useState<Record<"SUPERVISION" | "ADMIN", boolean>>({
+    SUPERVISION: false,
+    ADMIN: false,
+  });
 
   const sendRequest = async (target: "SUPERVISION" | "ADMIN") => {
     try {
@@ -32,6 +36,8 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
         body: JSON.stringify({
           type: "GENERAL",
           priority: "URGENT",
+          target,
+          instantEntry: true,
           subject: `طلب دخول فوري من ${targetLabel}`,
           details,
         }),
@@ -40,10 +46,12 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
 
       if (!response.ok) {
         setFeedback(data.error || "تعذر إرسال الطلب");
+        if (response.status === 409) setSentToday((prev) => ({ ...prev, [target]: true }));
         return;
       }
 
       setNote("");
+      setSentToday((prev) => ({ ...prev, [target]: true }));
       setFeedback(`تم إرسال طلب الدخول الفوري إلى ${targetLabel}.`);
     } catch (error) {
       console.error("INSTANT ENTRY REQUEST ERROR =>", error);
@@ -59,25 +67,25 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
         <div>
           <h2 className="text-lg font-black">طلب دخول فوري</h2>
           <p className="mt-1 text-sm leading-6 text-red-800/75">
-            عند الحاجة لدخول سريع إلى الحلقة، أرسل طلبًا عاجلًا يظهر للإشراف أو الإدارة في التنبيهات.
+            عند الحاجة لدخول سريع إلى الحلقة، أرسل طلبًا عاجلًا يظهر للجهة المختارة مرة واحدة فقط في اليوم.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            disabled={Boolean(sendingTarget)}
+            disabled={Boolean(sendingTarget) || sentToday.SUPERVISION}
             onClick={() => sendRequest("SUPERVISION")}
             className="rounded-full bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
           >
-            {sendingTarget === "SUPERVISION" ? "جارٍ الإرسال..." : "طلب الإشراف"}
+            {sentToday.SUPERVISION ? "تم إرسال طلب الإشراف اليوم" : sendingTarget === "SUPERVISION" ? "جارٍ الإرسال..." : "طلب الإشراف"}
           </button>
           <button
             type="button"
-            disabled={Boolean(sendingTarget)}
+            disabled={Boolean(sendingTarget) || sentToday.ADMIN}
             onClick={() => sendRequest("ADMIN")}
             className="rounded-full bg-[#173d42] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
           >
-            {sendingTarget === "ADMIN" ? "جارٍ الإرسال..." : "طلب الإدارة"}
+            {sentToday.ADMIN ? "تم إرسال طلب الإدارة اليوم" : sendingTarget === "ADMIN" ? "جارٍ الإرسال..." : "طلب الإدارة"}
           </button>
         </div>
       </div>

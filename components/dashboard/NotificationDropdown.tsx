@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type NotificationItem = {
   key: string;
@@ -26,8 +26,23 @@ const toneClass: Record<NonNullable<NotificationItem["tone"]>, string> = {
 
 export default function NotificationDropdown({ title = "التنبيهات", items }: Props) {
   const [open, setOpen] = useState(false);
-  const activeItems = useMemo(() => items.filter((item) => item.count > 0), [items]);
+  const [hiddenKeys, setHiddenKeys] = useState<Record<string, boolean>>({});
+  const activeItems = useMemo(
+    () => items.filter((item) => item.count > 0 && !hiddenKeys[`${item.key}:${item.count}`]),
+    [hiddenKeys, items]
+  );
   const total = activeItems.reduce((sum, item) => sum + item.count, 0);
+
+  useEffect(() => {
+    const hidden: Record<string, boolean> = {};
+    for (const item of items) {
+      const key = `${item.key}:${item.count}`;
+      if (item.count > 0 && window.localStorage.getItem(`alrahma-dashboard-notification:${key}`)) {
+        hidden[key] = true;
+      }
+    }
+    setHiddenKeys(hidden);
+  }, [items]);
 
   return (
     <div className="relative">
@@ -66,7 +81,12 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
                 <Link
                   key={item.key}
                   href={item.href}
-                  onClick={() => setOpen(false)}
+                  onClick={() => {
+                    const key = `${item.key}:${item.count}`;
+                    window.localStorage.setItem(`alrahma-dashboard-notification:${key}`, "1");
+                    setHiddenKeys((prev) => ({ ...prev, [key]: true }));
+                    setOpen(false);
+                  }}
                   className={`block rounded-2xl border p-4 transition hover:-translate-y-0.5 ${
                     toneClass[item.tone || "neutral"]
                   }`}

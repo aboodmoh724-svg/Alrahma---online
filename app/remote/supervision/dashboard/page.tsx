@@ -84,11 +84,13 @@ export default async function RemoteSupervisionDashboardPage() {
     prisma.circle.count({ where: { studyMode: "REMOTE" } }),
     prisma.teacherRequest.count({
       where: {
+        target: "SUPERVISION",
         status: { in: ["NEW", "IN_REVIEW"] },
       },
     }),
     prisma.teacherRequest.count({
       where: {
+        target: "SUPERVISION",
         priority: "URGENT",
         status: { in: ["NEW", "IN_REVIEW"] },
       },

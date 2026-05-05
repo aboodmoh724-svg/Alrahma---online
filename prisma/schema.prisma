@@ -242,6 +242,7 @@ model TeacherRequest {
   studentId  String?
   type       TeacherRequestType
   priority   TeacherRequestPriority @default(NORMAL)
+  target     String                 @default("SUPERVISION")
   status     TeacherRequestStatus   @default(NEW)
   subject    String
   details    String
@@ -255,6 +256,7 @@ model TeacherRequest {
   reviewer   User?                  @relation("TeacherRequestAdmin", fields: [reviewedBy], references: [id], onDelete: SetNull)
 
   @@index([teacherId, status])
+  @@index([teacherId, target, createdAt])
   @@index([status, createdAt])
   @@index([studentId])
 }

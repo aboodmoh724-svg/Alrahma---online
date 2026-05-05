@@ -8,6 +8,7 @@ type TeacherRequest = {
   id: string;
   type: "TEST_REQUEST" | "STRUGGLING_STUDENT" | "SPECIAL_CASE" | "GENERAL";
   priority: "NORMAL" | "HIGH" | "URGENT";
+  target: "SUPERVISION" | "ADMIN";
   status: "NEW" | "IN_REVIEW" | "RESOLVED" | "REJECTED";
   subject: string;
   details: string;
@@ -89,6 +90,7 @@ export default function RemoteAdminTeacherRequestsPage() {
   const dashboardHref = pathname.startsWith("/remote/supervision/")
     ? "/remote/supervision/dashboard"
     : "/remote/admin/dashboard";
+  const requestTarget = pathname.startsWith("/remote/supervision/") ? "SUPERVISION" : "ADMIN";
   const [requests, setRequests] = useState<TeacherRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
@@ -99,7 +101,9 @@ export default function RemoteAdminTeacherRequestsPage() {
   const fetchRequests = useCallback(async () => {
     try {
       setLoading(true);
-      const suffix = statusFilter === "ALL" ? "" : `?status=${statusFilter}`;
+      const params = new URLSearchParams({ target: requestTarget });
+      if (statusFilter !== "ALL") params.set("status", statusFilter);
+      const suffix = `?${params.toString()}`;
       const response = await fetch(`/api/teacher-requests${suffix}`, { cache: "no-store" });
       const data = await response.json();
 
@@ -117,7 +121,7 @@ export default function RemoteAdminTeacherRequestsPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusFilter]);
+  }, [requestTarget, statusFilter]);
 
   useEffect(() => {
     fetchRequests();
