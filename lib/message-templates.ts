@@ -130,9 +130,9 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     key: "REMOTE_REPORT",
     title: "رسالة التقرير اليومي",
     description: "ترسل يدويًا من واجهة معلم الأونلاين عند الضغط على إرسال عبر واتساب.",
-    variables: ["studentName", "teacherName", "reportDate", "lessonName", "review", "homework", "note"],
+    variables: ["studentName", "teacherName", "reportDate", "lessonName", "review", "homework", "note", "evaluationSummary"],
     defaultBody:
-      "السلام عليكم ورحمة الله وبركاته\n\nتقرير الطالب: {{studentName}}\n\nالمعلم: {{teacherName}}\nالتاريخ: {{reportDate}}\nالدرس: {{lessonName}}\nالمراجعة: {{review}}\nالواجب: {{homework}}\nالملاحظات: {{note}}\n\nجزاكم الله خيرًا، وبارك الله في متابعتكم.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم",
+      "السلام عليكم ورحمة الله وبركاته\n\nتقرير الطالب: {{studentName}}\nالتاريخ: {{reportDate}}\nالمعلم: {{teacherName}}\n\nالدرس: {{lessonName}}\nالمراجعة: {{review}}\nواجب الغد: {{homework}}\nالملاحظات: {{note}}\n\n{{evaluationSummary}}\n\nجزاكم الله خيرًا على المتابعة.\n\nإدارة منصة الرحمة لتعليم القرآن الكريم",
   },
   {
     key: "TEACHER_MISSING_REPORT_REMINDER",

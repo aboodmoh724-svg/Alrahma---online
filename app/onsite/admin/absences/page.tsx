@@ -6,9 +6,17 @@ import { formatIstanbulDateEnglish, getIstanbulDayRange } from "@/lib/school-day
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
-  onsiteAbsenceWhatsAppMessage,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
+
+function onsiteAbsenceNotice(input: { studentName: string; reportDate: string }) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نود إبلاغكم أن ابنكم *${input.studentName}* تغيب اليوم عن حضور الحلقة بتاريخ ${input.reportDate}.\n\n` +
+    `نرجو منكم الاهتمام بالحضور؛ لأن الغياب يؤثر على مستوى التعلم والمتابعة.\n\n` +
+    `إدارة منصة الرحمة لتحفيظ القرآن الكريم`
+  );
+}
 
 async function updateTodayAttendanceStatus(formData: FormData) {
   "use server";
@@ -144,7 +152,7 @@ async function sendTodayAbsenceWhatsApp() {
     try {
       await sendWhatsAppText({
         to: phone,
-        body: onsiteAbsenceWhatsAppMessage({
+        body: onsiteAbsenceNotice({
           studentName: report.student.fullName,
           reportDate,
         }),
