@@ -88,8 +88,8 @@ export function conversationInclude() {
 export function serializeConversation(conversation: any) {
   const lastMessage = conversation.messages?.[0] || null;
   const parentDisplayName = conversation.student?.fullName
-    ? `ولي أمر ${conversation.student.fullName}`
-    : "ولي الأمر";
+    ? `\u0648\u0644\u064a \u0623\u0645\u0631 ${conversation.student.fullName}`
+    : "\u0648\u0644\u064a \u0627\u0644\u0623\u0645\u0631";
 
   return {
     id: conversation.id,

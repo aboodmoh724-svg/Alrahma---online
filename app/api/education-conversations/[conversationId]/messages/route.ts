@@ -8,6 +8,7 @@ import {
 } from "@/lib/education-chat";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
+import { createTeacherNotification } from "@/lib/teacher-notifications";
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
 
@@ -52,7 +53,7 @@ async function getAllowedConversation(conversationId: string) {
 
   if (!conversation) return null;
 
-  if (parentPhone && conversation.parentPhone === parentPhone) {
+  if (parentPhone && conversation.parentPhone && conversation.parentPhone === parentPhone) {
     return { conversation, senderRole: "PARENT", senderPhone: parentPhone, senderUserId: null };
   }
 
@@ -95,8 +96,8 @@ export async function GET(_request: Request, context: RouteContext) {
         senderRole: message.senderRole,
         senderName:
           message.senderRole === "PARENT"
-            ? `ولي أمر ${allowed.conversation.student.fullName}`
-            : message.senderUser?.fullName || (message.senderRole === "ADMIN" ? "الإدارة" : "المعلم"),
+            ? `\u0648\u0644\u064a \u0623\u0645\u0631 ${allowed.conversation.student?.fullName || ""}`.trim()
+            : message.senderUser?.fullName || (message.senderRole === "ADMIN" ? "\u0627\u0644\u0625\u0634\u0631\u0627\u0641" : "\u0627\u0644\u0645\u0639\u0644\u0645"),
         body: message.body,
         attachmentUrl: await createSignedStorageUrl(message.attachmentUrl),
         attachmentName: message.attachmentName,
@@ -173,6 +174,19 @@ export async function POST(request: Request, context: RouteContext) {
         lastMessageAt: message.createdAt,
       },
     });
+
+    if (
+      allowed.senderRole === "ADMIN" &&
+      allowed.conversation.type === "SUPERVISION_TEACHER" &&
+      allowed.conversation.teacher?.id
+    ) {
+      await createTeacherNotification({
+        userId: allowed.conversation.teacher.id,
+        title: "\u0631\u0633\u0627\u0644\u0629 \u0645\u0646 \u0627\u0644\u0625\u0634\u0631\u0627\u0641",
+        body: body || "\u0648\u0635\u0644\u0643 \u0645\u0631\u0641\u0642 \u062c\u062f\u064a\u062f \u0645\u0646 \u0627\u0644\u0625\u0634\u0631\u0627\u0641.",
+        link: "/remote/teacher/messages",
+      });
+    }
 
     return NextResponse.json({ success: true, messageId: message.id });
   } catch (error) {

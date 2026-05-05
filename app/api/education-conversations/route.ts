@@ -35,8 +35,10 @@ async function parentStudents(parentPhone: string) {
   return students.filter((student) => cleanChatPhone(student.parentWhatsapp) === parentPhone);
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const url = new URL(request.url);
+    const scope = url.searchParams.get("scope");
     const parentPhone = await getParentChatPhone();
     const teacher = await getCurrentTeacher();
     const admin = await getCurrentRemoteAdmin();
@@ -112,6 +114,64 @@ export async function GET() {
     }
 
     if (admin) {
+      if (scope === "supervision") {
+        const [conversations, teachers, students] = await Promise.all([
+          prisma.educationConversation.findMany({
+            where: {
+              type: {
+                in: ["SUPERVISION", "SUPERVISION_TEACHER"],
+              },
+            },
+            include: conversationInclude(),
+            orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
+            take: 200,
+          }),
+          prisma.user.findMany({
+            where: {
+              role: "TEACHER",
+              studyMode: "REMOTE",
+              isActive: true,
+            },
+            select: {
+              id: true,
+              fullName: true,
+            },
+            orderBy: { fullName: "asc" },
+          }),
+          prisma.student.findMany({
+            where: {
+              studyMode: "REMOTE",
+              isActive: true,
+              parentWhatsapp: { not: null },
+            },
+            select: {
+              id: true,
+              fullName: true,
+              parentWhatsapp: true,
+              circle: { select: { name: true } },
+            },
+            orderBy: { fullName: "asc" },
+          }),
+        ]);
+
+        return NextResponse.json({
+          role: "SUPERVISION",
+          teacherOptions: teachers.map((teacher) => ({
+            teacherId: teacher.id,
+            teacherName: teacher.fullName,
+            circleName: null,
+          })),
+          studentOptions: students
+            .filter((student) => cleanChatPhone(student.parentWhatsapp))
+            .map((student) => ({
+              studentId: student.id,
+              studentName: student.fullName,
+              circleName: student.circle?.name || null,
+            })),
+          conversations: conversations.map(serializeConversation),
+        });
+      }
+
       const conversations = await prisma.educationConversation.findMany({
         include: conversationInclude(),
         orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
@@ -138,6 +198,86 @@ export async function POST(request: Request) {
     const admin = await getCurrentRemoteAdmin();
     const body = await request.json();
     const type = String(body.type || "TEACHER").trim() === "SUPERVISION" ? "SUPERVISION" : "TEACHER";
+    const requestedType = String(body.type || "TEACHER").trim();
+
+    if (admin && requestedType === "SUPERVISION_TEACHER") {
+      const teacherId = String(body.teacherId || "").trim();
+      const teacherRecord = await prisma.user.findFirst({
+        where: {
+          id: teacherId,
+          role: "TEACHER",
+          studyMode: "REMOTE",
+          isActive: true,
+        },
+        select: { id: true },
+      });
+
+      if (!teacherRecord) {
+        return NextResponse.json({ error: "تعذر فتح محادثة لهذا المعلم" }, { status: 400 });
+      }
+
+      const existing = await prisma.educationConversation.findFirst({
+        where: {
+          teacherId: teacherRecord.id,
+          type: "SUPERVISION_TEACHER",
+        },
+      });
+
+      const conversation =
+        existing ||
+        (await prisma.educationConversation.create({
+          data: {
+            teacherId: teacherRecord.id,
+            parentPhone: null,
+            studentId: null,
+            type: "SUPERVISION_TEACHER",
+          },
+        }));
+
+      return NextResponse.json({ success: true, conversationId: conversation.id });
+    }
+
+    if (admin && requestedType === "SUPERVISION") {
+      const studentId = String(body.studentId || "").trim();
+      const student = await prisma.student.findFirst({
+        where: {
+          id: studentId,
+          studyMode: "REMOTE",
+          isActive: true,
+          parentWhatsapp: { not: null },
+        },
+        select: {
+          id: true,
+          parentWhatsapp: true,
+        },
+      });
+
+      const parentPhone = cleanChatPhone(student?.parentWhatsapp);
+      if (!student || !parentPhone) {
+        return NextResponse.json({ error: "تعذر فتح محادثة مع ولي أمر هذا الطالب" }, { status: 400 });
+      }
+
+      const existing = await prisma.educationConversation.findFirst({
+        where: {
+          studentId: student.id,
+          type: "SUPERVISION",
+          teacherId: null,
+        },
+      });
+
+      const conversation =
+        existing ||
+        (await prisma.educationConversation.create({
+          data: {
+            studentId: student.id,
+            parentPhone,
+            teacherId: null,
+            type: "SUPERVISION",
+          },
+        }));
+
+      return NextResponse.json({ success: true, conversationId: conversation.id });
+    }
 
     if (parentPhone) {
       const students = await parentStudents(parentPhone);

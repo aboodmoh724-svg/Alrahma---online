@@ -9,7 +9,7 @@ type Conversation = {
   type: string;
   parentPhone: string;
   parentDisplayName?: string;
-  student: { id: string; fullName: string; circle?: { name: string | null } | null };
+  student: { id: string; fullName: string; circle?: { name: string | null } | null } | null;
   teacher: { id: string; fullName: string } | null;
   lastMessageAt: string;
   lastMessage: { body: string | null; attachmentName: string | null; senderRole: string; createdAt: string } | null;
@@ -39,7 +39,7 @@ type StudentOption = {
 };
 
 type Props = {
-  mode: "PARENT" | "TEACHER" | "ADMIN";
+  mode: "PARENT" | "TEACHER" | "ADMIN" | "SUPERVISION";
   title: string;
   subtitle: string;
   backHref?: string;
@@ -132,9 +132,16 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   );
 
   const getConversationTitle = (conversation: Conversation) => {
-    if (mode === "TEACHER") return conversation.parentDisplayName || `ولي أمر ${conversation.student.fullName}`;
-    if (conversation.type === "SUPERVISION") return "الإشراف";
-    return conversation.teacher?.fullName || "المعلم";
+    if (mode === "TEACHER") {
+      if (conversation.type === "SUPERVISION_TEACHER") return "\u0627\u0644\u0625\u0634\u0631\u0627\u0641";
+      return conversation.parentDisplayName || `\u0648\u0644\u064a \u0623\u0645\u0631 ${conversation.student?.fullName || ""}`.trim();
+    }
+    if (mode === "SUPERVISION") {
+      if (conversation.type === "SUPERVISION_TEACHER") return conversation.teacher?.fullName || "\u0627\u0644\u0645\u0639\u0644\u0645";
+      return conversation.parentDisplayName || `\u0648\u0644\u064a \u0623\u0645\u0631 ${conversation.student?.fullName || ""}`.trim();
+    }
+    if (conversation.type === "SUPERVISION") return "\u0627\u0644\u0625\u0634\u0631\u0627\u0641";
+    return conversation.teacher?.fullName || "\u0627\u0644\u0645\u0639\u0644\u0645";
   };
 
   const formatRecordingTime = (seconds: number) => {
@@ -182,7 +189,9 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   const loadConversations = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/education-conversations", { cache: "no-store" });
+      const conversationsUrl =
+        mode === "SUPERVISION" ? "/api/education-conversations?scope=supervision" : "/api/education-conversations";
+      const response = await fetch(conversationsUrl, { cache: "no-store" });
       const data = await response.json();
 
       if (!response.ok) {
@@ -497,8 +506,42 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     ))}
                   </select>
                 </>
+              ) : mode === "SUPERVISION" ? (
+                <>
+                  <p className="text-sm font-black text-[#173d42]">{"\u0628\u062f\u0621 \u0645\u062d\u0627\u062f\u062b\u0629 \u0625\u0634\u0631\u0627\u0641\u064a\u0629"}</p>
+                  <div className="grid gap-2">
+                    <select
+                      onChange={(event) =>
+                        event.target.value && createConversation({ type: "SUPERVISION_TEACHER", teacherId: event.target.value })
+                      }
+                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm"
+                      defaultValue=""
+                    >
+                      <option value="">{"\u0627\u062e\u062a\u0631 \u0627\u0644\u0645\u0639\u0644\u0645 \u0644\u0644\u062a\u0648\u0627\u0635\u0644 \u0645\u0639\u0647"}</option>
+                      {teacherOptions.map((teacher) => (
+                        <option key={teacher.teacherId} value={teacher.teacherId}>
+                          {teacher.teacherName}
+                        </option>
+                      ))}
+                    </select>
+                    <select
+                      onChange={(event) =>
+                        event.target.value && createConversation({ type: "SUPERVISION", studentId: event.target.value })
+                      }
+                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm"
+                      defaultValue=""
+                    >
+                      <option value="">{"\u0627\u062e\u062a\u0631 \u0648\u0644\u064a \u0623\u0645\u0631 \u0637\u0627\u0644\u0628"}</option>
+                      {studentOptions.map((student) => (
+                        <option key={student.studentId} value={student.studentId}>
+                          {student.studentName}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
               ) : (
-                <p className="text-sm font-black text-[#173d42]">مراقبة كل المحادثات</p>
+                <p className="text-sm font-black text-[#173d42]">{"\u0645\u0631\u0627\u0642\u0628\u0629 \u0643\u0644 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0627\u062a"}</p>
               )}
             </div>
             <div className="max-h-[540px] overflow-auto p-3">
@@ -517,7 +560,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     }`}
                   >
                     <p className="font-black">{getConversationTitle(conversation)}</p>
-                    {mode === "ADMIN" ? <p className="mt-1 text-xs opacity-70">{conversation.student.fullName}</p> : null}
+                    {mode === "ADMIN" && conversation.student ? <p className="mt-1 text-xs opacity-70">{conversation.student.fullName}</p> : null}
                     <p className="mt-2 line-clamp-1 text-xs opacity-70">
                       {conversation.lastMessage?.body || conversation.lastMessage?.attachmentName || "محادثة جديدة"}
                     </p>
@@ -533,7 +576,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                 <div className="flex items-center justify-between gap-3 border-b border-[#d9c8ad] bg-white px-5 py-4">
                   <div>
                     <p className="text-lg font-black text-[#173d42]">{getConversationTitle(selectedConversation)}</p>
-                    {mode === "ADMIN" ? (
+                    {mode === "ADMIN" && selectedConversation.student ? (
                       <p className="text-xs font-bold text-[#173d42]/60">الطالب: {selectedConversation.student.fullName}</p>
                     ) : null}
                   </div>
@@ -550,11 +593,12 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     const mine =
                       (mode === "PARENT" && message.senderRole === "PARENT") ||
                       (mode === "TEACHER" && message.senderRole === "TEACHER") ||
-                      (mode === "ADMIN" && message.senderRole === "ADMIN");
+                      (mode === "ADMIN" && message.senderRole === "ADMIN") ||
+                      (mode === "SUPERVISION" && message.senderRole === "ADMIN");
                     return (
                       <div key={message.id} className={`flex ${mine ? "justify-start" : "justify-end"}`}>
                         <div className={`max-w-[92%] overflow-hidden rounded-2xl px-4 py-3 shadow-sm sm:max-w-[78%] ${mine ? "bg-[#dcf8c6]" : "bg-white"}`}>
-                          {mode === "ADMIN" ? (
+                          {mode === "ADMIN" || mode === "SUPERVISION" ? (
                             <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
                           ) : null}
                           {message.body ? (

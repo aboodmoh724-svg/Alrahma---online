@@ -3,9 +3,9 @@ import EducationChatClient from "@/components/education-chat/EducationChatClient
 export default function RemoteSupervisionConversationsPage() {
   return (
     <EducationChatClient
-      mode="ADMIN"
+      mode="SUPERVISION"
       title="مراسلات التعليم اليومية"
-      subtitle="متابعة محادثات ولي الأمر مع المعلم أو الإشراف، والرد من مكان واحد داخل اللوحة الإشرافية."
+      subtitle="تواصل مباشر من الإشراف مع المعلمين وأولياء الأمور في صفحة واحدة، مع حفظ المحادثات والرجوع إليها عند الحاجة."
       backHref="/remote/supervision/dashboard"
     />
   );
