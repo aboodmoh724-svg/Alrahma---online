@@ -41,6 +41,7 @@ async function createSupervisor(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
   const email = normalizeEmail(formData.get("email"));
   const password = String(formData.get("password") || "").trim();
+  const whatsapp = String(formData.get("whatsapp") || "").trim();
   const canAccessSupervision = checkboxValue(formData.get("canAccessSupervision"));
   const canAccessFinance = checkboxValue(formData.get("canAccessFinance"));
 
@@ -51,6 +52,7 @@ async function createSupervisor(formData: FormData) {
       fullName,
       email,
       password,
+      whatsapp: whatsapp || null,
       role: "ADMIN",
       studyMode: "REMOTE",
       isActive: true,
@@ -72,6 +74,7 @@ async function updateSupervisor(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
   const email = normalizeEmail(formData.get("email"));
   const password = String(formData.get("password") || "").trim();
+  const whatsapp = String(formData.get("whatsapp") || "").trim();
   const canAccessSupervision = checkboxValue(formData.get("canAccessSupervision"));
   const canAccessFinance = checkboxValue(formData.get("canAccessFinance"));
   const isActive = checkboxValue(formData.get("isActive"));
@@ -85,6 +88,7 @@ async function updateSupervisor(formData: FormData) {
     data: {
       fullName,
       email,
+      whatsapp: whatsapp || null,
       ...(password ? { password } : {}),
       canAccessSupervision,
       canAccessFinance,
@@ -153,6 +157,7 @@ export default async function RemoteAdminSupervisorsPage() {
       id: true,
       fullName: true,
       email: true,
+      whatsapp: true,
       isActive: true,
       canAccessFinance: true,
       canAccessSupervision: true,
@@ -187,6 +192,7 @@ export default async function RemoteAdminSupervisorsPage() {
             <div className="mt-5 grid gap-3">
               <input name="fullName" required placeholder="الاسم" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <input name="email" type="email" required placeholder="البريد الإلكتروني" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="whatsapp" dir="ltr" placeholder={"رقم واتساب التنبيهات مثل +905xxxxxxxxx"} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left text-sm" />
               <input name="password" required placeholder="كلمة المرور" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <label className="flex items-center gap-3 rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm font-black">
                 <input name="canAccessSupervision" type="checkbox" defaultChecked className="h-4 w-4" />
@@ -218,6 +224,7 @@ export default async function RemoteAdminSupervisorsPage() {
                     <div className="grid gap-3 md:grid-cols-2">
                       <input name="fullName" defaultValue={admin.fullName} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm" />
                       <input name="email" type="email" defaultValue={admin.email} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm" />
+                      <input name="whatsapp" dir="ltr" defaultValue={admin.whatsapp || ""} placeholder={"رقم واتساب التنبيهات +905xxxxxxxxx"} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-left text-sm" />
                       <input name="password" placeholder="كلمة مرور جديدة اختيارية" className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm md:col-span-2" />
                     </div>
                     <div className="flex flex-wrap gap-3">

@@ -44,6 +44,7 @@ async function createRemoteAdmin(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
   const email = normalizeEmail(formData.get("email"));
   const password = String(formData.get("password") || "").trim();
+  const whatsapp = String(formData.get("whatsapp") || "").trim();
   const canAccessFinance = checkboxValue(formData.get("canAccessFinance"));
 
   if (!fullName || !email || !password) return;
@@ -60,6 +61,7 @@ async function createRemoteAdmin(formData: FormData) {
       fullName,
       email,
       password,
+      whatsapp: whatsapp || null,
       role: "ADMIN",
       studyMode: "REMOTE",
       isActive: true,
@@ -80,6 +82,7 @@ async function updateRemoteAdmin(formData: FormData) {
   const fullName = String(formData.get("fullName") || "").trim();
   const email = normalizeEmail(formData.get("email"));
   const password = String(formData.get("password") || "").trim();
+  const whatsapp = String(formData.get("whatsapp") || "").trim();
   const canAccessFinance = checkboxValue(formData.get("canAccessFinance"));
   const isActive = checkboxValue(formData.get("isActive"));
 
@@ -111,6 +114,7 @@ async function updateRemoteAdmin(formData: FormData) {
     data: {
       fullName,
       email,
+      whatsapp: whatsapp || null,
       ...(password ? { password } : {}),
       canAccessFinance,
       isActive,
@@ -178,6 +182,7 @@ export default async function RemoteAdminsPage() {
       id: true,
       fullName: true,
       email: true,
+      whatsapp: true,
       password: true,
       isActive: true,
       canAccessFinance: true,
@@ -223,6 +228,7 @@ export default async function RemoteAdminsPage() {
             <div className="mt-5 grid gap-3">
               <input name="fullName" required placeholder="اسم الإداري" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <input name="email" type="email" required placeholder="البريد الإلكتروني" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="whatsapp" dir="ltr" placeholder={"رقم واتساب التنبيهات مثل +905xxxxxxxxx"} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left text-sm" />
               <input name="password" required placeholder="كلمة المرور" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
               <label className="flex items-center gap-3 rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm font-black">
                 <input name="canAccessFinance" type="checkbox" className="h-4 w-4" />
@@ -261,6 +267,10 @@ export default async function RemoteAdminsPage() {
                       <label className="grid gap-1 text-xs font-black text-[#173d42]/60">
                         البريد
                         <input name="email" type="email" defaultValue={admin.email} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm text-[#173d42]" />
+                      </label>
+                      <label className="grid gap-1 text-xs font-black text-[#173d42]/60">
+                        {"رقم واتساب التنبيهات"}
+                        <input name="whatsapp" dir="ltr" defaultValue={admin.whatsapp || ""} placeholder="+905xxxxxxxxx" className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-left text-sm text-[#173d42]" />
                       </label>
                       <label className="grid gap-1 text-xs font-black text-[#173d42]/60">
                         كلمة مرور جديدة اختيارية
