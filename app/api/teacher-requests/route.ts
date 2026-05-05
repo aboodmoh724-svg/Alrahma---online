@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { createSupervisionTask, logStudentFollowUpAction } from "@/lib/supervision";
+import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
 const ALLOWED_REQUEST_TYPES: TeacherRequestType[] = [
   "TEST_REQUEST",
@@ -62,6 +63,58 @@ function todayRange() {
   const end = new Date(start);
   end.setDate(end.getDate() + 1);
   return { start, end };
+}
+
+function instantEntryWhatsAppMessage(input: {
+  teacherName: string;
+  subject: string;
+  details: string;
+}) {
+  return [
+    "تنبيه عاجل",
+    "",
+    `وصل طلب دخول فوري من المعلم: ${input.teacherName}`,
+    `العنوان: ${input.subject}`,
+    "",
+    input.details,
+  ].join("\n");
+}
+
+async function notifyInstantEntryTarget(input: {
+  target: TeacherRequestTarget;
+  teacherName: string;
+  subject: string;
+  details: string;
+}) {
+  const users = await prisma.user.findMany({
+    where: {
+      studyMode: "REMOTE",
+      isActive: true,
+      whatsapp: { not: null },
+      ...(input.target === "ADMIN"
+        ? { role: "ADMIN", canAccessFinance: true }
+        : { role: "ADMIN", canAccessSupervision: true }),
+    },
+    select: { whatsapp: true },
+  });
+
+  const phones = Array.from(
+    new Set(
+      users
+        .map((user) => normalizeWhatsAppNumber(user.whatsapp || ""))
+        .filter((phone): phone is string => Boolean(phone))
+    )
+  );
+
+  await Promise.allSettled(
+    phones.map((phone) =>
+      sendWhatsAppText({
+        to: phone,
+        channel: "REMOTE",
+        body: instantEntryWhatsAppMessage(input),
+      })
+    )
+  );
 }
 
 async function getCurrentRemoteUser() {
@@ -260,7 +313,6 @@ export async function POST(req: Request) {
           teacherId: user.id,
           target,
           priority: "URGENT",
-          subject: { contains: "دخول فوري" },
           createdAt: { gte: start, lt: end },
         },
         select: { id: true },
@@ -288,15 +340,26 @@ export async function POST(req: Request) {
       include: requestIncludes(),
     });
 
-    await createSupervisionTask({
-      studentId: request.studentId,
-      createdById: user.id,
-      source: "TEACHER",
-      category: "TEACHER_REQUEST",
-      title: `طلب من المعلم: ${request.subject}`,
-      details: request.details,
-      triggerKey: `teacher-request:${request.id}`,
-    });
+    if (target === "SUPERVISION") {
+      await createSupervisionTask({
+        studentId: request.studentId,
+        createdById: user.id,
+        source: "TEACHER",
+        category: "TEACHER_REQUEST",
+        title: `\u0637\u0644\u0628 \u0645\u0646 \u0627\u0644\u0645\u0639\u0644\u0645: ${request.subject}`,
+        details: request.details,
+        triggerKey: `teacher-request:${request.id}`,
+      });
+    }
+
+    if (priority === "URGENT" && instantEntry) {
+      await notifyInstantEntryTarget({
+        target,
+        teacherName: user.fullName,
+        subject,
+        details,
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -323,6 +386,7 @@ export async function PATCH(req: Request) {
     const requestId = String(body.requestId || "").trim();
     const status = normalizeRequestStatus(body.status);
     const adminNote = String(body.adminNote || "").trim();
+    const transferToSupervision = Boolean(body.transferToSupervision);
 
     if (!requestId) {
       return NextResponse.json({ error: "الطلب مطلوب" }, { status: 400 });
@@ -355,13 +419,26 @@ export async function PATCH(req: Request) {
         id: existingRequest.id,
       },
       data: {
-        status,
+        status: transferToSupervision ? "NEW" : status,
         adminNote: adminNote || null,
         reviewedBy: user.id,
-        resolvedAt: status === "RESOLVED" || status === "REJECTED" ? new Date() : null,
+        target: transferToSupervision ? "SUPERVISION" : existingRequest.target,
+        resolvedAt: !transferToSupervision && (status === "RESOLVED" || status === "REJECTED") ? new Date() : null,
       },
       include: requestIncludes(),
     });
+
+    if (transferToSupervision) {
+      await createSupervisionTask({
+        studentId: updatedRequest.studentId,
+        createdById: user.id,
+        source: "ADMIN",
+        category: "TEACHER_REQUEST",
+        title: `\u0637\u0644\u0628 \u0645\u062d\u0648\u0644 \u0645\u0646 \u0627\u0644\u0625\u062f\u0627\u0631\u0629: ${updatedRequest.subject}`,
+        details: adminNote || updatedRequest.details,
+        triggerKey: `teacher-request-transfer:${updatedRequest.id}`,
+      });
+    }
 
     if (updatedRequest.studentId) {
       await logStudentFollowUpAction({

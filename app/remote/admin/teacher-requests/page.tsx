@@ -94,7 +94,7 @@ export default function RemoteAdminTeacherRequestsPage() {
   const [requests, setRequests] = useState<TeacherRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [statusFilter, setStatusFilter] = useState("NEW");
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [statusDrafts, setStatusDrafts] = useState<Record<string, TeacherRequest["status"]>>({});
 
@@ -127,30 +127,35 @@ export default function RemoteAdminTeacherRequestsPage() {
     fetchRequests();
   }, [fetchRequests]);
 
-  const handleSave = async (requestId: string) => {
+  const handleSave = async (
+    requestId: string,
+    options?: { note?: string; status?: TeacherRequest["status"]; transferToSupervision?: boolean }
+  ) => {
     try {
       setSubmittingId(requestId);
+      const finalStatus = options?.status || statusDrafts[requestId] || "RESOLVED";
       const response = await fetch("/api/teacher-requests", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           requestId,
-          status: statusDrafts[requestId],
-          adminNote: adminNotes[requestId] || "",
+          status: finalStatus,
+          adminNote: options?.note ?? adminNotes[requestId] ?? "",
+          transferToSupervision: Boolean(options?.transferToSupervision),
         }),
       });
       const data = await response.json();
 
       if (!response.ok) {
-        alert(data.error || "تعذر تحديث الطلب");
+        alert(data.error || "\u062a\u0639\u0630\u0631 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0637\u0644\u0628");
         return;
       }
 
-      await fetchRequests();
-      alert("تم تحديث الطلب");
+      setRequests((prev) => prev.filter((request) => request.id !== requestId));
+      alert(options?.transferToSupervision ? "\u062a\u0645 \u062a\u062d\u0648\u064a\u0644 \u0627\u0644\u0637\u0644\u0628 \u0625\u0644\u0649 \u0627\u0644\u0625\u0634\u0631\u0627\u0641" : "\u062a\u0645 \u062d\u0641\u0638 \u0627\u0644\u0625\u062c\u0631\u0627\u0621 \u0648\u0625\u063a\u0644\u0627\u0642 \u0627\u0644\u0637\u0644\u0628");
     } catch (error) {
       console.error("UPDATE ADMIN TEACHER REQUEST ERROR =>", error);
-      alert("حدث خطأ أثناء تحديث الطلب");
+      alert("\u062d\u062f\u062b \u062e\u0637\u0623 \u0623\u062b\u0646\u0627\u0621 \u062a\u062d\u062f\u064a\u062b \u0627\u0644\u0637\u0644\u0628");
     } finally {
       setSubmittingId(null);
     }
@@ -245,7 +250,63 @@ export default function RemoteAdminTeacherRequestsPage() {
                     {renderDetails(request.details)}
                   </p>
 
-                  <div className="mt-4 grid gap-4 lg:grid-cols-[220px_1fr_auto]">
+                  {request.priority === "URGENT" ? (
+                    <div className="mt-4 rounded-2xl border border-red-100 bg-white p-4">
+                      <p className="text-sm font-black text-red-800">إجراء سريع للطلب العاجل</p>
+                      <p className="mt-1 text-xs leading-6 text-[#1c2d31]/60">
+                        اكتب الإجراء المتخذ أو استخدم أحد الأزرار الجاهزة، وسيتم إغلاق الطلب وإخفاؤه من القائمة.
+                      </p>
+                      <textarea
+                        value={adminNotes[request.id] || ""}
+                        onChange={(event) =>
+                          setAdminNotes((prev) => ({
+                            ...prev,
+                            [request.id]: event.target.value,
+                          }))
+                        }
+                        placeholder="الإجراء المتخذ: تم دخول الحلقة، تم التواصل، أو أي ملاحظة مختصرة"
+                        className="mt-3 min-h-20 w-full rounded-xl border border-red-100 bg-white px-4 py-3 text-sm outline-none focus:border-red-300"
+                      />
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={submittingId === request.id}
+                          onClick={() => handleSave(request.id, { status: "RESOLVED", note: "تم الدخول إلى الحلقة ومتابعة الطلب." })}
+                          className="rounded-xl bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          تم الدخول إلى الحلقة
+                        </button>
+                        <button
+                          type="button"
+                          disabled={submittingId === request.id}
+                          onClick={() => handleSave(request.id, { status: "RESOLVED", note: "تم التواصل واتخاذ الإجراء المناسب." })}
+                          className="rounded-xl bg-[#173d42] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          تم التواصل
+                        </button>
+                        <button
+                          type="button"
+                          disabled={submittingId === request.id}
+                          onClick={() => handleSave(request.id, { status: "RESOLVED" })}
+                          className="rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                        >
+                          حفظ وإنهاء
+                        </button>
+                        {requestTarget === "ADMIN" ? (
+                          <button
+                            type="button"
+                            disabled={submittingId === request.id}
+                            onClick={() => handleSave(request.id, { status: "IN_REVIEW", transferToSupervision: true, note: adminNotes[request.id] || "محول من الإدارة إلى الإشراف للمتابعة." })}
+                            className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#173d42] disabled:opacity-60"
+                          >
+                            تحويل للإشراف
+                          </button>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className={`${request.priority === "URGENT" ? "hidden" : "mt-4 grid"} gap-4 lg:grid-cols-[220px_1fr_auto]`}>
                     <select
                       value={statusDrafts[request.id] || request.status}
                       onChange={(event) =>
