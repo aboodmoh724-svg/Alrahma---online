@@ -67,7 +67,8 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
         <div>
           <h2 className="text-lg font-black">طلب دخول فوري</h2>
           <p className="mt-1 text-sm leading-6 text-red-800/75">
-            عند الحاجة لدخول سريع إلى الحلقة، أرسل طلبًا عاجلًا يظهر للجهة المختارة مرة واحدة فقط في اليوم.
+            يستخدم هذا الزر عند الضرورة القصوى فقط لاستدعاء الإشراف أو الإدارة للدخول إلى الحلقة، ولا يستخدم بشكل متكرر.
+            للطلبات العادية أو المستعجلة غير الطارئة يرجى رفع طلب من صفحة الطلبات المعتادة.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -77,7 +78,11 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
             onClick={() => sendRequest("SUPERVISION")}
             className="rounded-full bg-red-700 px-4 py-3 text-sm font-black text-white disabled:opacity-60"
           >
-            {sentToday.SUPERVISION ? "تم إرسال طلب الإشراف اليوم" : sendingTarget === "SUPERVISION" ? "جارٍ الإرسال..." : "طلب الإشراف"}
+            {sentToday.SUPERVISION
+              ? "تم إرسال طلب الإشراف اليوم"
+              : sendingTarget === "SUPERVISION"
+                ? "جارٍ الإرسال..."
+                : "طلب الإشراف"}
           </button>
           <button
             type="button"
@@ -85,10 +90,19 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
             onClick={() => sendRequest("ADMIN")}
             className="rounded-full bg-[#173d42] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
           >
-            {sentToday.ADMIN ? "تم إرسال طلب الإدارة اليوم" : sendingTarget === "ADMIN" ? "جارٍ الإرسال..." : "طلب الإدارة"}
+            {sentToday.ADMIN
+              ? "تم إرسال طلب الإدارة اليوم"
+              : sendingTarget === "ADMIN"
+                ? "جارٍ الإرسال..."
+                : "طلب الإدارة"}
           </button>
         </div>
       </div>
+
+      <div className="mt-3 rounded-2xl border border-amber-100 bg-white px-4 py-3 text-sm leading-7 text-[#173d42]/75">
+        عند دخول ولي أمر أو وجود استفسار أو شكوى أو اعتراض يخص المنصة، يرجى توجيهه إلى رقم واتساب المنصة الرسمي، ولا يتم إدخاله إلى الحلقة إلا بتوجيه واضح من الإدارة أو الإشراف.
+      </div>
+
       <textarea
         value={note}
         onChange={(event) => setNote(event.target.value)}
