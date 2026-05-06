@@ -334,9 +334,12 @@ export default function RegistrationPage() {
                     setField("parentWhatsapp", parts.localNumber);
                   }}
                   inputClassName={inputClass}
+                  compactCountryPicker
                   required
                 />
-                <p className="mt-2 text-xs text-[#1c2d31]/55">اكتب رمز الدولة في الخانة الأولى، ثم رقم الهاتف بدون رمز الدولة.</p>
+                <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
+                  تركيا محددة افتراضيًا. اضغط على الرمز للبحث عن دولة أخرى، أو اكتب الرقم كاملًا مع الرمز الدولي.
+                </p>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">الإيميل الخاص بولي الأمر</label>
