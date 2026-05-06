@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -119,7 +119,7 @@ export default function RemoteAdminSupervisionTasksPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">مهام الإشراف</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               أنشئ مهمة للمشرفين، وستظهر مباشرة في المتابعة الإشرافية ضمن الجديدة ثم تتحرك حسب حالة المتابعة.
@@ -127,19 +127,19 @@ export default function RemoteAdminSupervisionTasksPage() {
           </div>
           <Link
             href="/remote/admin/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع إلى لوحة الإدارة
           </Link>
         </div>
 
-        <form onSubmit={createTask} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <form onSubmit={createTask} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <h2 className="text-2xl font-black text-[#1c2d31]">إضافة مهمة جديدة</h2>
           <div className="mt-4 grid gap-4 lg:grid-cols-[220px_260px_1fr]">
             <select
               value={formData.category}
               onChange={(event) => setFormData((prev) => ({ ...prev, category: event.target.value }))}
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+              className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
             >
               {CATEGORY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -150,7 +150,7 @@ export default function RemoteAdminSupervisionTasksPage() {
             <select
               value={formData.studentId}
               onChange={(event) => setFormData((prev) => ({ ...prev, studentId: event.target.value }))}
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+              className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
             >
               <option value="">بدون طالب محدد</option>
               {students.map((student) => (
@@ -163,7 +163,7 @@ export default function RemoteAdminSupervisionTasksPage() {
               value={formData.title}
               onChange={(event) => setFormData((prev) => ({ ...prev, title: event.target.value }))}
               placeholder="عنوان المهمة"
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+              className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
               required
             />
           </div>
@@ -171,45 +171,45 @@ export default function RemoteAdminSupervisionTasksPage() {
             value={formData.details}
             onChange={(event) => setFormData((prev) => ({ ...prev, details: event.target.value }))}
             placeholder="تفاصيل المهمة المطلوبة من المشرف"
-            className="mt-4 min-h-32 w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+            className="mt-4 min-h-32 w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
             required
           />
           <div className="mt-4 flex justify-end">
             <button
               type="submit"
               disabled={submitting}
-              className="rounded-xl bg-[#173d42] px-6 py-3 text-sm font-black text-white disabled:opacity-60"
+              className="rounded-xl bg-[#0a3f2a] px-6 py-3 text-sm font-black text-white disabled:opacity-60"
             >
               {submitting ? "جارٍ الإرسال..." : "إرسال للمشرفين"}
             </button>
           </div>
         </form>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <h2 className="text-2xl font-black text-[#1c2d31]">آخر المهام الإدارية</h2>
           {loading ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+            <div className="mt-5 rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
               جاري التحميل...
             </div>
           ) : tasks.length === 0 ? (
-            <div className="mt-5 rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+            <div className="mt-5 rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
               لا توجد مهام إدارية مرسلة للإشراف حتى الآن.
             </div>
           ) : (
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               {tasks.slice(0, 8).map((task) => (
-                <article key={task.id} className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                <article key={task.id} className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                    <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                       {STATUS_LABELS[task.status]}
                     </span>
                     {task.student ? (
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
                         {task.student.fullName}{task.student.studentCode ? ` - ${task.student.studentCode}` : ""}
                       </span>
                     ) : null}
                   </div>
-                  <h3 className="mt-3 text-lg font-black text-[#173d42]">{task.title}</h3>
+                  <h3 className="mt-3 text-lg font-black text-[#0a3f2a]">{task.title}</h3>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{task.details}</p>
                 </article>
               ))}

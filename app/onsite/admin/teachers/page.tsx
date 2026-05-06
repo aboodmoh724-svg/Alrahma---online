@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -187,7 +187,7 @@ export default function OnsiteAdminTeachersPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#1c2d31] md:text-3xl">
               إدارة المعلمين (حضوري)
@@ -199,14 +199,14 @@ export default function OnsiteAdminTeachersPage() {
 
           <Link
             href="/onsite/admin/dashboard"
-            className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+            className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35]"
           >
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-1">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-1">
             <h2 className="mb-4 text-lg font-black text-[#1c2d31]">
               إضافة معلم جديد
             </h2>
@@ -222,7 +222,7 @@ export default function OnsiteAdminTeachersPage() {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="أدخل اسم المعلم"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                   required
                 />
               </div>
@@ -237,7 +237,7 @@ export default function OnsiteAdminTeachersPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="example@test.com"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                   required
                 />
               </div>
@@ -252,7 +252,7 @@ export default function OnsiteAdminTeachersPage() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="أدخل كلمة المرور"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                   required
                 />
               </div>
@@ -267,21 +267,21 @@ export default function OnsiteAdminTeachersPage() {
                   onChange={(value) =>
                     setFormData((prev) => ({ ...prev, whatsapp: value }))
                   }
-                  inputClassName="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  inputClassName="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-2xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? "جارٍ الإضافة..." : "إضافة المعلم"}
               </button>
             </form>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-2">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-black text-[#1c2d31]">قائمة المعلمين</h2>
               <span className="text-sm font-bold text-[#1c2d31]/60">
@@ -290,18 +290,18 @@ export default function OnsiteAdminTeachersPage() {
             </div>
 
             {loading ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
             ) : teachers.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 لا يوجد معلمون حضوريون حتى الآن
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full overflow-hidden rounded-2xl">
                   <thead>
-                    <tr className="bg-[#fffaf2] text-right text-sm text-[#1c2d31]/70">
+                    <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
                       <th className="px-4 py-3 font-black">الاسم</th>
                       <th className="px-4 py-3 font-black">البريد</th>
                       <th className="px-4 py-3 font-black">واتساب</th>
@@ -313,7 +313,7 @@ export default function OnsiteAdminTeachersPage() {
                     {teachers.map((teacher) => (
                       <tr
                         key={teacher.id}
-                        className="border-b border-[#d9c8ad]/30 text-sm"
+                        className="border-b border-[#d8bf83]/30 text-sm"
                       >
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
                           {editingTeacherId === teacher.id ? (
@@ -326,7 +326,7 @@ export default function OnsiteAdminTeachersPage() {
                                   fullName: event.target.value,
                                 }))
                               }
-                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                              className="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                             />
                           ) : (
                             teacher.fullName
@@ -343,7 +343,7 @@ export default function OnsiteAdminTeachersPage() {
                                   email: event.target.value,
                                 }))
                               }
-                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                              className="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                             />
                           ) : (
                             teacher.email
@@ -359,7 +359,7 @@ export default function OnsiteAdminTeachersPage() {
                                   whatsapp: value,
                                 }))
                               }
-                              inputClassName="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                              inputClassName="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                             />
                           ) : (
                             teacher.whatsapp || "-"
@@ -383,7 +383,7 @@ export default function OnsiteAdminTeachersPage() {
                                 type="button"
                                 disabled={submitting}
                                 onClick={() => handleUpdateTeacher(teacher.id)}
-                                className="rounded-xl bg-[#1f6358] px-3 py-2 text-xs font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+                                className="rounded-xl bg-[#0f5a35] px-3 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
                               >
                                 حفظ
                               </button>
@@ -391,7 +391,7 @@ export default function OnsiteAdminTeachersPage() {
                                 type="button"
                                 disabled={submitting}
                                 onClick={() => setEditingTeacherId(null)}
-                                className="rounded-xl bg-white px-3 py-2 text-xs font-black text-[#1c2d31] ring-1 ring-[#d9c8ad] disabled:opacity-60"
+                                className="rounded-xl bg-white px-3 py-2 text-xs font-black text-[#1c2d31] ring-1 ring-[#d8bf83] disabled:opacity-60"
                               >
                                 إلغاء
                               </button>

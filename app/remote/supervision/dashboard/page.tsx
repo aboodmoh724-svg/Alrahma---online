@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
@@ -10,37 +10,37 @@ const sections = [
     href: "/remote/supervision/students",
     title: "الطلاب",
     description: "توزيع الطلاب على الحلقات والمعلمين ومراجعة غير المسكنين.",
-    tone: "bg-[#1f6358] text-white",
+    tone: "bg-[#0f5a35] text-white",
   },
   {
     href: "/remote/supervision/teachers",
     title: "المعلمون والحلقات",
     description: "فتح الحلقات والوصول السريع إلى روابطها ومواعيدها ومساراتها.",
-    tone: "bg-[#f8efe0] text-[#173d42]",
+    tone: "bg-[#f6eee7] text-[#0a3f2a]",
   },
   {
     href: "/remote/supervision/operations",
     title: "المتابعة الإشرافية",
     description: "طلبات المعلمين والمهام والزيارات وطلبات التسجيل في مكان واحد.",
-    tone: "bg-[#173d42] text-white",
+    tone: "bg-[#0a3f2a] text-white",
   },
   {
     href: "/remote/supervision/messages",
     title: "رسائل أولياء الأمور",
     description: "قوالب واتساب جاهزة للتعثر والغياب والتعميمات الإشرافية مع تعديل النص قبل الإرسال.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
     href: "/remote/supervision/conversations",
     title: "مراسلات التعليم اليومية",
     description: "محادثات ولي الأمر مع المعلم أو الإشراف داخل النظام، مع عرض الأسماء والرد من الجوال بسهولة.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/supervision/reports",
     title: "تقارير الطلاب",
     description: "إحصائيات عامة وتفاصيل كل طالب في صفحة واحدة سهلة القراءة.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
 ];
 
@@ -167,30 +167,30 @@ export default async function RemoteSupervisionDashboardPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
           <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
           <div className="relative max-w-4xl">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 لوحة الإشراف
               </p>
               <Link
                 href="/remote"
-                className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]"
+                className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a]"
               >
                 بوابات الدخول
               </Link>
               {supervisor?.canAccessFinance ? (
                 <Link
                   href="/remote/admin/dashboard"
-                  className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]"
+                  className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a]"
                 >
                   لوحة الإدارة
                 </Link>
               ) : null}
               <NotificationDropdown items={notificationItems} />
-              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
+              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4] disabled:opacity-60" />
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
               نرعى حروف القرآن في القلوب، حتى يصبح التعليم أثرًا وهداية.
@@ -204,29 +204,29 @@ export default async function RemoteSupervisionDashboardPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">الطلاب</p>
-            <p className="mt-2 text-4xl font-black text-[#173d42]">{studentsCount}</p>
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{studentsCount}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">المعلمون</p>
-            <p className="mt-2 text-4xl font-black text-[#173d42]">{teachersCount}</p>
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{teachersCount}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">الحلقات</p>
-            <p className="mt-2 text-4xl font-black text-[#173d42]">{circlesCount}</p>
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{circlesCount}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">طلبات المعلمين المفتوحة</p>
-            <p className="mt-2 text-4xl font-black text-[#1f6358]">{openTeacherRequestsCount}</p>
+            <p className="mt-2 text-4xl font-black text-[#0f5a35]">{openTeacherRequestsCount}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">طلبات بانتظار الإشراف</p>
-            <p className="mt-2 text-4xl font-black text-[#8a6335]">{forwardedRegistrationsCount}</p>
+            <p className="mt-2 text-4xl font-black text-[#8a661f]">{forwardedRegistrationsCount}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">المهام الإشرافية المفتوحة</p>
-            <p className="mt-2 text-4xl font-black text-[#8a6335]">{supervisionTasksCount}</p>
+            <p className="mt-2 text-4xl font-black text-[#8a661f]">{supervisionTasksCount}</p>
           </div>
         </section>
 

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -34,10 +34,10 @@ export default function DashboardSectionLink({
           setHidden(true);
         }
       }}
-      className={`relative min-h-48 overflow-hidden rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${tone}`}
+      className={`relative min-h-48 overflow-hidden rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d8bf83] transition hover:-translate-y-0.5 ${tone}`}
     >
       {badge !== null && badge > 0 && !hidden ? (
-        <span className="absolute left-5 top-5 rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white shadow-sm">
+        <span className="absolute left-5 top-5 rounded-full bg-[#bd8f2d] px-3 py-1 text-xs font-black text-white shadow-sm">
           +{badge}
         </span>
       ) : null}

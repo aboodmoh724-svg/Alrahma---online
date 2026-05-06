@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export default async function RemoteAdminStatisticsGeneralPage() {
@@ -44,19 +44,19 @@ export default async function RemoteAdminStatisticsGeneralPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">إحصائيات عامة</h1>
           </div>
-          <Link href="/remote/admin/dashboard" className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-sm font-black text-[#1c2d31]">
+          <Link href="/remote/admin/dashboard" className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-sm font-black text-[#1c2d31]">
             الرجوع إلى الإدارة
           </Link>
         </div>
 
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {cards.map(([label, value]) => (
-            <div key={label} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div key={label} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">{label}</p>
-              <p className="mt-2 text-4xl font-black text-[#173d42]">{value}</p>
+              <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{value}</p>
             </div>
           ))}
         </section>

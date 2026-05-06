@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import BrandLockup from "@/components/brand/BrandLockup";
 
 export default function OnsitePage() {
@@ -6,7 +6,7 @@ export default function OnsitePage() {
     <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6">
       <div className="mx-auto max-w-6xl">
         <div className="mb-4 flex items-center justify-between sm:mb-6">
-          <Link href="/" className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#c39a62]/15">
+          <Link href="/" className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#bd8f2d]/15">
             الرئيسية
           </Link>
           <span className="rounded-full bg-[#bd8f2d]/15 px-4 py-2 text-sm font-bold text-[#8a661f]">

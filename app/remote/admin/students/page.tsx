@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -407,7 +407,7 @@ export default function RemoteAdminStudentsPage() {
                   <tbody>
                     {students.map((student) => (
                       <tr key={student.id} className="border-b border-gray-100 text-sm">
-                        <td className="px-4 py-3 font-bold text-[#1f6358]">
+                        <td className="px-4 py-3 font-bold text-[#0f5a35]">
                           {student.studentCode || "-"}
                         </td>
                         <td className="px-4 py-3 font-medium text-gray-900">

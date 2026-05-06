@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -222,7 +222,7 @@ export default function OnsiteAdminCirclesPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#1c2d31] md:text-3xl">
               إدارة الحلقات (حضوري)
@@ -233,14 +233,14 @@ export default function OnsiteAdminCirclesPage() {
           </div>
           <Link
             href="/onsite/admin/dashboard"
-            className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+            className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35]"
           >
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-1">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-1">
             <h2 className="mb-4 text-lg font-black text-[#1c2d31]">
               إضافة حلقة جديدة
             </h2>
@@ -256,7 +256,7 @@ export default function OnsiteAdminCirclesPage() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="مثال: حلقة الفجر"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                   required
                 />
               </div>
@@ -269,7 +269,7 @@ export default function OnsiteAdminCirclesPage() {
                   name="teacherId"
                   value={formData.teacherId}
                   onChange={handleChange}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                 >
                   <option value="">بدون معلم</option>
                   {teacherOptions.map((teacher) => (
@@ -288,7 +288,7 @@ export default function OnsiteAdminCirclesPage() {
                   name="track"
                   value={formData.track}
                   onChange={handleChange}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                 >
                   {onsiteTrackOptions.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -308,21 +308,21 @@ export default function OnsiteAdminCirclesPage() {
                   value={formData.zoomUrl}
                   onChange={handleChange}
                   placeholder="رابط داخلي أو زوم إن وجد"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-2xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? "جاري الإضافة..." : "إضافة الحلقة"}
               </button>
             </form>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-2">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-2">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-black text-[#1c2d31]">قائمة الحلقات</h2>
               <span className="text-sm font-bold text-[#1c2d31]/60">
@@ -331,18 +331,18 @@ export default function OnsiteAdminCirclesPage() {
             </div>
 
             {loading ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
             ) : circles.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 لا توجد حلقات حضورية حتى الآن
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full overflow-hidden rounded-2xl">
                   <thead>
-                    <tr className="bg-[#fffaf2] text-right text-sm text-[#1c2d31]/70">
+                    <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
                       <th className="px-4 py-3 font-black">الحلقة</th>
                       <th className="px-4 py-3 font-black">المسار</th>
                       <th className="px-4 py-3 font-black">المعلم</th>
@@ -354,7 +354,7 @@ export default function OnsiteAdminCirclesPage() {
                     {circles.map((circle) => (
                       <tr
                         key={circle.id}
-                        className="border-b border-[#d9c8ad]/30 text-sm"
+                        className="border-b border-[#d8bf83]/30 text-sm"
                       >
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
                           {editingCircleId === circle.id ? (
@@ -366,7 +366,7 @@ export default function OnsiteAdminCirclesPage() {
                                   name: event.target.value,
                                 }))
                               }
-                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                              className="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                             />
                           ) : (
                             circle.name
@@ -378,7 +378,7 @@ export default function OnsiteAdminCirclesPage() {
                             onChange={(event) =>
                               handleTrackChange(circle.id, event.target.value)
                             }
-                            className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                           >
                             {onsiteTrackOptions.map((option) => (
                               <option key={option.value} value={option.value}>
@@ -393,7 +393,7 @@ export default function OnsiteAdminCirclesPage() {
                             onChange={(event) =>
                               handleTeacherChange(circle.id, event.target.value)
                             }
-                            className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                           >
                             <option value="">بدون معلم</option>
                             {teacherOptions.map((teacher) => (
@@ -419,13 +419,13 @@ export default function OnsiteAdminCirclesPage() {
                                   }))
                                 }
                                 placeholder="رابط الحلقة"
-                                className="w-48 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                                className="w-48 rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                               />
                               <button
                                 type="button"
                                 disabled={submitting}
                                 onClick={() => handleUpdateCircle(circle.id)}
-                                className="rounded-xl bg-[#1f6358] px-3 py-2 text-xs font-black text-white disabled:opacity-60"
+                                className="rounded-xl bg-[#0f5a35] px-3 py-2 text-xs font-black text-white disabled:opacity-60"
                               >
                                 حفظ
                               </button>
@@ -433,7 +433,7 @@ export default function OnsiteAdminCirclesPage() {
                                 type="button"
                                 disabled={submitting}
                                 onClick={() => setEditingCircleId(null)}
-                                className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs font-black text-[#1c2d31] disabled:opacity-60"
+                                className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs font-black text-[#1c2d31] disabled:opacity-60"
                               >
                                 إلغاء
                               </button>

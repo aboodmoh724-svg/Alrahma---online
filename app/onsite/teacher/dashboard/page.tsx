@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import QuickAttendanceButtons from "@/components/reports/QuickAttendanceButtons";
@@ -226,10 +226,10 @@ export default async function OnsiteTeacherDashboardPage({
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[300px_1fr]">
         <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
-          <section className="rounded-[2rem] bg-[#173d42] p-5 text-white shadow-lg">
+          <section className="rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-lg">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-sm font-bold text-[#f1d39d]">لوحة المعلم</p>
-              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
+              <p className="text-sm font-bold text-[#f2d18a]">لوحة المعلم</p>
+              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4] disabled:opacity-60" />
             </div>
             <h2 className="mt-2 text-2xl font-black">{teacher.fullName}</h2>
             <p className="mt-2 text-sm leading-7 text-white/70">
@@ -237,11 +237,11 @@ export default async function OnsiteTeacherDashboardPage({
             </p>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
             <h3 className="mb-3 text-sm font-black text-[#1c2d31]">عرض حلقاتي</h3>
             <div className="space-y-2">
               {circles.length === 0 ? (
-                <div className="rounded-2xl bg-[#f7f0e6] p-3 text-sm text-[#1c2d31]/60">
+                <div className="rounded-2xl bg-[#f6eee7] p-3 text-sm text-[#1c2d31]/60">
                   لم يتم تعيين حلقات لك حتى الآن.
                 </div>
               ) : (
@@ -254,8 +254,8 @@ export default async function OnsiteTeacherDashboardPage({
                       href={`/onsite/teacher/dashboard?circleId=${circle.id}`}
                       className={`block rounded-2xl p-3 text-sm transition ${
                         isActive
-                          ? "bg-[#1f6358] text-white"
-                          : "bg-[#fffaf2] text-[#1c2d31] hover:bg-white"
+                          ? "bg-[#0f5a35] text-white"
+                          : "bg-[#fffaf4] text-[#1c2d31] hover:bg-white"
                       }`}
                     >
                       <span className="block font-black">{circle.name}</span>
@@ -273,30 +273,30 @@ export default async function OnsiteTeacherDashboardPage({
             </div>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
             <h3 className="mb-3 text-sm font-black text-[#1c2d31]">القائمة</h3>
             <div className="space-y-2 text-sm font-bold">
               <a
                 href="#teacher-data"
-                className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
               >
                 بيانات المعلم
               </a>
               <a
                 href="#students-list"
-                className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
               >
                 طلاب الحلقة
               </a>
               <a
                 href="#important-files"
-                className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
               >
                 ملفات مهمة
               </a>
               <a
                 href="#track-files"
-                className="block rounded-2xl bg-[#fffaf2] px-4 py-3 text-[#1c2d31] hover:bg-white"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
               >
                 ملفات المسارات
               </a>
@@ -305,12 +305,12 @@ export default async function OnsiteTeacherDashboardPage({
         </aside>
 
         <div className="space-y-6">
-          <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
-            <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+          <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+            <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
             <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
             <div className="relative grid gap-6 xl:grid-cols-[1.2fr_0.8fr] xl:items-center">
               <div>
-                <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+                <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                   أهلا وسهلا بك الأستاذ {teacher.fullName}
                 </p>
                 <h1 className="mt-5 max-w-3xl text-3xl font-black leading-tight md:text-5xl">
@@ -328,7 +328,7 @@ export default async function OnsiteTeacherDashboardPage({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   href={addReportHref}
-                  className="rounded-[1.5rem] bg-[#c39a62] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#b0844f]"
+                  className="rounded-[1.5rem] bg-[#bd8f2d] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#a97d25]"
                 >
                   إضافة تقرير
                 </Link>
@@ -337,7 +337,7 @@ export default async function OnsiteTeacherDashboardPage({
                     href={latestCircleLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-[1.5rem] bg-white px-5 py-4 text-center text-sm font-black text-[#173d42] transition hover:bg-[#f7f0e6]"
+                    className="rounded-[1.5rem] bg-white px-5 py-4 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#f6eee7]"
                   >
                     فتح رابط الحلقة
                   </a>
@@ -351,30 +351,30 @@ export default async function OnsiteTeacherDashboardPage({
           </section>
 
           <section id="teacher-data" className="grid gap-4 md:grid-cols-4">
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">عدد الطلاب</p>
-              <p className="mt-2 text-4xl font-black text-[#173d42]">
+              <p className="mt-2 text-4xl font-black text-[#0a3f2a]">
                 {studentsCount}
               </p>
             </div>
 
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">تقارير اليوم</p>
-              <p className="mt-2 text-4xl font-black text-[#1f6358]">
+              <p className="mt-2 text-4xl font-black text-[#0f5a35]">
                 {completedTodayCount} / {studentsCount}
               </p>
             </div>
 
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">اسم الحلقة</p>
-              <p className="mt-2 text-xl font-black text-[#c39a62]">
+              <p className="mt-2 text-xl font-black text-[#bd8f2d]">
                 {activeCircle?.name || "لم تحدد بعد"}
               </p>
             </div>
 
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">مسار الحلقة</p>
-              <p className="mt-2 text-xl font-black text-[#173d42]">
+              <p className="mt-2 text-xl font-black text-[#0a3f2a]">
                 {trackLabel(activeCircle?.track || null)}
               </p>
               <p className="mt-2 text-sm font-bold text-[#1c2d31]/55">
@@ -385,7 +385,7 @@ export default async function OnsiteTeacherDashboardPage({
 
           <section
             id="students-list"
-            className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+            className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
           >
             <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
               <div>
@@ -397,13 +397,13 @@ export default async function OnsiteTeacherDashboardPage({
                   بعد تسجيل حاضر أو غائب ينتقل التعديل إلى واجهة الإدارة فقط.
                 </p>
               </div>
-              <span className="rounded-full bg-[#1f6358]/10 px-4 py-2 text-sm font-black text-[#1f6358]">
+              <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
                 {studentsCount} طالب
               </span>
             </div>
 
             {students.length === 0 ? (
-              <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
                 لا يوجد طلاب في هذه الحلقة حتى الآن
               </div>
             ) : (
@@ -418,7 +418,7 @@ export default async function OnsiteTeacherDashboardPage({
                   return (
                     <div
                       key={student.id}
-                      className="grid gap-4 rounded-[1.8rem] border border-[#d9c8ad]/75 bg-[#fffaf2] p-4 md:grid-cols-[1fr_auto] md:items-center"
+                      className="grid gap-4 rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4 md:grid-cols-[1fr_auto] md:items-center"
                     >
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -477,13 +477,13 @@ export default async function OnsiteTeacherDashboardPage({
 
                         <Link
                           href={studentReportHref}
-                          className="rounded-xl bg-[#1f6358] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#173d42]"
+                          className="rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
                         >
                           {todayReport ? "إضافة تقرير آخر" : "إضافة تقرير"}
                         </Link>
                         <Link
                           href={`/onsite/teacher/students/${student.id}/history`}
-                          className="rounded-xl border border-[#d9c8ad] px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                          className="rounded-xl border border-[#d8bf83] px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-white"
                         >
                           سجل الطالب
                         </Link>
@@ -496,7 +496,7 @@ export default async function OnsiteTeacherDashboardPage({
           </section>
 
           <section id="important-files" className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <h2 className="text-xl font-black text-[#1c2d31]">ملفات مهمة</h2>
               <p className="mt-2 text-sm leading-7 text-[#1c2d31]/58">
                 سنضيف هنا ملفات آلية سير الحلقة والملفات التشغيلية التي يحتاجها المعلم.
@@ -504,7 +504,7 @@ export default async function OnsiteTeacherDashboardPage({
             </div>
             <div
               id="track-files"
-              className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+              className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
             >
               <h2 className="text-xl font-black text-[#1c2d31]">ملفات المسارات</h2>
               <p className="mt-2 text-sm leading-7 text-[#1c2d31]/58">
@@ -512,7 +512,7 @@ export default async function OnsiteTeacherDashboardPage({
               </p>
               <div className="mt-4 space-y-2">
                 {trackResources.length === 0 ? (
-                  <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                  <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#1c2d31]/60">
                     لا توجد ملفات لهذا المسار حتى الآن.
                   </p>
                 ) : (
@@ -522,7 +522,7 @@ export default async function OnsiteTeacherDashboardPage({
                       href={resource.fileUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="block rounded-2xl bg-[#fffaf2] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                      className="block rounded-2xl bg-[#fffaf4] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
                     >
                       {resource.title}
                     </a>

@@ -1,4 +1,4 @@
-const supportPhoneDisplay = "+44 7366 520921";
+﻿const supportPhoneDisplay = "+44 7366 520921";
 const supportPhoneForWhatsApp = "447366520921";
 
 type PlatformWhatsAppSupportProps = {
@@ -14,7 +14,7 @@ export default function PlatformWhatsAppSupport({
 
   return (
     <section
-      className={`rounded-[1.5rem] border border-[#d9c8ad] bg-[#fffaf2] text-[#1c2d31] shadow-sm ${
+      className={`rounded-[1.5rem] border border-[#d8bf83] bg-[#fffaf4] text-[#1c2d31] shadow-sm ${
         compact ? "p-4" : "p-4 sm:p-5"
       }`}
     >
@@ -26,7 +26,7 @@ export default function PlatformWhatsAppSupport({
         }`}
       >
         <div>
-          <p className="text-sm font-black text-[#173d42]">الدعم عبر واتساب</p>
+          <p className="text-sm font-black text-[#0a3f2a]">الدعم عبر واتساب</p>
           <p className="mt-1 text-sm leading-7 text-[#1c2d31]/65">
             في حال وجود أي مشكلة في التسجيل أو أي استفسار يمكنك التواصل مباشرة
             مع رقم المنصة.
@@ -37,7 +37,7 @@ export default function PlatformWhatsAppSupport({
           target="_blank"
           rel="noreferrer"
           dir="ltr"
-          className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42]"
+          className="inline-flex shrink-0 items-center justify-center rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a]"
         >
           WhatsApp {supportPhoneDisplay}
         </a>

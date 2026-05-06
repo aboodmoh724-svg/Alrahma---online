@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -286,7 +286,7 @@ export default function RemoteAdminReportsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">قسم التقارير</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               ابحث باسم الطالب أو رقم الطالب لعرض ملخص مستواه، ثم أرسل لولي الأمر رسالة
@@ -295,13 +295,13 @@ export default function RemoteAdminReportsPage() {
           </div>
           <Link
             href={dashboardHref}
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <label className="mb-2 block text-sm font-black text-[#1c2d31]">
             البحث عن طالب
           </label>
@@ -310,13 +310,13 @@ export default function RemoteAdminReportsPage() {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="اكتب اسم الطالب أو رقمه مثل 1001"
-              className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
             />
             {search ? (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white transition hover:bg-[#1f6358]"
+                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#0a3f2a] text-sm font-black text-white transition hover:bg-[#0f5a35]"
                 aria-label="مسح اختيار الطالب"
               >
                 ×
@@ -326,16 +326,16 @@ export default function RemoteAdminReportsPage() {
         </section>
 
         {loading ? (
-          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
+          <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
             جاري تحميل ملخصات الطلاب...
           </div>
         ) : summaries.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
+          <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
             لا توجد تقارير حتى الآن.
           </div>
         ) : (
           <div className="grid gap-5 lg:grid-cols-[360px_1fr]">
-            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="font-black text-[#1c2d31]">الطلاب</h2>
                 <span className="text-sm font-bold text-[#1c2d31]/55">
@@ -345,7 +345,7 @@ export default function RemoteAdminReportsPage() {
 
               <div className="max-h-[640px] space-y-2 overflow-y-auto pl-1">
                 {filteredSummaries.length === 0 ? (
-                  <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                  <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#1c2d31]/60">
                     لا يوجد طالب مطابق للبحث.
                   </p>
                 ) : (
@@ -356,8 +356,8 @@ export default function RemoteAdminReportsPage() {
                       onClick={() => setSearch(summary.studentCode)}
                       className={`w-full rounded-2xl p-4 text-right transition ${
                         selectedSummary?.id === summary.id
-                          ? "bg-[#1f6358] text-white"
-                          : "bg-[#fffaf2] text-[#1c2d31] hover:bg-white"
+                          ? "bg-[#0f5a35] text-white"
+                          : "bg-[#fffaf4] text-[#1c2d31] hover:bg-white"
                       }`}
                     >
                       <span className="block font-black">{summary.fullName}</span>
@@ -372,8 +372,8 @@ export default function RemoteAdminReportsPage() {
 
             {selectedSummary ? (
               <section className="space-y-5">
-                <div className="rounded-[2rem] bg-[#173d42] p-6 text-white shadow-lg">
-                  <p className="text-sm font-bold text-[#f1d39d]">
+                <div className="rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-lg">
+                  <p className="text-sm font-bold text-[#f2d18a]">
                     {selectedSummary.studentCode}
                   </p>
                   <h2 className="mt-2 text-3xl font-black">
@@ -382,51 +382,51 @@ export default function RemoteAdminReportsPage() {
                   <p className="mt-3 text-sm leading-7 text-white/72">
                     المعلم: {selectedSummary.teacherName} - الحلقة: {selectedSummary.circleName}
                   </p>
-                  <div className="mt-5 inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+                  <div className="mt-5 inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                     {getStudentLevel(selectedSummary)}
                   </div>
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <p className="text-sm font-bold text-[#1c2d31]/55">أيام حافظ</p>
-                    <p className="mt-2 text-4xl font-black text-[#1f6358]">
+                    <p className="mt-2 text-4xl font-black text-[#0f5a35]">
                       {selectedSummary.memorizedCount}
                     </p>
                   </div>
-                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <p className="text-sm font-bold text-[#1c2d31]/55">أيام غير حافظ</p>
-                    <p className="mt-2 text-4xl font-black text-[#c39a62]">
+                    <p className="mt-2 text-4xl font-black text-[#bd8f2d]">
                       {selectedSummary.notMemorizedCount}
                     </p>
                   </div>
-                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <p className="text-sm font-bold text-[#1c2d31]/55">أيام غياب</p>
-                    <p className="mt-2 text-4xl font-black text-[#173d42]">
+                    <p className="mt-2 text-4xl font-black text-[#0a3f2a]">
                       {selectedSummary.absentCount}
                     </p>
                   </div>
-                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <p className="text-sm font-bold text-[#1c2d31]/55">أيام حضور</p>
-                    <p className="mt-2 text-4xl font-black text-[#1f6358]">
+                    <p className="mt-2 text-4xl font-black text-[#0f5a35]">
                       {selectedSummary.presentCount}
                     </p>
                   </div>
-                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <p className="text-sm font-bold text-[#1c2d31]/55">إجمالي الصفحات</p>
-                    <p className="mt-2 text-4xl font-black text-[#173d42]">
+                    <p className="mt-2 text-4xl font-black text-[#0a3f2a]">
                       {selectedSummary.pagesTotal}
                     </p>
                   </div>
-                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <p className="text-sm font-bold text-[#1c2d31]/55">عدد التقارير</p>
-                    <p className="mt-2 text-4xl font-black text-[#c39a62]">
+                    <p className="mt-2 text-4xl font-black text-[#bd8f2d]">
                       {selectedSummary.reports.length}
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                   <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                     <div>
                       <h3 className="text-xl font-black text-[#1c2d31]">
@@ -441,7 +441,7 @@ export default function RemoteAdminReportsPage() {
                       <span className="rounded-full bg-amber-100 px-3 py-2 text-amber-800">
                         غياب مسجل: {selectedSummary.absentCount}
                       </span>
-                      <span className="rounded-full bg-[#eef7f5] px-3 py-2 text-[#1f6358]">
+                      <span className="rounded-full bg-[#edf6ee] px-3 py-2 text-[#0f5a35]">
                         تعثر مسجل: {selectedSummary.notMemorizedCount}
                       </span>
                     </div>
@@ -452,7 +452,7 @@ export default function RemoteAdminReportsPage() {
                       type="button"
                       onClick={() => sendParentMessage("ABSENCE_REPEAT")}
                       disabled={sendingType !== null || selectedSummary.absentCount <= 1}
-                      className="rounded-2xl bg-[#173d42] px-4 py-4 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                      className="rounded-2xl bg-[#0a3f2a] px-4 py-4 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       {sendingType === "ABSENCE_REPEAT"
                         ? "جارٍ إرسال رسالة الغياب..."
@@ -462,7 +462,7 @@ export default function RemoteAdminReportsPage() {
                       type="button"
                       onClick={() => sendParentMessage("STRUGGLE_REPEAT")}
                       disabled={sendingType !== null || selectedSummary.notMemorizedCount <= 1}
-                      className="rounded-2xl bg-[#1f6358] px-4 py-4 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                      className="rounded-2xl bg-[#0f5a35] px-4 py-4 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
                     >
                       {sendingType === "STRUGGLE_REPEAT"
                         ? "جارٍ إرسال رسالة التعثر..."
@@ -470,7 +470,7 @@ export default function RemoteAdminReportsPage() {
                     </button>
                   </div>
 
-                  <div className="mt-4 rounded-[1.5rem] border border-[#d9c8ad] bg-[#fffaf2] p-4">
+                  <div className="mt-4 rounded-[1.5rem] border border-[#d8bf83] bg-[#fffaf4] p-4">
                     <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                       رسالة خاصة لولي الأمر
                     </label>
@@ -479,7 +479,7 @@ export default function RemoteAdminReportsPage() {
                       onChange={(event) => setCustomMessage(event.target.value)}
                       rows={5}
                       placeholder="اكتب هنا رسالة خاصة لهذا الطالب، وسيتم إضافة ختم الإدارة تلقائيًا في النهاية."
-                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+                      className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
                     />
                     <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <p className="text-xs leading-6 text-[#1c2d31]/55">
@@ -490,7 +490,7 @@ export default function RemoteAdminReportsPage() {
                         type="button"
                         onClick={() => sendParentMessage("CUSTOM")}
                         disabled={sendingType !== null || !customMessage.trim()}
-                        className="rounded-2xl bg-[#c39a62] px-5 py-3 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+                        className="rounded-2xl bg-[#bd8f2d] px-5 py-3 text-sm font-black text-white transition hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
                       >
                         {sendingType === "CUSTOM"
                           ? "جارٍ إرسال الرسالة..."
@@ -512,7 +512,7 @@ export default function RemoteAdminReportsPage() {
                   ) : null}
                 </div>
 
-                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                   <h3 className="mb-4 text-xl font-black text-[#1c2d31]">
                     آخر التقارير المختصرة
                   </h3>
@@ -520,7 +520,7 @@ export default function RemoteAdminReportsPage() {
                     {selectedSummary.reports.slice(0, 8).map((report) => (
                       <div
                         key={report.id}
-                        className="rounded-2xl border border-[#d9c8ad]/70 bg-[#fffaf2] p-4"
+                        className="rounded-2xl border border-[#d8bf83]/70 bg-[#fffaf4] p-4"
                       >
                         <div className="flex flex-wrap items-center justify-between gap-2">
                           <p className="font-black text-[#1c2d31]">

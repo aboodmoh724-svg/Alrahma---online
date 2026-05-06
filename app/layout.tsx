@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import { getAppBaseUrl } from "@/lib/app-url";
 import "./globals.css";
 
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f7f0e6",
+  themeColor: "#f6eee7",
   colorScheme: "light",
 };
 

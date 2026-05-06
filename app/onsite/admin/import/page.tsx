@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 
@@ -320,20 +320,20 @@ export default function OnsiteAdminImportPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-4xl space-y-4">
-        <section className="rounded-[2rem] bg-[#173d42] p-6 text-white shadow-xl">
-          <p className="text-sm font-bold text-[#f1d39d]">الإدارة (حضوري)</p>
+        <section className="rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-xl">
+          <p className="text-sm font-bold text-[#f2d18a]">الإدارة (حضوري)</p>
           <h1 className="mt-2 text-3xl font-black">استيراد الطلاب من Excel</h1>
           <p className="mt-2 text-sm leading-7 text-white/72">
             ارفع ملف Excel ثم راجع عدد الصفوف، وبعدها نفّذ الاستيراد.
           </p>
         </section>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
-          <p className="whitespace-pre-line rounded-2xl bg-[#fffaf2] p-4 text-sm leading-7 text-[#1c2d31]/75 ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+          <p className="whitespace-pre-line rounded-2xl bg-[#fffaf4] p-4 text-sm leading-7 text-[#1c2d31]/75 ring-1 ring-[#d8bf83]">
             {helpText}
           </p>
 
-          <div className="mt-4 rounded-[2rem] bg-white p-4 ring-1 ring-[#d9c8ad]">
+          <div className="mt-4 rounded-[2rem] bg-white p-4 ring-1 ring-[#d8bf83]">
             <p className="text-sm font-black text-[#1c2d31]">المعلم الافتراضي</p>
             <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
               يستخدم عندما لا يحتوي الصف على teacherEmail أو لا يتم العثور على المعلم.
@@ -341,7 +341,7 @@ export default function OnsiteAdminImportPage() {
             <select
               value={fallbackTeacherId}
               onChange={(e) => setFallbackTeacherId(e.target.value)}
-              className="mt-3 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="mt-3 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
               disabled={teachers.length === 0}
             >
               {teachers.length === 0 ? (
@@ -363,13 +363,13 @@ export default function OnsiteAdminImportPage() {
                 const f = e.target.files?.[0];
                 if (f) parseFile(f);
               }}
-              className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm"
             />
             <button
               type="button"
               onClick={importRows}
               disabled={result.status !== "ready"}
-              className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
             >
               بدء الاستيراد
             </button>
@@ -382,28 +382,28 @@ export default function OnsiteAdminImportPage() {
           ) : null}
 
           {result.status === "ready" ? (
-            <div className="mt-4 space-y-3 rounded-[2rem] bg-white p-4 ring-1 ring-[#d9c8ad]">
+            <div className="mt-4 space-y-3 rounded-[2rem] bg-white p-4 ring-1 ring-[#d8bf83]">
               <p className="text-sm font-black text-[#1c2d31]">
                 ملخص قراءة الملف
               </p>
               <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm ring-1 ring-[#d9c8ad]">
+                <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm ring-1 ring-[#d8bf83]">
                   <span className="font-black">إجمالي الصفوف:</span>{" "}
                   {result.meta.totalRows}
                 </div>
-                <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm ring-1 ring-[#d9c8ad]">
+                <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm ring-1 ring-[#d8bf83]">
                   <span className="font-black">صف العناوين (تلقائي):</span>{" "}
                   {result.meta.detectedHeaderRowIndex + 1}
                 </div>
-                <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm ring-1 ring-[#d9c8ad]">
+                <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm ring-1 ring-[#d8bf83]">
                   <span className="font-black">طلاب مستخرجين:</span>{" "}
                   {result.rows.length}
                 </div>
               </div>
 
-              <div className="overflow-x-auto rounded-2xl ring-1 ring-[#d9c8ad]">
+              <div className="overflow-x-auto rounded-2xl ring-1 ring-[#d8bf83]">
                 <table className="min-w-full text-right text-sm">
-                  <thead className="bg-[#173d42] text-white">
+                  <thead className="bg-[#0a3f2a] text-white">
                     <tr>
                       {result.meta.headers.map((h) => (
                         <th key={h} className="px-3 py-2 font-black">
@@ -414,7 +414,7 @@ export default function OnsiteAdminImportPage() {
                   </thead>
                   <tbody className="bg-white">
                     {result.meta.preview.map((row, idx) => (
-                      <tr key={idx} className="border-t border-[#d9c8ad]/40">
+                      <tr key={idx} className="border-t border-[#d8bf83]/40">
                         {row.map((cell, cidx) => (
                           <td key={cidx} className="px-3 py-2 text-[#1c2d31]/75">
                             {cell || "-"}
@@ -458,15 +458,15 @@ export default function OnsiteAdminImportPage() {
           ) : null}
 
           <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">الصفوف</p>
-              <p className="mt-2 text-3xl font-black text-[#173d42]">
+              <p className="mt-2 text-3xl font-black text-[#0a3f2a]">
                 {rowsCount}
               </p>
             </div>
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">تم استيراد</p>
-              <p className="mt-2 text-3xl font-black text-[#1f6358]">
+              <p className="mt-2 text-3xl font-black text-[#0f5a35]">
                 {result.status === "importing"
                   ? result.imported
                   : result.status === "done"
@@ -474,7 +474,7 @@ export default function OnsiteAdminImportPage() {
                     : 0}
               </p>
             </div>
-            <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+            <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">فشل</p>
               <p className="mt-2 text-3xl font-black text-amber-700">
                 {result.status === "importing"

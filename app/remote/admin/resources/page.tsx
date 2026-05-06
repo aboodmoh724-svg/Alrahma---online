@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -210,18 +210,18 @@ export default function RemoteAdminResourcesPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">إدارة الملفات</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               من هنا يمكنك تغيير ملف التعليمات الخاص بفورم التسجيل، ورفع ملفات مخصصة لكل معلم عن بعد.
             </p>
           </div>
-          <Link href="/remote/admin/dashboard" className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]">
+          <Link href="/remote/admin/dashboard" className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]">
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <form onSubmit={handleRegistrationSubmit} className="space-y-4">
               <div>
@@ -232,22 +232,22 @@ export default function RemoteAdminResourcesPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">عنوان الملف</label>
-                <input value={registrationTitle} onChange={(e) => setRegistrationTitle(e.target.value)} className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-right" required />
+                <input value={registrationTitle} onChange={(e) => setRegistrationTitle(e.target.value)} className="w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-right" required />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">وصف مختصر</label>
-                <textarea value={registrationDescription} onChange={(e) => setRegistrationDescription(e.target.value)} rows={3} className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-right" />
+                <textarea value={registrationDescription} onChange={(e) => setRegistrationDescription(e.target.value)} rows={3} className="w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-right" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">الملف الجديد</label>
-                <input type="file" accept="application/pdf,.pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-5 text-sm" required />
+                <input type="file" accept="application/pdf,.pdf" onChange={(e) => setRegistrationFile(e.target.files?.[0] || null)} className="w-full rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffaf4] px-4 py-5 text-sm" required />
               </div>
-              <button disabled={submittingRegistrationFile} className="rounded-2xl bg-[#8a6335] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
+              <button disabled={submittingRegistrationFile} className="rounded-2xl bg-[#8a661f] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
                 {submittingRegistrationFile ? "جاري التحديث..." : "تحديث ملف التعليمات"}
               </button>
             </form>
 
-            <div className="rounded-2xl bg-[#fffaf2] p-4">
+            <div className="rounded-2xl bg-[#fffaf4] p-4">
               <h3 className="text-lg font-black text-[#1c2d31]">الملف الحالي</h3>
               {loading ? (
                 <p className="mt-3 text-sm text-[#1c2d31]/60">جاري التحميل...</p>
@@ -260,7 +260,7 @@ export default function RemoteAdminResourcesPage() {
                     ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <a href={registrationResource.fileUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#173d42] px-4 py-3 text-sm font-black text-white">
+                    <a href={registrationResource.fileUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0a3f2a] px-4 py-3 text-sm font-black text-white">
                       فتح الملف الحالي
                     </a>
                     <button
@@ -281,12 +281,12 @@ export default function RemoteAdminResourcesPage() {
         </section>
 
         <section className="grid gap-6 lg:grid-cols-[380px_1fr]">
-          <form onSubmit={handleTeacherSubmit} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <form onSubmit={handleTeacherSubmit} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <h2 className="mb-4 text-xl font-black text-[#1c2d31]">رفع ملف لمعلم</h2>
             <div className="space-y-4">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">المعلم</label>
-                <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-right" required>
+                <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-right" required>
                   <option value="">اختر المعلم</option>
                   {teachers.map((teacher) => (
                     <option key={teacher.id} value={teacher.id}>
@@ -297,15 +297,15 @@ export default function RemoteAdminResourcesPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">عنوان الملف</label>
-                <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-right" required />
+                <input value={title} onChange={(e) => setTitle(e.target.value)} className="w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-right" required />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">وصف مختصر</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-right" />
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-right" />
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">المسار</label>
-                <select value={track} onChange={(e) => setTrack(e.target.value)} className="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3">
+                <select value={track} onChange={(e) => setTrack(e.target.value)} className="w-full rounded-2xl border border-[#d8bf83] px-4 py-3">
                   {tracks.map((item) => (
                     <option key={item.value} value={item.value}>
                       {item.label}
@@ -315,24 +315,24 @@ export default function RemoteAdminResourcesPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">الملف</label>
-                <input type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-5 text-sm" required />
+                <input type="file" accept="application/pdf,.pdf" onChange={(e) => setFile(e.target.files?.[0] || null)} className="w-full rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffaf4] px-4 py-5 text-sm" required />
               </div>
-              <button disabled={submittingTeacherFile} className="w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
+              <button disabled={submittingTeacherFile} className="w-full rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
                 {submittingTeacherFile ? "جاري الرفع..." : "رفع الملف للمعلم"}
               </button>
             </div>
           </form>
 
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <h2 className="mb-4 text-xl font-black text-[#1c2d31]">ملفات المعلمين الحالية</h2>
             {loading ? (
               <p className="text-sm text-[#1c2d31]/60">جاري التحميل...</p>
             ) : teacherResources.length === 0 ? (
-              <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">لا توجد ملفات معلمين مرفوعة بعد.</p>
+              <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#1c2d31]/60">لا توجد ملفات معلمين مرفوعة بعد.</p>
             ) : (
               <div className="grid gap-3">
                 {teacherResources.map((resource) => (
-                  <div key={resource.id} className="rounded-2xl border border-[#d9c8ad]/70 bg-[#fffaf2] p-4">
+                  <div key={resource.id} className="rounded-2xl border border-[#d8bf83]/70 bg-[#fffaf4] p-4">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                       <div>
                         <p className="font-black text-[#1c2d31]">{resource.title}</p>
@@ -343,7 +343,7 @@ export default function RemoteAdminResourcesPage() {
                         ) : null}
                       </div>
                       <div className="flex gap-2">
-                        <a href={resource.fileUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#173d42] px-4 py-3 text-center text-sm font-black text-white">
+                        <a href={resource.fileUrl} target="_blank" rel="noreferrer" className="rounded-xl bg-[#0a3f2a] px-4 py-3 text-center text-sm font-black text-white">
                           فتح الملف
                         </a>
                         <button

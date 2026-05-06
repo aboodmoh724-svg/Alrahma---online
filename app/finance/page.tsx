@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import type { Prisma } from "@prisma/client";
@@ -1090,10 +1090,10 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   if (!admin) {
     return (
       <main className="min-h-screen bg-[#f6efe3] p-6" dir="rtl">
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-white p-6 text-[#173d42] shadow-sm">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-white p-6 text-[#0a3f2a] shadow-sm">
           <p className="text-lg font-black">هذه الصفحة مخصصة لإدارة التعليم عن بعد فقط.</p>
-          <p className="mt-2 text-sm text-[#173d42]/70">سجل الدخول من لوحة إدارة الأونلاين ثم عد إلى صفحة الحسابات المالية.</p>
-          <Link href="/remote/admin/login" className="mt-5 inline-flex rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+          <p className="mt-2 text-sm text-[#0a3f2a]/70">سجل الدخول من لوحة إدارة الأونلاين ثم عد إلى صفحة الحسابات المالية.</p>
+          <Link href="/remote/admin/login" className="mt-5 inline-flex rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white">
             تسجيل دخول إدارة الأونلاين
           </Link>
         </div>
@@ -1321,14 +1321,14 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   );
 
   return (
-    <main className="min-h-screen bg-[#f6efe3] px-4 py-6 text-[#173d42]" dir="rtl">
+    <main className="min-h-screen bg-[#f6efe3] px-4 py-6 text-[#0a3f2a]" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="relative overflow-hidden rounded-[2.5rem] bg-[#102f34] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-16 top-6 h-52 w-52 rounded-full bg-[#c39a62]/25" />
+          <div className="absolute -left-16 top-6 h-52 w-52 rounded-full bg-[#bd8f2d]/25" />
           <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
           <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 الحسابات المالية
               </p>
               <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
@@ -1348,29 +1348,29 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                   name="month"
                   type="month"
                   defaultValue={currentMonth}
-                  className="rounded-full border-0 bg-white px-3 py-1 text-sm font-black text-[#173d42]"
+                  className="rounded-full border-0 bg-white px-3 py-1 text-sm font-black text-[#0a3f2a]"
                 />
                 <input type="hidden" name="tab" value={activeTab} />
-                <button className="rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white">
+                <button className="rounded-full bg-[#bd8f2d] px-3 py-1 text-xs font-black text-white">
                   عرض
                 </button>
               </form>
-              <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42]">
+              <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a]">
                 لوحة الأونلاين
               </Link>
             </div>
           </div>
         </section>
 
-        <nav className="flex gap-2 overflow-x-auto rounded-[2rem] border border-[#d9c8ad] bg-white p-2 shadow-sm">
+        <nav className="flex gap-2 overflow-x-auto rounded-[2rem] border border-[#d8bf83] bg-white p-2 shadow-sm">
           {financeTabs.map((tab) => (
             <Link
               key={tab.key}
               href={`/finance?month=${currentMonth}&tab=${tab.key}`}
               className={`whitespace-nowrap rounded-full px-5 py-3 text-sm font-black transition ${
                 activeTab === tab.key
-                  ? "bg-[#173d42] text-white"
-                  : "bg-[#fffaf2] text-[#173d42] hover:bg-[#f1d39d]/45"
+                  ? "bg-[#0a3f2a] text-white"
+                  : "bg-[#fffaf4] text-[#0a3f2a] hover:bg-[#f2d18a]/45"
               }`}
             >
               {tab.label}
@@ -1381,12 +1381,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
         {activeTab === "summary" ? (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {cards.map((card) => (
-            <article key={card.label} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
-              <p className="text-sm font-bold text-[#173d42]/55">{card.label}</p>
-              <p className={`mt-3 text-3xl font-black ${card.value < 0 ? "text-red-700" : "text-[#173d42]"}`}>
+            <article key={card.label} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
+              <p className="text-sm font-bold text-[#0a3f2a]/55">{card.label}</p>
+              <p className={`mt-3 text-3xl font-black ${card.value < 0 ? "text-red-700" : "text-[#0a3f2a]"}`}>
                 {formatMoney(card.value)}
               </p>
-              <p className="mt-2 text-xs leading-6 text-[#173d42]/55">{card.hint}</p>
+              <p className="mt-2 text-xs leading-6 text-[#0a3f2a]/55">{card.hint}</p>
             </article>
           ))}
         </section>
@@ -1396,10 +1396,10 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
         <section className="grid gap-4 xl:grid-cols-3">
           {activeTab === "students" ? (
           <>
-          <form action={saveStudentFinanceAccount} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <form action={saveStudentFinanceAccount} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تحديد رسوم الطالب</h2>
-            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">ضع رسوم الفصل أو الخصم أو المنحة لكل طالب.</p>
-            <select name="studentId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
+            <p className="mt-2 text-sm leading-6 text-[#0a3f2a]/60">ضع رسوم الفصل أو الخصم أو المنحة لكل طالب.</p>
+            <select name="studentId" required className="mt-5 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold">
               <option value="">اختر الطالب</option>
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -1408,20 +1408,20 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               ))}
             </select>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
-              <input name="totalAmount" type="number" step="0.01" min="0" placeholder="الرسوم" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="discountAmount" type="number" step="0.01" min="0" placeholder="خصم/منحة" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="totalAmount" type="number" step="0.01" min="0" placeholder="الرسوم" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="discountAmount" type="number" step="0.01" min="0" placeholder="خصم/منحة" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
             </div>
-            <textarea name="notes" placeholder="ملاحظات مالية" className="mt-3 min-h-24 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <button className="mt-3 w-full rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+            <textarea name="notes" placeholder="ملاحظات مالية" className="mt-3 min-h-24 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white">
               حفظ رسوم الطالب
             </button>
           </form>
 
-          <form action={addStudentPayment} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <form action={addStudentPayment} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تسجيل دفعة طالب</h2>
-            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">كل دفعة تسجل هنا تزيد دخل المنصة الفعلي.</p>
-            <select name="studentId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
+            <p className="mt-2 text-sm leading-6 text-[#0a3f2a]/60">كل دفعة تسجل هنا تزيد دخل المنصة الفعلي.</p>
+            <select name="studentId" required className="mt-5 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold">
               <option value="">اختر الطالب</option>
               {students.map((student) => (
                 <option key={student.id} value={student.id}>
@@ -1430,13 +1430,13 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               ))}
             </select>
             <div className="mt-3 grid gap-3 sm:grid-cols-3">
-              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="paidAt" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="paidAt" type="date" defaultValue={today} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
             </div>
-            <input name="method" placeholder="طريقة الدفع: نقدي، حوالة..." className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <textarea name="note" placeholder="ملاحظة الدفعة" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <button className="mt-3 w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white">
+            <input name="method" placeholder="طريقة الدفع: نقدي، حوالة..." className="mt-3 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <textarea name="note" placeholder="ملاحظة الدفعة" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white">
               إضافة الدفعة
             </button>
           </form>
@@ -1445,53 +1445,53 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
 
           {activeTab === "expenses" ? (
           <>
-          <form action={addPlatformExpense} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <form action={addPlatformExpense} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تسجيل مصروف</h2>
-            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">مثل Zoom، الإعلام، الأنشطة، أو أي مصروف إداري.</p>
-            <input name="title" required placeholder="عنوان المصروف" className="mt-5 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+            <p className="mt-2 text-sm leading-6 text-[#0a3f2a]/60">مثل Zoom، الإعلام، الأنشطة، أو أي مصروف إداري.</p>
+            <input name="title" required placeholder="عنوان المصروف" className="mt-5 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <input name="category" placeholder="التصنيف" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="expenseDate" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <select name="recurrence" defaultValue="ONE_TIME" className="rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm">
+              <input name="category" placeholder="التصنيف" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="expenseDate" type="date" defaultValue={today} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <select name="recurrence" defaultValue="ONE_TIME" className="rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm">
                 <option value="ONE_TIME">مصروف مرة واحدة</option>
                 <option value="MONTHLY">التزام شهري</option>
                 <option value="YEARLY">التزام سنوي</option>
               </select>
-              <input name="dueDay" type="number" min="1" max="31" placeholder="يوم الاستحقاق الشهري" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="nextDueDate" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <select name="isActive" defaultValue="true" className="rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm">
+              <input name="dueDay" type="number" min="1" max="31" placeholder="يوم الاستحقاق الشهري" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="nextDueDate" type="date" defaultValue={today} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <select name="isActive" defaultValue="true" className="rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm">
                 <option value="true">يدخل ضمن الالتزامات القادمة</option>
                 <option value="false">مصروف مسجل فقط</option>
               </select>
             </div>
-            <input name="paymentMethod" placeholder="طريقة الدفع" className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <input name="receiptUrl" placeholder="رابط إيصال إن وجد" className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <textarea name="note" placeholder="ملاحظة المصروف" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <button className="mt-3 w-full rounded-2xl bg-[#c39a62] px-5 py-3 text-sm font-black text-white">
+            <input name="paymentMethod" placeholder="طريقة الدفع" className="mt-3 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <input name="receiptUrl" placeholder="رابط إيصال إن وجد" className="mt-3 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <textarea name="note" placeholder="ملاحظة المصروف" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#bd8f2d] px-5 py-3 text-sm font-black text-white">
               إضافة المصروف
             </button>
           </form>
-          <div className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm xl:col-span-2">
+          <div className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm xl:col-span-2">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black">التزامات نهاية الشهر</h2>
-                <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
+                <p className="mt-2 text-sm leading-6 text-[#0a3f2a]/60">
                   يضم المصروفات الشهرية والسنوية المستحقة في {currentMonth} مع متبقي مكافآت المعلمين.
                 </p>
               </div>
-              <div className="rounded-2xl bg-[#173d42] px-4 py-3 text-sm font-black text-white">
+              <div className="rounded-2xl bg-[#0a3f2a] px-4 py-3 text-sm font-black text-white">
                 المطلوب: {formatMoney(monthlyObligationsTotal)}
               </div>
             </div>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl bg-[#fffaf2] p-4">
-                <p className="text-xs font-black text-[#173d42]/60">التزامات المنصة</p>
+              <div className="rounded-2xl bg-[#fffaf4] p-4">
+                <p className="text-xs font-black text-[#0a3f2a]/60">التزامات المنصة</p>
                 <p className="mt-2 text-2xl font-black">{formatMoney(platformObligationsTotal)}</p>
               </div>
-              <div className="rounded-2xl bg-[#fffaf2] p-4">
-                <p className="text-xs font-black text-[#173d42]/60">مكافآت المعلمين المتبقية</p>
+              <div className="rounded-2xl bg-[#fffaf4] p-4">
+                <p className="text-xs font-black text-[#0a3f2a]/60">مكافآت المعلمين المتبقية</p>
                 <p className="mt-2 text-2xl font-black">{formatMoney(teacherRemainingTotal)}</p>
               </div>
               <div className={`rounded-2xl p-4 ${balanceAfterMonthlyObligations >= 0 ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-800"}`}>
@@ -1509,7 +1509,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                 dueDate: item.dueDate,
                 daysUntil: item.daysUntil,
               })), ...teacherObligationRows].length === 0 ? (
-                <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60">لا توجد التزامات مستحقة لهذا الشهر.</p>
+                <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#0a3f2a]/60">لا توجد التزامات مستحقة لهذا الشهر.</p>
               ) : (
                 [...expenseObligations.map((item) => ({
                   key: item.expense.id,
@@ -1520,18 +1520,18 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                   dueDate: item.dueDate,
                   daysUntil: item.daysUntil,
                 })), ...teacherObligationRows].map((item) => (
-                  <div key={`${item.title}-${item.dueDate.toISOString()}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#eadcc6] p-4">
+                  <div key={`${item.title}-${item.dueDate.toISOString()}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#e7d7b4] p-4">
                     <div>
                       <p className="font-black">{item.title}</p>
-                      <p className="mt-1 text-xs text-[#173d42]/60">
+                      <p className="mt-1 text-xs text-[#0a3f2a]/60">
                         {item.category} - يستحق في {item.dueDate.toISOString().slice(0, 10)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className={`rounded-full px-3 py-1 text-xs font-black ${item.daysUntil <= 5 ? "bg-red-50 text-red-700" : "bg-[#fffaf2] text-[#8a6335]"}`}>
+                      <span className={`rounded-full px-3 py-1 text-xs font-black ${item.daysUntil <= 5 ? "bg-red-50 text-red-700" : "bg-[#fffaf4] text-[#8a661f]"}`}>
                         {item.daysUntil < 0 ? "متأخر" : `بعد ${item.daysUntil} يوم`}
                       </span>
-                      <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                      <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                         {formatMoney(item.amount, item.currency)}
                       </span>
                     </div>
@@ -1548,12 +1548,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
         {activeTab === "teachers" ? (
         <>
         <section className="grid gap-4 xl:grid-cols-[1fr_1fr_1.6fr]">
-          <form action={saveTeacherCompensationRule} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <form action={saveTeacherCompensationRule} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">إعداد مكافأة المعلم</h2>
-            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
+            <p className="mt-2 text-sm leading-6 text-[#0a3f2a]/60">
               ضع المبلغ الشهري والساعات وأيام العمل المتوقعة، وسيحسب النظام المستحق حسب الأيام التي ظهر فيها عمل فعلي.
             </p>
-            <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
+            <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold">
               <option value="">اختر المعلم</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
@@ -1562,23 +1562,23 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               ))}
             </select>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <input name="monthlyAmount" type="number" step="0.01" min="0" placeholder="المبلغ الشهري" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="expectedMonthlyHours" type="number" step="0.01" min="0" placeholder="الساعات الشهرية" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="expectedMonthlyWorkDays" type="number" step="0.01" min="0" defaultValue={20} placeholder="أيام العمل الشهرية" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="monthlyAmount" type="number" step="0.01" min="0" placeholder="المبلغ الشهري" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="expectedMonthlyHours" type="number" step="0.01" min="0" placeholder="الساعات الشهرية" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="expectedMonthlyWorkDays" type="number" step="0.01" min="0" defaultValue={20} placeholder="أيام العمل الشهرية" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
             </div>
-            <textarea name="notes" placeholder="مثال: المسار الرباعي، 60 ساعة شهرياً، 20 يوم عمل" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <button className="mt-3 w-full rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+            <textarea name="notes" placeholder="مثال: المسار الرباعي، 60 ساعة شهرياً، 20 يوم عمل" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white">
               حفظ إعداد المكافأة
             </button>
           </form>
 
-          <form action={addTeacherPayout} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <form action={addTeacherPayout} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">تسجيل دفع مكافأة</h2>
-            <p className="mt-2 text-sm leading-6 text-[#173d42]/60">
+            <p className="mt-2 text-sm leading-6 text-[#0a3f2a]/60">
               عند تسجيل الدفعة تدخل مباشرة ضمن مصروفات المنصة.
             </p>
-            <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold">
+            <select name="teacherId" required className="mt-5 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold">
               <option value="">اختر المعلم</option>
               {teachers.map((teacher) => (
                 <option key={teacher.id} value={teacher.id}>
@@ -1587,28 +1587,28 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               ))}
             </select>
             <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              <input name="periodMonth" type="month" defaultValue={currentMonth} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ المدفوع" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="paidAt" type="date" defaultValue={today} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
+              <input name="periodMonth" type="month" defaultValue={currentMonth} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="amount" type="number" step="0.01" min="0" required placeholder="المبلغ المدفوع" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="currency" defaultValue={defaultCurrency} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="paidAt" type="date" defaultValue={today} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
             </div>
-            <input name="method" placeholder="طريقة الدفع" className="mt-3 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <textarea name="note" placeholder="ملاحظة الدفع" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-            <button className="mt-3 w-full rounded-2xl bg-[#8a6335] px-5 py-3 text-sm font-black text-white">
+            <input name="method" placeholder="طريقة الدفع" className="mt-3 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <textarea name="note" placeholder="ملاحظة الدفع" className="mt-3 min-h-20 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+            <button className="mt-3 w-full rounded-2xl bg-[#8a661f] px-5 py-3 text-sm font-black text-white">
               تسجيل دفع المكافأة
             </button>
           </form>
 
-          <div className="overflow-hidden rounded-[2rem] border border-[#d9c8ad] bg-white shadow-sm">
-            <div className="border-b border-[#eadcc6] p-5">
+          <div className="overflow-hidden rounded-[2rem] border border-[#d8bf83] bg-white shadow-sm">
+            <div className="border-b border-[#e7d7b4] p-5">
               <h2 className="text-xl font-black">مكافآت معلمي الأونلاين لهذا الشهر</h2>
-              <p className="mt-1 text-sm text-[#173d42]/60">
+              <p className="mt-1 text-sm text-[#0a3f2a]/60">
                 الشهر الحالي: {currentMonth}. المستحق يحسب بنسبة أيام العمل الفعلية إلى أيام العمل المتوقعة.
               </p>
             </div>
             <div className="max-h-[430px] overflow-auto">
               <table className="w-full min-w-[900px] text-right text-sm">
-                <thead className="sticky top-0 bg-[#fffaf2] text-[#173d42]/65">
+                <thead className="sticky top-0 bg-[#fffaf4] text-[#0a3f2a]/65">
                   <tr>
                     <th className="p-4">المعلم</th>
                     <th className="p-4">الحلقات</th>
@@ -1646,8 +1646,8 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                       <td className="p-4">{formatMoney(row.estimatedDue, row.currency)}</td>
                       <td className="p-4">{formatMoney(row.hourlyRate, row.currency)}</td>
                       <td className="p-4">{row.estimatedHours.toFixed(1)}</td>
-                      <td className="p-4 text-[#1f6358]">{formatMoney(row.paid, row.currency)}</td>
-                      <td className="p-4 text-[#8a6335]">{formatMoney(row.remaining, row.currency)}</td>
+                      <td className="p-4 text-[#0f5a35]">{formatMoney(row.paid, row.currency)}</td>
+                      <td className="p-4 text-[#8a661f]">{formatMoney(row.remaining, row.currency)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -1656,26 +1656,26 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+        <section className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-2xl font-black">حضور المعلمين المعتمد للحسابات</h2>
-              <p className="mt-2 text-sm leading-7 text-[#173d42]/60">
+              <p className="mt-2 text-sm leading-7 text-[#0a3f2a]/60">
                 إذا وجد تقرير في يوم معيّن يظهر اليوم كمقترح حضور، لكن الحساب المالي يعتمد فقط على الحالات التي تحفظها الإدارة هنا.
               </p>
             </div>
-            <p className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#8a6335]">
+            <p className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#8a661f]">
               الشهر: {currentMonth}
             </p>
           </div>
 
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
             {teacherRows.map((row) => (
-              <article key={row.teacher.id} className="rounded-[1.5rem] border border-[#eadcc6] bg-[#fffaf2]/50 p-4">
+              <article key={row.teacher.id} className="rounded-[1.5rem] border border-[#e7d7b4] bg-[#fffaf4]/50 p-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <h3 className="text-xl font-black">{row.teacher.fullName}</h3>
-                    <p className="mt-1 text-xs leading-6 text-[#173d42]/60">
+                    <p className="mt-1 text-xs leading-6 text-[#0a3f2a]/60">
                       الحلقات: {row.teacher.circles.length > 0 ? row.teacher.circles.map((circle) => circle.name).join("، ") : "-"}
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -1699,7 +1699,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                         <input type="hidden" name="note" value={`دفع سريع لمتبقي مكافأة ${currentMonth}`} />
                         <button
                           disabled={row.remaining <= 0}
-                          className="rounded-full bg-[#1f6358] px-4 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:bg-stone-300"
+                          className="rounded-full bg-[#0f5a35] px-4 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:bg-stone-300"
                         >
                           دفع المتبقي
                         </button>
@@ -1714,9 +1714,9 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                   </div>
                 </div>
 
-                <div className="mt-4 max-h-80 overflow-auto rounded-2xl border border-[#eadcc6] bg-white">
+                <div className="mt-4 max-h-80 overflow-auto rounded-2xl border border-[#e7d7b4] bg-white">
                   <table className="w-full min-w-[620px] text-right text-xs">
-                    <thead className="sticky top-0 bg-[#173d42] text-white">
+                    <thead className="sticky top-0 bg-[#0a3f2a] text-white">
                       <tr>
                         <th className="p-3">اليوم</th>
                         <th className="p-3">الحالة الحالية</th>
@@ -1745,7 +1745,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                                 <select
                                   name="status"
                                   defaultValue={status || (hasReport ? "PRESENT" : "")}
-                                  className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold"
+                                  className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-bold"
                                 >
                                   <option value="">بدون تأكيد</option>
                                   <option value="PRESENT">حاضر</option>
@@ -1756,14 +1756,14 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                                   name="note"
                                   defaultValue={attendance?.note || ""}
                                   placeholder="ملاحظة اختيارية"
-                                  className="rounded-xl border border-[#eadcc6] px-3 py-2 text-xs"
+                                  className="rounded-xl border border-[#e7d7b4] px-3 py-2 text-xs"
                                 />
                               </form>
                             </td>
                             <td className="p-3">
                               <button
                                 form={`attendance-${row.teacher.id}-${dateKey}`}
-                                className="rounded-xl bg-[#173d42] px-3 py-2 text-xs font-black text-white"
+                                className="rounded-xl bg-[#0a3f2a] px-3 py-2 text-xs font-black text-white"
                               >
                                 حفظ
                               </button>
@@ -1779,27 +1779,27 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           </div>
         </section>
 
-        <section className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+        <section className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
               <h2 className="text-2xl font-black">دفعات مكافآت المعلمين</h2>
-              <p className="mt-2 text-sm leading-7 text-[#173d42]/60">
+              <p className="mt-2 text-sm leading-7 text-[#0a3f2a]/60">
                 تعديل أو حذف دفعات هذا الشهر مع تأكيد، وكل عملية تظهر في سجل العمليات المالية.
               </p>
             </div>
-            <p className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#8a6335]">
+            <p className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#8a661f]">
               {teacherPayoutRows.length} دفعة
             </p>
           </div>
 
           <div className="mt-5 grid gap-3 lg:grid-cols-2">
             {teacherPayoutRows.length === 0 ? (
-              <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60 lg:col-span-2">
+              <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#0a3f2a]/60 lg:col-span-2">
                 لا توجد دفعات معلمين مسجلة لهذا الشهر.
               </p>
             ) : (
               teacherPayoutRows.map(({ payout, teacherName }) => (
-                <article key={payout.id} className="rounded-2xl border border-[#eadcc6] p-4">
+                <article key={payout.id} className="rounded-2xl border border-[#e7d7b4] p-4">
                   <p className="font-black">{teacherName}</p>
                   <form action={updateTeacherPayout} className="mt-3 grid gap-2">
                     <input type="hidden" name="payoutId" value={payout.id} />
@@ -1808,7 +1808,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                         name="periodMonth"
                         type="month"
                         defaultValue={payout.periodMonth}
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <input
                         name="amount"
@@ -1816,35 +1816,35 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                         step="0.01"
                         min="0"
                         defaultValue={toNumber(payout.amount).toFixed(2)}
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <input
                         name="currency"
                         defaultValue={payout.currency}
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <input
                         name="paidAt"
                         type="date"
                         defaultValue={formatDateInput(payout.paidAt)}
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                     </div>
                     <input
                       name="method"
                       defaultValue={payout.method || ""}
                       placeholder="طريقة الدفع"
-                      className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                     />
                     <textarea
                       name="note"
                       defaultValue={payout.note || ""}
                       placeholder="ملاحظة"
-                      className="min-h-16 rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                      className="min-h-16 rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                     />
                     <ConfirmSubmitButton
                       confirmMessage="هل تريد حفظ تعديل دفعة المعلم؟"
-                      className="rounded-xl bg-[#173d42] px-4 py-2 text-xs font-black text-white"
+                      className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-xs font-black text-white"
                     >
                       حفظ التعديل
                     </ConfirmSubmitButton>
@@ -1870,14 +1870,14 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
         <section className="grid gap-4 xl:grid-cols-[1.5fr_1fr]">
           {activeTab === "students" ? (
           <>
-          <div className="overflow-hidden rounded-[2rem] border border-[#d9c8ad] bg-white shadow-sm">
-            <div className="border-b border-[#eadcc6] p-5">
+          <div className="overflow-hidden rounded-[2rem] border border-[#d8bf83] bg-white shadow-sm">
+            <div className="border-b border-[#e7d7b4] p-5">
               <h2 className="text-xl font-black">حالة مدفوعات الطلاب</h2>
-              <p className="mt-1 text-sm text-[#173d42]/60">الرسوم، المدفوع، والمتبقي لكل طالب.</p>
+              <p className="mt-1 text-sm text-[#0a3f2a]/60">الرسوم، المدفوع، والمتبقي لكل طالب.</p>
             </div>
             <div className="max-h-[620px] overflow-auto">
               <table className="w-full min-w-[900px] text-right text-sm">
-                <thead className="sticky top-0 bg-[#fffaf2] text-[#173d42]/65">
+                <thead className="sticky top-0 bg-[#fffaf4] text-[#0a3f2a]/65">
                   <tr>
                     <th className="p-4">الطالب</th>
                     <th className="p-4">القسم</th>
@@ -1895,10 +1895,10 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                       <td className="p-4">أونلاين</td>
                       <td className="p-4">{row.student.circle?.name || "-"}</td>
                       <td className="p-4">{formatMoney(row.required, row.currency)}</td>
-                      <td className="p-4 text-[#1f6358]">{formatMoney(row.paid, row.currency)}</td>
-                      <td className="p-4 text-[#8a6335]">{formatMoney(row.remaining, row.currency)}</td>
+                      <td className="p-4 text-[#0f5a35]">{formatMoney(row.paid, row.currency)}</td>
+                      <td className="p-4 text-[#8a661f]">{formatMoney(row.remaining, row.currency)}</td>
                       <td className="p-4">
-                        <span className="rounded-full bg-[#f1d39d]/45 px-3 py-1 text-xs font-black">{row.status}</span>
+                        <span className="rounded-full bg-[#f2d18a]/45 px-3 py-1 text-xs font-black">{row.status}</span>
                       </td>
                     </tr>
                   ))}
@@ -1906,17 +1906,17 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               </table>
             </div>
           </div>
-          <div className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <div className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">آخر دفعات الطلاب</h2>
-            <p className="mt-1 text-sm leading-6 text-[#173d42]/60">
+            <p className="mt-1 text-sm leading-6 text-[#0a3f2a]/60">
               يمكن تعديل الدفعة أو حذفها بعد رسالة تأكيد، وكل عملية تحفظ في سجل العمليات.
             </p>
             <div className="mt-4 max-h-[620px] space-y-3 overflow-auto">
               {studentPayments.length === 0 ? (
-                <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60">لا توجد دفعات مسجلة بعد.</p>
+                <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#0a3f2a]/60">لا توجد دفعات مسجلة بعد.</p>
               ) : (
                 studentPayments.map(({ payment, studentName }) => (
-                  <article key={payment.id} className="rounded-2xl border border-[#eadcc6] p-4">
+                  <article key={payment.id} className="rounded-2xl border border-[#e7d7b4] p-4">
                     <p className="font-black">{studentName}</p>
                     <form action={updateStudentPayment} className="mt-3 grid gap-2">
                       <input type="hidden" name="paymentId" value={payment.id} />
@@ -1927,36 +1927,36 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                           step="0.01"
                           min="0"
                           defaultValue={toNumber(payment.amount).toFixed(2)}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="currency"
                           defaultValue={payment.currency}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="paidAt"
                           type="date"
                           defaultValue={formatDateInput(payment.paidAt)}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="method"
                           defaultValue={payment.method || ""}
                           placeholder="طريقة الدفع"
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                       </div>
                       <textarea
                         name="note"
                         defaultValue={payment.note || ""}
                         placeholder="ملاحظة"
-                        className="min-h-16 rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="min-h-16 rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <div className="flex flex-wrap gap-2">
                         <ConfirmSubmitButton
                           confirmMessage="هل تريد حفظ تعديل هذه الدفعة؟"
-                          className="rounded-xl bg-[#173d42] px-4 py-2 text-xs font-black text-white"
+                          className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-xs font-black text-white"
                         >
                           حفظ التعديل
                         </ConfirmSubmitButton>
@@ -1980,26 +1980,26 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           ) : null}
 
           {activeTab === "expenses" ? (
-          <div className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <div className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-xl font-black">آخر المصروفات</h2>
             <div className="mt-4 space-y-3">
               {expenses.length === 0 ? (
-                <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#173d42]/60">لا توجد مصروفات مسجلة بعد.</p>
+                <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#0a3f2a]/60">لا توجد مصروفات مسجلة بعد.</p>
               ) : (
                 expenses.map((expense) => (
-                  <article key={expense.id} className="rounded-2xl border border-[#eadcc6] p-4">
+                  <article key={expense.id} className="rounded-2xl border border-[#e7d7b4] p-4">
                     <form action={updatePlatformExpense} className="grid gap-2">
                       <input type="hidden" name="expenseId" value={expense.id} />
                       <input
                         name="title"
                         defaultValue={expense.title}
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs font-black"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs font-black"
                       />
                       <div className="grid gap-2 sm:grid-cols-2">
                         <input
                           name="category"
                           defaultValue={expense.category}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="amount"
@@ -2007,23 +2007,23 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                           step="0.01"
                           min="0"
                           defaultValue={toNumber(expense.amount).toFixed(2)}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="currency"
                           defaultValue={expense.currency}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="expenseDate"
                           type="date"
                           defaultValue={formatDateInput(expense.expenseDate)}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <select
                           name="recurrence"
                           defaultValue={expense.recurrence}
-                          className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs"
                         >
                           <option value="ONE_TIME">مرة واحدة</option>
                           <option value="MONTHLY">شهري</option>
@@ -2036,15 +2036,15 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                           max="31"
                           defaultValue={expense.dueDay || ""}
                           placeholder="يوم الاستحقاق"
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
                         <input
                           name="nextDueDate"
                           type="date"
                           defaultValue={formatDateInput(expense.nextDueDate || expense.expenseDate)}
-                          className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                          className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                         />
-                        <label className="flex items-center gap-2 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-black">
+                        <label className="flex items-center gap-2 rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-black">
                           <input name="isActive" type="checkbox" defaultChecked={expense.isActive} />
                           نشط للالتزامات
                         </label>
@@ -2053,23 +2053,23 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                         name="paymentMethod"
                         defaultValue={expense.paymentMethod || ""}
                         placeholder="طريقة الدفع"
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <input
                         name="receiptUrl"
                         defaultValue={expense.receiptUrl || ""}
                         placeholder="رابط الإيصال"
-                        className="rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <textarea
                         name="note"
                         defaultValue={expense.note || ""}
                         placeholder="ملاحظة"
-                        className="min-h-16 rounded-xl border border-[#d9c8ad] px-3 py-2 text-xs"
+                        className="min-h-16 rounded-xl border border-[#d8bf83] px-3 py-2 text-xs"
                       />
                       <ConfirmSubmitButton
                         confirmMessage="هل تريد حفظ تعديل هذا المصروف؟"
-                        className="rounded-xl bg-[#173d42] px-4 py-2 text-xs font-black text-white"
+                        className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-xs font-black text-white"
                       >
                         حفظ التعديل
                       </ConfirmSubmitButton>
@@ -2094,53 +2094,53 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
 
         {activeTab === "reports" ? (
         <section className="grid gap-4 lg:grid-cols-3">
-          <article className="rounded-[2rem] border border-[#d9c8ad] bg-white p-6 shadow-sm lg:col-span-2">
-            <p className="text-sm font-black text-[#9b7039]">تقرير الشهر</p>
+          <article className="rounded-[2rem] border border-[#d8bf83] bg-white p-6 shadow-sm lg:col-span-2">
+            <p className="text-sm font-black text-[#8a661f]">تقرير الشهر</p>
             <h2 className="mt-2 text-3xl font-black">ملخص مالي جاهز للمراجعة</h2>
-            <p className="mt-3 text-sm leading-7 text-[#173d42]/65">
+            <p className="mt-3 text-sm leading-7 text-[#0a3f2a]/65">
               هذا القسم يجمع أهم أرقام شهر {currentMonth}. في الخطوة القادمة نستطيع إضافة تصدير Excel أو PDF من هنا.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <a
                 href={`/api/finance/export/monthly?month=${currentMonth}`}
-                className="rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white transition hover:bg-[#1f6358]"
+                className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f5a35]"
               >
                 تصدير تقرير الشهر Excel
               </a>
-              <span className="rounded-2xl bg-[#fffaf2] px-5 py-3 text-xs font-black leading-6 text-[#8a6335]">
+              <span className="rounded-2xl bg-[#fffaf4] px-5 py-3 text-xs font-black leading-6 text-[#8a661f]">
                 التصدير متاح فقط لمن لديه صلاحية الحسابات المالية.
               </span>
             </div>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">الدخل الفعلي: {formatMoney(receivedIncome)}</p>
-              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">المتبقي على الطلاب: {formatMoney(remainingIncome)}</p>
-              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">مصروفات مدفوعة: {formatMoney(totalExpenses)}</p>
-              <p className="rounded-2xl bg-[#fffaf2] p-4 font-black">متبقي المعلمين: {formatMoney(teacherRemainingTotal)}</p>
-              <p className="rounded-2xl bg-[#173d42] p-4 font-black text-white">الرصيد الحالي: {formatMoney(currentBalance)}</p>
-              <p className="rounded-2xl bg-[#8a6335] p-4 font-black text-white">بعد المستحقات: {formatMoney(balanceAfterTeacherDues)}</p>
+              <p className="rounded-2xl bg-[#fffaf4] p-4 font-black">الدخل الفعلي: {formatMoney(receivedIncome)}</p>
+              <p className="rounded-2xl bg-[#fffaf4] p-4 font-black">المتبقي على الطلاب: {formatMoney(remainingIncome)}</p>
+              <p className="rounded-2xl bg-[#fffaf4] p-4 font-black">مصروفات مدفوعة: {formatMoney(totalExpenses)}</p>
+              <p className="rounded-2xl bg-[#fffaf4] p-4 font-black">متبقي المعلمين: {formatMoney(teacherRemainingTotal)}</p>
+              <p className="rounded-2xl bg-[#0a3f2a] p-4 font-black text-white">الرصيد الحالي: {formatMoney(currentBalance)}</p>
+              <p className="rounded-2xl bg-[#8a661f] p-4 font-black text-white">بعد المستحقات: {formatMoney(balanceAfterTeacherDues)}</p>
             </div>
           </article>
-          <article className="rounded-[2rem] border border-[#d9c8ad] bg-[#173d42] p-6 text-white shadow-sm">
-            <p className="text-sm font-black text-[#f1d39d]">صلاحيات</p>
+          <article className="rounded-[2rem] border border-[#d8bf83] bg-[#0a3f2a] p-6 text-white shadow-sm">
+            <p className="text-sm font-black text-[#f2d18a]">صلاحيات</p>
             <h3 className="mt-2 text-2xl font-black">حماية الحسابات المالية</h3>
             <p className="mt-3 text-sm leading-7 text-white/70">
               دخول هذه الصفحة والتصدير مرتبط الآن بصلاحية مالية خاصة داخل حساب الإداري، وليس بمجرد كونه إداري أونلاين.
             </p>
           </article>
 
-          <article className="rounded-[2rem] border border-[#d9c8ad] bg-white p-6 shadow-sm lg:col-span-3">
+          <article className="rounded-[2rem] border border-[#d8bf83] bg-white p-6 shadow-sm lg:col-span-3">
             <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
               <div>
-                <p className="text-sm font-black text-[#9b7039]">سجل العمليات</p>
+                <p className="text-sm font-black text-[#8a661f]">سجل العمليات</p>
                 <h2 className="mt-2 text-2xl font-black">آخر العمليات المالية</h2>
               </div>
-              <p className="rounded-full bg-[#fffaf2] px-4 py-2 text-xs font-black text-[#8a6335]">
+              <p className="rounded-full bg-[#fffaf4] px-4 py-2 text-xs font-black text-[#8a661f]">
                 آخر {financeAuditLogs.length} عملية
               </p>
             </div>
-            <div className="mt-5 max-h-[520px] overflow-auto rounded-2xl border border-[#eadcc6]">
+            <div className="mt-5 max-h-[520px] overflow-auto rounded-2xl border border-[#e7d7b4]">
               <table className="w-full min-w-[900px] text-right text-sm">
-                <thead className="sticky top-0 bg-[#173d42] text-white">
+                <thead className="sticky top-0 bg-[#0a3f2a] text-white">
                   <tr>
                     <th className="p-4">الوقت</th>
                     <th className="p-4">المستخدم</th>
@@ -2152,7 +2152,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                 <tbody>
                   {financeAuditLogs.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="p-5 text-center text-[#173d42]/60">
+                      <td colSpan={5} className="p-5 text-center text-[#0a3f2a]/60">
                         لا توجد عمليات مالية مسجلة بعد.
                       </td>
                     </tr>
@@ -2162,7 +2162,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                         <td className="p-4 font-bold">{log.createdAt.toISOString().slice(0, 16).replace("T", " ")}</td>
                         <td className="p-4">{log.actor?.fullName || log.actor?.email || "غير معروف"}</td>
                         <td className="p-4">
-                          <span className="rounded-full bg-[#fffaf2] px-3 py-1 text-xs font-black text-[#8a6335]">
+                          <span className="rounded-full bg-[#fffaf4] px-3 py-1 text-xs font-black text-[#8a661f]">
                             {log.action}
                           </span>
                         </td>

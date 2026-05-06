@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -243,7 +243,7 @@ export default function OnsiteAdminStudentsPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#1c2d31] md:text-3xl">
               إدارة الطلاب (حضوري)
@@ -254,12 +254,12 @@ export default function OnsiteAdminStudentsPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#9b7039] ring-1 ring-[#d9c8ad]">
+            <span className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#8a661f] ring-1 ring-[#d8bf83]">
               بلا حلقة: {unassignedCount}
             </span>
             <Link
               href="/onsite/admin/dashboard"
-              className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+              className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35]"
             >
               الرجوع للوحة الإدارة
             </Link>
@@ -267,7 +267,7 @@ export default function OnsiteAdminStudentsPage() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-1">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-1">
             <h2 className="mb-4 text-lg font-black text-[#1c2d31]">
               إضافة طالب جديد
             </h2>
@@ -283,7 +283,7 @@ export default function OnsiteAdminStudentsPage() {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="أدخل اسم الطالب"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                   required
                 />
               </div>
@@ -296,7 +296,7 @@ export default function OnsiteAdminStudentsPage() {
                   name="circleId"
                   value={formData.circleId}
                   onChange={handleChange}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                 >
                   <option value="">بدون حلقة</option>
                   {circles.map((circle) => (
@@ -318,7 +318,7 @@ export default function OnsiteAdminStudentsPage() {
                   name="teacherId"
                   value={formData.teacherId}
                   onChange={handleChange}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 outline-none focus:border-[#0f5a35]"
                   required={!formData.circleId}
                 >
                   <option value="">اختر المعلم</option>
@@ -333,14 +333,14 @@ export default function OnsiteAdminStudentsPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-2xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {submitting ? "جاري الإضافة..." : "إضافة الطالب"}
               </button>
             </form>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] lg:col-span-2">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-2">
             <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h2 className="text-lg font-black text-[#1c2d31]">قائمة الطلاب</h2>
@@ -354,7 +354,7 @@ export default function OnsiteAdminStudentsPage() {
                   value={searchTerm}
                   onChange={(event) => setSearchTerm(event.target.value)}
                   placeholder="ابحث باسم الطالب أو رقمه أو الحلقة أو ولي الأمر..."
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:bg-white"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white"
                 />
                 <p className="text-xs font-bold text-[#1c2d31]/55">
                   {filteredStudents.length} من {students.length} طالب
@@ -363,18 +363,18 @@ export default function OnsiteAdminStudentsPage() {
             </div>
 
             {loading ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
             ) : filteredStudents.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 لا توجد نتائج مطابقة للبحث.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="min-w-full overflow-hidden rounded-2xl">
                   <thead>
-                    <tr className="bg-[#fffaf2] text-right text-sm text-[#1c2d31]/70">
+                    <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
                       <th className="px-4 py-3 font-black">رقم الطالب</th>
                       <th className="px-4 py-3 font-black">اسم الطالب</th>
                       <th className="px-4 py-3 font-black">المعلم</th>
@@ -387,9 +387,9 @@ export default function OnsiteAdminStudentsPage() {
                     {filteredStudents.map((student) => (
                       <tr
                         key={student.id}
-                        className="border-b border-[#d9c8ad]/30 text-sm"
+                        className="border-b border-[#d8bf83]/30 text-sm"
                       >
-                        <td className="px-4 py-3 font-black text-[#1f6358]">
+                        <td className="px-4 py-3 font-black text-[#0f5a35]">
                           {student.studentCode || "-"}
                         </td>
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
@@ -404,7 +404,7 @@ export default function OnsiteAdminStudentsPage() {
                               });
                               if (ok) await fetchData();
                             }}
-                            className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                           >
                             {teachers.map((teacher) => (
                               <option key={teacher.id} value={teacher.id}>
@@ -422,7 +422,7 @@ export default function OnsiteAdminStudentsPage() {
                               });
                               if (ok) await fetchData();
                             }}
-                            className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 outline-none focus:border-[#1f6358]"
+                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
                           >
                             <option value="">بدون حلقة</option>
                             {circles.map((circle) => (
@@ -437,7 +437,7 @@ export default function OnsiteAdminStudentsPage() {
                             <PhoneNumberBlurInput
                               value={student.parentWhatsapp || ""}
                               placeholder="5xxxxxxxxx"
-                              inputClassName="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#1f6358]"
+                              inputClassName="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#0f5a35]"
                               onCommit={async (next) => {
                                 const previous = student.parentWhatsapp || "";
                                 const confirmed = window.confirm(
@@ -456,7 +456,7 @@ export default function OnsiteAdminStudentsPage() {
                             <input
                               defaultValue={student.parentEmail || ""}
                               placeholder="إيميل ولي الأمر (اختياري)"
-                              className="w-full rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#1f6358]"
+                              className="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#0f5a35]"
                               onBlur={async (e) => {
                                 const next = e.target.value.trim();
                                 if ((student.parentEmail || "") === next) return;

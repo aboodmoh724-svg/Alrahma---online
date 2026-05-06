@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { DeleteAbsencesButton } from "@/components/admin/DeleteAbsencesButton";
@@ -377,11 +377,11 @@ export default async function OnsiteAbsenceStatisticsPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
           <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 إحصائيات الغياب
               </p>
               <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
@@ -393,7 +393,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
             </div>
             <Link
               href="/onsite/admin/dashboard"
-              className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2]"
+              className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4]"
             >
               الرجوع للوحة الإدارة
             </Link>
@@ -401,27 +401,27 @@ export default async function OnsiteAbsenceStatisticsPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">طلاب لديهم غياب</p>
-            <p className="mt-2 text-4xl font-black text-[#173d42]">
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">
               {absenceSummaries.length}
             </p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">إجمالي أيام الغياب</p>
-            <p className="mt-2 text-4xl font-black text-[#c39a62]">
+            <p className="mt-2 text-4xl font-black text-[#bd8f2d]">
               {totalAbsenceDays}
             </p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">طريقة الحساب</p>
-            <p className="mt-2 text-sm font-black leading-7 text-[#1f6358]">
+            <p className="mt-2 text-sm font-black leading-7 text-[#0f5a35]">
               يحتسب غياب الطالب مرة واحدة لكل يوم بتوقيت تركيا.
             </p>
           </div>
         </section>
 
-        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="mb-5">
             <h2 className="text-2xl font-black text-[#1c2d31]">
               الإحصائيات حسب الأيام
@@ -432,7 +432,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
           </div>
 
           {dailySummaries.length === 0 ? (
-            <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
               لا توجد سجلات حضور أو غياب حتى الآن.
             </div>
           ) : (
@@ -440,7 +440,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
               {dailySummaries.map((day) => (
                 <details
                   key={day.dateKey}
-                  className="rounded-[1.8rem] border border-[#d9c8ad]/75 bg-[#fffaf2] p-4"
+                  className="rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4"
                 >
                   <summary className="cursor-pointer list-none">
                     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -473,7 +473,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
                   </div>
 
                   <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
                       <h4 className="font-black text-emerald-800">الحاضرون</h4>
                       {day.presentStudents.length === 0 ? (
                         <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
@@ -485,7 +485,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
                         </ul>
                       )}
                     </div>
-                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
                       <h4 className="font-black text-amber-800">الغائبون</h4>
                       {day.absentStudents.length === 0 ? (
                         <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
@@ -497,7 +497,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
                         </ul>
                       )}
                     </div>
-                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d9c8ad]">
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
                       <h4 className="font-black text-slate-700">لم يسجل لهم حضور أو غياب</h4>
                       {day.notRecordedStudents.length === 0 ? (
                         <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
@@ -516,9 +516,9 @@ export default async function OnsiteAbsenceStatisticsPage() {
           )}
         </section>
 
-        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           {absenceSummaries.length === 0 ? (
-            <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
               لا توجد سجلات غياب حتى الآن.
             </div>
           ) : (
@@ -526,7 +526,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
               {absenceSummaries.map((summary) => (
                 <div
                   key={summary.studentId}
-                  className="rounded-[1.8rem] border border-[#d9c8ad]/75 bg-[#fffaf2] p-4"
+                  className="rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
@@ -546,7 +546,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2">
-                      <div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#173d42] ring-1 ring-[#d9c8ad]">
+                      <div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#0a3f2a] ring-1 ring-[#d8bf83]">
                         آخر غياب: {formatIstanbulDateEnglish(summary.lastAbsenceAt)}
                       </div>
                       <form action={deleteStudentAbsences}>
@@ -566,7 +566,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
                     {summary.absenceDates.map((date) => (
                       <span
                         key={date}
-                        className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1c2d31]/70 ring-1 ring-[#d9c8ad]"
+                        className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1c2d31]/70 ring-1 ring-[#d8bf83]"
                       >
                         {date}
                       </span>

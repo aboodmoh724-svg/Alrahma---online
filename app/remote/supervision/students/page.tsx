@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -136,7 +136,7 @@ export default function RemoteSupervisionStudentsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">توزيع الطلاب</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               الطلاب يصلون من الطلبات المحولة من الإدارة. من هنا يمكن فقط تعديل الحلقة أو المعلم المسؤول.
@@ -144,43 +144,43 @@ export default function RemoteSupervisionStudentsPage() {
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإشراف
           </Link>
         </div>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">إجمالي الطلاب</p>
-            <p className="mt-2 text-4xl font-black text-[#173d42]">{students.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{students.length}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">بلا حلقة</p>
-            <p className="mt-2 text-4xl font-black text-[#c39a62]">
+            <p className="mt-2 text-4xl font-black text-[#bd8f2d]">
               {students.filter((student) => !student.circle?.id).length}
             </p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">المعلمون المتاحون</p>
-            <p className="mt-2 text-4xl font-black text-[#1f6358]">{teachers.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#0f5a35]">{teachers.length}</p>
           </div>
         </section>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <label className="mb-2 block text-sm font-black text-[#1c2d31]">بحث</label>
           <div className="relative">
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="ابحث باسم الطالب أو رقمه أو المعلم أو الحلقة"
-              className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
             />
             {search ? (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white"
+                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#0a3f2a] text-sm font-black text-white"
                 aria-label="مسح البحث"
               >
                 ×
@@ -189,25 +189,25 @@ export default function RemoteSupervisionStudentsPage() {
           </div>
         </section>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-xl font-black text-[#1c2d31]">قائمة الطلاب</h2>
             <span className="text-sm font-bold text-[#1c2d31]/55">{filteredStudents.length}</span>
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/60">
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/60">
               جاري تحميل الطلاب...
             </div>
           ) : filteredStudents.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/60">
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/60">
               لا توجد نتائج مطابقة.
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full overflow-hidden rounded-2xl">
                 <thead>
-                  <tr className="bg-[#fffaf2] text-right text-sm text-[#1c2d31]/65">
+                  <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/65">
                     <th className="px-4 py-3 font-black">الرقم</th>
                     <th className="px-4 py-3 font-black">الطالب</th>
                     <th className="px-4 py-3 font-black">ولي الأمر</th>
@@ -218,8 +218,8 @@ export default function RemoteSupervisionStudentsPage() {
                 </thead>
                 <tbody>
                   {filteredStudents.map((student) => (
-                    <tr key={student.id} className="border-b border-[#d9c8ad]/50 text-sm">
-                      <td className="px-4 py-3 font-black text-[#1f6358]">
+                    <tr key={student.id} className="border-b border-[#d8bf83]/50 text-sm">
+                      <td className="px-4 py-3 font-black text-[#0f5a35]">
                         {student.studentCode || "-"}
                       </td>
                       <td className="px-4 py-3">
@@ -236,7 +236,7 @@ export default function RemoteSupervisionStudentsPage() {
                           value={student.teacher?.id || ""}
                           disabled={savingStudentId === student.id}
                           onChange={(event) => updateStudent(student.id, { teacherId: event.target.value })}
-                          className="min-w-44 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm text-[#1c2d31] outline-none focus:border-[#1f6358]"
+                          className="min-w-44 rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-sm text-[#1c2d31] outline-none focus:border-[#0f5a35]"
                         >
                           <option value="">بدون معلم</option>
                           {teachers.map((teacher) => (
@@ -253,7 +253,7 @@ export default function RemoteSupervisionStudentsPage() {
                           onChange={(event) =>
                             updateStudent(student.id, { circleId: event.target.value || null })
                           }
-                          className="min-w-44 rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm text-[#1c2d31] outline-none focus:border-[#1f6358]"
+                          className="min-w-44 rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-sm text-[#1c2d31] outline-none focus:border-[#0f5a35]"
                         >
                           <option value="">بدون حلقة</option>
                           {circles.map((circle) => (
@@ -264,7 +264,7 @@ export default function RemoteSupervisionStudentsPage() {
                         </select>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="rounded-full bg-[#eef7f5] px-3 py-1 text-xs font-black text-[#1f6358]">
+                        <span className="rounded-full bg-[#edf6ee] px-3 py-1 text-xs font-black text-[#0f5a35]">
                           {savingStudentId === student.id ? "جار التحديث" : "نشط"}
                         </span>
                       </td>

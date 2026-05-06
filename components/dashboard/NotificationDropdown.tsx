@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -21,7 +21,7 @@ const toneClass: Record<NonNullable<NotificationItem["tone"]>, string> = {
   red: "border-red-100 bg-red-50 text-red-800",
   amber: "border-amber-100 bg-amber-50 text-amber-800",
   green: "border-emerald-100 bg-emerald-50 text-emerald-800",
-  neutral: "border-[#eadcc6] bg-[#fffaf2] text-[#173d42]",
+  neutral: "border-[#e7d7b4] bg-[#fffaf4] text-[#0a3f2a]",
 };
 
 export default function NotificationDropdown({ title = "التنبيهات", items }: Props) {
@@ -49,7 +49,7 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="relative rounded-full bg-white px-5 py-3 text-sm font-black text-[#173d42] shadow-sm ring-1 ring-white/30 transition hover:bg-[#fffaf2]"
+        className="relative rounded-full bg-white px-5 py-3 text-sm font-black text-[#0a3f2a] shadow-sm ring-1 ring-white/30 transition hover:bg-[#fffaf4]"
       >
         {title}
         {total > 0 ? (
@@ -60,20 +60,20 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-30 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-[#d9c8ad] bg-white text-[#173d42] shadow-2xl">
-          <div className="flex items-center justify-between border-b border-[#eadcc6] px-4 py-3">
+        <div className="absolute right-0 z-30 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-[#d8bf83] bg-white text-[#0a3f2a] shadow-2xl">
+          <div className="flex items-center justify-between border-b border-[#e7d7b4] px-4 py-3">
             <p className="font-black">{title}</p>
             <button
               type="button"
               onClick={() => setOpen(false)}
-              className="rounded-full bg-[#fffaf2] px-3 py-1 text-xs font-black text-[#8a6335]"
+              className="rounded-full bg-[#fffaf4] px-3 py-1 text-xs font-black text-[#8a661f]"
             >
               إغلاق
             </button>
           </div>
           <div className="max-h-96 space-y-2 overflow-auto p-3">
             {activeItems.length === 0 ? (
-              <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-bold text-[#173d42]/65">
+              <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm font-bold text-[#0a3f2a]/65">
                 لا توجد تنبيهات جديدة الآن.
               </div>
             ) : (

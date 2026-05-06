@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -81,7 +81,7 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
       </summary>
 
       <div className="mt-4 space-y-3 border-t border-[#f0dfd6] pt-4">
-        <p className="rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm leading-7 text-[#173d42]/75">
+        <p className="rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm leading-7 text-[#0a3f2a]/75">
           عند الحاجة الضرورية لاستدعاء مشرف أو إداري إلى الحلقة، اختر الجهة المناسبة
           وأضف سببًا مختصرًا. لا يستخدم هذا الطلب بشكل متكرر.
         </p>
@@ -103,7 +103,7 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
             type="button"
             disabled={Boolean(sendingTarget) || sentToday.ADMIN}
             onClick={() => sendRequest("ADMIN")}
-            className="rounded-2xl bg-[#173d42] px-4 py-3 text-sm font-black text-white transition hover:bg-[#1f6358] disabled:cursor-not-allowed disabled:opacity-55"
+            className="rounded-2xl bg-[#0a3f2a] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0f5a35] disabled:cursor-not-allowed disabled:opacity-55"
           >
             {sentToday.ADMIN
               ? "تم إرسال طلب الإدارة اليوم"
@@ -113,7 +113,7 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
           </button>
         </div>
 
-        <div className="rounded-2xl border border-amber-100 bg-white px-4 py-3 text-sm leading-7 text-[#173d42]/75">
+        <div className="rounded-2xl border border-amber-100 bg-white px-4 py-3 text-sm leading-7 text-[#0a3f2a]/75">
           عند دخول ولي أمر أو وجود استفسار أو شكوى أو اعتراض يخص المنصة، يرجى
           توجيهه إلى رقم واتساب المنصة الرسمي، ولا يتم إدخاله إلى الحلقة إلا
           بتوجيه واضح من الإدارة أو الإشراف.
@@ -123,7 +123,7 @@ export default function InstantEntryRequestButtons({ circleName, circleUrl }: Pr
           value={note}
           onChange={(event) => setNote(event.target.value)}
           placeholder="سبب مختصر للطلب - اختياري"
-          className="min-h-16 w-full resize-none rounded-2xl border border-[#e7dcc8] bg-[#fffaf2] px-4 py-3 text-sm text-[#173d42] outline-none focus:border-red-300"
+          className="min-h-16 w-full resize-none rounded-2xl border border-[#e7d7b4] bg-[#fffaf4] px-4 py-3 text-sm text-[#0a3f2a] outline-none focus:border-red-300"
         />
         {feedback ? <p className="text-sm font-black text-red-700">{feedback}</p> : null}
       </div>

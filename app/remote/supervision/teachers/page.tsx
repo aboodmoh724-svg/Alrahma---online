@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -228,7 +228,7 @@ export default function RemoteSupervisionTeachersPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">المعلمون والحلقات</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               عرض تشغيلي للمعلمين وما يستلمونه من حلقات وطلاب. إضافة المعلمين والحلقات تبقى من الواجهة الإدارية.
@@ -236,44 +236,44 @@ export default function RemoteSupervisionTeachersPage() {
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإشراف
           </Link>
         </div>
 
         <section className="grid gap-4 md:grid-cols-4">
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">المعلمون</p>
-            <p className="mt-2 text-4xl font-black text-[#173d42]">{teachers.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{teachers.length}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">الحلقات</p>
-            <p className="mt-2 text-4xl font-black text-[#1f6358]">{circles.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#0f5a35]">{circles.length}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">الطلاب</p>
-            <p className="mt-2 text-4xl font-black text-[#c39a62]">{students.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#bd8f2d]">{students.length}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">حلقات بلا معلم</p>
-            <p className="mt-2 text-4xl font-black text-[#8a6335]">{circlesWithoutTeacher.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#8a661f]">{circlesWithoutTeacher.length}</p>
           </div>
         </section>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="relative">
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="ابحث باسم المعلم أو الحلقة"
-              className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
             />
             {search ? (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white"
+                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#0a3f2a] text-sm font-black text-white"
                 aria-label="مسح البحث"
               >
                 ×
@@ -284,7 +284,7 @@ export default function RemoteSupervisionTeachersPage() {
 
         <form
           onSubmit={createCircle}
-          className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+          className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
         >
           <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
             <div>
@@ -296,7 +296,7 @@ export default function RemoteSupervisionTeachersPage() {
             <button
               type="submit"
               disabled={creatingCircle}
-              className="rounded-2xl bg-[#1f6358] px-6 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+              className="rounded-2xl bg-[#0f5a35] px-6 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
             >
               {creatingCircle ? "جار فتح الحلقة..." : "فتح الحلقة"}
             </button>
@@ -309,7 +309,7 @@ export default function RemoteSupervisionTeachersPage() {
                 setCircleForm((prev) => ({ ...prev, name: event.target.value }))
               }
               placeholder="اسم الحلقة"
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
               required
             />
             <select
@@ -317,7 +317,7 @@ export default function RemoteSupervisionTeachersPage() {
               onChange={(event) =>
                 setCircleForm((prev) => ({ ...prev, teacherId: event.target.value }))
               }
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
             >
               <option value="">اختر المعلم</option>
               {teachers.map((teacher) => (
@@ -331,7 +331,7 @@ export default function RemoteSupervisionTeachersPage() {
               onChange={(event) =>
                 setCircleForm((prev) => ({ ...prev, track: event.target.value }))
               }
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
             >
               <option value="">اختر المسار</option>
               <option value="HIJAA">مسار الهجاء</option>
@@ -346,13 +346,13 @@ export default function RemoteSupervisionTeachersPage() {
                 setCircleForm((prev) => ({ ...prev, zoomUrl: event.target.value }))
               }
               placeholder="رابط الحلقة"
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
               dir="ltr"
             />
             <select
               value={circleForm.periodLabel}
               onChange={(event) => selectPeriod(event.target.value)}
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
             >
               <option value="">اختر الفترة</option>
               <option value="الفترة الصباحية">الفترة الصباحية</option>
@@ -367,7 +367,7 @@ export default function RemoteSupervisionTeachersPage() {
               onChange={(event) =>
                 setCircleForm((prev) => ({ ...prev, startsAt: event.target.value }))
               }
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
               aria-label="وقت بداية الحلقة"
             />
             <input
@@ -376,18 +376,18 @@ export default function RemoteSupervisionTeachersPage() {
               onChange={(event) =>
                 setCircleForm((prev) => ({ ...prev, endsAt: event.target.value }))
               }
-              className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+              className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
               aria-label="وقت نهاية الحلقة"
             />
           </div>
         </form>
 
         {loading ? (
-          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
+          <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
             جاري تحميل بيانات المعلمين...
           </div>
         ) : filteredTeachers.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
+          <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
             لا توجد نتائج مطابقة.
           </div>
         ) : (
@@ -402,7 +402,7 @@ export default function RemoteSupervisionTeachersPage() {
               return (
                 <article
                   key={teacher.id}
-                  className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+                  className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
                 >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
@@ -415,10 +415,10 @@ export default function RemoteSupervisionTeachersPage() {
                       ) : null}
                     </div>
                     <div className="flex gap-2 text-xs font-black">
-                      <span className="rounded-full bg-[#eef7f5] px-3 py-2 text-[#1f6358]">
+                      <span className="rounded-full bg-[#edf6ee] px-3 py-2 text-[#0f5a35]">
                         {teacherCircles.length} حلقة
                       </span>
-                      <span className="rounded-full bg-[#fffaf2] px-3 py-2 text-[#9b7039]">
+                      <span className="rounded-full bg-[#fffaf4] px-3 py-2 text-[#8a661f]">
                         {teacherStudentsCount} طالب
                       </span>
                     </div>
@@ -426,7 +426,7 @@ export default function RemoteSupervisionTeachersPage() {
 
                   <div className="mt-5 space-y-3">
                     {teacherCircles.length === 0 ? (
-                      <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-4 text-sm text-[#1c2d31]/60">
+                      <div className="rounded-2xl border border-dashed border-[#d8bf83] p-4 text-sm text-[#1c2d31]/60">
                         لا توجد حلقات مسندة لهذا المعلم.
                       </div>
                     ) : (
@@ -434,7 +434,7 @@ export default function RemoteSupervisionTeachersPage() {
                         const circleStudents = studentsByCircle.get(circle.id) || [];
 
                         return (
-                          <div key={circle.id} className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] p-4">
+                          <div key={circle.id} className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-4">
                             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                               <div>
                                 <h3 className="font-black text-[#1c2d31]">{circle.name}</h3>
@@ -452,12 +452,12 @@ export default function RemoteSupervisionTeachersPage() {
                                   href={circle.zoomUrl}
                                   target="_blank"
                                   rel="noreferrer"
-                                  className="rounded-xl bg-[#1f6358] px-4 py-2 text-center text-xs font-black text-white shadow-sm"
+                                  className="rounded-xl bg-[#0f5a35] px-4 py-2 text-center text-xs font-black text-white shadow-sm"
                                 >
                                   دخول الحلقة
                                 </a>
                               ) : (
-                                <span className="rounded-xl bg-white px-4 py-2 text-xs font-black text-[#1c2d31]/55 ring-1 ring-[#d9c8ad]">
+                                <span className="rounded-xl bg-white px-4 py-2 text-xs font-black text-[#1c2d31]/55 ring-1 ring-[#d8bf83]">
                                   لا يوجد رابط
                                 </span>
                               )}
@@ -472,7 +472,7 @@ export default function RemoteSupervisionTeachersPage() {
                                     type="button"
                                     key={student.id}
                                     onClick={() => setSelectedStudent(student)}
-                                    className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#1c2d31] ring-1 ring-[#d9c8ad]"
+                                    className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#1c2d31] ring-1 ring-[#d8bf83]"
                                   >
                                     {student.fullName}
                                     {student.studentCode ? ` - ${student.studentCode}` : ""}
@@ -496,7 +496,7 @@ export default function RemoteSupervisionTeachersPage() {
             <section className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-white p-5 shadow-2xl">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[#9b7039]">بيانات الطالب المختصرة</p>
+                  <p className="text-sm font-black text-[#8a661f]">بيانات الطالب المختصرة</p>
                   <h2 className="mt-1 text-2xl font-black text-[#1c2d31]">{selectedStudent.fullName}</h2>
                   <p className="mt-1 text-sm text-[#1c2d31]/60">
                     {selectedStudent.studentCode || "بدون رقم"} - {selectedStudent.circle?.name || "بدون حلقة"}
@@ -505,25 +505,25 @@ export default function RemoteSupervisionTeachersPage() {
                 <button
                   type="button"
                   onClick={() => setSelectedStudent(null)}
-                  className="grid h-9 w-9 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white"
+                  className="grid h-9 w-9 place-items-center rounded-full bg-[#0a3f2a] text-sm font-black text-white"
                 >
                   ×
                 </button>
               </div>
 
               <div className="mt-5 grid gap-3 md:grid-cols-2">
-                <div className="rounded-2xl bg-[#fffaf2] p-4">
-                  <p className="text-xs font-black text-[#8a6335]">ولي الأمر</p>
+                <div className="rounded-2xl bg-[#fffaf4] p-4">
+                  <p className="text-xs font-black text-[#8a661f]">ولي الأمر</p>
                   <p className="mt-2 text-sm font-bold text-[#1c2d31]">{selectedStudent.parentWhatsapp || "-"}</p>
                   <p className="mt-1 text-xs text-[#1c2d31]/60">{selectedStudent.parentEmail || "-"}</p>
                 </div>
-                <div className="rounded-2xl bg-[#fffaf2] p-4">
-                  <p className="text-xs font-black text-[#8a6335]">المعلم والحلقة</p>
+                <div className="rounded-2xl bg-[#fffaf4] p-4">
+                  <p className="text-xs font-black text-[#8a661f]">المعلم والحلقة</p>
                   <p className="mt-2 text-sm font-bold text-[#1c2d31]">{selectedStudent.teacher.fullName}</p>
                   <p className="mt-1 text-xs text-[#1c2d31]/60">{selectedStudent.circle?.name || "-"}</p>
                 </div>
-                <div className="rounded-2xl bg-[#fffaf2] p-4">
-                  <p className="text-xs font-black text-[#8a6335]">البيانات الأولية</p>
+                <div className="rounded-2xl bg-[#fffaf4] p-4">
+                  <p className="text-xs font-black text-[#8a661f]">البيانات الأولية</p>
                   <div className="mt-2 space-y-1 text-sm text-[#1c2d31]/75">
                     <p>الميلاد: {selectedStudent.detail?.birthDate || "-"}</p>
                     <p>الجنسية: {selectedStudent.detail?.nationality || "-"}</p>
@@ -531,14 +531,14 @@ export default function RemoteSupervisionTeachersPage() {
                     <p>الصف: {selectedStudent.detail?.grade || "-"}</p>
                   </div>
                 </div>
-                <div className="rounded-2xl bg-[#fffaf2] p-4">
-                  <p className="text-xs font-black text-[#8a6335]">المستوى الحالي</p>
+                <div className="rounded-2xl bg-[#fffaf4] p-4">
+                  <p className="text-xs font-black text-[#8a661f]">المستوى الحالي</p>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]/75">
                     {selectedStudent.detail?.generalLevel || selectedStudent.detail?.notes || "-"}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-[#f4fbf8] p-4 md:col-span-2">
-                  <p className="text-xs font-black text-[#1f6358]">آخر وصول في التقارير</p>
+                  <p className="text-xs font-black text-[#0f5a35]">آخر وصول في التقارير</p>
                   {selectedStudent.reports?.[0] ? (
                     <div className="mt-2 space-y-1 text-sm text-[#1c2d31]/75">
                       <p>الدرس: {selectedStudent.reports[0].lessonName}</p>

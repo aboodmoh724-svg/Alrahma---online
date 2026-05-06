@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -154,7 +154,7 @@ export default function BroadcastsPageClient({
       <div className="mx-auto max-w-6xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">قوالب الرسائل الجماعية</p>
+            <p className="text-sm font-black text-[#8a661f]">قوالب الرسائل الجماعية</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">رسائل {sectionTitle}</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               اختر الفئة المستهدفة ثم أرسل الرسالة مرة واحدة مع ملخص مباشر بعدد الرسائل التي
@@ -163,14 +163,14 @@ export default function BroadcastsPageClient({
           </div>
           <Link
             href={dashboardHref}
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
         <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <h2 className="text-xl font-black text-[#1c2d31]">قوالب جاهزة</h2>
             <div className="mt-4 space-y-3">
               {templateMessages.map((template) => (
@@ -178,7 +178,7 @@ export default function BroadcastsPageClient({
                   key={template.title}
                   type="button"
                   onClick={() => setMessage(template.body)}
-                  className="block w-full rounded-2xl bg-[#fffaf2] p-4 text-right transition hover:bg-white"
+                  className="block w-full rounded-2xl bg-[#fffaf4] p-4 text-right transition hover:bg-white"
                 >
                   <span className="block text-sm font-black text-[#1c2d31]">{template.title}</span>
                   <span className="mt-2 block text-xs leading-6 text-[#1c2d31]/60">
@@ -189,21 +189,21 @@ export default function BroadcastsPageClient({
             </div>
           </div>
 
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">الفئة المستهدفة</label>
                 <select
                   value={recipientType}
                   onChange={(event) => setRecipientType(event.target.value as RecipientType)}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
                 >
                   <option value="ALL_PARENTS">جميع أولياء الأمور</option>
                   <option value="ALL_TEACHERS">جميع المعلمين</option>
                   <option value="SELECTED_PARENTS">أولياء أمور محددون</option>
                 </select>
               </div>
-              <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm leading-7 text-[#1c2d31]/65">
+              <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm leading-7 text-[#1c2d31]/65">
                 {recipientType === "ALL_PARENTS" && `سيتم الإرسال إلى ${parentOptions.length} من أولياء الأمور في هذا القسم.`}
                 {recipientType === "ALL_TEACHERS" && `سيتم الإرسال إلى ${teacherOptions.length} من المعلمين في هذا القسم.`}
                 {recipientType === "SELECTED_PARENTS" && `تم تحديد ${selectedCount} من أولياء الأمور حتى الآن.`}
@@ -211,26 +211,26 @@ export default function BroadcastsPageClient({
             </div>
 
             {recipientType === "SELECTED_PARENTS" ? (
-              <div className="mt-4 rounded-[1.5rem] border border-[#d9c8ad] bg-[#fffaf2] p-4">
+              <div className="mt-4 rounded-[1.5rem] border border-[#d8bf83] bg-[#fffaf4] p-4">
                 <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                   <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder="ابحث باسم الطالب أو رقم ولي الأمر"
-                    className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6358] md:max-w-sm"
+                    className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none focus:border-[#0f5a35] md:max-w-sm"
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       onClick={handleSelectFiltered}
-                      className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white"
+                      className="rounded-xl bg-[#0f5a35] px-4 py-2 text-sm font-black text-white"
                     >
                       تحديد الظاهرين
                     </button>
                     <button
                       type="button"
                       onClick={handleClearSelected}
-                      className="rounded-xl bg-white px-4 py-2 text-sm font-black text-[#1c2d31] ring-1 ring-[#d9c8ad]"
+                      className="rounded-xl bg-white px-4 py-2 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83]"
                     >
                       مسح التحديد
                     </button>
@@ -272,7 +272,7 @@ export default function BroadcastsPageClient({
                 value={message}
                 onChange={(event) => setMessage(event.target.value)}
                 rows={12}
-                className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none focus:border-[#1f6358]"
+                className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 outline-none focus:border-[#0f5a35]"
               />
             </div>
 
@@ -280,7 +280,7 @@ export default function BroadcastsPageClient({
               type="button"
               onClick={handleSend}
               disabled={sending}
-              className="mt-4 rounded-2xl bg-[#1f6358] px-6 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+              className="mt-4 rounded-2xl bg-[#0f5a35] px-6 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
             >
               {sending ? "جارٍ إرسال الرسائل..." : "إرسال الرسالة الجماعية"}
             </button>

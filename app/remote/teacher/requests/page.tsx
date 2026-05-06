@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -224,28 +224,28 @@ export default function RemoteTeacherRequestsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f0e6] px-4 py-6" dir="rtl">
+    <main className="min-h-screen bg-[#f6eee7] px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#173d42]">طلبات المعلم والإشعارات</h1>
+            <h1 className="text-3xl font-black text-[#0a3f2a]">طلبات المعلم والإشعارات</h1>
             <p className="mt-1 text-sm text-[#1c2d31]/65">
               من هنا تستطيع رفع طلباتك للإشراف ومتابعة الردود أو إشعارات إضافة الطلاب.
             </p>
           </div>
           <Link
             href="/remote/teacher/dashboard"
-            className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] hover:bg-[#fffaf2]"
+            className="rounded-xl border border-[#d8bf83] bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] hover:bg-[#fffaf4]"
           >
             الرجوع إلى لوحة المعلم
           </Link>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-          <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <h2 className="text-xl font-black text-[#173d42]">رفع طلب جديد</h2>
+                <h2 className="text-xl font-black text-[#0a3f2a]">رفع طلب جديد</h2>
                 <p className="mt-1 text-sm text-[#1c2d31]/60">
                   اختر الطالب إذا كان الطلب متعلقًا به، ثم اكتب ما يحتاجه المشرف بوضوح.
                 </p>
@@ -258,7 +258,7 @@ export default function RemoteTeacherRequestsPage() {
                 onChange={(event) =>
                   setFormData((prev) => ({ ...prev, studentId: event.target.value }))
                 }
-                className="w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 outline-none focus:border-[#1f6358]"
+                className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 outline-none focus:border-[#0f5a35]"
               >
                 <option value="">الطلب غير مرتبط بطالب محدد</option>
                 {students.map((student) => (
@@ -275,7 +275,7 @@ export default function RemoteTeacherRequestsPage() {
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, type: event.target.value }))
                   }
-                  className="w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 outline-none focus:border-[#0f5a35]"
                 >
                   {TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -289,7 +289,7 @@ export default function RemoteTeacherRequestsPage() {
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, priority: event.target.value }))
                   }
-                  className="w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 outline-none focus:border-[#1f6358]"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 outline-none focus:border-[#0f5a35]"
                 >
                   {PRIORITY_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -306,7 +306,7 @@ export default function RemoteTeacherRequestsPage() {
                   setFormData((prev) => ({ ...prev, subject: event.target.value }))
                 }
                 placeholder="عنوان مختصر للطلب"
-                className="w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 outline-none focus:border-[#1f6358]"
+                className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 outline-none focus:border-[#0f5a35]"
                 required
               />
 
@@ -316,14 +316,14 @@ export default function RemoteTeacherRequestsPage() {
                   setFormData((prev) => ({ ...prev, details: event.target.value }))
                 }
                 placeholder="اكتب التفاصيل التي يحتاجها الإشراف هنا"
-                className="min-h-40 w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 outline-none focus:border-[#1f6358]"
+                className="min-h-40 w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 outline-none focus:border-[#0f5a35]"
                 required
               />
 
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+                className="w-full rounded-xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
               >
                 {submitting ? "جارٍ رفع الطلب..." : "رفع الطلب"}
               </button>
@@ -331,10 +331,10 @@ export default function RemoteTeacherRequestsPage() {
           </section>
 
           <div className="space-y-6">
-            <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-xl font-black text-[#173d42]">إشعاراتي</h2>
+                  <h2 className="text-xl font-black text-[#0a3f2a]">إشعاراتي</h2>
                   <p className="mt-1 text-sm text-[#1c2d31]/60">
                     ستظهر هنا تنبيهات إضافة الطلاب أو تحديث طلباتك.
                   </p>
@@ -349,7 +349,7 @@ export default function RemoteTeacherRequestsPage() {
                     type="button"
                     disabled={markingNotifications || unreadCount === 0}
                     onClick={markAllNotificationsAsRead}
-                    className="rounded-xl border border-[#d9c8ad] px-4 py-2 text-sm font-bold text-[#1c2d31] disabled:opacity-45"
+                    className="rounded-xl border border-[#d8bf83] px-4 py-2 text-sm font-bold text-[#1c2d31] disabled:opacity-45"
                   >
                     تعليم الكل كمقروء
                   </button>
@@ -357,11 +357,11 @@ export default function RemoteTeacherRequestsPage() {
               </div>
 
               {loading ? (
-                <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+                <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                   جارٍ التحميل...
                 </div>
               ) : notifications.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+                <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                   لا توجد إشعارات حتى الآن.
                 </div>
               ) : (
@@ -373,12 +373,12 @@ export default function RemoteTeacherRequestsPage() {
                       onClick={() => openNotification(item)}
                       className={`rounded-2xl border p-4 ${
                         item.isRead
-                          ? "border-[#e7dcc8] bg-[#fffaf2]"
-                          : "border-[#c39a62] bg-[#fff3df]"
-                      } w-full text-right transition hover:border-[#1f6358]`}
+                          ? "border-[#e7d7b4] bg-[#fffaf4]"
+                          : "border-[#bd8f2d] bg-[#fff3df]"
+                      } w-full text-right transition hover:border-[#0f5a35]`}
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-black text-[#173d42]">{item.title}</p>
+                        <p className="font-black text-[#0a3f2a]">{item.title}</p>
                         <span className="text-xs font-bold text-[#1c2d31]/55">
                           {formatDate(item.createdAt)}
                         </span>
@@ -390,38 +390,38 @@ export default function RemoteTeacherRequestsPage() {
               )}
             </section>
 
-            <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-xl font-black text-[#173d42]">طلباتي السابقة</h2>
+                <h2 className="text-xl font-black text-[#0a3f2a]">طلباتي السابقة</h2>
                 <span className="text-sm font-bold text-[#1c2d31]/55">
                   {requests.length} طلب
                 </span>
               </div>
 
               {loading ? (
-                <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+                <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                   جارٍ التحميل...
                 </div>
               ) : requests.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+                <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                   لم يتم رفع أي طلب حتى الآن.
                 </div>
               ) : (
                 <div className="space-y-3">
                   {requests.map((request) => (
-                    <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#e7dcc8]">
+                    <div key={request.id} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                        <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                           {STATUS_LABELS[request.status]}
                         </span>
-                        <span className="rounded-full bg-[#f0e2c8] px-3 py-1 text-xs font-black text-[#8a6335]">
+                        <span className="rounded-full bg-[#f0e2c8] px-3 py-1 text-xs font-black text-[#8a661f]">
                           {typeLabel(request.type)}
                         </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
                           {priorityLabel(request.priority)}
                         </span>
                       </div>
-                      <h3 className="mt-3 text-lg font-black text-[#173d42]">{request.subject}</h3>
+                      <h3 className="mt-3 text-lg font-black text-[#0a3f2a]">{request.subject}</h3>
                       <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{request.details}</p>
                       <div className="mt-3 flex flex-wrap gap-3 text-xs font-bold text-[#1c2d31]/55">
                         <span>{formatDate(request.createdAt)}</span>
@@ -434,8 +434,8 @@ export default function RemoteTeacherRequestsPage() {
                         {request.reviewer ? <span>المتابع: {request.reviewer.fullName}</span> : null}
                       </div>
                       {request.adminNote ? (
-                        <div className="mt-3 rounded-2xl bg-white p-3 text-sm text-[#1c2d31] ring-1 ring-[#e7dcc8]">
-                          <span className="font-black text-[#8a6335]">ملاحظة الإدارة:</span>{" "}
+                        <div className="mt-3 rounded-2xl bg-white p-3 text-sm text-[#1c2d31] ring-1 ring-[#e7d7b4]">
+                          <span className="font-black text-[#8a661f]">ملاحظة الإدارة:</span>{" "}
                           {request.adminNote}
                         </div>
                       ) : null}

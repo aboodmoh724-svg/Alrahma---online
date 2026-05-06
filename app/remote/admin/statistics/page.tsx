@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -105,7 +105,7 @@ export default async function RemoteAdminStatisticsPage({ searchParams }: PagePr
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">الإحصائيات</h1>
             <p className="mt-2 text-sm font-bold text-[#1c2d31]/60">
               المعروض الآن: {selectedTrackLabel}
@@ -113,13 +113,13 @@ export default async function RemoteAdminStatisticsPage({ searchParams }: PagePr
           </div>
           <Link
             href="/remote/admin/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
-        <section className="flex flex-wrap gap-2 rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="flex flex-wrap gap-2 rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
           {tracks.map((track) => {
             const active = selectedTrack === track.value;
             return (
@@ -132,8 +132,8 @@ export default async function RemoteAdminStatisticsPage({ searchParams }: PagePr
                 }
                 className={`rounded-2xl px-4 py-2 text-sm font-black transition ${
                   active
-                    ? "bg-[#173d42] text-white"
-                    : "bg-[#fffaf2] text-[#1c2d31] hover:bg-white"
+                    ? "bg-[#0a3f2a] text-white"
+                    : "bg-[#fffaf4] text-[#1c2d31] hover:bg-white"
                 }`}
               >
                 {track.label}
@@ -147,29 +147,29 @@ export default async function RemoteAdminStatisticsPage({ searchParams }: PagePr
             <div
               key={stat.label}
               id={stat.id}
-              className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+              className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
             >
               <p className="text-sm font-bold text-[#1c2d31]/55">{stat.label}</p>
-              <p className="mt-2 text-4xl font-black text-[#173d42]">{stat.value}</p>
+              <p className="mt-2 text-4xl font-black text-[#0a3f2a]">{stat.value}</p>
             </div>
           ))}
         </section>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <h2 className="text-xl font-black text-[#1c2d31]">توزيع الحلقات حسب المسارات</h2>
           <div className="mt-4 grid gap-3 md:grid-cols-4">
             {circlesByTrack.length === 0 ? (
-              <p className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+              <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#1c2d31]/60">
                 لا توجد حلقات بعد.
               </p>
             ) : (
               circlesByTrack.map((item) => (
                 <div
                   key={item.track || "none"}
-                  className="rounded-2xl bg-[#fffaf2] p-4"
+                  className="rounded-2xl bg-[#fffaf4] p-4"
                 >
                   <p className="font-black text-[#1c2d31]">{trackLabel(item.track)}</p>
-                  <p className="mt-2 text-3xl font-black text-[#1f6358]">
+                  <p className="mt-2 text-3xl font-black text-[#0f5a35]">
                     {item._count._all}
                   </p>
                 </div>

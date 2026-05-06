@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -348,7 +348,7 @@ export default function RemoteSupervisionMessagesPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">رسائل أولياء الأمور والمعلمين</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               اختر الطالب أو المعلم من النظام، ثم عدل القالب وأرسل الرسالة دون إدخال الأرقام يدويًا.
@@ -356,13 +356,13 @@ export default function RemoteSupervisionMessagesPage() {
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع إلى لوحة الإشراف
           </Link>
         </div>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h2 className="text-2xl font-black text-[#1c2d31]">مركز متابعة رسائل أولياء الأمور</h2>
@@ -370,13 +370,13 @@ export default function RemoteSupervisionMessagesPage() {
                 كل رد وارد يظهر هنا مع الطالب والسياق والخطوة التالية، دون انتقال بين صفحات متعددة.
               </p>
             </div>
-            <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+            <span className="rounded-full bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white">
               {incomingMessages.length}
             </span>
           </div>
           <div className="mt-4 grid gap-3 xl:grid-cols-2">
             {incomingMessages.length === 0 ? (
-              <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-bold text-[#1c2d31]/60">
+              <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm font-bold text-[#1c2d31]/60">
                 لا توجد رسائل واردة جديدة.
               </div>
             ) : (
@@ -388,15 +388,15 @@ export default function RemoteSupervisionMessagesPage() {
                       ? "bg-red-50 ring-red-200"
                       : message.category === "INTERVIEW_RESCHEDULE"
                         ? "bg-amber-50 ring-amber-200"
-                        : "bg-[#fffaf2] ring-[#e5d7bd]"
+                        : "bg-[#fffaf4] ring-[#e7d7b4]"
                   }`}
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[#1f6358] px-3 py-1 text-xs font-black text-white">
+                      <span className="rounded-full bg-[#0f5a35] px-3 py-1 text-xs font-black text-white">
                         {categoryLabel(message.category)}
                       </span>
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#173d42] ring-1 ring-[#e5d7bd]">
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0a3f2a] ring-1 ring-[#e7d7b4]">
                         {statusLabel(message.followUpStatus)}
                       </span>
                       <span className="text-xs font-bold text-[#1c2d31]/50">
@@ -408,7 +408,7 @@ export default function RemoteSupervisionMessagesPage() {
                       type="button"
                       disabled={handlingMessageId === message.id}
                       onClick={() => updateIncomingStatus(message.id, "CLOSED")}
-                      className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-black text-[#173d42] disabled:opacity-60"
+                      className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-black text-[#0a3f2a] disabled:opacity-60"
                     >
                       إغلاق
                     </button>
@@ -451,7 +451,7 @@ export default function RemoteSupervisionMessagesPage() {
                     onChange={(event) =>
                       setQuickReplies((prev) => ({ ...prev, [message.id]: event.target.value }))
                     }
-                    className="mt-3 min-h-32 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none disabled:opacity-60"
+                    className="mt-3 min-h-32 w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 outline-none disabled:opacity-60"
                   />
 
                   <input
@@ -460,7 +460,7 @@ export default function RemoteSupervisionMessagesPage() {
                       setMessageNotes((prev) => ({ ...prev, [message.id]: event.target.value }))
                     }
                     placeholder="ملاحظة داخلية للمشرف"
-                    className="mt-3 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                    className="mt-3 w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                   />
 
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -468,7 +468,7 @@ export default function RemoteSupervisionMessagesPage() {
                       type="button"
                       disabled={handlingMessageId === message.id || !canReplyToIncoming(message)}
                       onClick={() => sendQuickReply(message)}
-                      className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                      className="rounded-xl bg-[#0f5a35] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                     >
                       إرسال الرد وحفظ
                     </button>
@@ -476,7 +476,7 @@ export default function RemoteSupervisionMessagesPage() {
                       type="button"
                       disabled={handlingMessageId === message.id}
                       onClick={() => updateIncomingStatus(message.id, "IN_REVIEW")}
-                      className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#173d42] disabled:opacity-60"
+                      className="rounded-xl border border-[#d8bf83] bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] disabled:opacity-60"
                     >
                       قيد المتابعة
                     </button>
@@ -496,7 +496,7 @@ export default function RemoteSupervisionMessagesPage() {
         </section>
 
         <section className="grid gap-4 xl:grid-cols-[380px_1fr]">
-          <div className="space-y-4 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="space-y-4 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <div className="grid gap-2">
               {[
                 { value: "SELECTED_PARENTS", label: "أولياء أمور محددون" },
@@ -510,8 +510,8 @@ export default function RemoteSupervisionMessagesPage() {
                   onClick={() => setRecipientMode(mode.value as RecipientMode)}
                   className={`rounded-2xl px-4 py-3 text-right text-sm font-black ${
                     recipientMode === mode.value
-                      ? "bg-[#173d42] text-white"
-                      : "bg-[#fffaf2] text-[#173d42] ring-1 ring-[#e5d7bd]"
+                      ? "bg-[#0a3f2a] text-white"
+                      : "bg-[#fffaf4] text-[#0a3f2a] ring-1 ring-[#e7d7b4]"
                   }`}
                 >
                   {mode.label}
@@ -525,21 +525,21 @@ export default function RemoteSupervisionMessagesPage() {
                   value={studentQuery}
                   onChange={(event) => setStudentQuery(event.target.value)}
                   placeholder="ابحث باسم الطالب أو رقمه أو ولي الأمر"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                 />
                 <div className="max-h-[420px] space-y-2 overflow-y-auto pl-1">
                   {loading ? (
-                    <p className="rounded-2xl bg-[#fffaf2] p-4 text-center text-sm text-[#1c2d31]/60">جاري التحميل...</p>
+                    <p className="rounded-2xl bg-[#fffaf4] p-4 text-center text-sm text-[#1c2d31]/60">جاري التحميل...</p>
                   ) : filteredStudents.map((student) => (
                     <button
                       key={student.id}
                       type="button"
                       onClick={() => toggleStudent(student.id)}
                       disabled={recipientMode === "ALL_PARENTS"}
-                      className={`w-full rounded-2xl p-3 text-right ring-1 ring-[#d9c8ad] ${
+                      className={`w-full rounded-2xl p-3 text-right ring-1 ring-[#d8bf83] ${
                         selectedStudentIds.includes(student.id)
-                          ? "bg-[#1f6358] text-white"
-                          : "bg-[#fffaf2] text-[#1c2d31]"
+                          ? "bg-[#0f5a35] text-white"
+                          : "bg-[#fffaf4] text-[#1c2d31]"
                       } disabled:opacity-60`}
                     >
                       <p className="font-black">{student.fullName}</p>
@@ -556,21 +556,21 @@ export default function RemoteSupervisionMessagesPage() {
                   value={teacherQuery}
                   onChange={(event) => setTeacherQuery(event.target.value)}
                   placeholder="ابحث باسم المعلم أو رقمه"
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                 />
                 <div className="max-h-[420px] space-y-2 overflow-y-auto pl-1">
                   {loading ? (
-                    <p className="rounded-2xl bg-[#fffaf2] p-4 text-center text-sm text-[#1c2d31]/60">جاري التحميل...</p>
+                    <p className="rounded-2xl bg-[#fffaf4] p-4 text-center text-sm text-[#1c2d31]/60">جاري التحميل...</p>
                   ) : filteredTeachers.map((teacher) => (
                     <button
                       key={teacher.id}
                       type="button"
                       onClick={() => toggleTeacher(teacher.id)}
                       disabled={recipientMode === "ALL_TEACHERS"}
-                      className={`w-full rounded-2xl p-3 text-right ring-1 ring-[#d9c8ad] ${
+                      className={`w-full rounded-2xl p-3 text-right ring-1 ring-[#d8bf83] ${
                         selectedTeacherIds.includes(teacher.id)
-                          ? "bg-[#1f6358] text-white"
-                          : "bg-[#fffaf2] text-[#1c2d31]"
+                          ? "bg-[#0f5a35] text-white"
+                          : "bg-[#fffaf4] text-[#1c2d31]"
                       } disabled:opacity-60`}
                     >
                       <p className="font-black">{teacher.fullName}</p>
@@ -581,13 +581,13 @@ export default function RemoteSupervisionMessagesPage() {
               </div>
             )}
 
-            <div className="rounded-2xl bg-[#173d42] p-4 text-white">
+            <div className="rounded-2xl bg-[#0a3f2a] p-4 text-white">
               <p className="text-sm font-bold text-white/70">عدد المستلمين الجاهزين</p>
               <p className="mt-2 text-4xl font-black">{recipientCount}</p>
             </div>
           </div>
 
-          <div className="space-y-4 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="space-y-4 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <label className="block text-sm font-black text-[#1c2d31]">
               ملاحظة مختصرة للقالب
               <textarea
@@ -595,7 +595,7 @@ export default function RemoteSupervisionMessagesPage() {
                 onChange={(event) => setCustomMessage(event.target.value)}
                 rows={3}
                 placeholder="تستخدم داخل قالب التعميم أو الرسالة العامة"
-                className="mt-2 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                className="mt-2 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
               />
             </label>
 
@@ -607,8 +607,8 @@ export default function RemoteSupervisionMessagesPage() {
                   onClick={() => fillSelectedTemplate(template.key)}
                   className={`rounded-2xl px-4 py-3 text-sm font-black transition ${
                     selectedTemplate.key === template.key
-                      ? "bg-[#173d42] text-white"
-                      : "bg-[#fffaf2] text-[#173d42] ring-1 ring-[#e5d7bd]"
+                      ? "bg-[#0a3f2a] text-white"
+                      : "bg-[#fffaf4] text-[#0a3f2a] ring-1 ring-[#e7d7b4]"
                   }`}
                 >
                   {template.title}
@@ -620,14 +620,14 @@ export default function RemoteSupervisionMessagesPage() {
               value={message}
               onChange={(event) => setMessage(event.target.value)}
               rows={14}
-              className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm leading-7 outline-none"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm leading-7 outline-none"
             />
 
             <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={() => fillSelectedTemplate(selectedTemplate.key)}
-                className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-sm font-black text-[#173d42]"
+                className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-sm font-black text-[#0a3f2a]"
               >
                 تحديث القالب بالبيانات
               </button>
@@ -635,7 +635,7 @@ export default function RemoteSupervisionMessagesPage() {
                 type="button"
                 onClick={sendMessage}
                 disabled={sending || recipientCount === 0 || !message.trim()}
-                className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
               >
                 {sending ? "جارٍ الإرسال..." : "إرسال واتساب"}
               </button>

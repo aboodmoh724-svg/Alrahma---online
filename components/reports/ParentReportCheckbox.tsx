@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 
@@ -96,7 +96,7 @@ export default function ParentReportCheckbox({
           type="button"
           onClick={handleSendWhatsApp}
           disabled={saving || checked}
-          className="block w-full rounded-xl bg-[#1f6358] px-3 py-2 text-center text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+          className="block w-full rounded-xl bg-[#0f5a35] px-3 py-2 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {checked ? "تم إرسال الواتساب" : saving ? "جاري الإرسال..." : "إرسال عبر واتساب"}
         </button>
@@ -109,14 +109,14 @@ export default function ParentReportCheckbox({
         className={`inline-flex w-full items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm transition ${
           checked
             ? "cursor-default border-emerald-200 bg-emerald-50 text-emerald-800"
-            : "border-[#d9c8ad] text-[#1c2d31]"
+            : "border-[#d8bf83] text-[#1c2d31]"
         }`}
       >
         <input
           type="checkbox"
           checked={checked}
           readOnly
-          className="h-4 w-4 rounded border-[#d9c8ad] text-[#1f6358]"
+          className="h-4 w-4 rounded border-[#d8bf83] text-[#0f5a35]"
         />
         <span>{checked ? "تم إرسال التقرير" : "لم يتم إرسال التقرير بعد"}</span>
       </div>

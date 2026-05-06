@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -296,11 +296,11 @@ export default async function OnsiteAdminAbsencesPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
           <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 إدارة الغياب الحضوري
               </p>
               <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
@@ -313,7 +313,7 @@ export default async function OnsiteAdminAbsencesPage() {
             </div>
             <Link
               href="/onsite/admin/dashboard"
-              className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2]"
+              className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4]"
             >
               الرجوع للوحة الإدارة
             </Link>
@@ -321,24 +321,24 @@ export default async function OnsiteAdminAbsencesPage() {
         </section>
 
         <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">تاريخ اليوم</p>
-            <p className="mt-2 text-2xl font-black text-[#173d42]">{reportDate}</p>
+            <p className="mt-2 text-2xl font-black text-[#0a3f2a]">{reportDate}</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">عدد الغائبين</p>
-            <p className="mt-2 text-4xl font-black text-[#c39a62]">{pendingAbsences.length}</p>
+            <p className="mt-2 text-4xl font-black text-[#bd8f2d]">{pendingAbsences.length}</p>
             <p className="mt-1 text-xs font-bold text-[#1c2d31]/50">بانتظار الإرسال فقط</p>
           </div>
-          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">آلية الإرسال</p>
-            <p className="mt-2 text-sm font-black leading-7 text-[#1f6358]">
+            <p className="mt-2 text-sm font-black leading-7 text-[#0f5a35]">
               إرسال جماعي مباشر من واتساب الحضوري داخل النظام، دون فتح كل طالب بشكل منفصل.
             </p>
           </div>
         </section>
 
-        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-black text-[#1c2d31]">تعديل حضور وغياب اليوم</h2>
@@ -357,7 +357,7 @@ export default async function OnsiteAdminAbsencesPage() {
           </div>
 
           {todayAttendance.length === 0 ? (
-            <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
               لا توجد سجلات حضور أو غياب لهذا اليوم.
             </div>
           ) : (
@@ -365,7 +365,7 @@ export default async function OnsiteAdminAbsencesPage() {
               {todayAttendance.map((report) => (
                 <div
                   key={report.id}
-                  className="grid gap-3 rounded-[1.6rem] border border-[#d9c8ad]/75 bg-[#fffaf2] p-4 md:grid-cols-[1fr_auto] md:items-center"
+                  className="grid gap-3 rounded-[1.6rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4 md:grid-cols-[1fr_auto] md:items-center"
                 >
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -421,14 +421,14 @@ export default async function OnsiteAdminAbsencesPage() {
           )}
         </section>
 
-        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           {absences.length === 0 ? (
-            <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
               لا يوجد طلاب غائبون اليوم حسب آخر حالة مسجلة لكل طالب.
             </div>
           ) : (
             <div className="grid gap-3">
-              <div className="flex flex-col gap-3 rounded-[1.5rem] bg-[#173d42] p-4 text-white md:flex-row md:items-center md:justify-between">
+              <div className="flex flex-col gap-3 rounded-[1.5rem] bg-[#0a3f2a] p-4 text-white md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-xl font-black">غياب اليوم</h2>
                   <p className="mt-1 text-sm text-white/70">
@@ -440,7 +440,7 @@ export default async function OnsiteAdminAbsencesPage() {
                   <button
                     type="submit"
                     disabled={!whatsappReady || pendingAbsences.length === 0}
-                    className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="rounded-2xl bg-white px-5 py-3 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4] disabled:cursor-not-allowed disabled:opacity-45"
                   >
                     {!whatsappReady
                       ? "واتساب الحضوري غير مفعّل"
@@ -467,7 +467,7 @@ export default async function OnsiteAdminAbsencesPage() {
                 return (
                   <div
                     key={report.id}
-                    className="grid gap-4 rounded-[1.8rem] border border-[#d9c8ad]/75 bg-[#fffaf2] p-4 md:grid-cols-[1fr_auto] md:items-center"
+                    className="grid gap-4 rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4 md:grid-cols-[1fr_auto] md:items-center"
                   >
                     <div>
                       <div className="flex flex-wrap items-center gap-2">

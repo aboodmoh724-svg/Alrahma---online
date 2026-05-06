@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import {
   joinInternationalPhone,
@@ -61,7 +61,7 @@ export default function PhoneNumberInput({
   );
   const baseInputClass =
     inputClassName ||
-    "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10";
+    "w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10";
 
   const setParts = (nextCountryCode: string, nextLocalNumber: string) => {
     onChange(joinInternationalPhone(nextCountryCode, nextLocalNumber));

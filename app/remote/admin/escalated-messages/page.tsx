@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -113,7 +113,7 @@ export default function RemoteAdminEscalatedMessagesPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">المتابعات المحولة من الإشراف</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               هنا تصل الرسائل التي يحولها المشرف للإدارة، ويمكن الرد على ولي الأمر أو إعادة توجيهها للإشراف أو مراسلة المعلم.
@@ -121,30 +121,30 @@ export default function RemoteAdminEscalatedMessagesPage() {
           </div>
           <Link
             href="/remote/admin/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإدارة
           </Link>
         </div>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="flex items-center justify-between gap-3">
             <div>
               <h2 className="text-2xl font-black text-[#1c2d31]">صندوق الإدارة</h2>
               <p className="mt-1 text-sm text-[#1c2d31]/60">كل بطاقة تحتاج قرارًا إداريًا واحدًا واضحًا.</p>
             </div>
-            <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+            <span className="rounded-full bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white">
               {messages.length}
             </span>
           </div>
 
           <div className="mt-5 grid gap-4 xl:grid-cols-2">
             {loading ? (
-              <div className="rounded-2xl bg-[#fffaf2] p-5 text-sm font-bold text-[#1c2d31]/60">
+              <div className="rounded-2xl bg-[#fffaf4] p-5 text-sm font-bold text-[#1c2d31]/60">
                 جاري تحميل الرسائل المحولة...
               </div>
             ) : messages.length === 0 ? (
-              <div className="rounded-2xl bg-[#fffaf2] p-5 text-sm font-bold text-[#1c2d31]/60">
+              <div className="rounded-2xl bg-[#fffaf4] p-5 text-sm font-bold text-[#1c2d31]/60">
                 لا توجد رسائل محولة للإدارة الآن.
               </div>
             ) : (
@@ -162,15 +162,15 @@ export default function RemoteAdminEscalatedMessagesPage() {
                     className={`rounded-2xl p-4 ring-1 ${
                       message.category === "COMPLAINT"
                         ? "bg-red-50 ring-red-200"
-                        : "bg-[#fffaf2] ring-[#e5d7bd]"
+                        : "bg-[#fffaf4] ring-[#e7d7b4]"
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                        <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                           {categoryLabels[message.category]}
                         </span>
-                        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#8a6335] ring-1 ring-[#e5d7bd]">
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#8a661f] ring-1 ring-[#e7d7b4]">
                           محول من الإشراف
                         </span>
                       </div>
@@ -194,28 +194,28 @@ export default function RemoteAdminEscalatedMessagesPage() {
                     </div>
 
                     <div className="mt-4 grid gap-3">
-                      <label className="grid gap-1 text-xs font-black text-[#173d42]/70">
+                      <label className="grid gap-1 text-xs font-black text-[#0a3f2a]/70">
                         رد مباشر لولي الأمر
                         <textarea
                           value={parentReply}
                           onChange={(event) => setParentReplies((current) => ({ ...current, [message.id]: event.target.value }))}
-                          className="min-h-28 rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-normal leading-7 outline-none"
+                          className="min-h-28 rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-normal leading-7 outline-none"
                         />
                       </label>
-                      <label className="grid gap-1 text-xs font-black text-[#173d42]/70">
+                      <label className="grid gap-1 text-xs font-black text-[#0a3f2a]/70">
                         رسالة للإشراف كي يتابع الرد
                         <textarea
                           value={supervisionNote}
                           onChange={(event) => setSupervisionNotes((current) => ({ ...current, [message.id]: event.target.value }))}
-                          className="min-h-24 rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-normal leading-7 outline-none"
+                          className="min-h-24 rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-normal leading-7 outline-none"
                         />
                       </label>
-                      <label className="grid gap-1 text-xs font-black text-[#173d42]/70">
+                      <label className="grid gap-1 text-xs font-black text-[#0a3f2a]/70">
                         رسالة للمعلم
                         <textarea
                           value={teacherMessage}
                           onChange={(event) => setTeacherMessages((current) => ({ ...current, [message.id]: event.target.value }))}
-                          className="min-h-24 rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-normal leading-7 outline-none disabled:opacity-60"
+                          className="min-h-24 rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-normal leading-7 outline-none disabled:opacity-60"
                           disabled={!hasTeacherWhatsapp}
                         />
                       </label>
@@ -232,7 +232,7 @@ export default function RemoteAdminEscalatedMessagesPage() {
                             "تم الرد على ولي الأمر وإغلاق المتابعة."
                           )
                         }
-                        className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                        className="rounded-xl bg-[#0f5a35] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                       >
                         الرد على ولي الأمر
                       </button>
@@ -246,7 +246,7 @@ export default function RemoteAdminEscalatedMessagesPage() {
                             "تمت إعادة الرسالة إلى الإشراف للمتابعة."
                           )
                         }
-                        className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#173d42] disabled:opacity-60"
+                        className="rounded-xl border border-[#d8bf83] bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] disabled:opacity-60"
                       >
                         إرسال للإشراف
                       </button>
@@ -264,7 +264,7 @@ export default function RemoteAdminEscalatedMessagesPage() {
                             "تم إرسال الرسالة للمعلم وإعادة المتابعة للإشراف."
                           )
                         }
-                        className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#173d42] disabled:opacity-60"
+                        className="rounded-xl border border-[#d8bf83] bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] disabled:opacity-60"
                       >
                         مراسلة المعلم
                       </button>

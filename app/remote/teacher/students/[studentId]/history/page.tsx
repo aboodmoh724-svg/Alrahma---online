@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -166,7 +166,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#1c2d31] md:text-3xl">
               سجل الطالب: {student.fullName}
@@ -178,27 +178,27 @@ export default async function StudentHistoryPage({ params }: PageProps) {
 
           <Link
             href="/remote/teacher/dashboard"
-            className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+            className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35]"
           >
             الرجوع للوحة المعلم
           </Link>
         </div>
 
         {reports.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/55">
+          <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/55">
             لا توجد تقارير سابقة لهذا الطالب في قسم الأونلاين حتى الآن.
           </div>
         ) : (
           <>
             <section>
-              <div className="rounded-[2rem] bg-[#173d42] p-5 text-white shadow-lg">
-                <p className="text-sm font-black text-[#f1d39d]">نظرة سريعة لسير الطالب</p>
+              <div className="rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-lg">
+                <p className="text-sm font-black text-[#f2d18a]">نظرة سريعة لسير الطالب</p>
                 <h2 className="mt-2 text-2xl font-black">أين وصل الطالب الآن؟</h2>
 
                 {latestReport ? (
                   <div className="mt-5 grid gap-3 md:grid-cols-2">
                     <div className="rounded-[1.5rem] bg-white/10 p-4">
-                      <p className="text-xs font-black text-[#f1d39d]">آخر حصة</p>
+                      <p className="text-xs font-black text-[#f2d18a]">آخر حصة</p>
                       <p className="mt-2 text-sm font-black">
                         {reportDateLabel(latestReport.createdAt)} - {reportDayName(latestReport.createdAt)}
                       </p>
@@ -208,7 +208,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4">
-                      <p className="text-xs font-black text-[#f1d39d]">حالة الحضور</p>
+                      <p className="text-xs font-black text-[#f2d18a]">حالة الحضور</p>
                       <p className="mt-2 text-2xl font-black">
                         {latestReport.status === "PRESENT" ? "حاضر" : "غائب"}
                       </p>
@@ -216,28 +216,28 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4 md:col-span-2">
-                      <p className="text-xs font-black text-[#f1d39d]">آخر درس مسجل</p>
+                      <p className="text-xs font-black text-[#f2d18a]">آخر درس مسجل</p>
                       <p className="mt-2 text-sm leading-7 text-white">
                         {compactText(latestReport.lessonName)}
                       </p>
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4 md:col-span-2">
-                      <p className="text-xs font-black text-[#f1d39d]">الواجب الحالي للطالب</p>
+                      <p className="text-xs font-black text-[#f2d18a]">الواجب الحالي للطالب</p>
                       <p className="mt-2 text-sm leading-7 text-white">
                         {compactText(latestHomework || latestReport.nextHomework || latestReport.homework)}
                       </p>
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4 md:col-span-2">
-                      <p className="text-xs font-black text-[#f1d39d]">آخر مراجعة معروفة</p>
+                      <p className="text-xs font-black text-[#f2d18a]">آخر مراجعة معروفة</p>
                       <p className="mt-2 text-sm leading-7 text-white">
                         {compactText(latestReview || latestReport.review)}
                       </p>
                     </div>
 
                     <div className="rounded-[1.5rem] bg-white/10 p-4 md:col-span-2">
-                      <p className="text-xs font-black text-[#f1d39d]">نتيجة آخر حصة</p>
+                      <p className="text-xs font-black text-[#f2d18a]">نتيجة آخر حصة</p>
                       <div className="mt-2 grid gap-2 text-sm text-white md:grid-cols-3">
                         <p>الدرس: {memorizedLabel(latestReport.lessonMemorized)}</p>
                         <p>آخر 5: {memorizedLabel(latestReport.lastFiveMemorized)}</p>
@@ -249,27 +249,27 @@ export default async function StudentHistoryPage({ params }: PageProps) {
               </div>
             </section>
 
-            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-black text-[#9b7039]">سجل المتابعة الإشرافية</p>
+                  <p className="text-sm font-black text-[#8a661f]">سجل المتابعة الإشرافية</p>
                   <h2 className="text-2xl font-black text-[#1c2d31]">ماذا حصل مع الطالب سابقًا؟</h2>
                 </div>
-                <span className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                <span className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
                   {followUpActions.length} إجراء محفوظ
                 </span>
               </div>
 
               {followUpActions.length === 0 ? (
-                <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] p-5 text-center text-sm text-[#1c2d31]/55">
+                <div className="mt-4 rounded-2xl border border-dashed border-[#d8bf83] p-5 text-center text-sm text-[#1c2d31]/55">
                   لا توجد متابعات إشرافية محفوظة لهذا الطالب حتى الآن.
                 </div>
               ) : (
                 <div className="mt-4 space-y-3">
                   {followUpActions.map((action) => (
-                    <article key={action.id} className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                    <article key={action.id} className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                       <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-black text-[#173d42]">{action.title}</p>
+                        <p className="font-black text-[#0a3f2a]">{action.title}</p>
                         <span className="text-xs font-bold text-[#1c2d31]/55">
                           {reportDateLabel(action.createdAt)} - {reportDayName(action.createdAt)}
                         </span>
@@ -286,10 +286,10 @@ export default async function StudentHistoryPage({ params }: PageProps) {
               )}
             </section>
 
-            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-sm font-black text-[#9b7039]">فهرس الشهور</p>
+                  <p className="text-sm font-black text-[#8a661f]">فهرس الشهور</p>
                   <h2 className="mt-1 text-xl font-black text-[#1c2d31]">انتقال سريع بين السجلات</h2>
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                   <a
                     key={group.key}
                     href={`#month-${group.key}`}
-                    className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#1c2d31] ring-1 ring-[#d9c8ad] transition hover:bg-white"
+                    className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83] transition hover:bg-white"
                   >
                     {group.label}
                   </a>
@@ -312,20 +312,20 @@ export default async function StudentHistoryPage({ params }: PageProps) {
                 <section
                   key={group.key}
                   id={`month-${group.key}`}
-                  className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+                  className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
                 >
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                     <div>
-                      <p className="text-sm font-black text-[#9b7039]">سجل شهري</p>
+                      <p className="text-sm font-black text-[#8a661f]">سجل شهري</p>
                       <h2 className="mt-1 text-2xl font-black text-[#1c2d31]">{group.label}</h2>
                     </div>
                   </div>
 
-                  <div className="mt-4 hidden overflow-hidden rounded-[1.6rem] border border-[#e7dcc8] bg-[#fcf8f2] shadow-sm xl:block">
+                  <div className="mt-4 hidden overflow-hidden rounded-[1.6rem] border border-[#e7d7b4] bg-[#fcf8f2] shadow-sm xl:block">
                     <div className="overflow-x-auto">
                     <table className="min-w-full border-separate border-spacing-0 text-right">
                       <thead>
-                        <tr className="bg-[#f3e8d4] text-xs font-black text-[#8a6335]">
+                        <tr className="bg-[#f3e8d4] text-xs font-black text-[#8a661f]">
                           <th className="px-3 py-3">التاريخ</th>
                           <th className="px-3 py-3">اليوم</th>
                           <th className="px-3 py-3">الحالة</th>
@@ -378,7 +378,7 @@ export default async function StudentHistoryPage({ params }: PageProps) {
 
                   <div className="mt-4 space-y-3 xl:hidden">
                     {group.reports.map((report) => (
-                      <article key={report.id} className="rounded-[1.5rem] bg-[#fffaf2] p-4 shadow-sm ring-1 ring-[#eadcc6]">
+                      <article key={report.id} className="rounded-[1.5rem] bg-[#fffaf4] p-4 shadow-sm ring-1 ring-[#e7d7b4]">
                         <div className="flex items-start justify-between gap-3">
                           <div>
                             <p className="text-sm font-black text-[#1c2d31]">

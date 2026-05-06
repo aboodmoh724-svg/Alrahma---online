@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -131,7 +131,7 @@ export default function LoginForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="example@email.com"
-            className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fbf8f2] px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#1f6358] focus:bg-white sm:py-4"
+            className="w-full rounded-2xl border border-[#d8bf83] bg-[#fbf8f2] px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#0f5a35] focus:bg-white sm:py-4"
             required
           />
         </div>
@@ -145,7 +145,7 @@ export default function LoginForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="********"
-            className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fbf8f2] px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#1f6358] focus:bg-white sm:py-4"
+            className="w-full rounded-2xl border border-[#d8bf83] bg-[#fbf8f2] px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/35 focus:border-[#0f5a35] focus:bg-white sm:py-4"
             required
           />
         </div>
@@ -155,7 +155,7 @@ export default function LoginForm({
             type="checkbox"
             checked={rememberMe}
             onChange={(e) => setRememberMe(e.target.checked)}
-            className="h-4 w-4 rounded border-[#d9c8ad]"
+            className="h-4 w-4 rounded border-[#d8bf83]"
           />
           تذكرني
         </label>
@@ -169,7 +169,7 @@ export default function LoginForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-2xl bg-[#1f6358] px-4 py-3 text-base font-black text-white shadow-md transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-70 sm:py-4"
+          className="w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-base font-black text-white shadow-md transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-70 sm:py-4"
         >
           {loading ? "جاري تسجيل الدخول..." : buttonLabel}
         </button>

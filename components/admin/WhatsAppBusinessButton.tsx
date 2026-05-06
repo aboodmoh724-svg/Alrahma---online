@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 type WhatsAppBusinessButtonProps = {
   phone: string;
@@ -36,7 +36,7 @@ export function WhatsAppBusinessButton({
     <button
       type="button"
       onClick={openWhatsAppBusiness}
-      className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+      className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35]"
     >
       فتح واتساب بزنس
     </button>

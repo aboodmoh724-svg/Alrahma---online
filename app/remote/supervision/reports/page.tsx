@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -220,7 +220,7 @@ export default function RemoteSupervisionReportsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">تقارير الطلاب</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               إحصائيات عامة ثم متابعة تفصيلية لكل طالب: الحضور، التسميع، الصفحات، المعلم، الحلقة، وطلبات المتابعة.
@@ -228,7 +228,7 @@ export default function RemoteSupervisionReportsPage() {
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإشراف
           </Link>
@@ -236,33 +236,33 @@ export default function RemoteSupervisionReportsPage() {
 
         <section className="grid gap-4 md:grid-cols-3 xl:grid-cols-6">
           {[
-            ["الطلاب", stats.students, "text-[#173d42]"],
-            ["التقارير", stats.reports, "text-[#1f6358]"],
-            ["الحضور", stats.present, "text-[#1f6358]"],
-            ["الغياب", stats.absent, "text-[#c39a62]"],
-            ["الصفحات", stats.pages, "text-[#173d42]"],
-            ["تعثر ظاهر", stats.struggling, "text-[#8a6335]"],
+            ["الطلاب", stats.students, "text-[#0a3f2a]"],
+            ["التقارير", stats.reports, "text-[#0f5a35]"],
+            ["الحضور", stats.present, "text-[#0f5a35]"],
+            ["الغياب", stats.absent, "text-[#bd8f2d]"],
+            ["الصفحات", stats.pages, "text-[#0a3f2a]"],
+            ["تعثر ظاهر", stats.struggling, "text-[#8a661f]"],
           ].map(([label, value, color]) => (
-            <div key={label} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div key={label} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <p className="text-sm font-bold text-[#1c2d31]/55">{label}</p>
               <p className={`mt-2 text-4xl font-black ${color}`}>{value}</p>
             </div>
           ))}
         </section>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="relative">
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="ابحث باسم الطالب أو رقمه أو معلمه أو حلقته"
-              className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-4 pl-12 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
             />
             {search ? (
               <button
                 type="button"
                 onClick={() => setSearch("")}
-                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#173d42] text-sm font-black text-white"
+                className="absolute left-3 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-[#0a3f2a] text-sm font-black text-white"
                 aria-label="مسح البحث"
               >
                 ×
@@ -281,7 +281,7 @@ export default function RemoteSupervisionReportsPage() {
           </div>
         ) : (
           <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
-            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="mb-3 flex items-center justify-between">
                 <h2 className="font-black text-[#1c2d31]">الطلاب</h2>
                 <span className="text-sm font-bold text-[#1c2d31]/55">{filteredSummaries.length}</span>
@@ -294,8 +294,8 @@ export default function RemoteSupervisionReportsPage() {
                     onClick={() => setSelectedStudentId(summary.id)}
                     className={`w-full rounded-2xl p-4 text-right transition ${
                       selectedSummary?.id === summary.id
-                        ? "bg-[#173d42] text-white"
-                        : "bg-[#fffaf2] text-[#1c2d31] ring-1 ring-[#eadcc6] hover:bg-white"
+                        ? "bg-[#0a3f2a] text-white"
+                        : "bg-[#fffaf4] text-[#1c2d31] ring-1 ring-[#e7d7b4] hover:bg-white"
                     }`}
                   >
                     <p className="font-black">{summary.fullName}</p>
@@ -310,16 +310,16 @@ export default function RemoteSupervisionReportsPage() {
 
             {selectedSummary ? (
               <section className="space-y-5">
-                <div className="rounded-[2rem] bg-[#173d42] p-6 text-white shadow-lg">
+                <div className="rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-lg">
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
-                      <p className="text-sm font-bold text-[#f1d39d]">{selectedSummary.studentCode}</p>
+                      <p className="text-sm font-bold text-[#f2d18a]">{selectedSummary.studentCode}</p>
                       <h2 className="mt-2 text-3xl font-black">{selectedSummary.fullName}</h2>
                       <p className="mt-3 text-sm leading-7 text-white/72">
                         المعلم: {selectedSummary.teacherName} - الحلقة: {selectedSummary.circleName}
                       </p>
                     </div>
-                    <span className="rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+                    <span className="rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                       {studentLevel(selectedSummary)}
                     </span>
                   </div>
@@ -327,28 +327,28 @@ export default function RemoteSupervisionReportsPage() {
 
                 <div className="grid gap-4 md:grid-cols-3">
                   {[
-                    ["أيام الحضور", selectedSummary.presentCount, "text-[#1f6358]"],
-                    ["أيام الغياب", selectedSummary.absentCount, "text-[#c39a62]"],
-                    ["مرات التسميع", selectedSummary.memorizedCount, "text-[#1f6358]"],
-                    ["لم يسمع", selectedSummary.notMemorizedCount, "text-[#8a6335]"],
-                    ["إجمالي الصفحات", selectedSummary.pagesTotal, "text-[#173d42]"],
-                    ["عدد التقارير", selectedSummary.reports.length, "text-[#173d42]"],
-                    ["رسائل ولي الأمر", selectedSummary.sentToParentCount, "text-[#1f6358]"],
-                    ["طلبات التعثر", selectedSummary.struggleRequestsCount, "text-[#8a6335]"],
-                    ["طلبات مفتوحة", selectedSummary.openRequestsCount, "text-[#c39a62]"],
+                    ["أيام الحضور", selectedSummary.presentCount, "text-[#0f5a35]"],
+                    ["أيام الغياب", selectedSummary.absentCount, "text-[#bd8f2d]"],
+                    ["مرات التسميع", selectedSummary.memorizedCount, "text-[#0f5a35]"],
+                    ["لم يسمع", selectedSummary.notMemorizedCount, "text-[#8a661f]"],
+                    ["إجمالي الصفحات", selectedSummary.pagesTotal, "text-[#0a3f2a]"],
+                    ["عدد التقارير", selectedSummary.reports.length, "text-[#0a3f2a]"],
+                    ["رسائل ولي الأمر", selectedSummary.sentToParentCount, "text-[#0f5a35]"],
+                    ["طلبات التعثر", selectedSummary.struggleRequestsCount, "text-[#8a661f]"],
+                    ["طلبات مفتوحة", selectedSummary.openRequestsCount, "text-[#bd8f2d]"],
                   ].map(([label, value, color]) => (
-                    <div key={label} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                    <div key={label} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                       <p className="text-sm font-bold text-[#1c2d31]/55">{label}</p>
                       <p className={`mt-2 text-4xl font-black ${color}`}>{value}</p>
                     </div>
                   ))}
                 </div>
 
-                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                   <h3 className="text-xl font-black text-[#1c2d31]">آخر التقارير</h3>
                   <div className="mt-4 grid gap-3 md:grid-cols-2">
                     {selectedSummary.reports.slice(0, 10).map((report) => (
-                      <div key={report.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                      <div key={report.id} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-black text-[#1c2d31]">
                             {englishDate(report.createdAt)}
@@ -356,7 +356,7 @@ export default function RemoteSupervisionReportsPage() {
                           <span
                             className={`rounded-full px-3 py-1 text-xs font-black ${
                               report.status === "PRESENT"
-                                ? "bg-[#dff1eb] text-[#1f6358]"
+                                ? "bg-[#edf6ee] text-[#0f5a35]"
                                 : "bg-amber-100 text-amber-800"
                             }`}
                           >
@@ -374,16 +374,16 @@ export default function RemoteSupervisionReportsPage() {
                           </p>
                         </div>
                         <div className="mt-3 flex flex-wrap gap-2 text-xs font-black">
-                          <span className="rounded-full bg-white px-3 py-1 text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                          <span className="rounded-full bg-white px-3 py-1 text-[#0f5a35] ring-1 ring-[#d8bf83]">
                             الدرس: {memorizedLabel(report.lessonMemorized)}
                           </span>
-                          <span className="rounded-full bg-white px-3 py-1 text-[#173d42] ring-1 ring-[#d9c8ad]">
+                          <span className="rounded-full bg-white px-3 py-1 text-[#0a3f2a] ring-1 ring-[#d8bf83]">
                             آخر خمس: {memorizedLabel(report.lastFiveMemorized)}
                           </span>
-                          <span className="rounded-full bg-white px-3 py-1 text-[#173d42] ring-1 ring-[#d9c8ad]">
+                          <span className="rounded-full bg-white px-3 py-1 text-[#0a3f2a] ring-1 ring-[#d8bf83]">
                             المراجعة: {memorizedLabel(report.reviewMemorized)}
                           </span>
-                          <span className="rounded-full bg-white px-3 py-1 text-[#8a6335] ring-1 ring-[#d9c8ad]">
+                          <span className="rounded-full bg-white px-3 py-1 text-[#8a661f] ring-1 ring-[#d8bf83]">
                             أرسل للولي: {report.sentToParent ? "نعم" : "لا"}
                           </span>
                         </div>

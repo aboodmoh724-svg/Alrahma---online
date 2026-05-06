@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
@@ -82,16 +82,16 @@ function ChatAudioPlayer({ src }: { src: string }) {
       <button
         type="button"
         onClick={toggle}
-        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#1f6358] text-sm font-black text-white"
+        className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-[#0f5a35] text-sm font-black text-white"
         aria-label={playing ? "إيقاف الصوت" : "تشغيل الصوت"}
       >
         {playing ? "II" : "▶"}
       </button>
       <div className="min-w-0 flex-1">
         <div className="h-2 overflow-hidden rounded-full bg-white">
-          <div className="h-full rounded-full bg-[#1f6358]" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-[#0f5a35]" style={{ width: `${progress}%` }} />
         </div>
-        <div className="mt-1 flex justify-between text-[10px] font-bold text-[#173d42]/55" dir="ltr">
+        <div className="mt-1 flex justify-between text-[10px] font-bold text-[#0a3f2a]/55" dir="ltr">
           <span>{format(currentTime)}</span>
           <span>{format(safeDuration)}</span>
         </div>
@@ -394,10 +394,10 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
     return (
       <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
         <div className="mx-auto flex min-h-[70vh] max-w-lg items-center">
-          <section className="w-full rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-[#d9c8ad]">
-            <p className="text-sm font-black text-[#9b7039]">مراسلات التعليم</p>
-            <h1 className="mt-2 text-3xl font-black text-[#173d42]">دخول ولي الأمر</h1>
-            <p className="mt-2 text-sm leading-7 text-[#173d42]/60">
+          <section className="w-full rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-[#d8bf83]">
+            <p className="text-sm font-black text-[#8a661f]">مراسلات التعليم</p>
+            <h1 className="mt-2 text-3xl font-black text-[#0a3f2a]">دخول ولي الأمر</h1>
+            <p className="mt-2 text-sm leading-7 text-[#0a3f2a]/60">
               أدخل رقم واتساب المسجل لدينا، ثم اكتب الرمز المرسل لك.
             </p>
             {authStep === "PHONE" ? (
@@ -410,14 +410,14 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     setCountryCode(`+${parts.countryCode}`);
                     setLocalPhone(parts.localNumber);
                   }}
-                  inputClassName="w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                  inputClassName="w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm outline-none"
                   required
                 />
                 <button
                   type="button"
                   onClick={requestCode}
                   disabled={sendingCode}
-                  className="mt-3 w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                  className="mt-3 w-full rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
                 >
                   إرسال رمز الدخول
                 </button>
@@ -428,18 +428,18 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                   value={code}
                   onChange={(event) => setCode(event.target.value)}
                   placeholder="رمز الدخول"
-                  className="mt-5 w-full rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm outline-none"
+                  className="mt-5 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm outline-none"
                 />
                 <button
                   type="button"
                   onClick={verifyCode}
-                  className="mt-3 w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white"
+                  className="mt-3 w-full rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white"
                 >
                   دخول المحادثات
                 </button>
               </>
             )}
-            {feedback ? <p className="mt-3 rounded-2xl bg-[#fffaf2] p-3 text-sm font-bold text-[#173d42]">{feedback}</p> : null}
+            {feedback ? <p className="mt-3 rounded-2xl bg-[#fffaf4] p-3 text-sm font-bold text-[#0a3f2a]">{feedback}</p> : null}
           </section>
         </div>
       </main>
@@ -449,34 +449,34 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-5">
-        <header className="flex flex-col gap-3 rounded-[2rem] bg-[#173d42] p-5 text-white shadow-sm md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-3 rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-sm md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#f1d39d]">مراسلات التعليم</p>
+            <p className="text-sm font-black text-[#f2d18a]">مراسلات التعليم</p>
             <h1 className="mt-1 text-3xl font-black">{title}</h1>
             <p className="mt-2 text-sm leading-7 text-white/70">{subtitle}</p>
           </div>
           {backHref ? (
-            <a href={backHref} className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173d42]">
+            <a href={backHref} className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#0a3f2a]">
               رجوع
             </a>
           ) : null}
         </header>
 
-        {feedback ? <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm font-bold text-[#173d42] ring-1 ring-[#d9c8ad]">{feedback}</div> : null}
+        {feedback ? <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm font-bold text-[#0a3f2a] ring-1 ring-[#d8bf83]">{feedback}</div> : null}
 
-        <section className="grid min-h-[620px] overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#d9c8ad] lg:grid-cols-[360px_1fr]">
-          <aside className={`${selectedConversationId ? "hidden" : "block"} border-l border-[#eadcc6] bg-[#fffaf2] lg:block`}>
-            <div className="space-y-3 border-b border-[#eadcc6] p-4">
+        <section className="grid min-h-[620px] overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-[#d8bf83] lg:grid-cols-[360px_1fr]">
+          <aside className={`${selectedConversationId ? "hidden" : "block"} border-l border-[#e7d7b4] bg-[#fffaf4] lg:block`}>
+            <div className="space-y-3 border-b border-[#e7d7b4] p-4">
               {mode === "PARENT" ? (
                 <>
-                  <p className="text-sm font-black text-[#173d42]">ابدأ محادثة</p>
+                  <p className="text-sm font-black text-[#0a3f2a]">ابدأ محادثة</p>
                   <div className="flex flex-wrap gap-2">
                     {teacherOptions.map((teacher) => (
                       <button
                         key={teacher.teacherId}
                         type="button"
                         onClick={() => createConversation({ type: "TEACHER", teacherId: teacher.teacherId })}
-                        className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#173d42] ring-1 ring-[#d9c8ad]"
+                        className="rounded-full bg-white px-3 py-2 text-xs font-black text-[#0a3f2a] ring-1 ring-[#d8bf83]"
                       >
                         {teacher.teacherName}
                       </button>
@@ -484,7 +484,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     <button
                       type="button"
                       onClick={() => createConversation({ type: "SUPERVISION" })}
-                      className="rounded-full bg-[#173d42] px-3 py-2 text-xs font-black text-white"
+                      className="rounded-full bg-[#0a3f2a] px-3 py-2 text-xs font-black text-white"
                     >
                       الإشراف
                     </button>
@@ -492,10 +492,10 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                 </>
               ) : mode === "TEACHER" ? (
                 <>
-                  <p className="text-sm font-black text-[#173d42]">فتح محادثة مع ولي أمر</p>
+                  <p className="text-sm font-black text-[#0a3f2a]">فتح محادثة مع ولي أمر</p>
                   <select
                     onChange={(event) => event.target.value && createConversation({ studentId: event.target.value })}
-                    className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm"
+                    className="w-full rounded-2xl border border-[#d8bf83] bg-white px-3 py-2 text-sm"
                     defaultValue=""
                   >
                     <option value="">اختر الطالب</option>
@@ -508,13 +508,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                 </>
               ) : mode === "SUPERVISION" ? (
                 <>
-                  <p className="text-sm font-black text-[#173d42]">{"\u0628\u062f\u0621 \u0645\u062d\u0627\u062f\u062b\u0629 \u0625\u0634\u0631\u0627\u0641\u064a\u0629"}</p>
+                  <p className="text-sm font-black text-[#0a3f2a]">{"\u0628\u062f\u0621 \u0645\u062d\u0627\u062f\u062b\u0629 \u0625\u0634\u0631\u0627\u0641\u064a\u0629"}</p>
                   <div className="grid gap-2">
                     <select
                       onChange={(event) =>
                         event.target.value && createConversation({ type: "SUPERVISION_TEACHER", teacherId: event.target.value })
                       }
-                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-2xl border border-[#d8bf83] bg-white px-3 py-2 text-sm"
                       defaultValue=""
                     >
                       <option value="">{"\u0627\u062e\u062a\u0631 \u0627\u0644\u0645\u0639\u0644\u0645 \u0644\u0644\u062a\u0648\u0627\u0635\u0644 \u0645\u0639\u0647"}</option>
@@ -528,7 +528,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       onChange={(event) =>
                         event.target.value && createConversation({ type: "SUPERVISION", studentId: event.target.value })
                       }
-                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm"
+                      className="w-full rounded-2xl border border-[#d8bf83] bg-white px-3 py-2 text-sm"
                       defaultValue=""
                     >
                       <option value="">{"\u0627\u062e\u062a\u0631 \u0648\u0644\u064a \u0623\u0645\u0631 \u0637\u0627\u0644\u0628"}</option>
@@ -541,14 +541,14 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                   </div>
                 </>
               ) : (
-                <p className="text-sm font-black text-[#173d42]">{"\u0645\u0631\u0627\u0642\u0628\u0629 \u0643\u0644 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0627\u062a"}</p>
+                <p className="text-sm font-black text-[#0a3f2a]">{"\u0645\u0631\u0627\u0642\u0628\u0629 \u0643\u0644 \u0627\u0644\u0645\u062d\u0627\u062f\u062b\u0627\u062a"}</p>
               )}
             </div>
             <div className="max-h-[540px] overflow-auto p-3">
               {loading ? (
-                <p className="rounded-2xl bg-white p-4 text-sm text-[#173d42]/60">جاري التحميل...</p>
+                <p className="rounded-2xl bg-white p-4 text-sm text-[#0a3f2a]/60">جاري التحميل...</p>
               ) : conversations.length === 0 ? (
-                <p className="rounded-2xl bg-white p-4 text-sm text-[#173d42]/60">لا توجد محادثات بعد.</p>
+                <p className="rounded-2xl bg-white p-4 text-sm text-[#0a3f2a]/60">لا توجد محادثات بعد.</p>
               ) : (
                 conversations.map((conversation) => (
                   <button
@@ -556,7 +556,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     type="button"
                     onClick={() => setSelectedConversationId(conversation.id)}
                     className={`mb-2 w-full rounded-2xl p-4 text-right transition ${
-                      selectedConversationId === conversation.id ? "bg-[#173d42] text-white" : "bg-white text-[#173d42]"
+                      selectedConversationId === conversation.id ? "bg-[#0a3f2a] text-white" : "bg-white text-[#0a3f2a]"
                     }`}
                   >
                     <p className="font-black">{getConversationTitle(conversation)}</p>
@@ -573,17 +573,17 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
           <section className={`${selectedConversationId ? "flex" : "hidden"} min-h-[620px] min-w-0 flex-col bg-[#efe7d8] lg:flex`}>
             {selectedConversation ? (
               <>
-                <div className="flex items-center justify-between gap-3 border-b border-[#d9c8ad] bg-white px-5 py-4">
+                <div className="flex items-center justify-between gap-3 border-b border-[#d8bf83] bg-white px-5 py-4">
                   <div>
-                    <p className="text-lg font-black text-[#173d42]">{getConversationTitle(selectedConversation)}</p>
+                    <p className="text-lg font-black text-[#0a3f2a]">{getConversationTitle(selectedConversation)}</p>
                     {mode === "ADMIN" && selectedConversation.student ? (
-                      <p className="text-xs font-bold text-[#173d42]/60">الطالب: {selectedConversation.student.fullName}</p>
+                      <p className="text-xs font-bold text-[#0a3f2a]/60">الطالب: {selectedConversation.student.fullName}</p>
                     ) : null}
                   </div>
                   <button
                     type="button"
                     onClick={() => setSelectedConversationId("")}
-                    className="rounded-full bg-[#fffaf2] px-4 py-2 text-xs font-black text-[#173d42] ring-1 ring-[#d9c8ad] lg:hidden"
+                    className="rounded-full bg-[#fffaf4] px-4 py-2 text-xs font-black text-[#0a3f2a] ring-1 ring-[#d8bf83] lg:hidden"
                   >
                     المحادثات
                   </button>
@@ -599,10 +599,10 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       <div key={message.id} className={`flex ${mine ? "justify-start" : "justify-end"}`}>
                         <div className={`max-w-[92%] overflow-hidden rounded-2xl px-4 py-3 shadow-sm sm:max-w-[78%] ${mine ? "bg-[#dcf8c6]" : "bg-white"}`}>
                           {mode === "ADMIN" || mode === "SUPERVISION" ? (
-                            <p className="mb-1 text-[11px] font-black text-[#173d42]/50">{message.senderName}</p>
+                            <p className="mb-1 text-[11px] font-black text-[#0a3f2a]/50">{message.senderName}</p>
                           ) : null}
                           {message.body ? (
-                            <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#173d42] [overflow-wrap:anywhere]">
+                            <p className="whitespace-pre-wrap break-words text-sm leading-7 text-[#0a3f2a] [overflow-wrap:anywhere]">
                               {renderMessageBody(message.body)}
                             </p>
                           ) : null}
@@ -614,7 +614,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                                   href={message.attachmentUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="mt-1 block text-xs font-black text-[#173d42]/70"
+                                  className="mt-1 block text-xs font-black text-[#0a3f2a]/70"
                                 >
                                   تحميل الصوت
                                 </a>
@@ -624,13 +624,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                                 href={message.attachmentUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="mt-2 block break-words rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#173d42] [overflow-wrap:anywhere]"
+                                className="mt-2 block break-words rounded-xl bg-black/5 px-3 py-2 text-xs font-black text-[#0a3f2a] [overflow-wrap:anywhere]"
                               >
                                 فتح المرفق: {message.attachmentName}
                               </a>
                             )
                           ) : null}
-                          <p className="mt-2 text-[10px] text-[#173d42]/45">
+                          <p className="mt-2 text-[10px] text-[#0a3f2a]/45">
                             {new Date(message.createdAt).toLocaleString("en-US")}
                           </p>
                         </div>
@@ -639,9 +639,9 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                   })}
                   <div ref={messagesEndRef} />
                 </div>
-                <div className="border-t border-[#d9c8ad] bg-white p-2 sm:p-3">
+                <div className="border-t border-[#d8bf83] bg-white p-2 sm:p-3">
                   {attachment ? (
-                    <div className="mb-2 flex items-center justify-between rounded-xl bg-[#fffaf2] px-3 py-2 text-xs font-bold text-[#173d42]">
+                    <div className="mb-2 flex items-center justify-between rounded-xl bg-[#fffaf4] px-3 py-2 text-xs font-bold text-[#0a3f2a]">
                       <span>{attachment.name}</span>
                       <button type="button" onClick={() => setAttachment(null)} className="font-black text-red-700">إزالة</button>
                     </div>
@@ -653,7 +653,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     </div>
                   ) : null}
                   <div className="flex flex-wrap items-end gap-2">
-                    <label className="order-2 shrink-0 cursor-pointer rounded-full bg-[#fffaf2] px-4 py-3 text-sm font-black leading-none text-[#173d42] ring-1 ring-[#d9c8ad]">
+                    <label className="order-2 shrink-0 cursor-pointer rounded-full bg-[#fffaf4] px-4 py-3 text-sm font-black leading-none text-[#0a3f2a] ring-1 ring-[#d8bf83]">
                       ملف
                       <input
                         type="file"
@@ -681,7 +681,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       className={`order-2 shrink-0 select-none rounded-full px-4 py-3 text-sm font-black leading-none shadow-sm ring-1 ${
                         isRecording
                           ? "bg-red-600 text-white ring-red-600"
-                          : "bg-[#fffaf2] text-[#173d42] ring-[#d9c8ad]"
+                          : "bg-[#fffaf4] text-[#0a3f2a] ring-[#d8bf83]"
                       } disabled:opacity-60`}
                       title="اضغط مطولا لتسجيل الصوت، واتركه للإرسال"
                     >
@@ -691,13 +691,13 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
                       placeholder="اكتب رسالة..."
-                      className="order-1 min-h-12 w-full min-w-0 basis-full resize-none rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm leading-7 outline-none sm:order-2 sm:w-auto sm:basis-auto sm:flex-1"
+                      className="order-1 min-h-12 w-full min-w-0 basis-full resize-none rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm leading-7 outline-none sm:order-2 sm:w-auto sm:basis-auto sm:flex-1"
                     />
                     <button
                       type="button"
                       onClick={() => sendMessage()}
                       disabled={sending}
-                      className="order-2 shrink-0 rounded-full bg-[#1f6358] px-5 py-3 text-sm font-black leading-none text-white disabled:opacity-60"
+                      className="order-2 shrink-0 rounded-full bg-[#0f5a35] px-5 py-3 text-sm font-black leading-none text-white disabled:opacity-60"
                     >
                       إرسال
                     </button>
@@ -705,7 +705,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                 </div>
               </>
             ) : (
-              <div className="flex flex-1 items-center justify-center p-6 text-center text-[#173d42]/60">
+              <div className="flex flex-1 items-center justify-center p-6 text-center text-[#0a3f2a]/60">
                 اختر محادثة أو ابدأ محادثة جديدة.
               </div>
             )}

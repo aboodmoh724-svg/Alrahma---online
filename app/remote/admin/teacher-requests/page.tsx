@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
@@ -76,7 +76,7 @@ function renderDetails(details: string) {
         href={part}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-black text-[#1f6358] underline underline-offset-4"
+        className="font-black text-[#0f5a35] underline underline-offset-4"
         dir="ltr"
       >
         رابط الحلقة
@@ -162,27 +162,27 @@ export default function RemoteAdminTeacherRequestsPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f7f0e6] px-4 py-6" dir="rtl">
+    <main className="min-h-screen bg-[#f6eee7] px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-3xl font-black text-[#173d42]">طلبات المعلمين</h1>
+            <h1 className="text-3xl font-black text-[#0a3f2a]">طلبات المعلمين</h1>
             <p className="mt-1 text-sm text-[#1c2d31]/65">
               هذه هي النواة الأولى للمتابعة الإشرافية حتى ترى طلبات المعلمين وترد عليها.
             </p>
           </div>
           <Link
             href={dashboardHref}
-            className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] hover:bg-[#fffaf2]"
+            className="rounded-xl border border-[#d8bf83] bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] hover:bg-[#fffaf4]"
           >
             الرجوع إلى لوحة الإدارة
           </Link>
         </div>
 
-        <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
-              <h2 className="text-xl font-black text-[#173d42]">متابعة الطلبات</h2>
+              <h2 className="text-xl font-black text-[#0a3f2a]">متابعة الطلبات</h2>
               <p className="mt-1 text-sm text-[#1c2d31]/60">
                 عدّل الحالة، اكتب ملاحظة، وسيصل إشعار مباشر للمعلم.
               </p>
@@ -191,7 +191,7 @@ export default function RemoteAdminTeacherRequestsPage() {
             <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
-              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none"
+              className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none"
             >
               <option value="ALL">كل الحالات</option>
               {STATUS_OPTIONS.map((option) => (
@@ -203,11 +203,11 @@ export default function RemoteAdminTeacherRequestsPage() {
           </div>
 
           {loading ? (
-            <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
               جارٍ التحميل...
             </div>
           ) : requests.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
               لا توجد طلبات مطابقة حاليًا.
             </div>
           ) : (
@@ -218,23 +218,23 @@ export default function RemoteAdminTeacherRequestsPage() {
                   className={`rounded-[1.8rem] p-4 ring-1 ${
                     request.priority === "URGENT"
                       ? "bg-red-50 ring-red-200"
-                      : "bg-[#fffaf2] ring-[#e7dcc8]"
+                      : "bg-[#fffaf4] ring-[#e7d7b4]"
                   }`}
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                    <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                       {STATUS_LABELS[request.status]}
                     </span>
-                    <span className="rounded-full bg-[#f0e2c8] px-3 py-1 text-xs font-black text-[#8a6335]">
+                    <span className="rounded-full bg-[#f0e2c8] px-3 py-1 text-xs font-black text-[#8a661f]">
                       {TYPE_LABELS[request.type]}
                     </span>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
                       {PRIORITY_LABELS[request.priority]}
                     </span>
                   </div>
 
                   <div className="mt-3 flex flex-col gap-1">
-                    <h3 className="text-lg font-black text-[#173d42]">{request.subject}</h3>
+                    <h3 className="text-lg font-black text-[#0a3f2a]">{request.subject}</h3>
                     <p className="text-sm font-bold text-[#1c2d31]/60">
                       المعلم: {request.teacher.fullName}
                     </p>
@@ -280,7 +280,7 @@ export default function RemoteAdminTeacherRequestsPage() {
                           type="button"
                           disabled={submittingId === request.id}
                           onClick={() => handleSave(request.id, { status: "RESOLVED", note: "تم التواصل واتخاذ الإجراء المناسب." })}
-                          className="rounded-xl bg-[#173d42] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                          className="rounded-xl bg-[#0a3f2a] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                         >
                           تم التواصل
                         </button>
@@ -288,7 +288,7 @@ export default function RemoteAdminTeacherRequestsPage() {
                           type="button"
                           disabled={submittingId === request.id}
                           onClick={() => handleSave(request.id, { status: "RESOLVED" })}
-                          className="rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                          className="rounded-xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                         >
                           حفظ وإنهاء
                         </button>
@@ -297,7 +297,7 @@ export default function RemoteAdminTeacherRequestsPage() {
                             type="button"
                             disabled={submittingId === request.id}
                             onClick={() => handleSave(request.id, { status: "IN_REVIEW", transferToSupervision: true, note: adminNotes[request.id] || "محول من الإدارة إلى الإشراف للمتابعة." })}
-                            className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#173d42] disabled:opacity-60"
+                            className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#0a3f2a] disabled:opacity-60"
                           >
                             تحويل للإشراف
                           </button>
@@ -315,7 +315,7 @@ export default function RemoteAdminTeacherRequestsPage() {
                           [request.id]: event.target.value as TeacherRequest["status"],
                         }))
                       }
-                      className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none"
+                      className="rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none"
                     >
                       {STATUS_OPTIONS.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -333,14 +333,14 @@ export default function RemoteAdminTeacherRequestsPage() {
                         }))
                       }
                       placeholder="اكتب ملاحظة للإشراف أو توجيهًا للمعلم"
-                      className="min-h-28 rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none focus:border-[#1f6358]"
+                      className="min-h-28 rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
                     />
 
                     <button
                       type="button"
                       disabled={submittingId === request.id}
                       onClick={() => handleSave(request.id)}
-                      className="rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+                      className="rounded-xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
                     >
                       {submittingId === request.id ? "جارٍ الحفظ..." : "حفظ"}
                     </button>

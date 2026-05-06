@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import LogoutButton from "@/components/auth/LogoutButton";
 
 const sections = [
@@ -6,25 +6,25 @@ const sections = [
     href: "/onsite/admin/teachers",
     title: "المعلمون",
     description: "إضافة المعلمين وتفعيل/تعطيل الحسابات.",
-    tone: "bg-[#173d42] text-white",
+    tone: "bg-[#0a3f2a] text-white",
   },
   {
     href: "/onsite/admin/students",
     title: "الطلاب",
     description: "عرض الطلاب ونقلهم بين الحلقات وتحديث أرقام وإيميلات أولياء الأمور.",
-    tone: "bg-[#1f6358] text-white",
+    tone: "bg-[#0f5a35] text-white",
   },
   {
     href: "/onsite/admin/circles",
     title: "الحلقات",
     description: "إنشاء الحلقات وتعيين المعلمين وربط الطلاب.",
-    tone: "bg-[#c39a62] text-white",
+    tone: "bg-[#bd8f2d] text-white",
   },
   {
     href: "/onsite/admin/education-supervision",
     title: "الإشراف التعليمي",
     description: "متابعة تقارير حلقات نور البيان والقرآن الكريم ومعرفة حالة إدخال التقارير وسير الطلاب.",
-    tone: "bg-[#173d42] text-white",
+    tone: "bg-[#0a3f2a] text-white",
   },
   {
     href: "/onsite/admin/absences",
@@ -36,13 +36,13 @@ const sections = [
     href: "/onsite/admin/absence-statistics",
     title: "إحصائيات الغائبين",
     description: "معرفة عدد مرات غياب كل طالب والأيام التي غاب فيها.",
-    tone: "bg-[#8a6335] text-white",
+    tone: "bg-[#8a661f] text-white",
   },
   {
     href: "/onsite/admin/broadcasts",
     title: "الرسائل الجماعية",
     description: "إرسال رسالة موحدة إلى أولياء الأمور أو المعلمين أو أولياء أمور محددين في الحضوري.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
 ];
 
@@ -50,15 +50,15 @@ export default function OnsiteAdminDashboardPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
           <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
           <div className="relative max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 لوحة الإدارة (حضوري)
               </p>
-              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
+              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4] disabled:opacity-60" />
               <Link
                 href="/onsite"
                 className="rounded-full bg-white/12 px-4 py-2 text-sm font-black text-white transition hover:bg-white/20"
@@ -80,7 +80,7 @@ export default function OnsiteAdminDashboardPage() {
             <Link
               key={section.href}
               href={section.href}
-              className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
+              className={`min-h-48 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d8bf83] transition hover:-translate-y-0.5 ${section.tone}`}
             >
               <h2 className="text-2xl font-black">{section.title}</h2>
               <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>

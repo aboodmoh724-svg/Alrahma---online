@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -101,7 +101,7 @@ function yesNo(value: boolean | null | undefined) {
 
 function InfoItem({ label, value }: { label: string; value?: string | null }) {
   return (
-    <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+    <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
       <p className="font-black text-[#1c2d31]">{label}</p>
       <p className="mt-1 leading-6 text-[#1c2d31]/65">{value || "-"}</p>
     </div>
@@ -431,7 +431,7 @@ export default function RemoteSupervisionRegistrationsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">طلبات التسجيل المحولة</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               راجع بيانات الطالب كما سجلها ولي الأمر، ثم اختر الحلقة أو المعلم المناسب لوضعه في الحلقة.
@@ -439,7 +439,7 @@ export default function RemoteSupervisionRegistrationsPage() {
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع إلى لوحة الإشراف
           </Link>
@@ -459,12 +459,12 @@ export default function RemoteSupervisionRegistrationsPage() {
               const requestIncoming = incomingByRequestId[request.id] || [];
 
               return (
-                <div key={request.id} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+                <div key={request.id} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                    <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                       {STATUS_LABELS[request.supervisionStatus]}
                     </span>
-                    <span className="rounded-full bg-[#f0e2c8] px-3 py-1 text-xs font-black text-[#8a6335]">
+                    <span className="rounded-full bg-[#f0e2c8] px-3 py-1 text-xs font-black text-[#8a661f]">
                       {request.requestedTracks || "لم يحدد المسار"}
                     </span>
                     <span className="text-xs font-bold text-[#1c2d31]/55">
@@ -540,11 +540,11 @@ export default function RemoteSupervisionRegistrationsPage() {
                       </div>
 
                       <div className="grid gap-3 md:grid-cols-2">
-                        <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm leading-7 text-[#1c2d31]/70">
+                        <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm leading-7 text-[#1c2d31]/70">
                           <p className="font-black text-[#1c2d31]">ملاحظات التسجيل</p>
                           <p className="mt-1">{request.notes || "-"}</p>
                         </div>
-                        <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm leading-7 text-[#1c2d31]/70">
+                        <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm leading-7 text-[#1c2d31]/70">
                           <p className="font-black text-[#1c2d31]">نسخة التحويل من الإدارة</p>
                           <pre className="mt-1 whitespace-pre-wrap font-sans text-xs leading-6">
                             {request.supervisionNote || "-"}
@@ -558,7 +558,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                             href={request.audioUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                            className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white"
                           >
                             فتح التسجيل الصوتي
                           </a>
@@ -568,7 +568,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                             href={request.idImageUrl}
                             target="_blank"
                             rel="noreferrer"
-                            className="rounded-xl border border-[#173d42] bg-white px-4 py-2 text-sm font-black text-[#173d42]"
+                            className="rounded-xl border border-[#0a3f2a] bg-white px-4 py-2 text-sm font-black text-[#0a3f2a]"
                           >
                             فتح ملف الهوية
                           </a>
@@ -576,7 +576,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                       </div>
 
                       {request.interviewDate ? (
-                        <div className="rounded-2xl border border-[#d9c8ad] bg-white p-4">
+                        <div className="rounded-2xl border border-[#d8bf83] bg-white p-4">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <div>
                               <p className="text-lg font-black text-[#1c2d31]">نتيجة المقابلة وتحديد المستوى</p>
@@ -589,7 +589,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                                 href={request.interviewLink}
                                 target="_blank"
                                 rel="noreferrer"
-                                className="rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                                className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white"
                               >
                                 فتح رابط المقابلة
                               </a>
@@ -602,7 +602,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                                 setInterviewLevels((prev) => ({ ...prev, [request.id]: event.target.value }))
                               }
                               placeholder="مستوى الطالب: جيد، متوسط، يحتاج تأسيس..."
-                              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                              className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                             />
                             <input
                               value={interviewDecisions[request.id] || ""}
@@ -610,7 +610,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                                 setInterviewDecisions((prev) => ({ ...prev, [request.id]: event.target.value }))
                               }
                               placeholder="قرار المقابلة: مناسب للمسار كذا..."
-                              className="rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                              className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                             />
                           </div>
                           <textarea
@@ -619,13 +619,13 @@ export default function RemoteSupervisionRegistrationsPage() {
                               setInterviewResults((prev) => ({ ...prev, [request.id]: event.target.value }))
                             }
                             placeholder="ملاحظات المقابلة: قراءة الطالب، قوة الحفظ، موضع البداية المناسب، أي توصية للمعلم..."
-                            className="mt-3 min-h-28 w-full rounded-xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm leading-7 outline-none"
+                            className="mt-3 min-h-28 w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm leading-7 outline-none"
                           />
                           <button
                             type="button"
                             onClick={() => saveInterviewResult(request.id)}
                             disabled={savingInterviewResultId === request.id}
-                            className="mt-3 rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                            className="mt-3 rounded-xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                           >
                             {savingInterviewResultId === request.id ? "جارٍ حفظ النتيجة..." : "حفظ نتيجة المقابلة"}
                           </button>
@@ -633,7 +633,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                       ) : null}
                     </div>
 
-                    <div className="space-y-3 rounded-[1.6rem] bg-[#fffaf2] p-4 ring-1 ring-[#e7dcc8]">
+                    <div className="space-y-3 rounded-[1.6rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                       <select
                         value={statuses[request.id] || request.supervisionStatus}
                         onChange={(event) =>
@@ -642,7 +642,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                             [request.id]: event.target.value as RegistrationRequest["supervisionStatus"],
                           }))
                         }
-                        className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none"
+                        className="w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none"
                       >
                         {STATUS_OPTIONS.map((option) => (
                           <option key={option.value} value={option.value}>
@@ -660,11 +660,11 @@ export default function RemoteSupervisionRegistrationsPage() {
                           }))
                         }
                         placeholder="ملاحظة الإشراف أو نتيجة الاختبار أو سبب التأجيل"
-                        className="min-h-28 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                        className="min-h-28 w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                       />
 
                       {!request.createdStudentId ? (
-                        <div className="space-y-3 rounded-2xl border border-[#d9c8ad] bg-white p-3">
+                        <div className="space-y-3 rounded-2xl border border-[#d8bf83] bg-white p-3">
                           <select
                             value={selectedCircle[request.id] || ""}
                             onChange={(event) => {
@@ -672,7 +672,7 @@ export default function RemoteSupervisionRegistrationsPage() {
 
                               setSelectedCircle((prev) => ({ ...prev, [request.id]: circleId }));
                             }}
-                            className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                            className="w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                           >
                             <option value="">اختر الحلقة المناسبة</option>
                             {circles.map((circle) => (
@@ -689,7 +689,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                             onChange={(event) =>
                               setSelectedTeacher((prev) => ({ ...prev, [request.id]: event.target.value }))
                             }
-                            className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                            className="w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                           >
                             <option value="">أو اختر معلمًا مباشرة</option>
                             {teachers.map((teacher) => (
@@ -703,7 +703,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                             type="button"
                             disabled={placingId === request.id}
                             onClick={() => placeRequest(request)}
-                            className="w-full rounded-xl bg-[#8a6335] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                            className="w-full rounded-xl bg-[#8a661f] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                           >
                             {placingId === request.id ? "جارٍ وضع الطالب..." : "وضع الطالب في حلقة وإنشاؤه"}
                           </button>
@@ -711,7 +711,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                       ) : (
                         <Link
                           href="/remote/supervision/students"
-                          className="block rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-center text-sm font-black text-[#1c2d31]"
+                          className="block rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-center text-sm font-black text-[#1c2d31]"
                         >
                           فتح إدارة الطلاب
                         </Link>
@@ -721,14 +721,14 @@ export default function RemoteSupervisionRegistrationsPage() {
                         type="button"
                         disabled={savingId === request.id}
                         onClick={() => saveStatus(request.id)}
-                        className="w-full rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white transition hover:bg-[#173d42] disabled:opacity-60"
+                        className="w-full rounded-xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
                       >
                         {savingId === request.id ? "جارٍ الحفظ..." : "حفظ حالة الإشراف"}
                       </button>
                       <button
                         type="button"
                         onClick={() => openInterviewModal(request)}
-                        className="w-full rounded-xl border-2 border-[#1f6358] bg-transparent px-4 py-3 text-sm font-black text-[#1f6358] transition hover:bg-[#1f6358] hover:text-white"
+                        className="w-full rounded-xl border-2 border-[#0f5a35] bg-transparent px-4 py-3 text-sm font-black text-[#0f5a35] transition hover:bg-[#0f5a35] hover:text-white"
                       >
                         تحديد موعد مقابلة
                       </button>
@@ -741,25 +741,25 @@ export default function RemoteSupervisionRegistrationsPage() {
         )}
 
         {!loading ? (
-          <details className="rounded-[2rem] bg-white/78 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <details className="rounded-[2rem] bg-white/78 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <summary className="cursor-pointer text-lg font-black text-[#1c2d31]">
               سجل الطلبات المحولة من الإدارة ({forwardedRequests.length})
             </summary>
             <div className="mt-4 grid gap-3 md:grid-cols-2">
               {forwardedRequests.length === 0 ? (
-                <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-bold text-[#1c2d31]/60">
+                <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm font-bold text-[#1c2d31]/60">
                   لا توجد طلبات محولة من الإدارة حتى الآن.
                 </div>
               ) : (
                 forwardedRequests.map((request) => (
-                  <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-4">
+                  <div key={request.id} className="rounded-2xl bg-[#fffaf4] p-4">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-lg font-black text-[#1c2d31]">{request.studentName}</h3>
                       <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">
                         {STATUS_LABELS[request.supervisionStatus]}
                       </span>
                       {request.createdStudentId ? (
-                        <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                        <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                           تم إنشاء الطالب
                         </span>
                       ) : null}
@@ -768,7 +768,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                       {request.requestedTracks || "لم يحدد المسار"} - {request.parentWhatsapp}
                     </p>
                     {request.interviewDate ? (
-                      <p className="mt-1 text-xs font-bold text-[#1f6358]">
+                      <p className="mt-1 text-xs font-bold text-[#0f5a35]">
                         موعد المقابلة: {formatDate(request.interviewDate)}
                         {request.interviewLink ? ` - ${request.interviewLink}` : ""}
                       </p>
@@ -784,7 +784,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                           type="button"
                           onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_ACCEPTANCE_MESSAGE")}
                           disabled={sendingAcceptanceId === request.id}
-                          className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                          className="rounded-xl bg-[#0f5a35] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                         >
                           {sendingAcceptanceId === request.id ? "جارٍ إرسال القبول..." : "إرسال رسالة القبول"}
                         </button>
@@ -792,7 +792,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                           type="button"
                           onClick={() => sendSupervisorMessage(request.id, "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE")}
                           disabled={sendingDetailsId === request.id}
-                          className="rounded-xl bg-[#8a6335] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                          className="rounded-xl bg-[#8a661f] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                         >
                           {sendingDetailsId === request.id ? "جارٍ إرسال التفاصيل..." : "إرسال تفاصيل الحلقة"}
                         </button>
@@ -800,7 +800,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                           type="button"
                           onClick={() => sendSupervisorMessage(request.id, "SEND_PARENT_EDUCATION_CHAT_GUIDE")}
                           disabled={sendingParentGuideId === request.id}
-                          className="rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
+                          className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white disabled:opacity-60"
                         >
                           {sendingParentGuideId === request.id ? "جارٍ إرسال شرح المراسلات..." : "شرح المراسلات لولي الأمر"}
                         </button>
@@ -808,13 +808,13 @@ export default function RemoteSupervisionRegistrationsPage() {
                           type="button"
                           onClick={() => sendSupervisorMessage(request.id, "SEND_TEACHER_EDUCATION_CHAT_GUIDE")}
                           disabled={sendingTeacherGuideId === request.id}
-                          className="rounded-xl border border-[#1f6358] bg-white px-4 py-2 text-sm font-black text-[#1f6358] disabled:opacity-60"
+                          className="rounded-xl border border-[#0f5a35] bg-white px-4 py-2 text-sm font-black text-[#0f5a35] disabled:opacity-60"
                         >
                           {sendingTeacherGuideId === request.id ? "جارٍ إرسال شرح المعلم..." : "شرح المراسلات للمعلم"}
                         </button>
                         <Link
                           href="/remote/supervision/students"
-                          className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
+                          className="rounded-xl border border-[#d8bf83] bg-white px-4 py-2 text-sm font-black text-[#1c2d31]"
                         >
                           فتح سجل الطلاب
                         </Link>
@@ -830,7 +830,7 @@ export default function RemoteSupervisionRegistrationsPage() {
 
       {interviewModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c2d31]/50 p-4 backdrop-blur-sm">
-          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-[#fffaf2] p-8 shadow-xl" dir="rtl">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[2rem] bg-[#fffaf4] p-8 shadow-xl" dir="rtl">
             <h2 className="mb-6 text-2xl font-black text-[#1c2d31]">تحديد موعد المقابلة</h2>
             <div className="space-y-4">
               <div>
@@ -839,7 +839,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                   type="date"
                   value={interviewDate}
                   onChange={(e) => setInterviewDate(e.target.value)}
-                  className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 outline-none"
                 />
               </div>
               <div>
@@ -848,7 +848,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                   type="time"
                   value={interviewTime}
                   onChange={(e) => setInterviewTime(e.target.value)}
-                  className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 outline-none"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 outline-none"
                 />
               </div>
               <div>
@@ -858,7 +858,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                   value={interviewZoomUrl}
                   onChange={(e) => setInterviewZoomUrl(e.target.value)}
                   placeholder="https://zoom.us/j/..."
-                  className="w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-left outline-none"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-left outline-none"
                   dir="ltr"
                 />
               </div>
@@ -878,7 +878,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                           )
                         )
                       }
-                      className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-xs font-black text-[#1c2d31]"
+                      className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-black text-[#1c2d31]"
                     >
                       تحديث النص من البيانات
                     </button>
@@ -887,7 +887,7 @@ export default function RemoteSupervisionRegistrationsPage() {
                 <textarea
                   value={interviewMessage}
                   onChange={(e) => setInterviewMessage(e.target.value)}
-                  className="min-h-48 w-full rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
+                  className="min-h-48 w-full rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 outline-none"
                 />
               </div>
               <div className="mt-8 flex gap-3">
@@ -895,14 +895,14 @@ export default function RemoteSupervisionRegistrationsPage() {
                   type="button"
                   disabled={schedulingId === interviewModalOpen || !interviewDate || !interviewTime}
                   onClick={() => scheduleInterview(interviewModalOpen)}
-                  className="flex-1 rounded-xl bg-[#1f6358] px-4 py-3 text-sm font-black text-white disabled:opacity-50"
+                  className="flex-1 rounded-xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white disabled:opacity-50"
                 >
                   {schedulingId === interviewModalOpen ? "جارٍ الإرسال..." : "حفظ وإرسال واتساب"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setInterviewModalOpen(null)}
-                  className="rounded-xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm font-black text-[#1c2d31]"
+                  className="rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-black text-[#1c2d31]"
                 >
                   إلغاء
                 </button>

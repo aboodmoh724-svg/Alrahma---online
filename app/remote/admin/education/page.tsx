@@ -1,41 +1,41 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 
 const sections = [
   {
     href: "/remote/admin/students",
     title: "الطلاب",
     description: "إضافة طالب يدويًا عند الحاجة، ومراجعة بيانات الطلاب ونقلهم بين الحلقات.",
-    tone: "bg-[#1f6358] text-white",
+    tone: "bg-[#0f5a35] text-white",
   },
   {
     href: "/remote/admin/teachers",
     title: "المعلمون",
     description: "إضافة حسابات المعلمين وتحديث بياناتهم وأوقاتهم ومساراتهم المتاحة.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/circles",
     title: "الحلقات والمسارات",
     description: "إنشاء الحلقات وتحديد المسار والمعلم والرابط وأوقات الدخول والخروج.",
-    tone: "bg-[#c39a62] text-white",
+    tone: "bg-[#bd8f2d] text-white",
   },
   {
     href: "/remote/admin/resources",
     title: "ملفات المسارات",
     description: "رفع ملفات آلية سير الحلقة وملفات المسارات للمعلمين أو للتسجيل.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/supervision-tasks",
     title: "مهام الإشراف",
     description: "إضافة مهمة من الإدارة لتظهر للمشرف ضمن المتابعة الإشرافية.",
-    tone: "bg-[#173d42] text-white",
+    tone: "bg-[#0a3f2a] text-white",
   },
   {
     href: "/remote/supervision/dashboard",
     title: "واجهة الإشراف التشغيلية",
     description: "متابعة الطلاب والمعلمين والحلقات وطلبات التسجيل المحولة من الإدارة.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
 ];
 
@@ -45,7 +45,7 @@ export default function RemoteAdminEducationPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">إدارة التعليم والحلقات</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               تم جمع الملفات المتقاربة هنا حتى تبقى الواجهة الإدارية أخف وأسهل في الوصول.
@@ -53,7 +53,7 @@ export default function RemoteAdminEducationPage() {
           </div>
           <Link
             href="/remote/admin/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإدارة
           </Link>
@@ -64,7 +64,7 @@ export default function RemoteAdminEducationPage() {
             <Link
               key={section.href}
               href={section.href}
-              className={`min-h-44 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${section.tone}`}
+              className={`min-h-44 rounded-[2rem] p-6 shadow-sm ring-1 ring-[#d8bf83] transition hover:-translate-y-0.5 ${section.tone}`}
             >
               <h2 className="text-2xl font-black">{section.title}</h2>
               <p className="mt-4 text-sm leading-8 opacity-75">{section.description}</p>

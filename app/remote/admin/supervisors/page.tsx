@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -137,9 +137,9 @@ export default async function RemoteAdminSupervisorsPage() {
   if (!currentAdmin) {
     return (
       <main className="min-h-screen bg-[#f6efe3] p-6" dir="rtl">
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-white p-6 text-[#173d42] shadow-sm">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-white p-6 text-[#0a3f2a] shadow-sm">
           <p className="text-lg font-black">هذه الصفحة مخصصة للإدارة العليا فقط.</p>
-          <Link href="/remote/admin/login" className="mt-5 inline-flex rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+          <Link href="/remote/admin/login" className="mt-5 inline-flex rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white">
             تسجيل الدخول
           </Link>
         </div>
@@ -166,66 +166,66 @@ export default async function RemoteAdminSupervisorsPage() {
   });
 
   return (
-    <main className="min-h-screen bg-[#f6efe3] px-4 py-6 text-[#173d42]" dir="rtl">
+    <main className="min-h-screen bg-[#f6efe3] px-4 py-6 text-[#0a3f2a]" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="relative overflow-hidden rounded-[2.5rem] bg-[#102f34] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-20 top-8 h-56 w-56 rounded-full bg-[#c39a62]/20" />
+          <div className="absolute -left-20 top-8 h-56 w-56 rounded-full bg-[#bd8f2d]/20" />
           <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
           <div className="relative flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 المشرفون والصلاحيات
               </p>
               <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
                 افصل الإدارة عن الإشراف وحدد من يملك كل صلاحية.
               </h1>
             </div>
-            <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#173d42]">
+            <Link href="/remote/admin/dashboard" className="rounded-full bg-white px-5 py-3 text-sm font-black text-[#0a3f2a]">
               الرجوع إلى الإدارة
             </Link>
           </div>
         </section>
 
         <section className="grid gap-5 lg:grid-cols-[0.9fr_1.6fr]">
-          <form action={createSupervisor} className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <form action={createSupervisor} className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <h2 className="text-2xl font-black">إضافة مشرف أو إداري</h2>
             <div className="mt-5 grid gap-3">
-              <input name="fullName" required placeholder="الاسم" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="email" type="email" required placeholder="البريد الإلكتروني" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <input name="whatsapp" dir="ltr" placeholder={"رقم واتساب التنبيهات مثل +905xxxxxxxxx"} className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-left text-sm" />
-              <input name="password" required placeholder="كلمة المرور" className="rounded-2xl border border-[#d9c8ad] px-4 py-3 text-sm" />
-              <label className="flex items-center gap-3 rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm font-black">
+              <input name="fullName" required placeholder="الاسم" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="email" type="email" required placeholder="البريد الإلكتروني" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <input name="whatsapp" dir="ltr" placeholder={"رقم واتساب التنبيهات مثل +905xxxxxxxxx"} className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-left text-sm" />
+              <input name="password" required placeholder="كلمة المرور" className="rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm" />
+              <label className="flex items-center gap-3 rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black">
                 <input name="canAccessSupervision" type="checkbox" defaultChecked className="h-4 w-4" />
                 صلاحية الإشراف
               </label>
-              <label className="flex items-center gap-3 rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm font-black">
+              <label className="flex items-center gap-3 rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black">
                 <input name="canAccessFinance" type="checkbox" className="h-4 w-4" />
                 صلاحية المالية
               </label>
-              <ConfirmSubmitButton confirmMessage="هل تريد إضافة هذا الحساب؟" className="rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white">
+              <ConfirmSubmitButton confirmMessage="هل تريد إضافة هذا الحساب؟" className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white">
                 حفظ الحساب
               </ConfirmSubmitButton>
             </div>
           </form>
 
-          <section className="rounded-[2rem] border border-[#d9c8ad] bg-white p-5 shadow-sm">
+          <section className="rounded-[2rem] border border-[#d8bf83] bg-white p-5 shadow-sm">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-black">الحسابات الحالية</h2>
-              <span className="rounded-full bg-[#fffaf2] px-4 py-2 text-sm font-black text-[#8a6335]">
+              <span className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#8a661f]">
                 {supervisors.length} حساب
               </span>
             </div>
 
             <div className="mt-5 grid gap-4">
               {supervisors.map((admin) => (
-                <article key={admin.id} className="rounded-2xl border border-[#eadcc6] bg-[#fffaf2]/40 p-4">
+                <article key={admin.id} className="rounded-2xl border border-[#e7d7b4] bg-[#fffaf4]/40 p-4">
                   <form action={updateSupervisor} className="grid gap-3">
                     <input type="hidden" name="adminId" value={admin.id} />
                     <div className="grid gap-3 md:grid-cols-2">
-                      <input name="fullName" defaultValue={admin.fullName} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm" />
-                      <input name="email" type="email" defaultValue={admin.email} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm" />
-                      <input name="whatsapp" dir="ltr" defaultValue={admin.whatsapp || ""} placeholder={"رقم واتساب التنبيهات +905xxxxxxxxx"} className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-left text-sm" />
-                      <input name="password" placeholder="كلمة مرور جديدة اختيارية" className="rounded-xl border border-[#d9c8ad] bg-white px-3 py-2 text-sm md:col-span-2" />
+                      <input name="fullName" defaultValue={admin.fullName} className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-sm" />
+                      <input name="email" type="email" defaultValue={admin.email} className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-sm" />
+                      <input name="whatsapp" dir="ltr" defaultValue={admin.whatsapp || ""} placeholder={"رقم واتساب التنبيهات +905xxxxxxxxx"} className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-left text-sm" />
+                      <input name="password" placeholder="كلمة مرور جديدة اختيارية" className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-sm md:col-span-2" />
                     </div>
                     <div className="flex flex-wrap gap-3">
                       <label className="flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-black">
@@ -242,7 +242,7 @@ export default async function RemoteAdminSupervisorsPage() {
                       </label>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <ConfirmSubmitButton confirmMessage="هل تريد حفظ الصلاحيات الجديدة لهذا الحساب؟" className="w-fit rounded-xl bg-[#1f6358] px-5 py-2 text-xs font-black text-white">
+                      <ConfirmSubmitButton confirmMessage="هل تريد حفظ الصلاحيات الجديدة لهذا الحساب؟" className="w-fit rounded-xl bg-[#0f5a35] px-5 py-2 text-xs font-black text-white">
                         حفظ التعديلات
                       </ConfirmSubmitButton>
                       <ConfirmSubmitButton

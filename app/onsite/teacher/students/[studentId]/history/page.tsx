@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -70,7 +70,7 @@ export default async function OnsiteStudentHistoryPage({ params }: PageProps) {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-5xl space-y-6">
-        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad] md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-black text-[#1c2d31] md:text-3xl">
               سجل الطالب: {student.fullName}
@@ -82,14 +82,14 @@ export default async function OnsiteStudentHistoryPage({ params }: PageProps) {
 
           <Link
             href="/onsite/teacher/dashboard"
-            className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358]"
+            className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35]"
           >
             الرجوع للوحة المعلم
           </Link>
         </div>
 
         {student.reports.length === 0 ? (
-          <div className="rounded-[2rem] border border-dashed border-[#d9c8ad] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/55">
+          <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/55">
             لا توجد تقارير سابقة لهذا الطالب حتى الآن
           </div>
         ) : (
@@ -97,7 +97,7 @@ export default async function OnsiteStudentHistoryPage({ params }: PageProps) {
             {student.reports.map((report) => (
               <div
                 key={report.id}
-                className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]"
+                className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
               >
                 <div className="mb-3 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                   <div>
@@ -112,7 +112,7 @@ export default async function OnsiteStudentHistoryPage({ params }: PageProps) {
                     </p>
                   </div>
 
-                  <span className="rounded-full bg-[#fffaf2] px-3 py-1 text-xs font-black text-[#9b7039] ring-1 ring-[#d9c8ad]">
+                  <span className="rounded-full bg-[#fffaf4] px-3 py-1 text-xs font-black text-[#8a661f] ring-1 ring-[#d8bf83]">
                     {report.sentToParent
                       ? "أرسل لولي الأمر"
                       : "لم يرسل لولي الأمر"}

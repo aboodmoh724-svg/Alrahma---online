@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -330,7 +330,7 @@ export default function RemoteAdminRegistrationsPage() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإدارة</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإدارة</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">طلبات التسجيل</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               راجع الطلبات، وعدل ملفات الطلب عند الحاجة، ثم اقبل الطالب أو ارفضه أو احذف الطلب.
@@ -347,7 +347,7 @@ export default function RemoteAdminRegistrationsPage() {
             </button>
             <Link
               href="/remote/admin/dashboard"
-              className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+              className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
             >
               الرجوع للوحة الإدارة
             </Link>
@@ -365,7 +365,7 @@ export default function RemoteAdminRegistrationsPage() {
         ) : (
           <section className="grid gap-4">
             {requests.map((request) => (
-              <article key={request.id} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <article key={request.id} className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
@@ -406,45 +406,45 @@ export default function RemoteAdminRegistrationsPage() {
                 </div>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-4">
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">الصف/العمر</p>
                     <p className="mt-1 text-[#1c2d31]/60">
                       {request.grade || "-"} /{" "}
                       {request.birthDate ? new Date(request.birthDate).toLocaleDateString("ar-EG") : "-"}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">الجنسية/بلد الإقامة</p>
                     <p className="mt-1 text-[#1c2d31]/60">
                       {request.nationality || "-"} / {request.country || "-"}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">حياة الوالدين</p>
                     <p className="mt-1 text-[#1c2d31]/60">
                       الأب: {request.fatherAlive === null ? "-" : request.fatherAlive ? "نعم" : "لا"} - الأم:{" "}
                       {request.motherAlive === null ? "-" : request.motherAlive ? "نعم" : "لا"}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">السكن</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.livingWith || "-"}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">تعليم الأب/الأم</p>
                     <p className="mt-1 text-[#1c2d31]/60">
                       {request.fatherEducation || "-"} / {request.motherEducation || "-"}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">الفترة</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.preferredPeriod || "-"}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">المسارات المطلوبة</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.requestedTracks || "-"}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#173d42] p-3 text-sm text-white">
+                  <div className="rounded-2xl bg-[#0a3f2a] p-3 text-sm text-white">
                     <p className="font-black">الرسوم المتوقعة</p>
                     <p className="mt-1 text-white/75">
                       {getExpectedTuition(
@@ -454,51 +454,51 @@ export default function RemoteAdminRegistrationsPage() {
                       USD
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">التجهيزات</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.hasDevice ? "متوفرة" : "غير مؤكدة"}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">قراءة التعليمات</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.readGuidelines ? "تم التأكيد" : "لم يؤكد"}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">مستوى القراءة</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.readingLevel || "-"}</p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                     <p className="font-black text-[#1c2d31]">مستوى التجويد</p>
                     <p className="mt-1 text-[#1c2d31]/60">{request.tajweedLevel || "-"}</p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm leading-7 text-[#1c2d31]/65">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm leading-7 text-[#1c2d31]/65">
                     <span className="font-black text-[#1c2d31]">الدراسة السابقة:</span> {request.previousStudy || "-"}
                     <br />
                     <span className="font-black text-[#1c2d31]">الحفظ السابق:</span> {request.memorizedAmount || "-"}
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] p-3 text-sm leading-7 text-[#1c2d31]/65">
+                  <div className="rounded-2xl bg-[#fffaf4] p-3 text-sm leading-7 text-[#1c2d31]/65">
                     <span className="font-black text-[#1c2d31]">ملاحظات:</span> {request.learningIssuesNote || request.notes || "-"}
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                  <div className="rounded-2xl bg-[#fffaf2] p-4">
+                  <div className="rounded-2xl bg-[#fffaf4] p-4">
                     <p className="mb-3 text-sm font-black text-[#1c2d31]">ملف الهوية أو الإقامة</p>
                     {request.idImageUrl ? (
                       <a
                         href={request.idImageUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                        className="inline-flex rounded-xl bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white"
                       >
                         فتح ملف الهوية الحالي
                       </a>
                     ) : (
                       <p className="text-sm text-[#1c2d31]/55">لا يوجد ملف مرفوع حاليا.</p>
                     )}
-                    <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] bg-white p-4">
+                    <div className="mt-4 rounded-2xl border border-dashed border-[#d8bf83] bg-white p-4">
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">استبدال ملف الهوية</label>
                       <input
                         type="file"
@@ -515,7 +515,7 @@ export default function RemoteAdminRegistrationsPage() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl bg-[#fffaf2] p-4">
+                  <div className="rounded-2xl bg-[#fffaf4] p-4">
                     <p className="mb-3 text-sm font-black text-[#1c2d31]">تسجيل آية الكرسي</p>
                     {request.audioUrl ? (
                       <>
@@ -524,7 +524,7 @@ export default function RemoteAdminRegistrationsPage() {
                           href={request.audioUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="mt-3 inline-flex rounded-xl bg-[#173d42] px-4 py-2 text-sm font-black text-white"
+                          className="mt-3 inline-flex rounded-xl bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white"
                         >
                           فتح التسجيل الحالي
                         </a>
@@ -532,7 +532,7 @@ export default function RemoteAdminRegistrationsPage() {
                     ) : (
                       <p className="text-sm text-[#1c2d31]/55">لا يوجد تسجيل مرفوع حاليا.</p>
                     )}
-                    <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] bg-white p-4">
+                    <div className="mt-4 rounded-2xl border border-dashed border-[#d8bf83] bg-white p-4">
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">استبدال التسجيل الصوتي</label>
                       <input
                         type="file"
@@ -551,7 +551,7 @@ export default function RemoteAdminRegistrationsPage() {
                       type="button"
                       onClick={() => updateFiles(request.id)}
                       disabled={updatingFileId === request.id}
-                      className="mt-4 rounded-xl bg-[#8a6335] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
+                      className="mt-4 rounded-xl bg-[#8a661f] px-4 py-3 text-sm font-black text-white disabled:opacity-60"
                     >
                       {updatingFileId === request.id ? "جاري تحديث الملفات..." : "حفظ تعديل الملفات"}
                     </button>
@@ -575,7 +575,7 @@ export default function RemoteAdminRegistrationsPage() {
                             [request.id]: String(getExpectedTuition(request.requestedTracks, circleTrack)),
                           }));
                         }}
-                        className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm"
+                        className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm"
                       >
                         <option value="">اختر حلقة</option>
                         {circles.map((circle) => (
@@ -590,7 +590,7 @@ export default function RemoteAdminRegistrationsPage() {
                       <select
                         value={selectedTeacher[request.id] || ""}
                         onChange={(e) => setSelectedTeacher((prev) => ({ ...prev, [request.id]: e.target.value }))}
-                        className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm"
+                        className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm"
                       >
                         <option value="">اختر معلم</option>
                         {teachers.map((teacher) => (
@@ -602,7 +602,7 @@ export default function RemoteAdminRegistrationsPage() {
                       </div>
                       <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">المبلغ المطلوب</label>
-                      <div className="flex overflow-hidden rounded-2xl border border-[#d9c8ad] bg-white">
+                      <div className="flex overflow-hidden rounded-2xl border border-[#d8bf83] bg-white">
                         <input
                           type="number"
                           min="0"
@@ -621,14 +621,14 @@ export default function RemoteAdminRegistrationsPage() {
                           }
                           className="w-full px-4 py-3 text-sm outline-none"
                         />
-                        <span className="bg-[#fffaf2] px-3 py-3 text-sm font-black text-[#8a6335]">USD</span>
+                        <span className="bg-[#fffaf4] px-3 py-3 text-sm font-black text-[#8a661f]">USD</span>
                       </div>
                       <p className="mt-1 text-xs text-[#1c2d31]/55">يمكن تعديله قبل القبول.</p>
                       </div>
                       <button
                       type="button"
                       onClick={() => updateRequest(request.id, "ACCEPT")}
-                      className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white"
+                      className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white"
                       >
                         قبول مباشر
                       </button>
@@ -640,7 +640,7 @@ export default function RemoteAdminRegistrationsPage() {
                         رفض
                       </button>
                     </div>
-                    <div className="grid gap-3 rounded-[1.5rem] border border-[#d9c8ad] bg-[#fffaf2] p-4 md:grid-cols-[1fr_auto] md:items-end">
+                    <div className="grid gap-3 rounded-[1.5rem] border border-[#d8bf83] bg-[#fffaf4] p-4 md:grid-cols-[1fr_auto] md:items-end">
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                           ملاحظة للإشراف عند التحويل
@@ -655,7 +655,7 @@ export default function RemoteAdminRegistrationsPage() {
                           }
                           rows={3}
                           placeholder="مثال: تم التحقق من الدفع، يرجى اختبار الطالب ووضعه في الحلقة المناسبة."
-                          className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                          className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                         />
                         <p className="mt-1 text-xs leading-6 text-[#1c2d31]/55">
                           هذا الخيار يقبل الطلب إداريًا ويرسله للإشراف مع نسخة من بيانات التسجيل، ثم يختار المشرف الحلقة والمعلم.
@@ -664,7 +664,7 @@ export default function RemoteAdminRegistrationsPage() {
                       <button
                         type="button"
                         onClick={() => updateRequest(request.id, "ACCEPT_AND_FORWARD_TO_SUPERVISION")}
-                        className="rounded-2xl bg-[#8a6335] px-5 py-3 text-sm font-black text-white"
+                        className="rounded-2xl bg-[#8a661f] px-5 py-3 text-sm font-black text-white"
                       >
                         قبول وتحويل للإشراف
                       </button>
@@ -695,7 +695,7 @@ export default function RemoteAdminRegistrationsPage() {
                           هذه الرسالة يدوية. أرسلها بعد الدفع واكتمال الترتيب النهائي للحلقة.
                         </p>
                         {request.forwardedToSupervisionAt ? (
-                          <p className="mt-2 text-xs font-black text-[#1f6358]">
+                          <p className="mt-2 text-xs font-black text-[#0f5a35]">
                             تم تحويل الطلب إلى الإشراف
                           </p>
                         ) : null}
@@ -705,7 +705,7 @@ export default function RemoteAdminRegistrationsPage() {
                           type="button"
                           onClick={() => sendAcceptanceMessage(request.id)}
                           disabled={sendingAcceptanceId === request.id}
-                          className="w-full rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                          className="w-full rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
                         >
                           {sendingAcceptanceId === request.id ? "جاري إرسال الرسالة..." : "إرسال رسالة القبول"}
                         </button>
@@ -727,7 +727,7 @@ export default function RemoteAdminRegistrationsPage() {
                           type="button"
                           onClick={() => forwardToSupervision(request.id)}
                           disabled={forwardingId === request.id || Boolean(request.forwardedToSupervisionAt)}
-                          className="w-full rounded-2xl border border-[#1f6358] bg-white px-5 py-3 text-sm font-black text-[#1f6358] disabled:opacity-60"
+                          className="w-full rounded-2xl border border-[#0f5a35] bg-white px-5 py-3 text-sm font-black text-[#0f5a35] disabled:opacity-60"
                         >
                           {request.forwardedToSupervisionAt
                             ? "تم التحويل إلى الإشراف"
@@ -742,7 +742,7 @@ export default function RemoteAdminRegistrationsPage() {
 
                 {request.status === "ACCEPTED" && !request.createdStudentId ? (
                   <div className="mt-4 rounded-[1.75rem] border border-amber-200 bg-amber-50/70 p-4">
-                    <p className="text-sm font-black text-[#8a6335]">تم قبول الطلب وتحويله للإشراف</p>
+                    <p className="text-sm font-black text-[#8a661f]">تم قبول الطلب وتحويله للإشراف</p>
                     <p className="mt-2 text-sm leading-7 text-[#1c2d31]/65">
                       ينتظر الطالب الآن اختيار الحلقة والمعلم من لوحة الإشراف. بعد وضعه في الحلقة سيظهر الطالب في النظام ويمكن إرسال رسالة القبول النهائية لولي الأمر.
                     </p>

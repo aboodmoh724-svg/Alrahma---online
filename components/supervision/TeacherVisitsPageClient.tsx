@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
@@ -183,7 +183,7 @@ export default function TeacherVisitsPageClient({
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">زيارات المعلمين</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               نموذج سريع للمشرف مع PDF مرتب ورابط جاهز يُرسل للمعلم بعد الحفظ.
@@ -191,30 +191,30 @@ export default function TeacherVisitsPageClient({
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع إلى لوحة الإشراف
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <form onSubmit={handleSubmit} className="space-y-6 rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <section>
-            <h2 className="text-2xl font-black text-[#173d42]">بيانات الزيارة</h2>
+            <h2 className="text-2xl font-black text-[#0a3f2a]">بيانات الزيارة</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
-                <p className="text-sm font-bold text-[#8a6335]">اسم المشرف</p>
-                <p className="mt-2 text-base font-black text-[#173d42]">{supervisorName}</p>
+              <div className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
+                <p className="text-sm font-bold text-[#8a661f]">اسم المشرف</p>
+                <p className="mt-2 text-base font-black text-[#0a3f2a]">{supervisorName}</p>
               </div>
-              <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
-                <p className="text-sm font-bold text-[#8a6335]">رقم الزيارة</p>
-                <p className="mt-2 text-base font-black text-[#173d42]">يتولد تلقائيًا بعد الحفظ</p>
+              <div className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
+                <p className="text-sm font-bold text-[#8a661f]">رقم الزيارة</p>
+                <p className="mt-2 text-base font-black text-[#0a3f2a]">يتولد تلقائيًا بعد الحفظ</p>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#1c2d31]">اسم المعلم</label>
                 <select
                   value={formData.teacherId}
                   onChange={(event) => setFormData((prev) => ({ ...prev, teacherId: event.target.value }))}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                   required
                 >
                   <option value="">اختر المعلم</option>
@@ -231,20 +231,20 @@ export default function TeacherVisitsPageClient({
                   type="date"
                   value={formData.visitDate}
                   onChange={(event) => setFormData((prev) => ({ ...prev, visitDate: event.target.value }))}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                   required
                 />
               </div>
-              <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
-                <p className="text-sm font-bold text-[#8a6335]">اليوم</p>
-                <p className="mt-2 text-base font-black text-[#173d42]">{computedDayLabel}</p>
+              <div className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
+                <p className="text-sm font-bold text-[#8a661f]">اليوم</p>
+                <p className="mt-2 text-base font-black text-[#0a3f2a]">{computedDayLabel}</p>
               </div>
               <div>
                 <label className="mb-2 block text-sm font-bold text-[#1c2d31]">نوع الزيارة</label>
                 <select
                   value={formData.visitType}
                   onChange={(event) => setFormData((prev) => ({ ...prev, visitType: event.target.value }))}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                 >
                   {VISIT_TYPE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -258,7 +258,7 @@ export default function TeacherVisitsPageClient({
                 <select
                   value={formData.trackLabel}
                   onChange={(event) => setFormData((prev) => ({ ...prev, trackLabel: event.target.value }))}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                 >
                   {TEACHER_VISIT_TRACK_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -272,7 +272,7 @@ export default function TeacherVisitsPageClient({
                 <select
                   value={formData.periodLabel}
                   onChange={(event) => setFormData((prev) => ({ ...prev, periodLabel: event.target.value }))}
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                 >
                   {TEACHER_VISIT_PERIOD_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -288,7 +288,7 @@ export default function TeacherVisitsPageClient({
                   onChange={(event) =>
                     setFormData((prev) => ({ ...prev, overallEvaluation: event.target.value }))
                   }
-                  className="w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
                 >
                   {TEACHER_VISIT_EVALUATION_OPTIONS.map((option) => (
                     <option key={option} value={option}>
@@ -301,16 +301,16 @@ export default function TeacherVisitsPageClient({
           </section>
 
           <section>
-            <h2 className="text-2xl font-black text-[#173d42]">البنود الأساسية</h2>
+            <h2 className="text-2xl font-black text-[#0a3f2a]">البنود الأساسية</h2>
             <div className="mt-4 space-y-4">
               {formData.mainItems.map((item, index) => (
-                <div key={item.label} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
-                  <p className="text-base font-black text-[#173d42]">{item.label}</p>
+                <div key={item.label} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
+                  <p className="text-base font-black text-[#0a3f2a]">{item.label}</p>
                   <textarea
                     value={item.note}
                     onChange={(event) => handleMainItemChange(index, event.target.value)}
                     placeholder="ملاحظات المشرف"
-                    className="mt-3 min-h-24 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                    className="mt-3 min-h-24 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                   />
                 </div>
               ))}
@@ -318,15 +318,15 @@ export default function TeacherVisitsPageClient({
           </section>
 
           <section>
-            <h2 className="text-2xl font-black text-[#173d42]">البنود العامة</h2>
+            <h2 className="text-2xl font-black text-[#0a3f2a]">البنود العامة</h2>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
               {formData.generalItems.map((item, index) => (
-                <div key={item.label} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
-                  <p className="text-sm font-black text-[#173d42]">{item.label}</p>
+                <div key={item.label} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
+                  <p className="text-sm font-black text-[#0a3f2a]">{item.label}</p>
                   <select
                     value={item.evaluation}
                     onChange={(event) => handleGeneralItemChange(index, event.target.value)}
-                    className="mt-3 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                    className="mt-3 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                   >
                     {TEACHER_VISIT_EVALUATION_OPTIONS.map((option) => (
                       <option key={option} value={option}>
@@ -340,8 +340,8 @@ export default function TeacherVisitsPageClient({
           </section>
 
           <section className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6] md:col-span-2">
-              <label className="flex items-center gap-3 text-sm font-black text-[#173d42]">
+            <div className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4] md:col-span-2">
+              <label className="flex items-center gap-3 text-sm font-black text-[#0a3f2a]">
                 <input
                   type="checkbox"
                   checked={formData.positiveNotesEnabled}
@@ -363,7 +363,7 @@ export default function TeacherVisitsPageClient({
                     setFormData((prev) => ({ ...prev, positiveNotes: event.target.value }))
                   }
                   placeholder="اكتب النقاط الإيجابية التي ظهرت أثناء الزيارة..."
-                  className="mt-3 min-h-28 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
+                  className="mt-3 min-h-28 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 outline-none"
                 />
               ) : null}
             </div>
@@ -375,7 +375,7 @@ export default function TeacherVisitsPageClient({
                   setFormData((prev) => ({ ...prev, finalRecommendation: event.target.value }))
                 }
                 placeholder="التوصية أو الإجراء المقترح"
-                className="min-h-28 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                className="min-h-28 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
               />
             </div>
             <div>
@@ -386,7 +386,7 @@ export default function TeacherVisitsPageClient({
                   setFormData((prev) => ({ ...prev, generalNotes: event.target.value }))
                 }
                 placeholder="أي ملاحظات إضافية"
-                className="min-h-28 w-full rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm outline-none"
+                className="min-h-28 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm outline-none"
               />
             </div>
           </section>
@@ -394,26 +394,26 @@ export default function TeacherVisitsPageClient({
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-2xl bg-[#173d42] px-6 py-4 text-sm font-black text-white disabled:opacity-60"
+            className="rounded-2xl bg-[#0a3f2a] px-6 py-4 text-sm font-black text-white disabled:opacity-60"
           >
             {submitting ? "جارٍ حفظ الزيارة وتوليد التقرير..." : "حفظ الزيارة وإرسال التقرير"}
           </button>
         </form>
 
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-black text-[#173d42]">آخر زيارات المعلمين</h2>
-            <span className="text-sm font-bold text-[#8a6335]">{reports.length} تقرير</span>
+            <h2 className="text-2xl font-black text-[#0a3f2a]">آخر زيارات المعلمين</h2>
+            <span className="text-sm font-bold text-[#8a661f]">{reports.length} تقرير</span>
           </div>
 
           <div className="mt-4 space-y-4">
             {reports.map((report) => (
-              <div key={report.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+              <div key={report.id} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full bg-[#173d42] px-3 py-1 text-xs font-black text-white">
+                  <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                     زيارة رقم {report.visitNumber}
                   </span>
-                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1f6358] ring-1 ring-[#d9c8ad]">
+                  <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
                     {report.teacher.fullName}
                   </span>
                 </div>
@@ -422,7 +422,7 @@ export default function TeacherVisitsPageClient({
                   {report.visitType === "SECRET" ? "سرية" : "ميدانية"} - {report.trackLabel} -{" "}
                   {report.periodLabel}
                 </p>
-                <p className="mt-2 text-sm font-bold text-[#8a6335]">
+                <p className="mt-2 text-sm font-bold text-[#8a661f]">
                   التقييم العام: {report.overallEvaluation || "-"}
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -431,19 +431,19 @@ export default function TeacherVisitsPageClient({
                       href={report.pdfPath}
                       target="_blank"
                       rel="noreferrer"
-                      className="rounded-xl bg-[#1f6358] px-4 py-2 text-sm font-black text-white"
+                      className="rounded-xl bg-[#0f5a35] px-4 py-2 text-sm font-black text-white"
                     >
                       فتح PDF
                     </a>
                   ) : null}
-                  <span className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] ring-1 ring-[#d9c8ad]">
+                  <span className="rounded-xl bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] ring-1 ring-[#d8bf83]">
                     {report.sentToTeacherAt ? "أُرسل للمعلم" : "لم يُرسل بعد"}
                   </span>
                 </div>
               </div>
             ))}
             {reports.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 لا توجد زيارات مسجلة بعد.
               </div>
             ) : null}

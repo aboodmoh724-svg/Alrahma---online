@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = {
@@ -254,15 +254,15 @@ export default async function OnsiteEducationSupervisionPage({
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
+        <section className="rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/onsite/admin/dashboard"
-              className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2]"
+              className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4]"
             >
               الرجوع للوحة الإدارة
             </Link>
-            <span className="rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+            <span className="rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
               إشراف تعليمي حضوري
             </span>
           </div>
@@ -278,7 +278,7 @@ export default async function OnsiteEducationSupervisionPage({
               من شرف العمل القرآني أن تكون عينًا راعية لمسيرة طالب مع كتاب الله،
               فكل متابعة صادقة لبنة في بناء جيل يحمل القرآن خلقًا وعملاً.
             </p>
-            <p className="mt-3 text-sm font-black text-[#f1d39d]">
+            <p className="mt-3 text-sm font-black text-[#f2d18a]">
               د.معاذ قدح
             </p>
           </div>
@@ -292,10 +292,10 @@ export default async function OnsiteEducationSupervisionPage({
             <Link
               key={item.key}
               href={`/onsite/admin/education-supervision?track=${item.key}`}
-              className={`rounded-[1.8rem] p-5 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${
+              className={`rounded-[1.8rem] p-5 shadow-sm ring-1 ring-[#d8bf83] transition hover:-translate-y-0.5 ${
                 !isPerformanceView && selectedTrack === item.key
-                  ? "bg-[#1f6358] text-white"
-                  : "bg-white/88 text-[#173d42]"
+                  ? "bg-[#0f5a35] text-white"
+                  : "bg-white/88 text-[#0a3f2a]"
               }`}
             >
               <h2 className="text-2xl font-black">{item.title}</h2>
@@ -306,10 +306,10 @@ export default async function OnsiteEducationSupervisionPage({
           ))}
           <Link
             href="/onsite/admin/education-supervision?view=performance"
-            className={`rounded-[1.8rem] p-5 shadow-sm ring-1 ring-[#d9c8ad] transition hover:-translate-y-0.5 ${
+            className={`rounded-[1.8rem] p-5 shadow-sm ring-1 ring-[#d8bf83] transition hover:-translate-y-0.5 ${
               isPerformanceView
-                ? "bg-[#173d42] text-white"
-                : "bg-white/88 text-[#173d42]"
+                ? "bg-[#0a3f2a] text-white"
+                : "bg-white/88 text-[#0a3f2a]"
             }`}
           >
             <h2 className="text-2xl font-black">متابعة أداء الحلقات</h2>
@@ -320,7 +320,7 @@ export default async function OnsiteEducationSupervisionPage({
         </section>
 
         {isPerformanceView ? (
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 className="text-2xl font-black text-[#1c2d31]">
@@ -332,7 +332,7 @@ export default async function OnsiteEducationSupervisionPage({
                   الصفحات المنجزة.
                 </p>
               </div>
-              <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+              <span className="rounded-full bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white">
                 {formatShortDate(performanceStart)} - {formatShortDate(attendanceDays[1].start)}
               </span>
             </div>
@@ -344,8 +344,8 @@ export default async function OnsiteEducationSupervisionPage({
                   href={`/onsite/admin/education-supervision?view=performance&circleId=${item.circle.id}`}
                   className={`rounded-[1.8rem] p-5 ring-1 transition hover:-translate-y-0.5 ${
                     selectedCircle?.id === item.circle.id
-                      ? "bg-[#173d42] text-white ring-[#173d42]"
-                      : "bg-[#fffaf2] text-[#1c2d31] ring-[#eadcc6]"
+                      ? "bg-[#0a3f2a] text-white ring-[#0a3f2a]"
+                      : "bg-[#fffaf4] text-[#1c2d31] ring-[#e7d7b4]"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -383,28 +383,28 @@ export default async function OnsiteEducationSupervisionPage({
             </div>
 
             {selectedCircle && selectedCirclePerformance ? (
-              <div className="mt-6 rounded-[1.8rem] bg-[#fffaf2] p-5 ring-1 ring-[#eadcc6]">
+              <div className="mt-6 rounded-[1.8rem] bg-[#fffaf4] p-5 ring-1 ring-[#e7d7b4]">
                 <div className="mb-5 grid gap-3 md:grid-cols-4">
-                  <div className="rounded-2xl bg-[#173d42] p-4 text-white">
+                  <div className="rounded-2xl bg-[#0a3f2a] p-4 text-white">
                     <p className="text-sm text-white/70">الحلقة</p>
                     <p className="mt-2 text-xl font-black">{selectedCircle.name}</p>
                   </div>
-                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
                     <p className="text-sm text-[#1c2d31]/55">مؤشر الأداء</p>
-                    <p className="mt-2 text-xl font-black text-[#173d42]">
+                    <p className="mt-2 text-xl font-black text-[#0a3f2a]">
                       {selectedCirclePerformance.score}%
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
                     <p className="text-sm text-[#1c2d31]/55">تقارير التسميع</p>
-                    <p className="mt-2 text-xl font-black text-[#1f6358]">
+                    <p className="mt-2 text-xl font-black text-[#0f5a35]">
                       {selectedCirclePerformance.submittedReports}/
                       {selectedCirclePerformance.expectedReports}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
                     <p className="text-sm text-[#1c2d31]/55">الصفحات المنجزة</p>
-                    <p className="mt-2 text-xl font-black text-[#c39a62]">
+                    <p className="mt-2 text-xl font-black text-[#bd8f2d]">
                       {selectedCirclePerformance.pagesCount}
                     </p>
                   </div>
@@ -413,7 +413,7 @@ export default async function OnsiteEducationSupervisionPage({
                 <div className="overflow-x-auto">
                   <table className="min-w-full overflow-hidden rounded-2xl text-sm">
                     <thead>
-                      <tr className="bg-[#173d42] text-right text-white">
+                      <tr className="bg-[#0a3f2a] text-right text-white">
                         <th className="px-4 py-3 font-black">الطالب</th>
                         <th className="px-4 py-3 font-black">الأداء</th>
                         <th className="px-4 py-3 font-black">تقارير التسميع</th>
@@ -465,7 +465,7 @@ export default async function OnsiteEducationSupervisionPage({
                         return (
                           <tr
                             key={student.id}
-                            className="border-b border-[#eadcc6] bg-white"
+                            className="border-b border-[#e7d7b4] bg-white"
                           >
                             <td className="px-4 py-3 font-black text-[#1c2d31]">
                               {student.fullName}
@@ -483,7 +483,7 @@ export default async function OnsiteEducationSupervisionPage({
                               {Math.min(reports.length, performanceExpectedDays)}/
                               {performanceExpectedDays}
                             </td>
-                            <td className="px-4 py-3 font-black text-[#173d42]">
+                            <td className="px-4 py-3 font-black text-[#0a3f2a]">
                               {pagesCount}
                             </td>
                             <td className="px-4 py-3 text-[#1c2d31]/70">
@@ -508,7 +508,7 @@ export default async function OnsiteEducationSupervisionPage({
             ) : null}
           </section>
         ) : (
-        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
           <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 className="text-2xl font-black text-[#1c2d31]">
@@ -519,13 +519,13 @@ export default async function OnsiteEducationSupervisionPage({
                 {formatShortDate(attendanceDays[1].start)}.
               </p>
             </div>
-            <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+            <span className="rounded-full bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white">
               {visibleCircles.length} حلقة
             </span>
           </div>
 
           {visibleCircles.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#d9c8ad] p-8 text-center text-sm text-[#1c2d31]/55">
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
               لا توجد حلقات في هذا القسم حتى الآن.
             </div>
           ) : (
@@ -551,8 +551,8 @@ export default async function OnsiteEducationSupervisionPage({
                     href={`/onsite/admin/education-supervision?track=${selectedTrack}&circleId=${circle.id}&day=${selectedDay.key}`}
                     className={`rounded-[1.8rem] p-5 ring-1 transition hover:-translate-y-0.5 ${
                       selectedCircle?.id === circle.id
-                        ? "bg-[#173d42] text-white ring-[#173d42]"
-                        : "bg-[#fffaf2] text-[#1c2d31] ring-[#eadcc6]"
+                        ? "bg-[#0a3f2a] text-white ring-[#0a3f2a]"
+                        : "bg-[#fffaf4] text-[#1c2d31] ring-[#e7d7b4]"
                     }`}
                   >
                     <h3 className="text-xl font-black">{circle.name}</h3>
@@ -589,23 +589,23 @@ export default async function OnsiteEducationSupervisionPage({
         )}
 
         {!isPerformanceView && selectedCircle ? (
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <div className="mb-5 grid gap-3 md:grid-cols-3">
-              <div className="rounded-2xl bg-[#173d42] p-4 text-white">
+              <div className="rounded-2xl bg-[#0a3f2a] p-4 text-white">
                 <p className="text-sm text-white/70">الحلقة</p>
                 <p className="mt-2 text-xl font-black">{selectedCircle.name}</p>
               </div>
-              <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+              <div className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                 <p className="text-sm text-[#1c2d31]/55">المعلم</p>
-                <p className="mt-2 text-xl font-black text-[#173d42]">
+                <p className="mt-2 text-xl font-black text-[#0a3f2a]">
                   {selectedCircle.teacher?.fullName || "لم يحدد"}
                 </p>
               </div>
-              <div className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+              <div className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                 <p className="text-sm text-[#1c2d31]/55">
                   تقارير {selectedDay.label}
                 </p>
-                <p className="mt-2 text-xl font-black text-[#1f6358]">
+                <p className="mt-2 text-xl font-black text-[#0f5a35]">
                   {selectedDayCompleted}/{selectedCircle.students.length}
                 </p>
               </div>
@@ -618,8 +618,8 @@ export default async function OnsiteEducationSupervisionPage({
                   href={`/onsite/admin/education-supervision?track=${selectedTrack}&circleId=${selectedCircle.id}&day=${day.key}`}
                   className={`rounded-full px-4 py-2 text-sm font-black transition ${
                     selectedDay.key === day.key
-                      ? "bg-[#173d42] text-white"
-                      : "bg-[#fffaf2] text-[#173d42] ring-1 ring-[#d9c8ad]"
+                      ? "bg-[#0a3f2a] text-white"
+                      : "bg-[#fffaf4] text-[#0a3f2a] ring-1 ring-[#d8bf83]"
                   }`}
                 >
                   {day.label} {formatShortDate(day.start)}
@@ -630,7 +630,7 @@ export default async function OnsiteEducationSupervisionPage({
             <div className="overflow-x-auto">
               <table className="min-w-full overflow-hidden rounded-2xl text-sm">
                 <thead>
-                  <tr className="bg-[#173d42] text-right text-white">
+                  <tr className="bg-[#0a3f2a] text-right text-white">
                     <th className="px-4 py-3 font-black">الطالب</th>
                     <th className="px-4 py-3 font-black">تسميع {selectedDay.label}</th>
                     <th className="px-4 py-3 font-black">الدرس</th>
@@ -651,7 +651,7 @@ export default async function OnsiteEducationSupervisionPage({
                       ) || null;
 
                     return (
-                      <tr key={student.id} className="border-b border-[#eadcc6] bg-white">
+                      <tr key={student.id} className="border-b border-[#e7d7b4] bg-white">
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
                           {student.fullName}
                         </td>

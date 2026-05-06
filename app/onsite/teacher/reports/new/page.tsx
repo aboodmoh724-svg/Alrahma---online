@@ -137,10 +137,10 @@ const surahNames = [
 ];
 
 const inputClass =
-  "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10";
+  "w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10";
 
 const sectionClass =
-  "rounded-[2rem] border border-[#d9c8ad]/70 bg-white/86 p-5 shadow-sm";
+  "rounded-[2rem] border border-[#d8bf83]/70 bg-white/86 p-5 shadow-sm";
 
 const notePresetOptions = [
   "ممتاز ومتابع بشكل جيد.",
@@ -666,9 +666,9 @@ function NewReportForm() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] bg-[#173d42] p-6 text-white shadow-lg md:flex-row md:items-center md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-lg md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-bold text-[#f1d39d]">تقرير اليوم</p>
+            <p className="text-sm font-bold text-[#f2d18a]">تقرير اليوم</p>
             <h1 className="mt-2 text-3xl font-black">إضافة تقرير للطالب</h1>
             <p className="mt-2 text-sm leading-7 text-white/72">
               اختر الطالب، ثم إن كان غائبا احفظ الغياب مباشرة. وإن كان حاضرا أدخل الدرس والمراجعة وواجب الغد.
@@ -713,7 +713,7 @@ function NewReportForm() {
               ))}
             </select>
 
-            <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f7f0e6] p-4 text-sm font-black text-[#1c2d31]">
+            <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f6eee7] p-4 text-sm font-black text-[#1c2d31]">
               <input
                 type="checkbox"
                 checked={formData.isAbsent}
@@ -733,11 +733,11 @@ function NewReportForm() {
           {!formData.isAbsent ? (
             <>
               {loadingHistory ? (
-                <div className="rounded-2xl bg-[#e8f3ef] p-4 text-sm font-bold text-[#1f6358]">
+                <div className="rounded-2xl bg-[#edf6ee] p-4 text-sm font-bold text-[#0f5a35]">
                   جاري جلب واجب الغد السابق للطالب...
                 </div>
               ) : suggestedHomework ? (
-                <div className="rounded-2xl bg-[#e8f3ef] p-4 text-sm leading-7 text-[#1f6358]">
+                <div className="rounded-2xl bg-[#edf6ee] p-4 text-sm leading-7 text-[#0f5a35]">
                   واجب اليوم المقترح من آخر تقرير: {suggestedHomework}
                 </div>
               ) : null}
@@ -803,8 +803,8 @@ function NewReportForm() {
                           <option value="LINE">سطر</option>
                         </select>
                       </div>
-                      <div className="rounded-2xl bg-[#f7f0e6] p-4">
-                        <p className="text-xs font-black text-[#1f6358]">
+                      <div className="rounded-2xl bg-[#f6eee7] p-4">
+                        <p className="text-xs font-black text-[#0f5a35]">
                           الدرس التلقائي
                         </p>
                         <p className="mt-2 text-sm font-black leading-7 text-[#1c2d31]">
@@ -997,7 +997,7 @@ function NewReportForm() {
                   واجب غدا
                 </h2>
                 {isNoorAlBayanReport ? (
-                  <div className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                  <div className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                     <div className="mb-4">
                       <h3 className="text-base font-black text-[#1c2d31]">
                         واجب نور البيان القادم
@@ -1062,8 +1062,8 @@ function NewReportForm() {
                           <option value="LINE">سطر</option>
                         </select>
                       </div>
-                      <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
-                        <p className="text-xs font-black text-[#1f6358]">
+                      <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
+                        <p className="text-xs font-black text-[#0f5a35]">
                           درس الواجب
                         </p>
                         <p className="mt-2 text-sm font-black leading-7 text-[#1c2d31]">
@@ -1076,7 +1076,7 @@ function NewReportForm() {
                   </div>
                 ) : (
                   <div className="grid gap-4 xl:grid-cols-2">
-                    <div className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                    <div className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                       <div className="mb-4">
                         <h3 className="text-base font-black text-[#1c2d31]">
                           واجب الدرس الجديد
@@ -1243,8 +1243,8 @@ function NewReportForm() {
                     </div>
                   </div>
                 )}
-                <div className="mt-4 rounded-2xl bg-[#173d42] p-4 text-sm leading-7 text-white">
-                  <p className="text-xs font-black text-[#f1d39d]">
+                <div className="mt-4 rounded-2xl bg-[#0a3f2a] p-4 text-sm leading-7 text-white">
+                  <p className="text-xs font-black text-[#f2d18a]">
                     صيغة الواجب التي ستحفظ في التقرير
                   </p>
                   <p className="mt-2 font-bold">
@@ -1279,11 +1279,11 @@ function NewReportForm() {
             </>
           ) : null}
 
-          <div className="sticky bottom-4 flex gap-3 rounded-[2rem] bg-white/90 p-3 shadow-lg ring-1 ring-[#d9c8ad] backdrop-blur">
+          <div className="sticky bottom-4 flex gap-3 rounded-[2rem] bg-white/90 p-3 shadow-lg ring-1 ring-[#d8bf83] backdrop-blur">
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 rounded-2xl bg-[#1f6358] px-5 py-4 text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex-1 rounded-2xl bg-[#0f5a35] px-5 py-4 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting
                 ? "جاري الحفظ..."
@@ -1300,7 +1300,7 @@ function NewReportForm() {
                     : "/onsite/teacher/dashboard"
                 )
               }
-              className="rounded-2xl border border-[#d9c8ad] px-5 py-4 text-sm font-black text-[#1c2d31] transition hover:bg-[#f7f0e6]"
+              className="rounded-2xl border border-[#d8bf83] px-5 py-4 text-sm font-black text-[#1c2d31] transition hover:bg-[#f6eee7]"
             >
               إلغاء
             </button>

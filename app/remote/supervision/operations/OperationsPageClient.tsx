@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -200,7 +200,7 @@ export default function OperationsPageClient() {
       <div className="mx-auto max-w-7xl space-y-6">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-black text-[#9b7039]">لوحة الإشراف</p>
+            <p className="text-sm font-black text-[#8a661f]">لوحة الإشراف</p>
             <h1 className="text-4xl font-black text-[#1c2d31]">المتابعة الإشرافية</h1>
             <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
               مساحة واحدة لقراءة طلبات المعلمين واتخاذ إجراء سريع، مع الوصول للمهام والزيارات وطلبات التسجيل.
@@ -208,48 +208,48 @@ export default function OperationsPageClient() {
           </div>
           <Link
             href="/remote/supervision/dashboard"
-            className="rounded-2xl border border-[#d9c8ad] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
+            className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-center text-sm font-black text-[#1c2d31]"
           >
             الرجوع للوحة الإشراف
           </Link>
         </div>
 
         <section className="grid gap-4 md:grid-cols-4">
-          <Link href="#teacher-requests" className="rounded-[2rem] bg-[#173d42] p-5 text-white shadow-sm">
+          <Link href="#teacher-requests" className="rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-sm">
             <p className="text-sm font-bold text-white/70">طلبات المعلمين</p>
             <p className="mt-2 text-4xl font-black">{openRequests.length}</p>
-            <p className="mt-3 text-xs font-bold text-[#f1d39d]">اضغط للمتابعة</p>
+            <p className="mt-3 text-xs font-bold text-[#f2d18a]">اضغط للمتابعة</p>
           </Link>
-          <Link href="/remote/supervision/tasks" className="rounded-[2rem] bg-[#f8efe0] p-5 text-[#173d42] shadow-sm ring-1 ring-[#d9c8ad]">
+          <Link href="/remote/supervision/tasks" className="rounded-[2rem] bg-[#f6eee7] p-5 text-[#0a3f2a] shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/60">المهام</p>
             <p className="mt-2 text-4xl font-black">{openTasks.length}</p>
-            <p className="mt-3 text-xs font-bold text-[#9b7039]">فتح المهام</p>
+            <p className="mt-3 text-xs font-bold text-[#8a661f]">فتح المهام</p>
           </Link>
-          <Link href="/remote/supervision/teacher-visits" className="rounded-[2rem] bg-[#1f6358] p-5 text-white shadow-sm">
+          <Link href="/remote/supervision/teacher-visits" className="rounded-[2rem] bg-[#0f5a35] p-5 text-white shadow-sm">
             <p className="text-sm font-bold text-white/70">زيارات المعلمين</p>
             <p className="mt-2 text-4xl font-black">+</p>
-            <p className="mt-3 text-xs font-bold text-[#f1d39d]">تسجيل زيارة</p>
+            <p className="mt-3 text-xs font-bold text-[#f2d18a]">تسجيل زيارة</p>
           </Link>
-          <Link href="/remote/supervision/registrations" className="rounded-[2rem] bg-white p-5 text-[#173d42] shadow-sm ring-1 ring-[#d9c8ad]">
+          <Link href="/remote/supervision/registrations" className="rounded-[2rem] bg-white p-5 text-[#0a3f2a] shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/60">طلبات التسجيل</p>
             <p className="mt-2 text-4xl font-black">{pendingRegistrations.length}</p>
-            <p className="mt-3 text-xs font-bold text-[#9b7039]">فتح الطلبات</p>
+            <p className="mt-3 text-xs font-bold text-[#8a661f]">فتح الطلبات</p>
           </Link>
         </section>
 
         <section id="teacher-requests" className="grid gap-5 xl:grid-cols-[420px_1fr]">
-          <div className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+          <div className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
             <h2 className="px-1 text-2xl font-black text-[#1c2d31]">وارد المعلمين</h2>
             <p className="mt-1 px-1 text-sm leading-7 text-[#1c2d31]/60">
               اختر طلباً، اقرأه، ثم احفظ الإجراء المناسب.
             </p>
 
             {loading ? (
-              <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="mt-4 rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
             ) : openRequests.length === 0 ? (
-              <div className="mt-4 rounded-2xl border border-dashed border-[#d9c8ad] p-6 text-center text-sm text-[#1c2d31]/55">
+              <div className="mt-4 rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 لا توجد طلبات جديدة تحتاج إجراء الآن.
               </div>
             ) : (
@@ -261,8 +261,8 @@ export default function OperationsPageClient() {
                     onClick={() => setActiveRequestId(request.id)}
                     className={`w-full rounded-2xl p-4 text-right transition ${
                       activeRequest?.id === request.id
-                        ? "bg-[#173d42] text-white"
-                        : "bg-[#fffaf2] text-[#1c2d31] ring-1 ring-[#eadcc6] hover:bg-white"
+                        ? "bg-[#0a3f2a] text-white"
+                        : "bg-[#fffaf4] text-[#1c2d31] ring-1 ring-[#e7d7b4] hover:bg-white"
                     }`}
                   >
                     <div className="flex flex-wrap items-center gap-2">
@@ -270,7 +270,7 @@ export default function OperationsPageClient() {
                         {REQUEST_TYPE_LABELS[request.type]}
                       </span>
                       {request.status === "NEW" ? (
-                        <span className="rounded-full bg-[#c39a62] px-3 py-1 text-xs font-black text-white">
+                        <span className="rounded-full bg-[#bd8f2d] px-3 py-1 text-xs font-black text-white">
                           جديد
                         </span>
                       ) : null}
@@ -288,14 +288,14 @@ export default function OperationsPageClient() {
 
           <div className="space-y-5">
             {activeRequest ? (
-              <article className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
+              <article className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full bg-[#eef7f5] px-3 py-1 text-xs font-black text-[#1f6358]">
+                      <span className="rounded-full bg-[#edf6ee] px-3 py-1 text-xs font-black text-[#0f5a35]">
                         {REQUEST_TYPE_LABELS[activeRequest.type]}
                       </span>
-                      <span className="rounded-full bg-[#fffaf2] px-3 py-1 text-xs font-black text-[#9b7039] ring-1 ring-[#d9c8ad]">
+                      <span className="rounded-full bg-[#fffaf4] px-3 py-1 text-xs font-black text-[#8a661f] ring-1 ring-[#d8bf83]">
                         {formatDate(activeRequest.createdAt)}
                       </span>
                     </div>
@@ -307,7 +307,7 @@ export default function OperationsPageClient() {
                         : ""}
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#d9c8ad]">
+                  <div className="rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83]">
                     {activeRequest.teacherNotificationReadAt
                       ? `قرأ المعلم الرد: ${formatDate(activeRequest.teacherNotificationReadAt)}`
                       : activeRequest.teacherNotificationSentAt
@@ -316,7 +316,7 @@ export default function OperationsPageClient() {
                   </div>
                 </div>
 
-                <p className="mt-5 rounded-[1.5rem] bg-[#fffaf2] p-5 text-sm leading-8 text-[#1c2d31]/75 ring-1 ring-[#eadcc6]">
+                <p className="mt-5 rounded-[1.5rem] bg-[#fffaf4] p-5 text-sm leading-8 text-[#1c2d31]/75 ring-1 ring-[#e7d7b4]">
                   {activeRequest.details}
                 </p>
 
@@ -330,7 +330,7 @@ export default function OperationsPageClient() {
                           [activeRequest.id]: event.target.value as RequestStatus,
                         }))
                       }
-                      className="w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm outline-none"
+                      className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none"
                     >
                       {STATUS_LANES.map((lane) => (
                         <option key={lane.value} value={lane.value}>
@@ -346,10 +346,10 @@ export default function OperationsPageClient() {
                           onClick={() =>
                             setActionDrafts((prev) => ({ ...prev, [activeRequest.id]: action }))
                           }
-                          className={`rounded-xl px-4 py-2 text-right text-sm font-black ring-1 ring-[#d9c8ad] ${
+                          className={`rounded-xl px-4 py-2 text-right text-sm font-black ring-1 ring-[#d8bf83] ${
                             actionDrafts[activeRequest.id] === action
-                              ? "bg-[#1f6358] text-white"
-                              : "bg-[#fffaf2] text-[#1c2d31]"
+                              ? "bg-[#0f5a35] text-white"
+                              : "bg-[#fffaf4] text-[#1c2d31]"
                           }`}
                         >
                           {action}
@@ -365,14 +365,14 @@ export default function OperationsPageClient() {
                         setNotes((prev) => ({ ...prev, [activeRequest.id]: event.target.value }))
                       }
                       placeholder="اكتب ملاحظة واضحة للمعلم أو للمراجعة الداخلية..."
-                      className="min-h-44 w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-sm leading-7 outline-none"
+                      className="min-h-44 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 outline-none"
                     />
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
                         onClick={() => saveRequest(activeRequest.id, "RESOLVED")}
                         disabled={savingId === activeRequest.id}
-                        className="rounded-2xl bg-[#1f6358] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                        className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
                       >
                         حفظ الإجراء وإنهاء الطلب
                       </button>
@@ -380,7 +380,7 @@ export default function OperationsPageClient() {
                         type="button"
                         onClick={() => saveRequest(activeRequest.id, "IN_REVIEW")}
                         disabled={savingId === activeRequest.id}
-                        className="rounded-2xl bg-[#173d42] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+                        className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
                       >
                         إبقاء قيد المتابعة
                       </button>
@@ -388,7 +388,7 @@ export default function OperationsPageClient() {
                         type="button"
                         onClick={() => saveRequest(activeRequest.id, "REJECTED")}
                         disabled={savingId === activeRequest.id}
-                        className="rounded-2xl bg-[#fffaf2] px-5 py-3 text-sm font-black text-[#8a6335] ring-1 ring-[#d9c8ad] disabled:opacity-60"
+                        className="rounded-2xl bg-[#fffaf4] px-5 py-3 text-sm font-black text-[#8a661f] ring-1 ring-[#d8bf83] disabled:opacity-60"
                       >
                         إغلاق بلا إجراء
                       </button>
@@ -400,10 +400,10 @@ export default function OperationsPageClient() {
 
             <section className="grid gap-3 md:grid-cols-4">
               {STATUS_LANES.map((lane) => (
-                <div key={lane.value} className="rounded-[1.5rem] bg-white/88 p-4 ring-1 ring-[#d9c8ad]">
+                <div key={lane.value} className="rounded-[1.5rem] bg-white/88 p-4 ring-1 ring-[#d8bf83]">
                   <p className="text-sm font-black text-[#1c2d31]">{lane.label}</p>
                   <p className="mt-1 text-xs leading-5 text-[#1c2d31]/55">{lane.hint}</p>
-                  <p className="mt-3 text-3xl font-black text-[#173d42]">
+                  <p className="mt-3 text-3xl font-black text-[#0a3f2a]">
                     {requestsByStatus[lane.value].length}
                   </p>
                 </div>
@@ -411,13 +411,13 @@ export default function OperationsPageClient() {
             </section>
 
             {closedRequests.length > 0 ? (
-              <details className="rounded-[1.5rem] bg-white/88 p-4 ring-1 ring-[#d9c8ad]">
+              <details className="rounded-[1.5rem] bg-white/88 p-4 ring-1 ring-[#d8bf83]">
                 <summary className="cursor-pointer text-sm font-black text-[#1c2d31]">
                   سجل طلبات المعلمين المنتهية ({closedRequests.length})
                 </summary>
                 <div className="mt-3 max-h-72 space-y-2 overflow-y-auto">
                   {closedRequests.map((request) => (
-                    <div key={request.id} className="rounded-2xl bg-[#fffaf2] p-3 text-sm">
+                    <div key={request.id} className="rounded-2xl bg-[#fffaf4] p-3 text-sm">
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="font-black text-[#1c2d31]">{request.subject}</p>
                         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-800">

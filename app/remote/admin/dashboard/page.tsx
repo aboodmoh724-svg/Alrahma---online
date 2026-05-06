@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
@@ -33,27 +33,27 @@ const sections: DashboardSection[] = [
     href: "/remote/admin/education",
     title: "إدارة التعليم والحلقات",
     description: "مدخل واحد للطلاب والمعلمين والحلقات والمسارات وملفات المسارات ومهام الإشراف.",
-    tone: "bg-[#1f6358] text-white",
+    tone: "bg-[#0f5a35] text-white",
   },
   {
     href: "/remote/admin/supervisors",
     requiresFinanceAccess: true,
     title: "المشرفون والصلاحيات",
     description: "إضافة مشرفين مستقلين عن الإدارة وتحديد من يملك الإشراف أو المالية أو كليهما.",
-    tone: "bg-[#8a6335] text-white",
+    tone: "bg-[#8a661f] text-white",
   },
   {
     href: "/remote/admin/statistics-general",
     title: "إحصائيات عامة",
     description: "ملخص سريع للحالات العامة والطلبات المفتوحة والمهام المحولة للإشراف.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/supervision-tasks",
     requiresFinanceAccess: true,
     title: "مهام الإشراف",
     description: "إضافة مهمة من الإدارة لتظهر للمشرف في الجديدة ثم قيد المتابعة أو الانتظار أو المنتهية.",
-    tone: "bg-[#1f6358] text-white",
+    tone: "bg-[#0f5a35] text-white",
   },
   {
     href: "/finance",
@@ -67,91 +67,91 @@ const sections: DashboardSection[] = [
     requiresFinanceAccess: true,
     title: "الإداريون والمشرفون والصلاحيات",
     description: "إدارة حسابات الإدارة والمشرفين وصلاحيات الإشراف والمالية من مدخل واحد.",
-    tone: "bg-[#8a6335] text-white",
+    tone: "bg-[#8a661f] text-white",
   },
   {
     href: "/remote/admin/statistics",
     title: "الإحصائيات",
     description: "أعداد المعلمين والطلاب والحلقات وإجمالي التقارير والطلاب بلا حلقة.",
-    tone: "bg-[#173d42] text-white",
+    tone: "bg-[#0a3f2a] text-white",
   },
   {
     href: "/remote/admin/students",
     title: "إدارة الطلاب",
     description: "إضافة الطلاب، عرض أرقامهم، ونقلهم بين الحلقات.",
-    tone: "bg-[#1f6358] text-white",
+    tone: "bg-[#0f5a35] text-white",
   },
   {
     href: "/remote/admin/circles",
     title: "الحلقات والمسارات",
     description: "إنشاء الحلقات، تحديد المسار، تعيين المعلمين، وروابط الزوم.",
-    tone: "bg-[#c39a62] text-white",
+    tone: "bg-[#bd8f2d] text-white",
   },
   {
     href: "/remote/admin/teachers",
     title: "إدارة المعلمين",
     description: "إضافة حسابات المعلمين ومتابعة بياناتهم الأساسية.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/teacher-requests",
     title: "طلبات المعلمين",
     description: "متابعة طلبات الاختبارات والطلاب المتعثرين والحالات الخاصة والرد عليها من مكان واحد.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/reports",
     title: "قسم التقارير",
     description: "البحث عن طالب بالاسم أو الرقم وعرض ملخص مستواه.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/registrations",
     title: "طلبات التسجيل",
     description: "مراجعة طلبات التسجيل الجديدة وقبول الطالب في الحلقة المناسبة.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/resources",
     title: "ملفات المسارات",
     description: "رفع ملفات آلية سير الحلقة وملفات المسارات للمعلمين.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/broadcasts",
     title: "الرسائل الجماعية",
     description: "كتابة رسالة موحدة وإرسالها إلى أولياء الأمور في الأونلاين أو الحضوري أو الجميع.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/messages",
     title: "قوالب الرسائل",
     description: "تعديل قالب رسالة المعلم، ورسالة التقرير، ورسالة التسجيل، وضبط التذكير التلقائي للمعلمين.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/conversations",
     title: "مراقبة مراسلات التعليم",
     description: "متابعة المحادثات المصغرة بين أولياء الأمور والمعلمين والإشراف.",
-    tone: "bg-white text-[#173d42]",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/escalated-messages",
     title: "متابعات محولة من الإشراف",
     description: "رسائل وشكاوى يحولها المشرف للإدارة للرد أو التوجيه أو مراسلة المعلم.",
-    tone: "bg-[#fffaf2] text-[#173d42]",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/statistics#unassigned-students",
     title: "طلاب بلا حلقة",
     description: "قسم مهم لمتابعة الطلاب الذين لم يتم ربطهم بحلقة بعد.",
-    tone: "bg-[#fffaf2] text-[#9b7039]",
+    tone: "bg-[#fffaf4] text-[#8a661f]",
   },
   {
     href: "/remote/supervision/dashboard",
     title: "لوحة الإشراف",
     description: "واجهة تشغيلية موحدة لإدارة الطلاب والمعلمين والحلقات وطلبات المعلمين والتقارير وحالات التسجيل المحولة.",
-    tone: "bg-[#173d42] text-white",
+    tone: "bg-[#0a3f2a] text-white",
   },
 ];
 
@@ -404,16 +404,16 @@ export default async function RemoteAdminDashboardPage() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#173d42] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
           <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
           <div className="relative max-w-3xl">
             <div className="flex flex-wrap items-center gap-3">
-              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                 لوحة الإدارة
               </p>
               <NotificationDropdown items={notificationItems} />
-              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#173d42] transition hover:bg-[#fffaf2] disabled:opacity-60" />
+              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4] disabled:opacity-60" />
             </div>
             <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
               اختر القسم الذي تريد إدارته.

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import BrandLockup from "@/components/brand/BrandLockup";
@@ -7,7 +7,7 @@ import PlatformWhatsAppSupport from "@/components/support/PlatformWhatsAppSuppor
 import { splitInternationalPhone } from "@/lib/phone-number";
 
 const inputClass =
-  "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-2.5 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10 sm:py-3";
+  "w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-2.5 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10 sm:py-3";
 
 const maxAudioSize = 5 * 1024 * 1024;
 const maxIdImageSize = 2 * 1024 * 1024;
@@ -193,14 +193,14 @@ export default function RegistrationPage() {
   if (submitted) {
     return (
       <main className="rahma-shell flex min-h-screen items-center justify-center px-4 py-8" dir="rtl">
-        <section className="max-w-xl rounded-[2.5rem] bg-[#173d42] p-8 text-center text-white shadow-xl">
+        <section className="max-w-xl rounded-[2.5rem] bg-[#0a3f2a] p-8 text-center text-white shadow-xl">
           <p className="text-5xl">✓</p>
           <h1 className="mt-5 text-3xl font-black">شكرا لكم</h1>
           <p className="mt-4 leading-8 text-white/75">
             تم إرسال طلب التسجيل بنجاح. ستراجع الإدارة البيانات ثم تتواصل معكم عبر رقم ولي الأمر.
           </p>
           {submissionWarning ? (
-            <p className="mt-4 rounded-2xl bg-[#f1d39d]/15 p-4 text-sm leading-7 text-[#f1d39d]">
+            <p className="mt-4 rounded-2xl bg-[#f2d18a]/15 p-4 text-sm leading-7 text-[#f2d18a]">
               {submissionWarning}
             </p>
           ) : null}
@@ -225,7 +225,7 @@ export default function RegistrationPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
-          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2rem] sm:p-5">
             <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">بيانات الطالب</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -267,7 +267,7 @@ export default function RegistrationPage() {
                 type="file"
                 accept="image/*,.pdf"
                 onChange={(e) => setIdImageFile(e.target.files?.[0] || null)}
-                className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-4 text-sm"
+                className="w-full rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffaf4] px-4 py-4 text-sm"
               />
               <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
                 الصيغ المسموحة: صورة أو PDF، والحجم لا يتجاوز 2MB مؤقتًا.
@@ -275,7 +275,7 @@ export default function RegistrationPage() {
               </div>
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">فئة التسجيل</label>
-                <div className="rounded-2xl border border-[#d9c8ad] bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#1c2d31]">
+                <div className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31]">
                   التسجيل متاح للطلاب الذكور فقط
                 </div>
               </div>
@@ -317,7 +317,7 @@ export default function RegistrationPage() {
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2rem] sm:p-5">
             <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">بيانات ولي الأمر والفترة</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <div>
@@ -350,7 +350,7 @@ export default function RegistrationPage() {
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2rem] sm:p-5">
             <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">التعليمات والتوجيهات</h2>
             <p className="mb-4 text-sm leading-7 text-[#1c2d31]/60">
               فضلا اقرأ ملف التعليمات والتوجيهات جيدا قبل إرسال طلب التسجيل، فهو يحتوي على ما يحتاجه الطالب وولي الأمر.
@@ -361,17 +361,17 @@ export default function RegistrationPage() {
                   href={guidelineResource.fileUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="rounded-2xl bg-[#fffaf2] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                  className="rounded-2xl bg-[#fffaf4] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
                 >
                   {guidelineResource.title}
                 </a>
               ) : (
-                <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
+                <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#1c2d31]/60">
                   لا يوجد ملف تعليمات مرفوع حاليا.
                 </div>
               )}
             </div>
-            <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f7f0e6] p-4 text-sm font-black text-[#1c2d31]">
+            <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f6eee7] p-4 text-sm font-black text-[#1c2d31]">
               <input
                 type="checkbox"
                 checked={formData.readGuidelines === "true"}
@@ -382,13 +382,13 @@ export default function RegistrationPage() {
             </label>
           </section>
 
-          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2rem] sm:p-5">
             <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">مستوى الطالب والمسار</h2>
             <div>
               <label className="mb-2 block text-sm font-black text-[#1c2d31]">هل سبق للطالب دراسة أحد هذه الكتب؟</label>
               <div className="grid gap-3 md:grid-cols-2">
                 {previousBooks.map((book) => (
-                  <label key={book} className="flex items-center gap-2 rounded-2xl bg-[#fffaf2] p-4 text-sm font-black text-[#1c2d31]">
+                  <label key={book} className="flex items-center gap-2 rounded-2xl bg-[#fffaf4] p-4 text-sm font-black text-[#1c2d31]">
                     <input type="checkbox" checked={selectedBooks.includes(book)} onChange={() => toggleBook(book)} />
                     {book}
                   </label>
@@ -424,7 +424,7 @@ export default function RegistrationPage() {
             <h3 className="mt-6 text-base font-black text-[#1c2d31]">المسارات المرغوبة</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-4">
               {tracks.map((track) => (
-                <label key={track.value} className="flex items-center gap-2 rounded-2xl bg-[#fffaf2] p-4 text-sm font-black text-[#1c2d31]">
+                <label key={track.value} className="flex items-center gap-2 rounded-2xl bg-[#fffaf4] p-4 text-sm font-black text-[#1c2d31]">
                   <input type="checkbox" checked={selectedTracks.includes(track.value)} onChange={() => toggleTrack(track.value)} />
                   {track.label}
                 </label>
@@ -432,7 +432,7 @@ export default function RegistrationPage() {
             </div>
           </section>
 
-          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
+          <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2rem] sm:p-5">
             <h2 className="mb-3 text-lg font-black text-[#1c2d31] sm:mb-4 sm:text-xl">التسجيل الصوتي والملاحظات</h2>
             <div className="mb-4">
               <label className="mb-2 block text-sm font-black text-[#1c2d31]">
@@ -442,7 +442,7 @@ export default function RegistrationPage() {
                 type="file"
                 accept="audio/*,video/*"
                 onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                className="w-full rounded-2xl border border-dashed border-[#d9c8ad] bg-[#fffaf2] px-4 py-6 text-sm"
+                className="w-full rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffaf4] px-4 py-6 text-sm"
                 required
               />
               <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
@@ -481,7 +481,7 @@ export default function RegistrationPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="w-full rounded-2xl bg-[#1f6358] px-5 py-4 text-base font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+            className="w-full rounded-2xl bg-[#0f5a35] px-5 py-4 text-base font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {submitting ? "جاري إرسال الطلب..." : "إرسال طلب التسجيل"}
           </button>

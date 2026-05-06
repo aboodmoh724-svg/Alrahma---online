@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -87,7 +87,7 @@ export function ManualWhatsAppSentButton({
         type="button"
         onClick={() => openWhatsApp("regular")}
         disabled={Boolean(opening) || markingSent}
-        className="rounded-2xl bg-[#1f6358] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {opening === "regular" ? "جاري فتح واتساب..." : "فتح واتساب"}
       </button>
@@ -95,7 +95,7 @@ export function ManualWhatsAppSentButton({
         type="button"
         onClick={() => openWhatsApp("business")}
         disabled={Boolean(opening) || markingSent}
-        className="rounded-2xl bg-[#173d42] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#1f6358] disabled:cursor-not-allowed disabled:opacity-60"
+        className="rounded-2xl bg-[#0a3f2a] px-5 py-3 text-center text-sm font-black text-white transition hover:bg-[#0f5a35] disabled:cursor-not-allowed disabled:opacity-60"
       >
         {opening === "business" ? "جاري فتح واتساب بزنس..." : "فتح واتساب بزنس"}
       </button>

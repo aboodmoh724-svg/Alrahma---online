@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import BrandLockup from "@/components/brand/BrandLockup";
 import { getAppBaseUrl } from "@/lib/app-url";
 
@@ -7,7 +7,7 @@ const portals = [
     title: "التعليم عن بعد",
     description: "لوحات الزوم، التقارير اليومية، وسجل الطلاب.",
     badge: "Online",
-    accent: "from-[#1f6358] to-[#173d42]",
+    accent: "from-[#0f5a35] to-[#0a3f2a]",
     links: [
       { href: "/remote/admin/login", label: "دخول الإدارة" },
       { href: "/remote/supervision/login", label: "دخول الإشراف" },
@@ -18,7 +18,7 @@ const portals = [
     title: "التعليم الحضوري",
     description: "إدارة المركز، الحلقات، المعلمين، والتحضير السريع.",
     badge: "Center",
-    accent: "from-[#c39a62] to-[#8f642f]",
+    accent: "from-[#bd8f2d] to-[#8a661f]",
     links: [
       { href: "/onsite/admin/login", label: "دخول الإدارة" },
       { href: "/onsite/teacher/login", label: "دخول المعلم" },
@@ -112,7 +112,7 @@ export default function HomePage() {
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="flex items-center justify-between rounded-2xl bg-[#fffaf2] px-4 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-white hover:shadow-sm"
+                        className="flex items-center justify-between rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-white hover:shadow-sm"
                       >
                         {link.label}
                         <span className="text-lg">←</span>
@@ -123,13 +123,13 @@ export default function HomePage() {
               ))}
             </div>
 
-            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2.5rem] sm:p-5">
+            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2.5rem] sm:p-5">
               <div className="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-black text-[#9b7039]">اختصارات مهمة</p>
+                  <p className="text-sm font-black text-[#8a661f]">اختصارات مهمة</p>
                   <h2 className="text-xl font-black text-[#1c2d31]">روابط سريعة</h2>
                 </div>
-                <span className="rounded-full bg-[#1f6358]/10 px-3 py-1 text-xs font-black text-[#1f6358]">
+                <span className="rounded-full bg-[#0f5a35]/10 px-3 py-1 text-xs font-black text-[#0f5a35]">
                   للكادر والإدارة
                 </span>
               </div>
@@ -139,7 +139,7 @@ export default function HomePage() {
                   <Link
                     key={shortcut.href}
                     href={shortcut.href}
-                    className="rounded-2xl border border-[#d9c8ad]/70 bg-[#fffaf2] p-4 transition hover:-translate-y-0.5 hover:bg-white"
+                    className="rounded-2xl border border-[#d8bf83]/70 bg-[#fffaf4] p-4 transition hover:-translate-y-0.5 hover:bg-white"
                   >
                     <h3 className="text-sm font-black text-[#1c2d31]">{shortcut.title}</h3>
                     <p className="mt-2 text-xs leading-6 text-[#1c2d31]/58">{shortcut.description}</p>

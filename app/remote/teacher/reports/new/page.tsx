@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -141,10 +141,10 @@ const surahNames = [
 ];
 
 const inputClass =
-  "w-full rounded-2xl border border-[#d9c8ad] bg-white px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#1f6358] focus:ring-4 focus:ring-[#1f6358]/10";
+  "w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10";
 
 const sectionClass =
-  "rounded-[2rem] border border-[#d9c8ad]/70 bg-white/86 p-5 shadow-sm";
+  "rounded-[2rem] border border-[#d8bf83]/70 bg-white/86 p-5 shadow-sm";
 
 const notePresetOptions = [
   "ممتاز ومتابع بشكل جيد.",
@@ -548,9 +548,9 @@ function NewReportForm() {
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] bg-[#173d42] p-6 text-white shadow-lg md:flex-row md:items-center md:justify-between">
+        <div className="mb-6 flex flex-col gap-4 rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-lg md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="text-sm font-bold text-[#f1d39d]">تقرير اليوم</p>
+            <p className="text-sm font-bold text-[#f2d18a]">تقرير اليوم</p>
             <h1 className="mt-2 text-3xl font-black">إضافة تقرير للطالب</h1>
             <p className="mt-2 text-sm leading-7 text-white/72">
               اختر الطالب، ثم إن كان غائبا احفظ الغياب مباشرة. وإن كان حاضرا أدخل الدرس والمراجعة وواجب الغد.
@@ -569,14 +569,14 @@ function NewReportForm() {
         </div>
 
         {formData.studentId ? (
-          <section className="mb-5 rounded-[2rem] border border-[#d9c8ad]/70 bg-[#fffaf2] p-5 shadow-sm">
+          <section className="mb-5 rounded-[2rem] border border-[#d8bf83]/70 bg-[#fffaf4] p-5 shadow-sm">
             <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
-                <p className="text-sm font-black text-[#9b7039]">آخر متابعة داخل الأونلاين</p>
+                <p className="text-sm font-black text-[#8a661f]">آخر متابعة داخل الأونلاين</p>
                 <h2 className="mt-1 text-xl font-black text-[#1c2d31]">ملخص سريع قبل كتابة التقرير</h2>
               </div>
               {loadingHistory ? (
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#8a6335] ring-1 ring-[#d9c8ad]">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#8a661f] ring-1 ring-[#d8bf83]">
                   جاري جلب السجل...
                 </span>
               ) : null}
@@ -584,8 +584,8 @@ function NewReportForm() {
 
             {previousReport ? (
               <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
-                  <p className="text-xs font-black text-[#9b7039]">آخر يوم</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
+                  <p className="text-xs font-black text-[#8a661f]">آخر يوم</p>
                   <p className="mt-2 text-sm font-black text-[#1c2d31]">
                     {new Date(previousReport.createdAt).toLocaleDateString("ar-EG")}
                   </p>
@@ -594,8 +594,8 @@ function NewReportForm() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
-                  <p className="text-xs font-black text-[#9b7039]">حفظ الدرس</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
+                  <p className="text-xs font-black text-[#8a661f]">حفظ الدرس</p>
                   <p className="mt-2 text-sm font-black text-[#1c2d31]">
                     {memorizedLabel(previousReport.lessonMemorized)}
                   </p>
@@ -604,46 +604,46 @@ function NewReportForm() {
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
-                  <p className="text-xs font-black text-[#9b7039]">حفظ المراجعة</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
+                  <p className="text-xs font-black text-[#8a661f]">حفظ المراجعة</p>
                   <p className="mt-2 text-sm font-black text-[#1c2d31]">
                     {memorizedLabel(previousReport.reviewMemorized)}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6]">
-                  <p className="text-xs font-black text-[#9b7039]">الدرس الأخير</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4]">
+                  <p className="text-xs font-black text-[#8a661f]">الدرس الأخير</p>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
                     {previousReport.lessonName}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2">
-                  <p className="text-xs font-black text-[#9b7039]">الواجب السابق</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4] md:col-span-2">
+                  <p className="text-xs font-black text-[#8a661f]">الواجب السابق</p>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
                     {previousReport.nextHomework?.trim() || previousReport.homework || "لا يوجد واجب مسجل"}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2">
-                  <p className="text-xs font-black text-[#9b7039]">المراجعة السابقة</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4] md:col-span-2">
+                  <p className="text-xs font-black text-[#8a661f]">المراجعة السابقة</p>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
                     {previousReport.review?.trim() || "لا توجد مراجعة مسجلة"}
                   </p>
                 </div>
 
-                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2 xl:col-span-4">
-                  <p className="text-xs font-black text-[#9b7039]">ملاحظات آخر تقرير</p>
+                <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4] md:col-span-2 xl:col-span-4">
+                  <p className="text-xs font-black text-[#8a661f]">ملاحظات آخر تقرير</p>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]">
                     {previousReport.note?.trim() || "لا توجد ملاحظات"}
                   </p>
                 </div>
 
                 {recentReports.length > 0 ? (
-                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc6] md:col-span-2 xl:col-span-4">
+                  <div className="rounded-2xl bg-white p-4 ring-1 ring-[#e7d7b4] md:col-span-2 xl:col-span-4">
                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                       <div>
-                        <p className="text-xs font-black text-[#9b7039]">آخر 3 تقارير</p>
+                        <p className="text-xs font-black text-[#8a661f]">آخر 3 تقارير</p>
                         <p className="mt-1 text-sm text-[#1c2d31]/60">
                           نظرة سريعة على سير الطالب في الأيام الأخيرة.
                         </p>
@@ -652,17 +652,17 @@ function NewReportForm() {
 
                     <div className="mt-4 grid gap-3 xl:grid-cols-3">
                       {recentReports.map((report, index) => (
-                        <article key={report.id} className="rounded-2xl bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                        <article key={report.id} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                           <div className="flex items-start justify-between gap-3">
                             <div>
-                              <p className="text-xs font-black text-[#9b7039]">
+                              <p className="text-xs font-black text-[#8a661f]">
                                 {index === 0 ? "الأحدث" : `قبل ${index} ${index === 1 ? "حصة" : "حصص"}`}
                               </p>
                               <p className="mt-1 text-sm font-black text-[#1c2d31]">
                                 {new Date(report.createdAt).toLocaleDateString("ar-EG")}
                               </p>
                             </div>
-                            <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1c2d31] ring-1 ring-[#d9c8ad]">
+                            <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1c2d31] ring-1 ring-[#d8bf83]">
                               {report.status === "PRESENT" ? "حاضر" : "غائب"}
                             </span>
                           </div>
@@ -690,7 +690,7 @@ function NewReportForm() {
                 ) : null}
               </div>
             ) : loadingHistory ? null : (
-              <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-[#1c2d31]/65 ring-1 ring-[#eadcc6]">
+              <div className="mt-4 rounded-2xl bg-white p-4 text-sm text-[#1c2d31]/65 ring-1 ring-[#e7d7b4]">
                 لا يوجد تقرير سابق لهذا الطالب داخل قسم الأونلاين حتى الآن.
               </div>
             )}
@@ -722,7 +722,7 @@ function NewReportForm() {
               ))}
             </select>
 
-            <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f7f0e6] p-4 text-sm font-black text-[#1c2d31]">
+            <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f6eee7] p-4 text-sm font-black text-[#1c2d31]">
               <input
                 type="checkbox"
                 checked={formData.isAbsent}
@@ -742,11 +742,11 @@ function NewReportForm() {
           {!formData.isAbsent ? (
             <>
               {loadingHistory ? (
-                <div className="rounded-2xl bg-[#e8f3ef] p-4 text-sm font-bold text-[#1f6358]">
+                <div className="rounded-2xl bg-[#edf6ee] p-4 text-sm font-bold text-[#0f5a35]">
                   جاري جلب واجب الغد السابق للطالب...
                 </div>
               ) : suggestedHomework ? (
-                <div className="rounded-2xl bg-[#e8f3ef] p-4 text-sm leading-7 text-[#1f6358]">
+                <div className="rounded-2xl bg-[#edf6ee] p-4 text-sm leading-7 text-[#0f5a35]">
                   واجب اليوم المقترح من آخر تقرير: {suggestedHomework}
                 </div>
               ) : null}
@@ -864,7 +864,7 @@ function NewReportForm() {
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">واجب غدا</h2>
                 <div className="grid gap-4 xl:grid-cols-2">
-                  <div className="rounded-[1.5rem] bg-[#fffaf2] p-4 ring-1 ring-[#eadcc6]">
+                  <div className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
                     <div className="mb-4">
                       <h3 className="text-base font-black text-[#1c2d31]">واجب الدرس الجديد</h3>
                       <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
@@ -966,8 +966,8 @@ function NewReportForm() {
                     </div>
                   </div>
                 </div>
-                <div className="mt-4 rounded-2xl bg-[#173d42] p-4 text-sm leading-7 text-white">
-                  <p className="text-xs font-black text-[#f1d39d]">صيغة الواجب التي ستحفظ في التقرير</p>
+                <div className="mt-4 rounded-2xl bg-[#0a3f2a] p-4 text-sm leading-7 text-white">
+                  <p className="text-xs font-black text-[#f2d18a]">صيغة الواجب التي ستحفظ في التقرير</p>
                   <p className="mt-2 font-bold">
                     {buildNextHomework() || "لم يتم تحديد واجب الغد بعد"}
                   </p>
@@ -1000,11 +1000,11 @@ function NewReportForm() {
             </>
           ) : null}
 
-          <div className="sticky bottom-4 flex gap-3 rounded-[2rem] bg-white/90 p-3 shadow-lg ring-1 ring-[#d9c8ad] backdrop-blur">
+          <div className="sticky bottom-4 flex gap-3 rounded-[2rem] bg-white/90 p-3 shadow-lg ring-1 ring-[#d8bf83] backdrop-blur">
             <button
               type="submit"
               disabled={submitting}
-              className="flex-1 rounded-2xl bg-[#1f6358] px-5 py-4 text-sm font-black text-white transition hover:bg-[#173d42] disabled:cursor-not-allowed disabled:opacity-60"
+              className="flex-1 rounded-2xl bg-[#0f5a35] px-5 py-4 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
             >
               {submitting
                 ? "جاري الحفظ..."
@@ -1021,7 +1021,7 @@ function NewReportForm() {
                     : "/remote/teacher/dashboard"
                 )
               }
-              className="rounded-2xl border border-[#d9c8ad] px-5 py-4 text-sm font-black text-[#1c2d31] transition hover:bg-[#f7f0e6]"
+              className="rounded-2xl border border-[#d8bf83] px-5 py-4 text-sm font-black text-[#1c2d31] transition hover:bg-[#f6eee7]"
             >
               إلغاء
             </button>
