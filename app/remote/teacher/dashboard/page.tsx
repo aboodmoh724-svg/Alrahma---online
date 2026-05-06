@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import ParentReportCheckbox from "@/components/reports/ParentReportCheckbox";
+import PlatformWhatsAppSupport from "@/components/support/PlatformWhatsAppSupport";
 import InstantEntryRequestButtons from "@/components/teacher/InstantEntryRequestButtons";
 import { prisma } from "@/lib/prisma";
 import { createSignedStorageUrl } from "@/lib/supabase-storage";
@@ -320,6 +321,8 @@ export default async function RemoteTeacherDashboardPage({
               </Link>
             </div>
           </section>
+
+          <PlatformWhatsAppSupport compact />
         </aside>
 
         <div className="space-y-6">

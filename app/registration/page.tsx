@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
+import PlatformWhatsAppSupport from "@/components/support/PlatformWhatsAppSupport";
 import { splitInternationalPhone } from "@/lib/phone-number";
 
 const inputClass =
@@ -217,6 +218,10 @@ export default function RegistrationPage() {
             فضلا أدخل بيانات الطالب وولي الأمر بدقة، وستراجع الإدارة الطلب قبل اعتماد الطالب في إحدى الحلقات.
           </p>
         </section>
+
+        <div className="mb-4 sm:mb-5">
+          <PlatformWhatsAppSupport />
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d9c8ad] sm:rounded-[2rem] sm:p-5">
