@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import BrandLockup from "@/components/brand/BrandLockup";
 import { getAppBaseUrl } from "@/lib/app-url";
 
@@ -62,6 +63,7 @@ export default function HomePage() {
 
         <section className="grid flex-1 gap-4 lg:grid-cols-[0.86fr_1.14fr] lg:items-stretch">
           <div className="relative overflow-hidden rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:rounded-[2.75rem] sm:p-8">
+            <BrandHeroMedia src="/images/rahma-scene-circle.jpeg" opacity="opacity-60" />
             <div className="absolute -left-20 top-12 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
             <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-white/10" />
             <div className="relative flex h-full min-h-[320px] flex-col justify-between gap-8">

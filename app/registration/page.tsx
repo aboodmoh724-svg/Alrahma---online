@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useEffect, useState } from "react";
+import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import BrandLockup from "@/components/brand/BrandLockup";
 import PhoneNumberInput from "@/components/forms/PhoneNumberInput";
 import PlatformWhatsAppSupport from "@/components/support/PlatformWhatsAppSupport";
@@ -212,12 +213,15 @@ export default function RegistrationPage() {
   return (
     <main className="rahma-shell min-h-screen px-3 py-4 sm:px-4 sm:py-8" dir="rtl">
       <div className="mx-auto max-w-4xl">
-        <section className="mb-4 rounded-[1.75rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:mb-6 sm:rounded-[2.5rem] sm:p-7">
-          <BrandLockup light className="mb-5" />
-          <h1 className="text-3xl font-black sm:text-4xl">استمارة تسجيل الطالب</h1>
-          <p className="mt-3 max-w-2xl text-sm leading-7 text-[#1c2d31]/65 sm:mt-4 sm:leading-8 sm:text-white/72">
-            فضلا أدخل بيانات الطالب وولي الأمر بدقة، وستراجع الإدارة الطلب قبل اعتماد الطالب في إحدى الحلقات.
-          </p>
+        <section className="relative mb-4 overflow-hidden rounded-[1.75rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:mb-6 sm:rounded-[2.5rem] sm:p-7">
+          <BrandHeroMedia src="/images/rahma-scene-class.jpeg" opacity="opacity-30" />
+          <div className="relative">
+            <BrandLockup light showLegacy={false} className="mb-5" />
+            <h1 className="text-3xl font-black sm:text-4xl">استمارة تسجيل الطالب</h1>
+            <p className="mt-3 max-w-2xl text-sm leading-7 text-white/72 sm:mt-4 sm:leading-8">
+              فضلا أدخل بيانات الطالب وولي الأمر بدقة، وستراجع الإدارة الطلب قبل اعتماد الطالب في إحدى الحلقات.
+            </p>
+          </div>
         </section>
 
         <div className="mb-4 sm:mb-5">

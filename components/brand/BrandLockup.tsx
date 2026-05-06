@@ -3,12 +3,14 @@ import Image from "next/image";
 type BrandLockupProps = {
   compact?: boolean;
   light?: boolean;
+  showLegacy?: boolean;
   className?: string;
 };
 
 export default function BrandLockup({
   compact = false,
   light = false,
+  showLegacy = true,
   className = "",
 }: BrandLockupProps) {
   return (
@@ -26,14 +28,18 @@ export default function BrandLockup({
           className="h-auto w-auto rounded-2xl object-contain"
           priority={!compact}
         />
-        <span className="mx-2 h-8 w-px bg-[#d8bf83]/55" />
-        <Image
-          src="/logo.webp"
-          alt="شعار تحفيظ الرحمة"
-          width={compact ? 34 : 46}
-          height={compact ? 34 : 46}
-          className="h-auto w-auto object-contain"
-        />
+        {showLegacy ? (
+          <>
+            <span className="mx-2 h-8 w-px bg-[#d8bf83]/55" />
+            <Image
+              src="/logo.webp"
+              alt="شعار تحفيظ الرحمة"
+              width={compact ? 34 : 46}
+              height={compact ? 34 : 46}
+              className="h-auto w-auto object-contain"
+            />
+          </>
+        ) : null}
       </div>
       <div className={compact ? "hidden sm:block" : ""}>
         <p

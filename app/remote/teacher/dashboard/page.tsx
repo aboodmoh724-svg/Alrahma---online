@@ -1,4 +1,5 @@
 ﻿import Link from "next/link";
+import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import ParentReportCheckbox from "@/components/reports/ParentReportCheckbox";
@@ -327,6 +328,7 @@ export default async function RemoteTeacherDashboardPage({
 
         <div className="space-y-6">
           <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+            <BrandHeroMedia src="/images/rahma-scene-mosque.jpg" opacity="opacity-50" />
             <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
             <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
             <div className="relative grid gap-6 xl:grid-cols-[1.2fr_0.8fr] xl:items-center">
