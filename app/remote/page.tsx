@@ -1,4 +1,5 @@
 import Link from "next/link";
+import BrandLockup from "@/components/brand/BrandLockup";
 
 const entries = [
   {
@@ -32,20 +33,18 @@ export default function RemotePage() {
           <Link href="/" className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#c39a62]/15">
             الرئيسية
           </Link>
-          <span className="rounded-full bg-[#1f6358]/12 px-4 py-2 text-sm font-bold text-[#1f6358]">
+          <span className="rounded-full bg-[#0f5a35]/12 px-4 py-2 text-sm font-bold text-[#0f5a35]">
             تعليم عن بعد
           </span>
         </div>
 
         <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rahma-muted-pattern relative hidden min-h-[360px] overflow-hidden bg-[#173d42] lg:block lg:min-h-[680px]">
-            <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-[#c39a62]/20" />
+          <div className="rahma-muted-pattern relative hidden min-h-[360px] overflow-hidden bg-[#0a3f2a] lg:block lg:min-h-[680px]">
+            <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-[#bd8f2d]/20" />
             <div className="absolute bottom-16 right-10 h-96 w-96 rounded-full bg-white/10" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#112a30] via-[#173d42]/70 to-[#1f6358]/35" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d] via-[#0a3f2a]/72 to-[#0f5a35]/35" />
             <div className="absolute bottom-8 right-8 max-w-md text-white">
-              <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-white/12 text-3xl font-black text-[#f1d39d] backdrop-blur">
-                ر
-              </div>
+              <BrandLockup light />
               <h1 className="text-4xl font-black">اختر بوابة الدخول</h1>
               <p className="mt-3 text-sm leading-7 text-white/78">
                 لكل دور واجهته المستقلة: الإدارة، الإشراف، أو المعلم.

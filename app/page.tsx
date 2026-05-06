@@ -1,5 +1,5 @@
-import Image from "next/image";
 import Link from "next/link";
+import BrandLockup from "@/components/brand/BrandLockup";
 import { getAppBaseUrl } from "@/lib/app-url";
 
 const portals = [
@@ -50,40 +50,23 @@ export default function HomePage() {
   return (
     <main className="rahma-shell min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-6" dir="rtl">
       <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-7xl flex-col gap-4 sm:min-h-[calc(100vh-3rem)] sm:gap-6">
-        <header className="flex items-center justify-between rounded-3xl bg-white px-4 py-3 shadow-sm ring-1 ring-[#c39a62]/15 sm:rounded-full sm:px-5">
-          <div className="flex items-center gap-3">
-            <Image
-              src="/logo.webp"
-              alt="شعار تحفيظ الرحمة"
-              width={42}
-              height={42}
-              priority
-              className="object-contain"
-            />
-            <div>
-              <p className="text-xs font-black text-[#1c2d31] sm:text-sm">
-                تحفيظ الرحمة للقرآن الكريم
-              </p>
-              <p className="text-[11px] text-[#1c2d31]/55 sm:text-xs">
-                مركز موحد للتعليم عن بعد والحضوري
-              </p>
-            </div>
-          </div>
+        <header className="flex items-center justify-between rounded-3xl bg-white/92 px-4 py-3 shadow-sm ring-1 ring-[#bd8f2d]/20 sm:rounded-full sm:px-5">
+          <BrandLockup compact />
           <Link
             href="/registration"
-            className="rounded-full bg-[#1f6358] px-4 py-2 text-xs font-black text-white transition hover:bg-[#173d42] sm:text-sm"
+            className="rounded-full bg-[#0f5a35] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a] sm:text-sm"
           >
             تسجيل طالب
           </Link>
         </header>
 
         <section className="grid flex-1 gap-4 lg:grid-cols-[0.86fr_1.14fr] lg:items-stretch">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#173d42] p-5 text-white shadow-xl sm:rounded-[2.75rem] sm:p-8">
-            <div className="absolute -left-20 top-12 h-64 w-64 rounded-full bg-[#c39a62]/20" />
+          <div className="relative overflow-hidden rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:rounded-[2.75rem] sm:p-8">
+            <div className="absolute -left-20 top-12 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
             <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-white/10" />
             <div className="relative flex h-full min-h-[320px] flex-col justify-between gap-8">
               <div>
-                <span className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f1d39d]">
+                  <span className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
                   منصة واحدة
                 </span>
                 <h1 className="mt-5 max-w-xl text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
@@ -96,7 +79,7 @@ export default function HomePage() {
               </div>
 
               <div className="rounded-[1.6rem] bg-white/10 p-4 backdrop-blur">
-                <p className="text-sm font-black text-[#f1d39d]">الرابط المعتمد للنشر</p>
+                <p className="text-sm font-black text-[#f2d18a]">الرابط المعتمد للنشر</p>
                 <p className="mt-2 break-all text-sm text-white/80">{appBaseUrl}</p>
               </div>
             </div>

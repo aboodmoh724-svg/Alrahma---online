@@ -4,16 +4,16 @@ import "./globals.css";
 
 const appBaseUrl = getAppBaseUrl();
 const metadataBase = new URL(appBaseUrl);
-const shareImage = `${appBaseUrl}/logo.png`;
+const shareImage = `${appBaseUrl}/images/brand-preview-logo.jpeg`;
 
 export const metadata: Metadata = {
   title: "منصة الرحمة",
   description: "منصة إدارة تقارير تحفيظ القرآن الكريم",
   metadataBase,
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
-    shortcut: "/logo.png",
+    icon: "/images/brand-preview-logo.jpeg",
+    apple: "/images/brand-preview-logo.jpeg",
+    shortcut: "/images/brand-preview-logo.jpeg",
   },
   openGraph: {
     type: "website",

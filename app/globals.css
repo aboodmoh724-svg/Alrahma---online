@@ -2,14 +2,14 @@
 
 :root {
   color-scheme: only light;
-  --background: #f7f0e6;
-  --foreground: #1c2d31;
-  --rahma-ink: #1c2d31;
-  --rahma-green: #1f6358;
-  --rahma-green-deep: #173d42;
-  --rahma-gold: #c39a62;
-  --rahma-cream: #f7f0e6;
-  --rahma-card: rgba(255, 252, 247, 0.86);
+  --background: #f6eee7;
+  --foreground: #18322a;
+  --rahma-ink: #18322a;
+  --rahma-green: #0f5a35;
+  --rahma-green-deep: #0a3f2a;
+  --rahma-gold: #bd8f2d;
+  --rahma-cream: #f6eee7;
+  --rahma-card: rgba(255, 250, 244, 0.9);
 }
 
 html {
@@ -37,13 +37,14 @@ body {
 
 .rahma-shell {
   background:
-    linear-gradient(135deg, #fbf7ef 0%, #f3eadc 52%, #eef5ef 100%);
+    radial-gradient(circle at 8% 10%, rgba(189, 143, 45, 0.13), transparent 25%),
+    linear-gradient(135deg, #fbf6ef 0%, #f6eee7 52%, #edf6ee 100%);
 }
 
 .rahma-card {
-  border: 1px solid rgba(195, 154, 98, 0.2);
-  background: #fffaf2;
-  box-shadow: 0 14px 34px rgba(28, 45, 49, 0.08);
+  border: 1px solid rgba(189, 143, 45, 0.24);
+  background: #fffaf4;
+  box-shadow: 0 14px 34px rgba(24, 50, 42, 0.08);
 }
 
 .rahma-muted-pattern {

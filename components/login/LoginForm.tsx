@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import BrandLockup from "@/components/brand/BrandLockup";
 
 type LoginFormProps = {
   title?: string;
@@ -115,9 +116,7 @@ export default function LoginForm({
   return (
     <div className="w-full">
       <div className="mb-5 text-right sm:mb-8">
-        <div className="mb-3 inline-flex rounded-full bg-[#1f6358]/10 px-4 py-2 text-xs font-bold text-[#1f6358] sm:mb-4">
-          منصة الرحمة
-        </div>
+        <BrandLockup compact className="mb-4" />
         <h1 className="text-3xl font-black text-[#1c2d31] sm:text-4xl">{title}</h1>
         <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60 sm:mt-3">{subtitle}</p>
       </div>
