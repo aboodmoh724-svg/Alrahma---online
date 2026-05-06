@@ -402,77 +402,79 @@ export default async function RemoteTeacherDashboardPage({
             </div>
           </section>
 
-          <section className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-start">
-            <InstantEntryRequestButtons
-              circleName={activeCircle?.name || null}
-              circleUrl={latestZoomLink}
-            />
-
-            <details className="group rounded-[1.6rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
-              <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-lg font-black text-[#1c2d31]">تنبيهات المعلم</h2>
-                  <p className="mt-1 text-sm text-[#1c2d31]/55">
-                    آخر المستجدات تظهر هنا دون أن تشغل مساحة العمل اليومية.
-                  </p>
-                </div>
-                <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
-                  {unreadNotificationsCount > 0
-                    ? `${unreadNotificationsCount} جديد`
-                    : "فتح التنبيهات"}
-                </span>
-              </summary>
-
-              <div className="mt-4 max-h-80 space-y-3 overflow-auto pl-1">
-                {recentNotifications.length === 0 ? (
-                  <div className="rounded-2xl bg-[#fffaf2] p-4 text-sm text-[#1c2d31]/60">
-                    لا توجد إشعارات حتى الآن.
-                  </div>
-                ) : (
-                  recentNotifications.map((notification) => (
-                    <Link
-                      key={notification.id}
-                      href={`/remote/teacher/requests?notificationId=${notification.id}`}
-                      className={`block rounded-2xl p-4 ring-1 transition hover:ring-[#1f6358] ${
-                        notification.isRead
-                          ? "bg-[#fffaf2] ring-[#e7dcc8]"
-                          : "bg-[#fff3df] ring-[#c39a62]"
-                      }`}
-                    >
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="font-black text-[#173d42]">{notification.title}</p>
-                        <span className="text-xs font-bold text-[#1c2d31]/55">
-                          {new Date(notification.createdAt).toLocaleString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-7 text-[#1c2d31]/68">
-                        {notification.body}
-                      </p>
-                    </Link>
-                  ))
-                )}
+          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d9c8ad]">
+            <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h2 className="text-xl font-black text-[#1c2d31]">متابعة اليوم</h2>
+                <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
+                  التنبيهات والطلبات الطارئة في مكان واحد دون تشتيت لوحة الطلاب.
+                </p>
               </div>
-            </details>
+              <Link
+                href="/remote/teacher/requests"
+                className="inline-flex items-center justify-center rounded-2xl bg-[#173d42] px-4 py-3 text-sm font-black text-white transition hover:bg-[#1f6358]"
+              >
+                الطلبات المفتوحة: {openRequestsCount}
+              </Link>
+            </div>
 
-            <Link
-              href="/remote/teacher/requests"
-              className="flex min-h-24 items-center justify-between gap-4 rounded-[1.6rem] bg-[#173d42] p-4 text-white shadow-sm transition hover:bg-[#1f6358] lg:min-w-72"
-            >
-              <span>
-                <span className="block text-lg font-black">طلبات الإشراف</span>
-                <span className="mt-1 block text-sm leading-6 text-white/70">
-                  رفع طلب جديد أو متابعة الردود
-                </span>
-              </span>
-              <span className="rounded-full bg-white px-3 py-2 text-sm font-black text-[#173d42]">
-                {openRequestsCount} مفتوح
-              </span>
-            </Link>
+            <div className="grid gap-3 xl:grid-cols-[1fr_1fr]">
+              <details className="group rounded-[1.4rem] border border-[#e7dcc8] bg-[#fffaf2] p-4">
+                <summary className="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h3 className="text-base font-black text-[#1c2d31]">تنبيهات المعلم</h3>
+                    <p className="mt-1 text-sm text-[#1c2d31]/55">
+                      آخر المستجدات والردود المختصرة.
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-[#173d42] px-4 py-2 text-sm font-black text-white">
+                    {unreadNotificationsCount > 0
+                      ? `${unreadNotificationsCount} جديد`
+                      : "فتح"}
+                  </span>
+                </summary>
+
+                <div className="mt-4 max-h-72 space-y-3 overflow-auto pl-1">
+                  {recentNotifications.length === 0 ? (
+                    <div className="rounded-2xl bg-white p-4 text-sm text-[#1c2d31]/60">
+                      لا توجد إشعارات حتى الآن.
+                    </div>
+                  ) : (
+                    recentNotifications.map((notification) => (
+                      <Link
+                        key={notification.id}
+                        href={`/remote/teacher/requests?notificationId=${notification.id}`}
+                        className={`block rounded-2xl p-4 ring-1 transition hover:ring-[#1f6358] ${
+                          notification.isRead
+                            ? "bg-white ring-[#e7dcc8]"
+                            : "bg-[#fff3df] ring-[#c39a62]"
+                        }`}
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <p className="font-black text-[#173d42]">{notification.title}</p>
+                          <span className="text-xs font-bold text-[#1c2d31]/55">
+                            {new Date(notification.createdAt).toLocaleString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                              hour: "numeric",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm leading-7 text-[#1c2d31]/68">
+                          {notification.body}
+                        </p>
+                      </Link>
+                    ))
+                  )}
+                </div>
+              </details>
+
+              <InstantEntryRequestButtons
+                circleName={activeCircle?.name || null}
+                circleUrl={latestZoomLink}
+              />
+            </div>
           </section>
 
           <section id="students-details" className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d9c8ad]">
