@@ -14,6 +14,22 @@ export function normalizePhoneDigits(value: unknown) {
   return digits;
 }
 
+const knownCountryCodes = [
+  "971",
+  "970",
+  "968",
+  "967",
+  "966",
+  "965",
+  "974",
+  "973",
+  "963",
+  "962",
+  "90",
+  "20",
+  "1",
+];
+
 export function splitInternationalPhone(value: unknown, defaultCountryCode = "90") {
   const digits = normalizePhoneDigits(value);
   const fallbackCountry = normalizePhoneDigits(defaultCountryCode) || "90";
@@ -24,6 +40,21 @@ export function splitInternationalPhone(value: unknown, defaultCountryCode = "90
 
   if (digits === fallbackCountry) {
     return { countryCode: fallbackCountry, localNumber: "" };
+  }
+
+  const exactCountryCode = knownCountryCodes.find((code) => digits === code);
+  if (exactCountryCode) {
+    return { countryCode: exactCountryCode, localNumber: "" };
+  }
+
+  const matchedCountryCode = knownCountryCodes.find(
+    (code) => digits.startsWith(code) && digits.length > code.length
+  );
+  if (matchedCountryCode) {
+    return {
+      countryCode: matchedCountryCode,
+      localNumber: digits.slice(matchedCountryCode.length),
+    };
   }
 
   if (digits.startsWith(fallbackCountry) && digits.length > fallbackCountry.length + 3) {

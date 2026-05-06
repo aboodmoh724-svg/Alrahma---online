@@ -105,19 +105,19 @@ export default function PhoneNumberInput({
           <select
             lang="en"
             value={countryCode}
-            onChange={(event) => setParts(event.target.value, localNumber)}
+            onChange={(event) => setParts(event.target.value, "")}
             className={`${baseInputClass} appearance-none pl-10 pr-8 text-left font-mono`}
             aria-label="Country code"
             required={required}
           >
             {COUNTRY_OPTIONS.map((country) => (
               <option key={country.code} value={country.code}>
-                {country.flag} +{country.code} {country.label}
+                +{country.code} {country.label}
               </option>
             ))}
             {COUNTRY_OPTIONS.some((country) => country.code === countryCode) ? null : (
               <option value={countryCode}>
-                {selectedCountry.flag} +{countryCode}
+                +{countryCode}
               </option>
             )}
           </select>
