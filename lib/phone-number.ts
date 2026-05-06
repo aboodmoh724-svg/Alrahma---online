@@ -22,6 +22,10 @@ export function splitInternationalPhone(value: unknown, defaultCountryCode = "90
     return { countryCode: fallbackCountry, localNumber: "" };
   }
 
+  if (digits === fallbackCountry) {
+    return { countryCode: fallbackCountry, localNumber: "" };
+  }
+
   if (digits.startsWith(fallbackCountry) && digits.length > fallbackCountry.length + 3) {
     return {
       countryCode: fallbackCountry,
@@ -53,4 +57,3 @@ export function joinInternationalPhone(countryCode: unknown, localNumber: unknow
 
   return `${country}${local}`;
 }
-

@@ -18,6 +18,32 @@ type PhoneNumberInputProps = {
   defaultCountryCode?: string;
 };
 
+const COUNTRY_OPTIONS = [
+  { code: "90", flag: "🇹🇷", label: "تركيا" },
+  { code: "966", flag: "🇸🇦", label: "السعودية" },
+  { code: "967", flag: "🇾🇪", label: "اليمن" },
+  { code: "20", flag: "🇪🇬", label: "مصر" },
+  { code: "962", flag: "🇯🇴", label: "الأردن" },
+  { code: "963", flag: "🇸🇾", label: "سوريا" },
+  { code: "970", flag: "🇵🇸", label: "فلسطين" },
+  { code: "971", flag: "🇦🇪", label: "الإمارات" },
+  { code: "974", flag: "🇶🇦", label: "قطر" },
+  { code: "965", flag: "🇰🇼", label: "الكويت" },
+  { code: "973", flag: "🇧🇭", label: "البحرين" },
+  { code: "968", flag: "🇴🇲", label: "عمان" },
+  { code: "1", flag: "🇺🇸", label: "أمريكا" },
+];
+
+function getCountryOption(countryCode: string) {
+  return (
+    COUNTRY_OPTIONS.find((country) => country.code === countryCode) || {
+      code: countryCode,
+      flag: "🌐",
+      label: `+${countryCode}`,
+    }
+  );
+}
+
 export default function PhoneNumberInput({
   label,
   name,
@@ -40,6 +66,7 @@ export default function PhoneNumberInput({
   const setParts = (nextCountryCode: string, nextLocalNumber: string) => {
     onChange(joinInternationalPhone(nextCountryCode, nextLocalNumber));
   };
+  const selectedCountry = getCountryOption(countryCode);
 
   const handleLocalChange = (rawValue: string) => {
     const raw = rawValue.trim();
@@ -67,30 +94,39 @@ export default function PhoneNumberInput({
           value={joinInternationalPhone(countryCode, localNumber)}
         />
       ) : null}
-      <div className="grid grid-cols-[104px_1fr] gap-2" dir="ltr">
+      <div className="grid grid-cols-[132px_1fr] gap-2" dir="ltr">
         <div className="relative">
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm font-black text-[#1c2d31]/45">
-            +
+          <span
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg"
+            aria-hidden="true"
+          >
+            {selectedCountry.flag}
           </span>
-          <input
-            type="tel"
-            inputMode="tel"
+          <select
             lang="en"
             value={countryCode}
             onChange={(event) => setParts(event.target.value, localNumber)}
-            onPaste={(event) => {
-              const text = event.clipboardData.getData("text");
-              if (!text) return;
-              const parsed = splitInternationalPhone(text, countryCode);
-              if (parsed.localNumber) {
-                event.preventDefault();
-                setParts(parsed.countryCode, parsed.localNumber);
-              }
-            }}
-            className={`${baseInputClass} pl-7 text-left font-mono`}
+            className={`${baseInputClass} appearance-none pl-10 pr-8 text-left font-mono`}
             aria-label="Country code"
             required={required}
-          />
+          >
+            {COUNTRY_OPTIONS.map((country) => (
+              <option key={country.code} value={country.code}>
+                {country.flag} +{country.code} {country.label}
+              </option>
+            ))}
+            {COUNTRY_OPTIONS.some((country) => country.code === countryCode) ? null : (
+              <option value={countryCode}>
+                {selectedCountry.flag} +{countryCode}
+              </option>
+            )}
+          </select>
+          <span
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-[#1c2d31]/40"
+            aria-hidden="true"
+          >
+            ▾
+          </span>
         </div>
         <input
           type="tel"
