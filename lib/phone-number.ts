@@ -1,3 +1,5 @@
+import { KNOWN_PHONE_COUNTRY_CODES } from "@/lib/phone-countries";
+
 export function normalizePhoneDigits(value: unknown) {
   let digits = String(value || "").replace(/[^\d+]/g, "");
 
@@ -14,22 +16,6 @@ export function normalizePhoneDigits(value: unknown) {
   return digits;
 }
 
-const knownCountryCodes = [
-  "971",
-  "970",
-  "968",
-  "967",
-  "966",
-  "965",
-  "974",
-  "973",
-  "963",
-  "962",
-  "90",
-  "20",
-  "1",
-];
-
 export function splitInternationalPhone(value: unknown, defaultCountryCode = "90") {
   const digits = normalizePhoneDigits(value);
   const fallbackCountry = normalizePhoneDigits(defaultCountryCode) || "90";
@@ -42,12 +28,12 @@ export function splitInternationalPhone(value: unknown, defaultCountryCode = "90
     return { countryCode: fallbackCountry, localNumber: "" };
   }
 
-  const exactCountryCode = knownCountryCodes.find((code) => digits === code);
+  const exactCountryCode = KNOWN_PHONE_COUNTRY_CODES.find((code) => digits === code);
   if (exactCountryCode) {
     return { countryCode: exactCountryCode, localNumber: "" };
   }
 
-  const matchedCountryCode = knownCountryCodes.find(
+  const matchedCountryCode = KNOWN_PHONE_COUNTRY_CODES.find(
     (code) => digits.startsWith(code) && digits.length > code.length
   );
   if (matchedCountryCode) {

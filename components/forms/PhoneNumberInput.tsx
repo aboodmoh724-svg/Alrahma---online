@@ -1,10 +1,12 @@
 ﻿"use client";
 
+import { useState } from "react";
 import {
   joinInternationalPhone,
   normalizePhoneDigits,
   splitInternationalPhone,
 } from "@/lib/phone-number";
+import { PHONE_COUNTRIES } from "@/lib/phone-countries";
 
 type PhoneNumberInputProps = {
   label?: string;
@@ -18,25 +20,13 @@ type PhoneNumberInputProps = {
   defaultCountryCode?: string;
 };
 
-const COUNTRY_OPTIONS = [
-  { code: "90", flag: "🇹🇷", label: "تركيا" },
-  { code: "966", flag: "🇸🇦", label: "السعودية" },
-  { code: "967", flag: "🇾🇪", label: "اليمن" },
-  { code: "20", flag: "🇪🇬", label: "مصر" },
-  { code: "962", flag: "🇯🇴", label: "الأردن" },
-  { code: "963", flag: "🇸🇾", label: "سوريا" },
-  { code: "970", flag: "🇵🇸", label: "فلسطين" },
-  { code: "971", flag: "🇦🇪", label: "الإمارات" },
-  { code: "974", flag: "🇶🇦", label: "قطر" },
-  { code: "965", flag: "🇰🇼", label: "الكويت" },
-  { code: "973", flag: "🇧🇭", label: "البحرين" },
-  { code: "968", flag: "🇴🇲", label: "عمان" },
-  { code: "1", flag: "🇺🇸", label: "أمريكا" },
-];
-
-function getCountryOption(countryCode: string) {
+function getCountryOption(countryCode: string, selectedIso: string) {
   return (
-    COUNTRY_OPTIONS.find((country) => country.code === countryCode) || {
+    PHONE_COUNTRIES.find(
+      (country) => country.code === countryCode && country.iso === selectedIso
+    ) ||
+    PHONE_COUNTRIES.find((country) => country.code === countryCode) || {
+      iso: "CUSTOM",
       code: countryCode,
       flag: "🌐",
       label: `+${countryCode}`,
@@ -66,7 +56,10 @@ export default function PhoneNumberInput({
   const setParts = (nextCountryCode: string, nextLocalNumber: string) => {
     onChange(joinInternationalPhone(nextCountryCode, nextLocalNumber));
   };
-  const selectedCountry = getCountryOption(countryCode);
+  const [selectedIso, setSelectedIso] = useState(() => {
+    return PHONE_COUNTRIES.find((country) => country.code === countryCode)?.iso || "";
+  });
+  const selectedCountry = getCountryOption(countryCode, selectedIso);
 
   const handleLocalChange = (rawValue: string) => {
     const raw = rawValue.trim();
@@ -104,19 +97,23 @@ export default function PhoneNumberInput({
           </span>
           <select
             lang="en"
-            value={countryCode}
-            onChange={(event) => setParts(event.target.value, "")}
+            value={`${selectedCountry.iso}:${selectedCountry.code}`}
+            onChange={(event) => {
+              const [nextIso, nextCountryCode] = event.target.value.split(":");
+              setSelectedIso(nextIso || "");
+              setParts(nextCountryCode || "", "");
+            }}
             className={`${baseInputClass} appearance-none pl-10 pr-8 text-left font-mono`}
             aria-label="Country code"
             required={required}
           >
-            {COUNTRY_OPTIONS.map((country) => (
-              <option key={country.code} value={country.code}>
+            {PHONE_COUNTRIES.map((country) => (
+              <option key={country.iso} value={`${country.iso}:${country.code}`}>
                 +{country.code} {country.label}
               </option>
             ))}
-            {COUNTRY_OPTIONS.some((country) => country.code === countryCode) ? null : (
-              <option value={countryCode}>
+            {PHONE_COUNTRIES.some((country) => country.code === countryCode) ? null : (
+              <option value={`${selectedCountry.iso}:${countryCode}`}>
                 +{countryCode}
               </option>
             )}
