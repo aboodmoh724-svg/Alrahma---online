@@ -255,3 +255,51 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const admin = await getCurrentRemoteAdmin();
+
+    if (!admin) {
+      return NextResponse.json({ error: "غير مصرح لك بحذف مهمة إشرافية" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const taskId = String(body.taskId || "").trim();
+
+    if (!taskId) {
+      return NextResponse.json({ error: "لم يتم تحديد المهمة" }, { status: 400 });
+    }
+
+    const task = await prisma.supervisionTask.findUnique({
+      where: { id: taskId },
+      select: {
+        id: true,
+        source: true,
+      },
+    });
+
+    if (!task) {
+      return NextResponse.json({ error: "المهمة غير موجودة" }, { status: 404 });
+    }
+
+    if (task.source !== "ADMIN") {
+      return NextResponse.json(
+        { error: "يمكن حذف المهام الإدارية فقط من هذه الصفحة" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.supervisionTask.delete({
+      where: { id: task.id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE SUPERVISION TASK ERROR =>", error);
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف المهمة الإشرافية" },
+      { status: 500 }
+    );
+  }
+}

@@ -27,6 +27,7 @@ const ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS = new Set([
   "/remote/admin/circles",
   "/remote/admin/teachers",
   "/remote/admin/resources",
+  "/remote/supervision/dashboard",
 ]);
 
 const sections: DashboardSection[] = [

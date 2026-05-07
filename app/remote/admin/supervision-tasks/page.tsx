@@ -39,6 +39,7 @@ export default function RemoteAdminSupervisionTasksPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     studentId: "",
     title: "",
@@ -111,6 +112,33 @@ export default function RemoteAdminSupervisionTasksPage() {
       alert("حدث خطأ أثناء إنشاء المهمة");
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const deleteTask = async (task: Task) => {
+    const confirmed = window.confirm(`هل تريد حذف المهمة "${task.title}"؟`);
+    if (!confirmed) return;
+
+    try {
+      setDeletingTaskId(task.id);
+      const response = await fetch("/api/supervision-tasks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ taskId: task.id }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر حذف المهمة");
+        return;
+      }
+
+      setTasks((prev) => prev.filter((item) => item.id !== task.id));
+    } catch (error) {
+      console.error("DELETE ADMIN SUPERVISION TASK ERROR =>", error);
+      alert("حدث خطأ أثناء حذف المهمة");
+    } finally {
+      setDeletingTaskId(null);
     }
   };
 
@@ -199,15 +227,25 @@ export default function RemoteAdminSupervisionTasksPage() {
             <div className="mt-5 grid gap-4 lg:grid-cols-2">
               {tasks.slice(0, 8).map((task) => (
                 <article key={task.id} className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
-                      {STATUS_LABELS[task.status]}
-                    </span>
-                    {task.student ? (
-                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
-                        {task.student.fullName}{task.student.studentCode ? ` - ${task.student.studentCode}` : ""}
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
+                        {STATUS_LABELS[task.status]}
                       </span>
-                    ) : null}
+                      {task.student ? (
+                        <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#0f5a35] ring-1 ring-[#d8bf83]">
+                          {task.student.fullName}{task.student.studentCode ? ` - ${task.student.studentCode}` : ""}
+                        </span>
+                      ) : null}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => deleteTask(task)}
+                      disabled={deletingTaskId === task.id}
+                      className="rounded-full border border-red-200 bg-white px-3 py-1 text-xs font-black text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                    >
+                      {deletingTaskId === task.id ? "جارٍ الحذف..." : "حذف"}
+                    </button>
                   </div>
                   <h3 className="mt-3 text-lg font-black text-[#0a3f2a]">{task.title}</h3>
                   <p className="mt-2 text-sm leading-7 text-[#1c2d31]/70">{task.details}</p>
