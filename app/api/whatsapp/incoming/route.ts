@@ -283,7 +283,7 @@ export async function GET(request: Request) {
         ...(status && validStatuses.includes(status)
           ? { followUpStatus: status as "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED" }
           : openOnly
-            ? { followUpStatus: { not: "CLOSED" } }
+            ? { followUpStatus: { notIn: ["REPLIED", "CLOSED"] as const } }
             : {}),
       },
       orderBy: {
