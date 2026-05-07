@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { prisma } from "../lib/prisma";
+import { hashPassword } from "../lib/passwords";
 
 async function main() {
   const existingUser = await prisma.user.findUnique({
@@ -15,7 +16,7 @@ async function main() {
     data: {
       fullName: "Teacher Test",
       email: "teacher@test.com",
-      password: "test",
+      password: hashPassword("test"),
       role: "TEACHER",
       studyMode: "REMOTE",
     },

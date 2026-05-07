@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
+import { hashPassword } from "@/lib/passwords";
 import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import {
@@ -105,7 +106,7 @@ export async function POST(req: Request) {
       data: {
         fullName,
         email,
-        password,
+        password: hashPassword(password),
         whatsapp: whatsapp || null,
         teacherCertification: teacherCertification || null,
         teacherAvailableTimes: teacherAvailableTimes || null,

@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { ConfirmSubmitButton } from "@/components/ConfirmSubmitButton";
+import { hashPassword } from "@/lib/passwords";
 
 async function requireFinanceAdmin() {
   const cookieStore = await cookies();
@@ -51,7 +52,7 @@ async function createSupervisor(formData: FormData) {
     data: {
       fullName,
       email,
-      password,
+      password: hashPassword(password),
       whatsapp: whatsapp || null,
       role: "ADMIN",
       studyMode: "REMOTE",
@@ -89,7 +90,7 @@ async function updateSupervisor(formData: FormData) {
       fullName,
       email,
       whatsapp: whatsapp || null,
-      ...(password ? { password } : {}),
+      ...(password ? { password: hashPassword(password) } : {}),
       canAccessSupervision,
       canAccessFinance,
       isActive,

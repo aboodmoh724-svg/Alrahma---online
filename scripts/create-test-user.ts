@@ -1,32 +1,32 @@
-import "dotenv/config";
 import { prisma } from "../lib/prisma";
+import { hashPassword } from "../lib/passwords";
 
 async function main() {
   const existingUser = await prisma.user.findUnique({
-    where: { email: "teacher@test.com" },
+    where: { email: "test@test.com" },
   });
 
   if (existingUser) {
-    console.log("Teacher already exists:", existingUser);
+    console.log("User already exists:", existingUser);
     return;
   }
 
-  const teacher = await prisma.user.create({
+  const user = await prisma.user.create({
     data: {
-      fullName: "Teacher Test",
-      email: "teacher@test.com",
-      password: "test",
-      role: "TEACHER",
+      fullName: "dahabia",
+      email: "test@test.com",
+      password: hashPassword("test"),
+      role: "ADMIN",
       studyMode: "REMOTE",
     },
   });
 
-  console.log("Teacher created successfully:", teacher);
+  console.log("User created successfully:", user);
 }
 
 main()
   .catch((error) => {
-    console.error("CREATE TEACHER ERROR:");
+    console.error("CREATE USER ERROR:");
     console.error(error);
     process.exit(1);
   })

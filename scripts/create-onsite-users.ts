@@ -1,5 +1,6 @@
 import "dotenv/config";
 import { prisma } from "../lib/prisma";
+import { hashPassword } from "../lib/passwords";
 
 function requiredEnv(name: string) {
   const value = process.env[name];
@@ -22,7 +23,7 @@ async function upsertUser(input: {
     where: { email },
     update: {
       fullName: input.fullName,
-      password: input.password,
+      password: hashPassword(input.password),
       role: input.role,
       studyMode: input.studyMode,
       isActive: true,
@@ -30,7 +31,7 @@ async function upsertUser(input: {
     create: {
       fullName: input.fullName,
       email,
-      password: input.password,
+      password: hashPassword(input.password),
       role: input.role,
       studyMode: input.studyMode,
       isActive: true,
