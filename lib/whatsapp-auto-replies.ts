@@ -15,27 +15,30 @@ export type AutoReplyRule = {
 export type WhatsAppAutoReplySettings = {
   enabled: boolean;
   rules: AutoReplyRule[];
+  bodyVersion?: number;
 };
 
 const SETTINGS_KEY = "whatsapp_auto_reply_settings";
+const CURRENT_BODY_VERSION = 2;
+const AUTO_REPLY_GREETING = "وعليكم السلام ورحمة الله وبركاته\nحياكم الله، وأهلا وسهلا بكم";
 
 const registrationKnowledge = {
   periods:
-    "- الفترة الصباحية: 9:00 صباحا - 11:00 صباحا\n" +
+    "- الفترة الصباحية: 9:00 صباحا - 12:00 ظهرا\n" +
     "- المسائية الأولى: 3:00 عصرا - 6:00 مساء\n" +
     "- المسائية الثانية: 7:00 مساء - 10:00 مساء\n" +
     "- المسائية الثالثة: 11:00 مساء - 2:00 بعد منتصف الليل\n" +
     "- المسائية الرابعة: 3:00 فجرا - 6:00 فجرا",
   tracks:
     "- مسار الهجاء/القاعدة النورانية: للمبتدئين في الحروف والمقاطع والقراءة من خلال القاعدة النورانية.\n" +
-    "- مسار الحفظ الرباعي: خمسة أيام في الأسبوع، مدة الحلقة ساعة ونصف يوميا، وفي الفصل 4 طلاب. يشمل تسميع الدرس الجديد، آخر خمس صفحات، المراجعة اليومية، وتصحيح درس اليوم التالي.\n" +
-    "- مسار الحفظ الفردي: وقت مستقل لكل طالب مع المعلم، خمسة أيام في الأسبوع لمدة ساعة كاملة؛ يركز على الدرس الجديد وآخر خمس صفحات والمراجعة ثم تلقين درس اليوم التالي.\n" +
+    "- مسار الحفظ الرباعي: خمسة أيام في الأسبوع، وفي الفصل 4 طلاب.\n" +
+    "- مسار الحفظ الفردي: وقت مستقل لطالب واحد مع المعلم، خمسة أيام في الأسبوع.\n" +
     "- مسار التلاوة بالنظر: لتعلم القراءة الصحيحة المجودة المرتلة بالنظر، مع حفظ بعض الأجزاء.",
   trackDetails:
-    "- الهجاء/القاعدة النورانية: مدة الطالب الفعلية مع المعلم 20 دقيقة، ويُراعى ألا يزيد تسلسل الحلقة عن 250 دقيقة تقريبا، مع استراحة 15 دقيقة إذا زاد العدد عن 6 طلاب. يراجع الطالب آخر 10 أسطر و5 صفحات حسب مستواه.\n" +
-    "- التلاوة: مدة الطالب مع المعلم 20 دقيقة، ولا يتجاوز مكثه في الفصل 30 دقيقة غالبا. المطلوب اليومي 4 صفحات تشمل الدرس الجديد، مع مراجعة يومية 5 صفحات يقرؤها الطالب ويتابعه المعلم.\n" +
-    "- الرباعي: مدة الفصل 3 ساعات مقسمة إلى فترتين، كل فترة ساعة ونصف، وبكل فترة 4 طلاب. داخل الفترة: 15 دقيقة للدرس الجديد، ساعة لآخر خمس صفحات والمراجعة، و15 دقيقة لتصحيح وتلقين درس اليوم التالي.\n" +
-    "- الفردي: ساعة كاملة لطالب واحد مع المعلم، خمسة أيام أسبوعيا. يركز على الدرس الجديد وآخر خمس صفحات والمراجعة، ثم تلقين الدرس الجديد لليوم التالي.",
+    "- الهجاء/القاعدة النورانية: مدة الطالب الفعلية مع المعلم 20 دقيقة، ومع القراءة والمراجعة تكون المدة الإجمالية غالبا 30 دقيقة.\n" +
+    "- التلاوة: مدة الطالب الفعلية مع المعلم 20 دقيقة، ومع القراءة والمراجعة تكون المدة الإجمالية غالبا 30 دقيقة.\n" +
+    "- الرباعي: الحلقة ساعة ونصف، وفيها 4 طلاب، ويأخذ الطالب نصيبه من التسميع والمراجعة بحسب نظام الحلقة.\n" +
+    "- الفردي: ساعة كاملة لطالب واحد مع المعلم.",
   fees:
     "- المسار الفردي: 600 دولار للفصل الدراسي الكامل.\n" +
     "- مسار الهجاء: 250 دولار للفصل الدراسي الكامل.\n" +
@@ -45,9 +48,7 @@ const registrationKnowledge = {
     "- الدراسة عن بعد بالصوت والصورة عبر Zoom خمسة أيام أسبوعيا من الإثنين إلى الجمعة.\n" +
     "- يتم إرسال رابط الحلقة وموعد الطالب خلال 5 أيام من تاريخ التسجيل.\n" +
     "- يجرى اختبار تحديد مستوى للمستجدين لتوجيه الطالب إلى المسار الأنسب.\n" +
-    "- يلزم توفر سماعة وميكروفون وكاميرا وجودة إنترنت قبل بدء الحلقة.\n" +
-    "- يلزم الالتزام بوقت الحلقة وآدابها، وعدم إغلاق الكاميرا أو كتم الصوت أثناء سير الحلقة إلا بإذن المعلم.\n" +
-    "- ترسل تقارير دورية توضح درجات الطالب وملاحظات المعلم عبر الوسيلة المعتمدة.",
+    "- يلزم توفر سماعة وميكروفون وكاميرا وجودة إنترنت قبل بدء الحلقة.",
 };
 
 const defaultRules: AutoReplyRule[] = [
@@ -57,9 +58,9 @@ const defaultRules: AutoReplyRule[] = [
     enabled: true,
     keywords: ["تسجيل", "اسجل", "أسجل", "نسجل", "رابط التسجيل", "التحاق", "انضمام"],
     body:
-      "السلام عليكم ورحمة الله وبركاته\n\n" +
+      `${AUTO_REPLY_GREETING}\n\n` +
       "يمكنكم التسجيل عبر الرابط التالي:\n{{registrationLink}}\n\n" +
-      "فضلا اقرأوا ملف التعليمات والتوجيهات قبل إرسال الطلب:\n{{guidelinesLink}}\n\n" +
+      "فضلا اقرأوا ملف التعليمات والتوجيهات قبل إرسال الطلب من خلال الرابط التالي:\n{{guidelinesLink}}\n\n" +
       "بعد إرسال الطلب ستراجعه الإدارة، ثم يتم تحديد مستوى الطالب وتوجيهه للمسار المناسب بإذن الله.",
   },
   {
@@ -85,10 +86,10 @@ const defaultRules: AutoReplyRule[] = [
       "الحلقة",
     ],
     body:
-      "السلام عليكم ورحمة الله وبركاته\n\n" +
+      `${AUTO_REPLY_GREETING}\n\n` +
       "المسارات المتاحة في منصة الرحمة:\n{{tracksSummary}}\n\n" +
-      "تفاصيل سريعة عن مدة الفصل وعدد الطلاب:\n{{trackDetailsSummary}}\n\n" +
-      "يتم توجيه الطالب للمسار الأنسب بعد اختبار تحديد المستوى.",
+      "تفاصيل مختصرة عن مدة الحلقة وعدد الطلاب:\n{{trackDetailsSummary}}\n\n" +
+      "ويتم توجيه الطالب للمسار الأنسب بعد اختبار تحديد المستوى.",
   },
   {
     key: "FEES",
@@ -96,9 +97,9 @@ const defaultRules: AutoReplyRule[] = [
     enabled: true,
     keywords: ["رسوم", "سعر", "تكلفة", "اشتراك", "المبلغ", "كم", "الدفع", "دولار"],
     body:
-      "السلام عليكم ورحمة الله وبركاته\n\n" +
+      `${AUTO_REPLY_GREETING}\n\n` +
       "الرسوم الحالية بنظام الفصل الدراسي الكامل:\n{{feesSummary}}\n\n" +
-      "يتم تأكيد التفاصيل بعد مراجعة طلب التسجيل وتحديد المسار المناسب للطالب.",
+      "ويتم تأكيد التفاصيل بعد مراجعة طلب التسجيل وتحديد المسار المناسب للطالب.",
   },
   {
     key: "SCHEDULE",
@@ -106,9 +107,9 @@ const defaultRules: AutoReplyRule[] = [
     enabled: true,
     keywords: ["وقت", "أوقات", "اوقات", "موعد", "فترة", "فترات", "دوام", "متى", "الحصة", "صباح", "مساء"],
     body:
-      "السلام عليكم ورحمة الله وبركاته\n\n" +
+      `${AUTO_REPLY_GREETING}\n\n` +
       "الفترات المتاحة غالبا:\n{{periodsSummary}}\n\n" +
-      "يتم تثبيت الفترة المناسبة بعد مراجعة الطلب وتوفر الحلقة.",
+      "ويتم تثبيت الفترة المناسبة بعد مراجعة الطلب وتوفر الحلقة.",
   },
   {
     key: "GUIDELINES",
@@ -116,9 +117,9 @@ const defaultRules: AutoReplyRule[] = [
     enabled: true,
     keywords: ["تعليمات", "توجيهات", "سياسات", "الشروط", "ملف التعليمات", "النظام", "زوم", "zoom", "الكاميرا"],
     body:
-      "السلام عليكم ورحمة الله وبركاته\n\n" +
+      `${AUTO_REPLY_GREETING}\n\n` +
       "أهم التعليمات:\n{{guidelinesSummary}}\n\n" +
-      "ويمكنكم الاطلاع على ملف التعليمات والتوجيهات كاملا من هنا:\n{{guidelinesLink}}",
+      "ويمكنكم الاطلاع على ملف التعليمات والتوجيهات كاملا من خلال الرابط التالي:\n{{guidelinesLink}}",
   },
 ];
 
@@ -128,6 +129,7 @@ function parseSettings(value: unknown): WhatsAppAutoReplySettings {
   }
 
   const raw = value as Record<string, unknown>;
+  const bodyVersion = Number(raw.bodyVersion || 0);
   const rawRules = Array.isArray(raw.rules) ? raw.rules : [];
   const storedRules = new Map(
     rawRules
@@ -150,13 +152,14 @@ function parseSettings(value: unknown): WhatsAppAutoReplySettings {
           },
         ] as const;
       })
-      .filter((rule): rule is readonly [AutoReplyRuleKey, Omit<AutoReplyRule, "key"> & { key: AutoReplyRuleKey }] =>
+      .filter((rule): rule is readonly [AutoReplyRuleKey, AutoReplyRule] =>
         Boolean(rule)
       )
   );
 
   return {
     enabled: raw.enabled !== false,
+    bodyVersion: CURRENT_BODY_VERSION,
     rules: defaultRules.map((defaultRule) => ({
       ...defaultRule,
       ...storedRules.get(defaultRule.key),
@@ -164,7 +167,10 @@ function parseSettings(value: unknown): WhatsAppAutoReplySettings {
       keywords: storedRules.get(defaultRule.key)?.keywords.length
         ? storedRules.get(defaultRule.key)?.keywords || defaultRule.keywords
         : defaultRule.keywords,
-      body: storedRules.get(defaultRule.key)?.body || defaultRule.body,
+      body:
+        bodyVersion === CURRENT_BODY_VERSION && storedRules.get(defaultRule.key)?.body
+          ? storedRules.get(defaultRule.key)?.body || defaultRule.body
+          : defaultRule.body,
     })),
   };
 }
@@ -179,10 +185,15 @@ export async function getWhatsAppAutoReplySettings() {
 }
 
 export async function saveWhatsAppAutoReplySettings(settings: WhatsAppAutoReplySettings) {
+  const value = {
+    ...settings,
+    bodyVersion: CURRENT_BODY_VERSION,
+  };
+
   return prisma.appSetting.upsert({
     where: { key: SETTINGS_KEY },
-    create: { key: SETTINGS_KEY, value: settings },
-    update: { value: settings },
+    create: { key: SETTINGS_KEY, value },
+    update: { value },
   });
 }
 
