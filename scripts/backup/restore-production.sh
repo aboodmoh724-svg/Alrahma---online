@@ -19,11 +19,14 @@ if [[ ! -f "${BACKUP_DIR}/uploads.tar.gz" ]]; then
   exit 1
 fi
 
-if [[ -f "${APP_DIR}/.env" ]]; then
-  set -a
-  # shellcheck disable=SC1091
-  source "${APP_DIR}/.env"
-  set +a
+if [[ -z "${DATABASE_URL:-}" && -f "${APP_DIR}/.env" ]]; then
+  DATABASE_URL="$(grep -E '^DATABASE_URL=' "${APP_DIR}/.env" | tail -n 1)"
+  DATABASE_URL="${DATABASE_URL#DATABASE_URL=}"
+  DATABASE_URL="${DATABASE_URL%\"}"
+  DATABASE_URL="${DATABASE_URL#\"}"
+  DATABASE_URL="${DATABASE_URL%\'}"
+  DATABASE_URL="${DATABASE_URL#\'}"
+  export DATABASE_URL
 fi
 
 if [[ -z "${DATABASE_URL:-}" ]]; then

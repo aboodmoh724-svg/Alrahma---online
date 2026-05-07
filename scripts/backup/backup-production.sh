@@ -16,12 +16,19 @@ log() {
   printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | tee -a "$LOG_FILE"
 }
 
-load_env() {
+load_database_url() {
+  if [[ -n "${DATABASE_URL:-}" ]]; then
+    return
+  fi
+
   if [[ -f "${APP_DIR}/.env" ]]; then
-    set -a
-    # shellcheck disable=SC1091
-    source "${APP_DIR}/.env"
-    set +a
+    DATABASE_URL="$(grep -E '^DATABASE_URL=' "${APP_DIR}/.env" | tail -n 1)"
+    DATABASE_URL="${DATABASE_URL#DATABASE_URL=}"
+    DATABASE_URL="${DATABASE_URL%\"}"
+    DATABASE_URL="${DATABASE_URL#\"}"
+    DATABASE_URL="${DATABASE_URL%\'}"
+    DATABASE_URL="${DATABASE_URL#\'}"
+    export DATABASE_URL
   fi
 }
 
@@ -32,7 +39,7 @@ require_command() {
   }
 }
 
-load_env
+load_database_url
 require_command pg_dump
 require_command tar
 require_command sha256sum
