@@ -429,6 +429,12 @@ export default function RemoteAdminMessagesPage() {
           >
             الرجوع للوحة الإدارة
           </Link>
+          <Link
+            href="/remote/admin/reply-memory"
+            className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-center text-sm font-black text-white"
+          >
+            ذاكرة الردود
+          </Link>
         </div>
 
         {feedback ? (

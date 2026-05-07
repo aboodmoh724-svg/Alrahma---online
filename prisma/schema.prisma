@@ -509,6 +509,25 @@ model WhatsAppOutgoingMessage {
   @@index([registrationRequestId])
 }
 
+model WhatsAppReplyMemory {
+  id                String   @id @default(cuid())
+  incomingMessageId String
+  outgoingMessageId String
+  question          String
+  answer            String
+  editedAnswer      String?
+  category          String?
+  status            String   @default("PENDING")
+  notes             String?
+  reviewedById      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([incomingMessageId, outgoingMessageId])
+  @@index([status, createdAt])
+  @@index([category])
+}
+
 model Report {
   id                 String             @id @default(cuid())
   lessonName         String

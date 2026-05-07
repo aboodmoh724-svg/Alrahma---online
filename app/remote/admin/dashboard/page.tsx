@@ -131,6 +131,12 @@ const sections: DashboardSection[] = [
     tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
+    href: "/remote/admin/reply-memory",
+    title: "ذاكرة الردود",
+    description: "اعتماد الردود البشرية الجيدة كنماذج تدريب للمساعد الذكي مستقبلًا.",
+    tone: "bg-white text-[#0a3f2a]",
+  },
+  {
     href: "/remote/admin/conversations",
     title: "مراقبة مراسلات التعليم",
     description: "متابعة المحادثات المصغرة بين أولياء الأمور والمعلمين والإشراف.",
