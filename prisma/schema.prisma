@@ -494,6 +494,8 @@ model WhatsAppOutgoingMessage {
   channel               StudyMode
   toNumber              String
   body                  String
+  source                String                   @default("SYSTEM")
+  context               Json?
   category              WhatsAppIncomingCategory @default(GENERAL)
   studentId             String?
   registrationRequestId String?

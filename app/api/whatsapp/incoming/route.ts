@@ -204,6 +204,12 @@ export async function POST(request: Request) {
           chatId: replyChatId || undefined,
           body: replyBody,
           channel,
+          source: "AUTO_REPLY",
+          relatedIncomingMessageId: message.id,
+          context: {
+            ruleKey: matchedRule.key,
+            ruleTitle: matchedRule.title,
+          },
         });
 
         await prisma.whatsAppIncomingMessage.update({
@@ -431,6 +437,8 @@ export async function PATCH(request: Request) {
           chatId: replyChatId || undefined,
           body: reply,
           channel: target.channel,
+          source: "HUMAN_REPLY",
+          relatedIncomingMessageId: target.id,
         });
       } catch (whatsappError) {
         console.error("WHATSAPP INCOMING REPLY SEND ERROR =>", whatsappError);
@@ -512,6 +520,8 @@ export async function PATCH(request: Request) {
         to: teacherPhone,
         body: teacherMessage,
         channel: target.channel,
+        source: "HUMAN_ESCALATION_TO_TEACHER",
+        relatedIncomingMessageId: target.id,
       });
 
       await prisma.whatsAppIncomingMessage.update({

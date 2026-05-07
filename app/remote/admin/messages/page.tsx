@@ -659,7 +659,7 @@ export default function RemoteAdminMessagesPage() {
                       />
                     </label>
                     <p className="mt-2 text-xs leading-6 text-[#1c2d31]/55">
-                      المتغيرات المتاحة: {"{{registrationLink}}"} و {"{{guidelinesLink}}"}.
+                      المتغيرات المتاحة: {"{{registrationLink}}"} و {"{{guidelinesLink}}"} و {"{{tracksSummary}}"} و {"{{trackDetailsSummary}}"} و {"{{feesSummary}}"} و {"{{periodsSummary}}"} و {"{{guidelinesSummary}}"}.
                     </p>
                   </article>
                 ))}

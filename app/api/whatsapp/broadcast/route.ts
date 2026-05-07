@@ -154,6 +154,10 @@ export async function POST(request: Request) {
           to: phone,
           body: finalMessage,
           channel: scope,
+          source: "HUMAN_BROADCAST",
+          context: {
+            recipientType,
+          },
         });
         sentCount += 1;
       } catch (error) {

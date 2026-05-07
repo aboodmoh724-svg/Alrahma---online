@@ -1,4 +1,5 @@
 import { appUrl } from "@/lib/app-url";
+import type { Prisma } from "@prisma/client";
 
 export type WhatsAppChannel = "REMOTE" | "ONSITE";
 
@@ -7,6 +8,9 @@ type WhatsAppTextInput = {
   body: string;
   channel?: WhatsAppChannel;
   chatId?: string | null;
+  source?: string;
+  context?: Prisma.InputJsonValue;
+  relatedIncomingMessageId?: string | null;
 };
 
 type WhatsAppDocumentInput = {
@@ -72,6 +76,9 @@ async function logOutgoingWhatsApp(input: {
   body: string;
   channel?: WhatsAppChannel;
   result: unknown;
+  source?: string;
+  context?: Prisma.InputJsonValue;
+  relatedIncomingMessageId?: string | null;
 }) {
   try {
     const { prisma } = await import("@/lib/prisma");
@@ -81,17 +88,26 @@ async function logOutgoingWhatsApp(input: {
     const result = input.result as { messageId?: string | null; id?: { _serialized?: string } } | null;
     const linked = await inferWhatsAppEntities(toNumber, input.channel);
 
-    await prisma.whatsAppOutgoingMessage.create({
+    const outgoing = await prisma.whatsAppOutgoingMessage.create({
       data: {
         toNumber,
         body: input.body,
         channel: input.channel === "ONSITE" ? "ONSITE" : "REMOTE",
+        source: input.source || "SYSTEM",
+        context: input.context,
         category: inferWhatsAppCategory(input.body),
         messageId: result?.messageId || result?.id?._serialized || null,
         studentId: linked.studentId,
         registrationRequestId: linked.registrationRequestId,
       },
     });
+
+    if (input.relatedIncomingMessageId) {
+      await prisma.whatsAppIncomingMessage.update({
+        where: { id: input.relatedIncomingMessageId },
+        data: { lastOutgoingMessageId: outgoing.id },
+      });
+    }
   } catch (error) {
     console.error("WHATSAPP OUTGOING LOG ERROR =>", error);
   }
@@ -716,10 +732,26 @@ export async function sendWhatsAppTemplate({
   return response.json();
 }
 
-export async function sendWhatsAppText({ to, body, channel, chatId }: WhatsAppTextInput) {
+export async function sendWhatsAppText({
+  to,
+  body,
+  channel,
+  chatId,
+  source,
+  context,
+  relatedIncomingMessageId,
+}: WhatsAppTextInput) {
   if (isWhatsAppWebJsConfigured(channel)) {
     const result = await sendWhatsAppWebJsText({ to, body, channel, chatId });
-    await logOutgoingWhatsApp({ to, body, channel, result });
+    await logOutgoingWhatsApp({
+      to,
+      body,
+      channel,
+      result,
+      source,
+      context,
+      relatedIncomingMessageId,
+    });
     return result;
   }
 
@@ -765,7 +797,15 @@ export async function sendWhatsAppText({ to, body, channel, chatId }: WhatsAppTe
   }
 
   const result = await response.json();
-  await logOutgoingWhatsApp({ to, body, channel, result });
+  await logOutgoingWhatsApp({
+    to,
+    body,
+    channel,
+    result,
+    source,
+    context,
+    relatedIncomingMessageId,
+  });
   return result;
 }
 
