@@ -19,8 +19,10 @@ export type WhatsAppAutoReplySettings = {
 };
 
 const SETTINGS_KEY = "whatsapp_auto_reply_settings";
-const CURRENT_BODY_VERSION = 2;
-const AUTO_REPLY_GREETING = "وعليكم السلام ورحمة الله وبركاته\nحياكم الله، وأهلا وسهلا بكم";
+const CURRENT_BODY_VERSION = 3;
+const AUTO_REPLY_GREETING =
+  "وعليكم السلام ورحمة الله وبركاته\nحياكم الله، وأهلا وسهلا بكم في منصة الرحمة لتعليم القرآن الكريم.";
+const AUTO_REPLY_FOOTER = "إدارة منصة الرحمة لتحفيظ القرآن الكريم";
 
 const registrationKnowledge = {
   periods:
@@ -35,8 +37,8 @@ const registrationKnowledge = {
     "- مسار الحفظ الفردي: وقت مستقل لطالب واحد مع المعلم، خمسة أيام في الأسبوع.\n" +
     "- مسار التلاوة بالنظر: لتعلم القراءة الصحيحة المجودة المرتلة بالنظر، مع حفظ بعض الأجزاء.",
   trackDetails:
-    "- الهجاء/القاعدة النورانية: مدة الطالب الفعلية مع المعلم 20 دقيقة، ومع القراءة والمراجعة تكون المدة الإجمالية غالبا 30 دقيقة.\n" +
-    "- التلاوة: مدة الطالب الفعلية مع المعلم 20 دقيقة، ومع القراءة والمراجعة تكون المدة الإجمالية غالبا 30 دقيقة.\n" +
+    "- الهجاء/القاعدة النورانية: مدة الطالب الفعلية مع المعلم 20 دقيقة، ومع القراءة والمراجعة تكون المدة الإجمالية 30 دقيقة.\n" +
+    "- التلاوة: مدة الطالب الفعلية مع المعلم 20 دقيقة، ومع القراءة والمراجعة تكون المدة الإجمالية 30 دقيقة.\n" +
     "- الرباعي: الحلقة ساعة ونصف، وفيها 4 طلاب، ويأخذ الطالب نصيبه من التسميع والمراجعة بحسب نظام الحلقة.\n" +
     "- الفردي: ساعة كاملة لطالب واحد مع المعلم.",
   fees:
@@ -59,9 +61,10 @@ const defaultRules: AutoReplyRule[] = [
     keywords: ["تسجيل", "اسجل", "أسجل", "نسجل", "رابط التسجيل", "التحاق", "انضمام"],
     body:
       `${AUTO_REPLY_GREETING}\n\n` +
-      "يمكنكم التسجيل عبر الرابط التالي:\n{{registrationLink}}\n\n" +
+      "يسعدنا استقبال طلبكم، ويمكنكم التسجيل من خلال الرابط التالي:\n{{registrationLink}}\n\n" +
       "فضلا اقرأوا ملف التعليمات والتوجيهات قبل إرسال الطلب من خلال الرابط التالي:\n{{guidelinesLink}}\n\n" +
-      "بعد إرسال الطلب ستراجعه الإدارة، ثم يتم تحديد مستوى الطالب وتوجيهه للمسار المناسب بإذن الله.",
+      "بعد إرسال الطلب تراجعه الإدارة، ثم يتم تحديد مستوى الطالب وتوجيهه للمسار المناسب بإذن الله.\n\n" +
+      AUTO_REPLY_FOOTER,
   },
   {
     key: "TRACKS",
@@ -89,7 +92,8 @@ const defaultRules: AutoReplyRule[] = [
       `${AUTO_REPLY_GREETING}\n\n` +
       "المسارات المتاحة في منصة الرحمة:\n{{tracksSummary}}\n\n" +
       "تفاصيل مختصرة عن مدة الحلقة وعدد الطلاب:\n{{trackDetailsSummary}}\n\n" +
-      "ويتم توجيه الطالب للمسار الأنسب بعد اختبار تحديد المستوى.",
+      "ويتم توجيه الطالب للمسار الأنسب بعد اختبار تحديد المستوى.\n\n" +
+      AUTO_REPLY_FOOTER,
   },
   {
     key: "FEES",
@@ -99,7 +103,8 @@ const defaultRules: AutoReplyRule[] = [
     body:
       `${AUTO_REPLY_GREETING}\n\n` +
       "الرسوم الحالية بنظام الفصل الدراسي الكامل:\n{{feesSummary}}\n\n" +
-      "ويتم تأكيد التفاصيل بعد مراجعة طلب التسجيل وتحديد المسار المناسب للطالب.",
+      "ويتم تأكيد التفاصيل بعد مراجعة طلب التسجيل وتحديد المسار المناسب للطالب.\n\n" +
+      AUTO_REPLY_FOOTER,
   },
   {
     key: "SCHEDULE",
@@ -108,8 +113,9 @@ const defaultRules: AutoReplyRule[] = [
     keywords: ["وقت", "أوقات", "اوقات", "موعد", "فترة", "فترات", "دوام", "متى", "الحصة", "صباح", "مساء"],
     body:
       `${AUTO_REPLY_GREETING}\n\n` +
-      "الفترات المتاحة غالبا:\n{{periodsSummary}}\n\n" +
-      "ويتم تثبيت الفترة المناسبة بعد مراجعة الطلب وتوفر الحلقة.",
+      "الفترات المتاحة:\n{{periodsSummary}}\n\n" +
+      "ويتم تثبيت الفترة المناسبة بعد مراجعة الطلب وتوفر الحلقة.\n\n" +
+      AUTO_REPLY_FOOTER,
   },
   {
     key: "GUIDELINES",
@@ -119,7 +125,8 @@ const defaultRules: AutoReplyRule[] = [
     body:
       `${AUTO_REPLY_GREETING}\n\n` +
       "أهم التعليمات:\n{{guidelinesSummary}}\n\n" +
-      "ويمكنكم الاطلاع على ملف التعليمات والتوجيهات كاملا من خلال الرابط التالي:\n{{guidelinesLink}}",
+      "ويمكنكم الاطلاع على ملف التعليمات والتوجيهات كاملا من خلال الرابط التالي:\n{{guidelinesLink}}\n\n" +
+      AUTO_REPLY_FOOTER,
   },
 ];
 
@@ -220,7 +227,9 @@ async function getGuidelinesLink() {
     return appUrl("/registration");
   }
 
-  return createSignedStorageUrl(resource.fileUrl);
+  const url = await createSignedStorageUrl(resource.fileUrl);
+  if (!url) return appUrl("/registration");
+  return url.startsWith("http") ? url : appUrl(url);
 }
 
 export async function renderAutoReply(rule: AutoReplyRule) {

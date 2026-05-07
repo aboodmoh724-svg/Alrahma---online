@@ -29,6 +29,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -43,3 +44,7 @@ next-env.d.ts
 /app/generated/prisma
 
 .vercel
+
+# local workspace artifacts
+/.codex-pdf-preview/
+/uploads/
