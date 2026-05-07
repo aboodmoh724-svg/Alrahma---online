@@ -19,6 +19,11 @@ import {
 } from "@/lib/message-automation-settings";
 import { prisma } from "@/lib/prisma";
 import { getReportNotePresets, saveReportNotePresets } from "@/lib/report-note-presets";
+import {
+  getWhatsAppAutoReplySettings,
+  saveWhatsAppAutoReplySettings,
+  WhatsAppAutoReplySettings,
+} from "@/lib/whatsapp-auto-replies";
 
 async function getRemoteAdminUser() {
   const cookieStore = await cookies();
@@ -49,11 +54,18 @@ export async function GET() {
       return NextResponse.json({ error: "غير مصرح لك بعرض إعدادات الرسائل" }, { status: 403 });
     }
 
-    const [templates, reminderSettings, notePresets, automationSettings] = await Promise.all([
+    const [
+      templates,
+      reminderSettings,
+      notePresets,
+      automationSettings,
+      autoReplySettings,
+    ] = await Promise.all([
       getTemplateDefinitionsWithValues(),
       getTeacherReminderSettings(),
       getReportNotePresets(),
       getMessageAutomationSettings(),
+      getWhatsAppAutoReplySettings(),
     ]);
 
     return NextResponse.json({
@@ -62,6 +74,7 @@ export async function GET() {
       reminderSettings,
       notePresets,
       automationSettings,
+      autoReplySettings,
     });
   } catch (error) {
     console.error("GET MESSAGE SETTINGS ERROR =>", error);
@@ -213,6 +226,41 @@ export async function PATCH(request: Request) {
           enabled: overrides.TEACHER_MISSING_REPORT_REMINDER_WHATSAPP,
         });
       }
+
+      return NextResponse.json({
+        success: true,
+      });
+    }
+
+    if (body.autoReplySettings) {
+      const rawSettings = body.autoReplySettings as Record<string, unknown>;
+      const rawRules = Array.isArray(rawSettings.rules) ? rawSettings.rules : [];
+      const settings: WhatsAppAutoReplySettings = {
+        enabled: rawSettings.enabled !== false,
+        rules: rawRules
+          .map((rule: unknown) => {
+            if (!rule || typeof rule !== "object" || Array.isArray(rule)) return null;
+            const item = rule as Record<string, unknown>;
+            const key = String(item.key || "").trim();
+            const title = String(item.title || "").trim();
+            const body = String(item.body || "").trim();
+
+            if (!key || !title || !body) return null;
+
+            return {
+              key: key as WhatsAppAutoReplySettings["rules"][number]["key"],
+              title,
+              enabled: item.enabled !== false,
+              keywords: Array.isArray(item.keywords)
+                ? item.keywords.map((keyword) => String(keyword || "").trim()).filter(Boolean)
+                : [],
+              body,
+            };
+          })
+          .filter((rule): rule is WhatsAppAutoReplySettings["rules"][number] => Boolean(rule)),
+      };
+
+      await saveWhatsAppAutoReplySettings(settings);
 
       return NextResponse.json({
         success: true,

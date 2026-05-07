@@ -2,6 +2,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import type { StudyMode } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import {
+  detectAutoReplyRule,
+  getWhatsAppAutoReplySettings,
+  renderAutoReply,
+} from "@/lib/whatsapp-auto-replies";
 import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
 function normalizeChannel(value: unknown): StudyMode {
@@ -182,7 +187,45 @@ export async function POST(request: Request) {
         })
       : await prisma.whatsAppIncomingMessage.create({ data });
 
-    return NextResponse.json({ success: true, message });
+    let autoReply: { sent: boolean; ruleKey?: string; error?: string } = { sent: false };
+
+    try {
+      const autoReplySettings = await getWhatsAppAutoReplySettings();
+      const matchedRule = detectAutoReplyRule(messageBody, autoReplySettings);
+      const replyNumber =
+        normalizeWhatsAppNumber(fromNumber) ||
+        (looksLikeReplyablePhone(fromNumber) ? fromNumber : null);
+      const replyChatId = incomingRawChatId(body);
+
+      if (matchedRule && (replyNumber || replyChatId)) {
+        const replyBody = await renderAutoReply(matchedRule);
+        await sendWhatsAppText({
+          to: replyNumber || fromNumber,
+          chatId: replyChatId || undefined,
+          body: replyBody,
+          channel,
+        });
+
+        await prisma.whatsAppIncomingMessage.update({
+          where: { id: message.id },
+          data: {
+            isRead: true,
+            followUpStatus: "REPLIED",
+            supervisorNote: `تم الرد تلقائيًا: ${matchedRule.title}`,
+          },
+        });
+
+        autoReply = { sent: true, ruleKey: matchedRule.key };
+      }
+    } catch (autoReplyError) {
+      console.error("WHATSAPP AUTO REPLY ERROR =>", autoReplyError);
+      autoReply = {
+        sent: false,
+        error: autoReplyError instanceof Error ? autoReplyError.message : "تعذر الرد التلقائي",
+      };
+    }
+
+    return NextResponse.json({ success: true, message, autoReply });
   } catch (error) {
     console.error("WHATSAPP INCOMING WEBHOOK ERROR =>", error);
 
