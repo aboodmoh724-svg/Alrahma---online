@@ -220,11 +220,12 @@ export async function PATCH(req: Request) {
     const body = await req.json();
     const taskId = String(body.taskId || "").trim();
     const status = normalizeStatus(body.status);
-    const actionTitle = String(body.actionTitle || "").trim();
-    const actionDetails = String(body.actionDetails || "").trim();
+    const actionTitle = String(body.actionTitle || "").trim() || "إجراء إشرافي";
+    const actionDetails =
+      String(body.actionDetails || "").trim() || "تم حفظ إجراء المتابعة من لوحة الإشراف.";
     const actionType = normalizeActionType(body.actionType);
 
-    if (!taskId || !status || !actionTitle || !actionDetails) {
+    if (!taskId || !status) {
       return NextResponse.json({ error: "بيانات تحديث المهمة غير مكتملة" }, { status: 400 });
     }
 
