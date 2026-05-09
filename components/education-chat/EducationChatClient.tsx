@@ -332,6 +332,14 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
     }
   };
 
+  const handleDraftKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key !== "Enter" || event.shiftKey) return;
+    event.preventDefault();
+    if (!sending && (draft.trim() || attachment)) {
+      sendMessage();
+    }
+  };
+
   const startVoiceRecording = async () => {
     if (isRecording || sending) return;
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
@@ -690,6 +698,7 @@ export default function EducationChatClient({ mode, title, subtitle, backHref }:
                     <textarea
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
+                      onKeyDown={handleDraftKeyDown}
                       placeholder="اكتب رسالة..."
                       className="order-1 min-h-12 w-full min-w-0 basis-full resize-none rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm leading-7 outline-none sm:order-2 sm:w-auto sm:basis-auto sm:flex-1"
                     />

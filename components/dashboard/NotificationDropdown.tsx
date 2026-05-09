@@ -27,11 +27,15 @@ const toneClass: Record<NonNullable<NotificationItem["tone"]>, string> = {
 export default function NotificationDropdown({ title = "التنبيهات", items }: Props) {
   const [open, setOpen] = useState(false);
   const [hiddenKeys, setHiddenKeys] = useState<Record<string, boolean>>({});
-  const activeItems = useMemo(
+  const visibleItems = useMemo(
+    () => items.filter((item) => item.count > 0),
+    [items]
+  );
+  const badgeItems = useMemo(
     () => items.filter((item) => item.count > 0 && !hiddenKeys[`${item.key}:${item.count}`]),
     [hiddenKeys, items]
   );
-  const total = activeItems.reduce((sum, item) => sum + item.count, 0);
+  const total = badgeItems.reduce((sum, item) => sum + item.count, 0);
 
   useEffect(() => {
     const hidden: Record<string, boolean> = {};
@@ -44,11 +48,29 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
     setHiddenKeys(hidden);
   }, [items]);
 
+  const markVisibleItemsAsSeen = () => {
+    const nextHidden: Record<string, boolean> = {};
+    for (const item of visibleItems) {
+      const key = `${item.key}:${item.count}`;
+      window.localStorage.setItem(`alrahma-dashboard-notification:${key}`, "1");
+      nextHidden[key] = true;
+    }
+    if (Object.keys(nextHidden).length > 0) {
+      setHiddenKeys((prev) => ({ ...prev, ...nextHidden }));
+    }
+  };
+
   return (
     <div className="relative">
       <button
         type="button"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => {
+          setOpen((value) => {
+            const next = !value;
+            if (next) markVisibleItemsAsSeen();
+            return next;
+          });
+        }}
         className="relative rounded-full bg-white px-5 py-3 text-sm font-black text-[#0a3f2a] shadow-sm ring-1 ring-white/30 transition hover:bg-[#fffaf4]"
       >
         {title}
@@ -60,7 +82,7 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-30 mt-3 w-[min(24rem,calc(100vw-2rem))] overflow-hidden rounded-[1.5rem] border border-[#d8bf83] bg-white text-[#0a3f2a] shadow-2xl">
+        <div className="absolute right-0 z-30 mt-3 flex max-h-[min(34rem,calc(100vh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[1.5rem] border border-[#d8bf83] bg-white text-[#0a3f2a] shadow-2xl">
           <div className="flex items-center justify-between border-b border-[#e7d7b4] px-4 py-3">
             <p className="font-black">{title}</p>
             <button
@@ -71,13 +93,13 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
               إغلاق
             </button>
           </div>
-          <div className="max-h-96 space-y-2 overflow-auto p-3">
-            {activeItems.length === 0 ? (
+          <div className="min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain p-3">
+            {visibleItems.length === 0 ? (
               <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm font-bold text-[#0a3f2a]/65">
                 لا توجد تنبيهات جديدة الآن.
               </div>
             ) : (
-              activeItems.map((item) => (
+              visibleItems.map((item) => (
                 <Link
                   key={item.key}
                   href={item.href}
