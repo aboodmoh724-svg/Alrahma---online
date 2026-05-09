@@ -149,7 +149,11 @@ export async function POST(request: Request) {
     const body = await request.json();
     const rawFrom = String(body.from || body.fromNumber || body.phone || "").trim();
     const fromNumber = normalizeWhatsAppNumber(rawFrom);
-    const messageBody = String(body.body || body.message || "").trim();
+    const hasMedia = body.hasMedia === true;
+    const messageType = String(body.messageType || body.type || "").trim();
+    const messageBody =
+      String(body.body || body.message || "").trim() ||
+      (hasMedia ? "[رسالة وسائط بدون نص]" : "");
     const messageId = String(body.messageId || "").trim() || null;
     const channel = normalizeChannel(body.channel);
 
@@ -172,7 +176,11 @@ export async function POST(request: Request) {
         resolvedCategory === "GENERAL" && linked.latestOutgoing?.category
           ? linked.latestOutgoing.category
           : resolvedCategory,
-      raw: body,
+      raw: {
+        ...body,
+        hasMedia,
+        messageType: messageType || null,
+      },
       studentId: linked.studentId || linked.latestOutgoing?.studentId || null,
       registrationRequestId:
         linked.registrationRequestId || linked.latestOutgoing?.registrationRequestId || null,

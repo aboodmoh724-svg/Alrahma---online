@@ -56,6 +56,29 @@ function requireToken(req, res, next) {
   next();
 }
 
+function extractIncomingBody(message) {
+  const candidates = [
+    message.body,
+    message.caption,
+    message._data?.body,
+    message._data?.caption,
+    message._data?.pollName,
+    message._data?.selectedButtonId,
+    message._data?.selectedRowId,
+  ];
+
+  for (const candidate of candidates) {
+    const text = String(candidate || "").trim();
+    if (text) return text;
+  }
+
+  if (message.hasMedia) {
+    return "[رسالة وسائط بدون نص]";
+  }
+
+  return "";
+}
+
 const client = new Client({
   authStrategy: new LocalAuth({
     clientId,
@@ -111,10 +134,11 @@ async function forwardIncomingMessage(message) {
     messageId: message.id?._serialized || null,
     from: contactNumber ? `${contactNumber}@c.us` : message.from,
     fromId: message.from,
-    body: message.body || "",
+    body: extractIncomingBody(message),
     timestamp: message.timestamp || null,
     channel: whatsappChannel,
     hasMedia: Boolean(message.hasMedia),
+    messageType: message.type || message._data?.type || null,
   };
 
   try {
