@@ -28,6 +28,11 @@ const ADMIN_DASHBOARD_HIDDEN_SECTION_HREFS = new Set([
   "/remote/admin/circles",
   "/remote/admin/teachers",
   "/remote/admin/resources",
+  "/remote/admin/broadcasts",
+  "/remote/admin/messages",
+  "/remote/admin/reply-memory",
+  "/remote/admin/conversations",
+  "/remote/admin/escalated-messages",
   "/remote/supervision/dashboard",
 ]);
 
@@ -37,6 +42,12 @@ const sections: DashboardSection[] = [
     title: "إدارة التعليم والحلقات",
     description: "مدخل واحد للطلاب والمعلمين والحلقات والمسارات وملفات المسارات ومهام الإشراف.",
     tone: "bg-[#0f5a35] text-white",
+  },
+  {
+    href: "/remote/admin/communication",
+    title: "مركز الرسائل والواتساب",
+    description: "الرسائل الجماعية، قوالب الواتساب، الردود المحفوظة، ومتابعة المراسلات من مدخل واحد.",
+    tone: "bg-white text-[#0a3f2a]",
   },
   {
     href: "/remote/admin/supervisors",
@@ -443,6 +454,8 @@ export default async function RemoteAdminDashboardPage() {
             const badge =
               section.href === "/remote/admin/registrations"
                 ? newRegistrationsCount
+                : section.href === "/remote/admin/communication"
+                  ? escalatedMessagesCount
                 : section.href === "/remote/admin/escalated-messages"
                   ? escalatedMessagesCount
                   : section.href === "/finance"

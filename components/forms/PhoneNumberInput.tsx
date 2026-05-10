@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   joinInternationalPhone,
   normalizePhoneDigits,
@@ -90,6 +90,17 @@ export default function PhoneNumberInput({
   const [countryPickerOpen, setCountryPickerOpen] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
   const selectedCountry = getCountryOption(countryCode, selectedIso);
+
+  useEffect(() => {
+    const selectedStillMatches = PHONE_COUNTRIES.some(
+      (country) => country.code === countryCode && country.iso === selectedIso
+    );
+
+    if (!selectedStillMatches) {
+      setSelectedIso(PHONE_COUNTRIES.find((country) => country.code === countryCode)?.iso || "");
+    }
+  }, [countryCode, selectedIso]);
+
   const preferredCountries = useMemo(() => {
     const preferredSet = new Set(preferredCountryIsos);
     return PHONE_COUNTRIES.filter((country) => preferredSet.has(country.iso));

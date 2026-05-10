@@ -16,6 +16,37 @@ export function normalizePhoneDigits(value: unknown) {
   return digits;
 }
 
+export function normalizeInternationalPhone(value: unknown, defaultCountryCode = "90") {
+  const digits = normalizePhoneDigits(value);
+  if (!digits) return "";
+
+  const fallbackCountry = normalizePhoneDigits(defaultCountryCode) || "90";
+  if (digits.startsWith("0") && !digits.startsWith("00") && digits.length >= 9 && digits.length <= 11) {
+    return `${fallbackCountry}${digits.slice(1)}`;
+  }
+
+  const parts = splitInternationalPhone(digits, fallbackCountry);
+  let localNumber = normalizePhoneDigits(parts.localNumber);
+  const countryCode = normalizePhoneDigits(parts.countryCode) || fallbackCountry;
+
+  while (
+    localNumber.startsWith(countryCode) &&
+    localNumber.length > countryCode.length + 5
+  ) {
+    localNumber = localNumber.slice(countryCode.length);
+  }
+
+  if (localNumber.startsWith("00") && localNumber.length > 8) {
+    localNumber = localNumber.slice(2);
+  }
+
+  if (localNumber.startsWith("0") && localNumber.length > 8) {
+    localNumber = localNumber.slice(1);
+  }
+
+  return `${countryCode}${localNumber}`;
+}
+
 export function splitInternationalPhone(value: unknown, defaultCountryCode = "90") {
   const digits = normalizePhoneDigits(value);
   const fallbackCountry = normalizePhoneDigits(defaultCountryCode) || "90";
@@ -72,5 +103,5 @@ export function joinInternationalPhone(countryCode: unknown, localNumber: unknow
   const country = normalizePhoneDigits(countryCode);
   const local = normalizePhoneDigits(localNumber);
 
-  return `${country}${local}`;
+  return normalizeInternationalPhone(`${country}${local}`, country);
 }

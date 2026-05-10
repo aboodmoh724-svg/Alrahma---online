@@ -1,4 +1,5 @@
 import { appUrl } from "@/lib/app-url";
+import { normalizeInternationalPhone } from "@/lib/phone-number";
 import type { Prisma } from "@prisma/client";
 
 export type WhatsAppChannel = "REMOTE" | "ONSITE";
@@ -239,20 +240,7 @@ export function attendanceTemplateConfig(status: "PRESENT" | "ABSENT") {
 }
 
 export function normalizeWhatsAppNumber(raw: string) {
-  const digits = String(raw || "")
-    .trim()
-    .replace(/[^\d+]/g, "");
-
-  if (!digits) {
-    return null;
-  }
-
-  const normalized = digits.startsWith("+") ? digits.slice(1) : digits;
-  let justDigits = normalized.replace(/\D/g, "");
-
-  if (justDigits.startsWith("00")) {
-    justDigits = justDigits.slice(2);
-  }
+  const justDigits = normalizeInternationalPhone(raw);
 
   if (justDigits.length < 8) {
     return null;
