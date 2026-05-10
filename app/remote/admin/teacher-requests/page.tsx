@@ -94,6 +94,7 @@ export default function RemoteAdminTeacherRequestsPage() {
   const [requests, setRequests] = useState<TeacherRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [submittingId, setSubmittingId] = useState<string | null>(null);
+  const [clearingClosed, setClearingClosed] = useState(false);
   const [statusFilter, setStatusFilter] = useState("NEW");
   const [adminNotes, setAdminNotes] = useState<Record<string, string>>({});
   const [statusDrafts, setStatusDrafts] = useState<Record<string, TeacherRequest["status"]>>({});
@@ -161,6 +162,37 @@ export default function RemoteAdminTeacherRequestsPage() {
     }
   };
 
+  const clearClosedRequests = async () => {
+    const confirmed = window.confirm(
+      "هل تريد حذف سجل طلبات المعلمين المنتهية والمرفوضة؟ لن يتم حذف الطلبات الجديدة أو قيد المراجعة."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setClearingClosed(true);
+      const response = await fetch("/api/teacher-requests", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target: requestTarget, closedOnly: true }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر حذف سجل الطلبات المنتهية");
+        return;
+      }
+
+      await fetchRequests();
+      alert(`تم حذف ${data.deletedCount || 0} طلب من السجل المنتهي.`);
+    } catch (error) {
+      console.error("CLEAR CLOSED TEACHER REQUESTS ERROR =>", error);
+      alert("حدث خطأ أثناء حذف سجل الطلبات المنتهية");
+    } finally {
+      setClearingClosed(false);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-[#f6eee7] px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -200,6 +232,16 @@ export default function RemoteAdminTeacherRequestsPage() {
                 </option>
               ))}
             </select>
+            {requestTarget === "ADMIN" ? (
+              <button
+                type="button"
+                onClick={clearClosedRequests}
+                disabled={clearingClosed}
+                className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-700 disabled:opacity-60"
+              >
+                {clearingClosed ? "جارٍ المسح..." : "مسح السجل المنتهي"}
+              </button>
+            ) : null}
           </div>
 
           {loading ? (

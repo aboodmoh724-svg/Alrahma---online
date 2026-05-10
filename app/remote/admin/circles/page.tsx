@@ -22,6 +22,17 @@ type Circle = {
   };
 };
 
+type CircleDeleteRequest = {
+  id: string;
+  circleId: string;
+  circleName: string;
+  teacherName: string | null;
+  requestedByName: string;
+  reason: string | null;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+};
+
 export default function RemoteAdminCirclesPage() {
   const pathname = usePathname();
   const dashboardHref = pathname.startsWith("/remote/supervision/")
@@ -31,6 +42,8 @@ export default function RemoteAdminCirclesPage() {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [deleteRequests, setDeleteRequests] = useState<CircleDeleteRequest[]>([]);
+  const [reviewingRequestId, setReviewingRequestId] = useState<string | null>(null);
   const [editingCircleId, setEditingCircleId] = useState<string | null>(null);
   const [editData, setEditData] = useState({
     name: "",
@@ -49,13 +62,15 @@ export default function RemoteAdminCirclesPage() {
     try {
       setLoading(true);
 
-      const [teachersRes, circlesRes] = await Promise.all([
+      const [teachersRes, circlesRes, deleteRequestsRes] = await Promise.all([
         fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
         fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/circle-delete-requests", { cache: "no-store" }),
       ]);
 
       const teachersData = await teachersRes.json();
       const circlesData = await circlesRes.json();
+      const deleteRequestsData = await deleteRequestsRes.json();
 
       setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
       setCircles(
@@ -63,12 +78,52 @@ export default function RemoteAdminCirclesPage() {
           ? circlesData.circles.filter((circle: Circle) => circle.studyMode === "REMOTE")
           : []
       );
+      setDeleteRequests(
+        Array.isArray(deleteRequestsData.requests) ? deleteRequestsData.requests : []
+      );
     } catch (error) {
       console.error("FETCH CIRCLES PAGE DATA ERROR =>", error);
       setTeachers([]);
       setCircles([]);
+      setDeleteRequests([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const reviewDeleteRequest = async (
+    request: CircleDeleteRequest,
+    action: "APPROVE" | "REJECT"
+  ) => {
+    const adminNote = window.prompt(
+      action === "APPROVE"
+        ? `اعتماد حذف الحلقة "${request.circleName}". اكتب ملاحظة اختيارية.`
+        : `رفض طلب حذف الحلقة "${request.circleName}". اكتب سبب الرفض إن وجد.`
+    );
+
+    if (adminNote === null) return;
+
+    try {
+      setReviewingRequestId(request.id);
+      const response = await fetch("/api/circle-delete-requests", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId: request.id, action, adminNote }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر معالجة طلب حذف الحلقة");
+        return;
+      }
+
+      await fetchData();
+      alert(action === "APPROVE" ? "تم حذف الحلقة واعتماد الطلب." : "تم رفض طلب حذف الحلقة.");
+    } catch (error) {
+      console.error("REVIEW CIRCLE DELETE REQUEST ERROR =>", error);
+      alert("حدث خطأ أثناء معالجة طلب حذف الحلقة");
+    } finally {
+      setReviewingRequestId(null);
     }
   };
 
@@ -514,6 +569,64 @@ export default function RemoteAdminCirclesPage() {
             </div>
           </div>
         </div>
+
+        <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-200">
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">طلبات حذف الحلقات من الإشراف</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                لا يتم حذف أي حلقة من الإشراف مباشرة؛ تظهر هنا لاعتماد الإدارة.
+              </p>
+            </div>
+            <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-700">
+              {deleteRequests.filter((request) => request.status === "PENDING").length} بانتظار الاعتماد
+            </span>
+          </div>
+
+          {deleteRequests.filter((request) => request.status === "PENDING").length === 0 ? (
+            <div className="rounded-xl border border-dashed border-gray-300 p-5 text-center text-sm text-gray-500">
+              لا توجد طلبات حذف حلقات معلقة.
+            </div>
+          ) : (
+            <div className="grid gap-3 lg:grid-cols-2">
+              {deleteRequests
+                .filter((request) => request.status === "PENDING")
+                .map((request) => (
+                  <article key={request.id} className="rounded-xl bg-red-50 p-4 ring-1 ring-red-100">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <h3 className="font-bold text-gray-900">{request.circleName}</h3>
+                        <p className="mt-1 text-sm text-gray-600">
+                          المعلم: {request.teacherName || "بدون معلم"} - الطلب من: {request.requestedByName}
+                        </p>
+                        {request.reason ? (
+                          <p className="mt-2 text-sm leading-6 text-gray-700">{request.reason}</p>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          disabled={reviewingRequestId === request.id}
+                          onClick={() => reviewDeleteRequest(request, "APPROVE")}
+                          className="rounded-lg bg-red-700 px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                        >
+                          اعتماد الحذف
+                        </button>
+                        <button
+                          type="button"
+                          disabled={reviewingRequestId === request.id}
+                          onClick={() => reviewDeleteRequest(request, "REJECT")}
+                          className="rounded-lg border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-700 disabled:opacity-60"
+                        >
+                          رفض
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

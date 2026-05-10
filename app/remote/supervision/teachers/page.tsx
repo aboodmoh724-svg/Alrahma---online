@@ -27,6 +27,12 @@ type Circle = {
   };
 };
 
+type CircleDeleteRequest = {
+  id: string;
+  circleId: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+};
+
 type Student = {
   id: string;
   studentCode: string | null;
@@ -77,6 +83,8 @@ export default function RemoteSupervisionTeachersPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [creatingCircle, setCreatingCircle] = useState(false);
+  const [requestingDeleteCircleId, setRequestingDeleteCircleId] = useState<string | null>(null);
+  const [deleteRequests, setDeleteRequests] = useState<CircleDeleteRequest[]>([]);
   const [search, setSearch] = useState("");
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [circleForm, setCircleForm] = useState({
@@ -93,15 +101,17 @@ export default function RemoteSupervisionTeachersPage() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [teachersRes, circlesRes, studentsRes] = await Promise.all([
+        const [teachersRes, circlesRes, studentsRes, deleteRequestsRes] = await Promise.all([
           fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
           fetch("/api/circles?studyMode=REMOTE", { cache: "no-store" }),
           fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
+          fetch("/api/circle-delete-requests", { cache: "no-store" }),
         ]);
 
         const teachersData = await teachersRes.json();
         const circlesData = await circlesRes.json();
         const studentsData = await studentsRes.json();
+        const deleteRequestsData = await deleteRequestsRes.json();
 
         setTeachers(
           Array.isArray(teachersData.teachers)
@@ -122,11 +132,15 @@ export default function RemoteSupervisionTeachersPage() {
               )
             : []
         );
+        setDeleteRequests(
+          Array.isArray(deleteRequestsData.requests) ? deleteRequestsData.requests : []
+        );
       } catch (error) {
         console.error("FETCH SUPERVISION TEACHERS ERROR =>", error);
         setTeachers([]);
         setCircles([]);
         setStudents([]);
+        setDeleteRequests([]);
       } finally {
         setLoading(false);
       }
@@ -166,6 +180,11 @@ export default function RemoteSupervisionTeachersPage() {
   }, [students]);
 
   const circlesWithoutTeacher = circles.filter((circle) => !circle.teacher?.id);
+  const pendingDeleteCircleIds = new Set(
+    deleteRequests
+      .filter((request) => request.status === "PENDING")
+      .map((request) => request.circleId)
+  );
 
   const createCircle = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -221,6 +240,42 @@ export default function RemoteSupervisionTeachersPage() {
       periodLabel,
       ...(defaults ? defaults : {}),
     }));
+  };
+
+  const requestDeleteCircle = async (circle: Circle) => {
+    if (circle._count.students > 0) {
+      alert("لا يمكن طلب حذف حلقة بها طلاب. انقل الطلاب أولًا.");
+      return;
+    }
+
+    const reason = window.prompt(
+      `اكتب سبب طلب حذف الحلقة "${circle.name}"، أو اتركه فارغًا.`
+    );
+
+    if (reason === null) return;
+
+    try {
+      setRequestingDeleteCircleId(circle.id);
+      const response = await fetch("/api/circle-delete-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ circleId: circle.id, reason }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر إرسال طلب حذف الحلقة");
+        return;
+      }
+
+      setDeleteRequests((prev) => [data.request, ...prev]);
+      alert("تم إرسال طلب حذف الحلقة للإدارة.");
+    } catch (error) {
+      console.error("REQUEST DELETE CIRCLE ERROR =>", error);
+      alert("حدث خطأ أثناء إرسال طلب حذف الحلقة");
+    } finally {
+      setRequestingDeleteCircleId(null);
+    }
   };
 
   return (
@@ -461,6 +516,23 @@ export default function RemoteSupervisionTeachersPage() {
                                   لا يوجد رابط
                                 </span>
                               )}
+                              {circleStudents.length === 0 ? (
+                                <button
+                                  type="button"
+                                  onClick={() => requestDeleteCircle(circle)}
+                                  disabled={
+                                    requestingDeleteCircleId === circle.id ||
+                                    pendingDeleteCircleIds.has(circle.id)
+                                  }
+                                  className="rounded-xl border border-red-200 bg-white px-4 py-2 text-center text-xs font-black text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                  {pendingDeleteCircleIds.has(circle.id)
+                                    ? "طلب الحذف بانتظار الإدارة"
+                                    : requestingDeleteCircleId === circle.id
+                                      ? "جار إرسال الطلب..."
+                                      : "طلب حذف الحلقة"}
+                                </button>
+                              ) : null}
                             </div>
 
                             <div className="mt-3 flex flex-wrap gap-2">

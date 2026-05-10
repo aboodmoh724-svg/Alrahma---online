@@ -40,6 +40,7 @@ export default function RemoteAdminSupervisionTasksPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [deletingTaskId, setDeletingTaskId] = useState<string | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState<"ADMIN" | "ALL" | null>(null);
   const [formData, setFormData] = useState({
     studentId: "",
     title: "",
@@ -142,6 +143,39 @@ export default function RemoteAdminSupervisionTasksPage() {
     }
   };
 
+  const deleteTasksBulk = async (bulk: "ADMIN" | "ALL") => {
+    const confirmed = window.confirm(
+      bulk === "ALL"
+        ? "هل تريد مسح جميع مهام المتابعة الإشرافية الحالية؟ هذا لا يمس الطلاب أو المعلمين أو المالية."
+        : "هل تريد مسح المهام الإدارية فقط؟"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setBulkDeleting(bulk);
+      const response = await fetch("/api/supervision-tasks", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bulk }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "تعذر مسح المهام");
+        return;
+      }
+
+      await fetchData();
+      alert(`تم مسح ${data.deletedCount || 0} مهمة.`);
+    } catch (error) {
+      console.error("BULK DELETE SUPERVISION TASKS ERROR =>", error);
+      alert("حدث خطأ أثناء مسح المهام");
+    } finally {
+      setBulkDeleting(null);
+    }
+  };
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -214,7 +248,32 @@ export default function RemoteAdminSupervisionTasksPage() {
         </form>
 
         <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
-          <h2 className="text-2xl font-black text-[#1c2d31]">آخر المهام الإدارية</h2>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 className="text-2xl font-black text-[#1c2d31]">آخر المهام الإدارية</h2>
+              <p className="mt-1 text-sm text-[#1c2d31]/55">
+                أدوات المسح هنا للإدارة فقط، وليست ظاهرة في واجهة الإشراف.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => deleteTasksBulk("ADMIN")}
+                disabled={Boolean(bulkDeleting)}
+                className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-xs font-black text-[#8a661f] disabled:opacity-60"
+              >
+                {bulkDeleting === "ADMIN" ? "جارٍ المسح..." : "مسح المهام الإدارية"}
+              </button>
+              <button
+                type="button"
+                onClick={() => deleteTasksBulk("ALL")}
+                disabled={Boolean(bulkDeleting)}
+                className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-black text-red-700 disabled:opacity-60"
+              >
+                {bulkDeleting === "ALL" ? "جارٍ المسح..." : "مسح كل مهام المتابعة"}
+              </button>
+            </div>
+          </div>
           {loading ? (
             <div className="mt-5 rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
               جاري التحميل...

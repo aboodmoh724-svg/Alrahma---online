@@ -476,3 +476,38 @@ export async function PATCH(req: Request) {
     );
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const user = await getCurrentRemoteUser();
+
+    if (!user || user.role !== "ADMIN") {
+      return NextResponse.json({ error: "غير مصرح لك بحذف سجل طلبات المعلمين" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const target = normalizeRequestTarget(body.target);
+    const closedOnly = body.closedOnly !== false;
+
+    const deleted = await prisma.teacherRequest.deleteMany({
+      where: {
+        target,
+        ...(closedOnly
+          ? {
+              status: {
+                in: ["RESOLVED", "REJECTED"],
+              },
+            }
+          : {}),
+      },
+    });
+
+    return NextResponse.json({ success: true, deletedCount: deleted.count });
+  } catch (error) {
+    console.error("DELETE TEACHER REQUESTS ERROR =>", error);
+    return NextResponse.json(
+      { error: "حدث خطأ أثناء حذف سجل طلبات المعلمين" },
+      { status: 500 }
+    );
+  }
+}

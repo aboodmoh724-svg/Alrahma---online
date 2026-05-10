@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
     console.error("GET TEACHERS ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء جلب المعلمين" },
+      { error: "Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø¬Ù„Ø¨ Ø§Ù„Ù…Ø¹Ù„Ù…ÙŠÙ†" },
       { status: 500 }
     );
   }
@@ -71,19 +71,19 @@ export async function POST(req: Request) {
     const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!fullName) {
-      return NextResponse.json({ error: "اسم المعلم مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ø§Ø³Ù… Ø§Ù„Ù…Ø¹Ù„Ù… Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
     if (!email) {
-      return NextResponse.json({ error: "البريد الإلكتروني مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
     if (!password) {
-      return NextResponse.json({ error: "كلمة المرور مطلوبة" }, { status: 400 });
+      return NextResponse.json({ error: "ÙƒÙ„Ù…Ø© Ø§Ù„Ù…Ø±ÙˆØ± Ù…Ø·Ù„ÙˆØ¨Ø©" }, { status: 400 });
     }
 
     if (!studyMode) {
-      return NextResponse.json({ error: "نوع الدراسة غير صالح" }, { status: 400 });
+      return NextResponse.json({ error: "Ù†ÙˆØ¹ Ø§Ù„Ø¯Ø±Ø§Ø³Ø© ØºÙŠØ± ØµØ§Ù„Ø­" }, { status: 400 });
     }
 
     const existingUser = await prisma.user.findUnique({
@@ -97,7 +97,7 @@ export async function POST(req: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "هذا البريد مستخدم مسبقًا" },
+        { error: "Ù‡Ø°Ø§ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ù…Ø³ØªØ®Ø¯Ù… Ù…Ø³Ø¨Ù‚Ù‹Ø§" },
         { status: 400 }
       );
     }
@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       (await isMessageAutomationEnabled("TEACHER_WELCOME_WHATSAPP"))
     ) {
       try {
-        const platformLabel = studyMode === "REMOTE" ? "التعليم عن بعد" : "التعليم الحضوري";
+        const platformLabel = studyMode === "REMOTE" ? "Ø§Ù„ØªØ¹Ù„ÙŠÙ… Ø¹Ù† Ø¨Ø¹Ø¯" : "Ø§Ù„ØªØ¹Ù„ÙŠÙ… Ø§Ù„Ø­Ø¶ÙˆØ±ÙŠ";
         const loginUrl =
           studyMode === "REMOTE"
             ? appUrl("/remote/teacher/login")
@@ -161,7 +161,7 @@ export async function POST(req: Request) {
         whatsappSent = true;
       } catch (whatsappError) {
         console.error("TEACHER WELCOME WHATSAPP ERROR =>", whatsappError);
-        whatsappWarning = "تم إنشاء المعلم، لكن تعذر إرسال رسالة واتساب الترحيبية حاليًا.";
+        whatsappWarning = "ØªÙ… Ø¥Ù†Ø´Ø§Ø¡ Ø§Ù„Ù…Ø¹Ù„Ù…ØŒ Ù„ÙƒÙ† ØªØ¹Ø°Ø± Ø¥Ø±Ø³Ø§Ù„ Ø±Ø³Ø§Ù„Ø© ÙˆØ§ØªØ³Ø§Ø¨ Ø§Ù„ØªØ±Ø­ÙŠØ¨ÙŠØ© Ø­Ø§Ù„ÙŠÙ‹Ø§.";
       }
     }
 
@@ -175,7 +175,7 @@ export async function POST(req: Request) {
     console.error("CREATE TEACHER ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء إضافة المعلم" },
+      { error: "Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø¥Ø¶Ø§ÙØ© Ø§Ù„Ù…Ø¹Ù„Ù…" },
       { status: 500 }
     );
   }
@@ -195,15 +195,15 @@ export async function PATCH(req: Request) {
     const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!teacherId) {
-      return NextResponse.json({ error: "المعلم مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ø§Ù„Ù…Ø¹Ù„Ù… Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
     if (!fullName) {
-      return NextResponse.json({ error: "اسم المعلم مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ø§Ø³Ù… Ø§Ù„Ù…Ø¹Ù„Ù… Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
     if (!email) {
-      return NextResponse.json({ error: "البريد الإلكتروني مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ø§Ù„Ø¨Ø±ÙŠØ¯ Ø§Ù„Ø¥Ù„ÙƒØªØ±ÙˆÙ†ÙŠ Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
     const teacher = await prisma.user.findFirst({
@@ -218,7 +218,7 @@ export async function PATCH(req: Request) {
     });
 
     if (!teacher) {
-      return NextResponse.json({ error: "المعلم غير موجود" }, { status: 404 });
+      return NextResponse.json({ error: "Ø§Ù„Ù…Ø¹Ù„Ù… ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯" }, { status: 404 });
     }
 
     const emailOwner = await prisma.user.findUnique({
@@ -232,7 +232,7 @@ export async function PATCH(req: Request) {
 
     if (emailOwner && emailOwner.id !== teacher.id) {
       return NextResponse.json(
-        { error: "هذا البريد مستخدم لمستخدم آخر" },
+        { error: "Ù‡Ø°Ø§ Ø§Ù„Ø¨Ø±ÙŠØ¯ Ù…Ø³ØªØ®Ø¯Ù… Ù„Ù…Ø³ØªØ®Ø¯Ù… Ø¢Ø®Ø±" },
         { status: 400 }
       );
     }
@@ -273,7 +273,7 @@ export async function PATCH(req: Request) {
     console.error("UPDATE TEACHER ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء تحديث بيانات المعلم" },
+      { error: "Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ ØªØ­Ø¯ÙŠØ« Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ø¹Ù„Ù…" },
       { status: 500 }
     );
   }
@@ -286,7 +286,7 @@ export async function DELETE(req: Request) {
     const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!teacherId) {
-      return NextResponse.json({ error: "المعلم مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "Ø§Ù„Ù…Ø¹Ù„Ù… Ù…Ø·Ù„ÙˆØ¨" }, { status: 400 });
     }
 
     const teacher = await prisma.user.findFirst({
@@ -309,6 +309,16 @@ export async function DELETE(req: Request) {
             financeAuditLogs: true,
           },
         },
+        circles: {
+          select: {
+            id: true,
+            _count: {
+              select: {
+                students: true,
+              },
+            },
+          },
+        },
         compensationRule: {
           select: {
             id: true,
@@ -318,33 +328,70 @@ export async function DELETE(req: Request) {
     });
 
     if (!teacher) {
-      return NextResponse.json({ error: "المعلم غير موجود" }, { status: 404 });
+      return NextResponse.json({ error: "Ø§Ù„Ù…Ø¹Ù„Ù… ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯" }, { status: 404 });
     }
 
-    if (
-      teacher._count.students > 0 ||
-      teacher._count.circles > 0 ||
-      teacher._count.reports > 0 ||
-      teacher._count.zoomLinks > 0 ||
-      teacher._count.trackResources > 0 ||
-      teacher._count.teacherPayouts > 0 ||
-      teacher._count.teacherAttendances > 0 ||
-      teacher._count.financeAuditLogs > 0 ||
-      teacher.compensationRule
-    ) {
+    const circlesWithStudents = teacher.circles.filter(
+      (circle) => circle._count.students > 0
+    );
+    const blockers = [
+      teacher._count.students > 0 ? `${teacher._count.students} Ø·Ø§Ù„Ø¨` : "",
+      circlesWithStudents.length > 0
+        ? `${circlesWithStudents.length} Ø­Ù„Ù‚Ø© Ø¨Ù‡Ø§ Ø·Ù„Ø§Ø¨`
+        : "",
+      teacher._count.reports > 0 ? `${teacher._count.reports} ØªÙ‚Ø±ÙŠØ±` : "",
+      teacher._count.teacherPayouts > 0 ? `${teacher._count.teacherPayouts} Ø³Ø¬Ù„ ØµØ±Ù Ù…Ø§Ù„ÙŠ` : "",
+      teacher._count.teacherAttendances > 0
+        ? `${teacher._count.teacherAttendances} Ø³Ø¬Ù„ Ø­Ø¶ÙˆØ± Ù„Ù„Ù…Ø¹Ù„Ù…`
+        : "",
+      teacher._count.financeAuditLogs > 0
+        ? `${teacher._count.financeAuditLogs} Ø³Ø¬Ù„ ØªØ¯Ù‚ÙŠÙ‚ Ù…Ø§Ù„ÙŠ`
+        : "",
+      teacher.compensationRule ? "Ù‚Ø§Ø¹Ø¯Ø© Ù…Ø³ØªØ­Ù‚Ø§Øª Ù…Ø§Ù„ÙŠØ©" : "",
+    ].filter(Boolean);
+
+    if (blockers.length > 0) {
       return NextResponse.json(
         {
-          error:
-            "لا يمكن حذف هذا المعلم نهائيا لأنه ما زال مرتبطا بطلاب أو حلقات أو تقارير أو بيانات مالية/إدارية. انقل أو احذف الارتباطات أولا ثم أعد المحاولة.",
+          error: `Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ù…Ø¹Ù„Ù… Ø­Ø§Ù„ÙŠÙ‹Ø§ Ù„ÙˆØ¬ÙˆØ¯ Ø§Ø±ØªØ¨Ø§Ø·Ø§Øª ÙØ¹Ù„ÙŠØ©: ${blockers.join("ØŒ ")}. Ø§Ù„Ø­Ù„Ù‚Ø§Øª Ø§Ù„ÙØ§Ø±ØºØ© Ù„Ø§ ØªÙ…Ù†Ø¹ Ø§Ù„Ø­Ø°Ù ÙˆØ³ÙŠØªÙ… ÙÙƒ Ø±Ø¨Ø·Ù‡Ø§ ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‹Ø§.`,
         },
         { status: 400 }
       );
     }
 
-    await prisma.user.delete({
-      where: {
-        id: teacher.id,
-      },
+    await prisma.$transaction(async (tx) => {
+      await tx.circle.updateMany({
+        where: {
+          teacherId: teacher.id,
+        },
+        data: {
+          teacherId: null,
+        },
+      });
+
+      await tx.zoomLink.updateMany({
+        where: {
+          userId: teacher.id,
+        },
+        data: {
+          userId: null,
+        },
+      });
+
+      await tx.trackResource.updateMany({
+        where: {
+          teacherId: teacher.id,
+        },
+        data: {
+          teacherId: null,
+        },
+      });
+
+      await tx.user.delete({
+        where: {
+          id: teacher.id,
+        },
+      });
     });
 
     return NextResponse.json({
@@ -354,7 +401,7 @@ export async function DELETE(req: Request) {
     console.error("DELETE TEACHER ERROR =>", error);
 
     return NextResponse.json(
-      { error: "حدث خطأ أثناء حذف المعلم" },
+      { error: "Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ Ø­Ø°Ù Ø§Ù„Ù…Ø¹Ù„Ù…" },
       { status: 500 }
     );
   }

@@ -267,6 +267,19 @@ export async function DELETE(req: Request) {
 
     const body = await req.json();
     const taskId = String(body.taskId || "").trim();
+    const bulk = String(body.bulk || "").trim();
+
+    if (bulk === "ALL") {
+      const deleted = await prisma.supervisionTask.deleteMany({});
+      return NextResponse.json({ success: true, deletedCount: deleted.count });
+    }
+
+    if (bulk === "ADMIN") {
+      const deleted = await prisma.supervisionTask.deleteMany({
+        where: { source: "ADMIN" },
+      });
+      return NextResponse.json({ success: true, deletedCount: deleted.count });
+    }
 
     if (!taskId) {
       return NextResponse.json({ error: "لم يتم تحديد المهمة" }, { status: 400 });
