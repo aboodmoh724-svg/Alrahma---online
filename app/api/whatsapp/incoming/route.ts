@@ -292,7 +292,17 @@ export async function GET(request: Request) {
           ? { followUpStatus: status as "NEW" | "IN_REVIEW" | "REPLIED" | "CLOSED" | "ESCALATED" }
           : openOnly
             ? {
-                followUpStatus: { in: ["NEW", "IN_REVIEW", "ESCALATED"] as const },
+                followUpStatus: { in: ["NEW", "IN_REVIEW"] as const },
+                OR: [
+                  { lastOutgoingMessageId: null },
+                  {
+                    lastOutgoingMessage: {
+                      is: {
+                        source: { not: "HUMAN_REPLY" },
+                      },
+                    },
+                  },
+                ],
               }
             : {}),
       },
@@ -326,6 +336,7 @@ export async function GET(request: Request) {
           select: {
             id: true,
             body: true,
+            source: true,
             category: true,
             createdAt: true,
           },

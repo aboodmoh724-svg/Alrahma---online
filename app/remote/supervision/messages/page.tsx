@@ -36,7 +36,7 @@ type IncomingMessage = {
   createdAt: string;
   student: { fullName: string; parentWhatsapp: string | null } | null;
   registrationRequest: { studentName: string; parentWhatsapp: string } | null;
-  lastOutgoingMessage: { body: string; category: IncomingMessage["category"]; createdAt: string } | null;
+  lastOutgoingMessage: { body: string; source?: string; category: IncomingMessage["category"]; createdAt: string } | null;
   canReplyDirectly?: boolean;
   contactName?: string | null;
   contactRole?: "PARENT" | "TEACHER" | "UNKNOWN";
@@ -151,7 +151,11 @@ export default function RemoteSupervisionMessagesPage() {
       setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
       setIncomingMessages(
         Array.isArray(incomingData.messages)
-          ? incomingData.messages.filter((message: IncomingMessage) => message.followUpStatus !== "ESCALATED")
+          ? incomingData.messages.filter(
+              (message: IncomingMessage) =>
+                (message.followUpStatus === "NEW" || message.followUpStatus === "IN_REVIEW") &&
+                message.lastOutgoingMessage?.source !== "HUMAN_REPLY"
+            )
           : []
       );
     } catch (error) {
@@ -389,7 +393,7 @@ export default function RemoteSupervisionMessagesPage() {
           <div className="mt-4 grid gap-3 xl:grid-cols-2">
             {incomingMessages.length === 0 ? (
               <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm font-bold text-[#1c2d31]/60">
-                لا توجد رسائل واردة جديدة.
+                لا توجد رسائل واردة بانتظار الرد.
               </div>
             ) : (
               incomingMessages.map((message) => (
