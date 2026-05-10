@@ -11,6 +11,7 @@ type CircleDeleteRequestItem = {
   circleId: string;
   circleName: string;
   teacherName: string | null;
+  activeStudentsCount: number | null;
   requestedById: string;
   requestedByName: string;
   reason: string | null;
@@ -39,6 +40,10 @@ function parseItems(value: unknown): CircleDeleteRequestItem[] {
         circleName: String(record.circleName || ""),
         teacherName:
           typeof record.teacherName === "string" ? record.teacherName : null,
+        activeStudentsCount:
+          typeof record.activeStudentsCount === "number"
+            ? record.activeStudentsCount
+            : null,
         requestedById: String(record.requestedById || ""),
         requestedByName: String(record.requestedByName || ""),
         reason: typeof record.reason === "string" ? record.reason : null,
@@ -158,12 +163,6 @@ export async function POST(req: Request) {
       },
     });
 
-    if (activeStudentsCount > 0) {
-      return NextResponse.json(
-        { error: "لا يمكن طلب حذف حلقة بها طلاب. انقل الطلاب أولًا." },
-        { status: 400 }
-      );
-    }
 
     const requests = await getStoredItems();
     const existing = requests.find(
@@ -182,6 +181,7 @@ export async function POST(req: Request) {
       circleId: circle.id,
       circleName: circle.name,
       teacherName: circle.teacher?.fullName || null,
+      activeStudentsCount,
       requestedById: user.id,
       requestedByName: user.fullName,
       reason: reason || null,

@@ -30,6 +30,7 @@ type Circle = {
 type CircleDeleteRequest = {
   id: string;
   circleId: string;
+  activeStudentsCount: number | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
 };
 
@@ -243,13 +244,8 @@ export default function RemoteSupervisionTeachersPage() {
   };
 
   const requestDeleteCircle = async (circle: Circle) => {
-    if (circle._count.students > 0) {
-      alert("لا يمكن طلب حذف حلقة بها طلاب. انقل الطلاب أولًا.");
-      return;
-    }
-
     const reason = window.prompt(
-      `اكتب سبب طلب حذف الحلقة "${circle.name}"، أو اتركه فارغًا.`
+      `اكتب سبب طلب حذف الحلقة "${circle.name}"، أو اتركه فارغًا. سيتم إرسال الطلب للإدارة للمراجعة.`
     );
 
     if (reason === null) return;
@@ -473,7 +469,6 @@ export default function RemoteSupervisionTeachersPage() {
                         type="button"
                         onClick={() => requestDeleteCircle(circle)}
                         disabled={
-                          circleStudents.length > 0 ||
                           requestingDeleteCircleId === circle.id ||
                           pendingDeleteCircleIds.has(circle.id)
                         }
@@ -572,23 +567,21 @@ export default function RemoteSupervisionTeachersPage() {
                                   لا يوجد رابط
                                 </span>
                               )}
-                              {circleStudents.length === 0 ? (
-                                <button
-                                  type="button"
-                                  onClick={() => requestDeleteCircle(circle)}
-                                  disabled={
-                                    requestingDeleteCircleId === circle.id ||
-                                    pendingDeleteCircleIds.has(circle.id)
-                                  }
-                                  className="rounded-xl border border-red-200 bg-white px-4 py-2 text-center text-xs font-black text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                                >
-                                  {pendingDeleteCircleIds.has(circle.id)
-                                    ? "طلب الحذف بانتظار الإدارة"
-                                    : requestingDeleteCircleId === circle.id
-                                      ? "جار إرسال الطلب..."
-                                      : "طلب حذف الحلقة"}
-                                </button>
-                              ) : null}
+                              <button
+                                type="button"
+                                onClick={() => requestDeleteCircle(circle)}
+                                disabled={
+                                  requestingDeleteCircleId === circle.id ||
+                                  pendingDeleteCircleIds.has(circle.id)
+                                }
+                                className="rounded-xl border border-red-200 bg-white px-4 py-2 text-center text-xs font-black text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                {pendingDeleteCircleIds.has(circle.id)
+                                  ? "طلب الحذف بانتظار الإدارة"
+                                  : requestingDeleteCircleId === circle.id
+                                    ? "جار إرسال الطلب..."
+                                    : "طلب حذف الحلقة"}
+                              </button>
                             </div>
 
                             <div className="mt-3 flex flex-wrap gap-2">

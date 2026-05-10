@@ -377,6 +377,75 @@ export async function DELETE(req: Request) {
     }
 
     await prisma.$transaction(async (tx) => {
+      await tx.educationConversation.updateMany({
+        where: {
+          teacherId: teacher.id,
+        },
+        data: {
+          teacherId: null,
+        },
+      });
+
+      await tx.educationMessage.updateMany({
+        where: {
+          senderUserId: teacher.id,
+        },
+        data: {
+          senderUserId: null,
+        },
+      });
+
+      await tx.teacherRequest.updateMany({
+        where: {
+          reviewedBy: teacher.id,
+        },
+        data: {
+          reviewedBy: null,
+        },
+      });
+
+      await tx.supervisionTask.updateMany({
+        where: {
+          createdById: teacher.id,
+        },
+        data: {
+          createdById: null,
+        },
+      });
+
+      await tx.studentFollowUpAction.updateMany({
+        where: {
+          actorId: teacher.id,
+        },
+        data: {
+          actorId: null,
+        },
+      });
+
+      await tx.teacherVisitReport.deleteMany({
+        where: {
+          OR: [{ teacherId: teacher.id }, { supervisorId: teacher.id }],
+        },
+      });
+
+      await tx.teacherRequest.deleteMany({
+        where: {
+          teacherId: teacher.id,
+        },
+      });
+
+      await tx.userNotification.deleteMany({
+        where: {
+          userId: teacher.id,
+        },
+      });
+
+      await tx.teacherAttendance.deleteMany({
+        where: {
+          teacherId: teacher.id,
+        },
+      });
+
       await tx.circle.updateMany({
         where: {
           teacherId: teacher.id,

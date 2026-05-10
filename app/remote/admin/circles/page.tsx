@@ -27,6 +27,7 @@ type CircleDeleteRequest = {
   circleId: string;
   circleName: string;
   teacherName: string | null;
+  activeStudentsCount: number | null;
   requestedByName: string;
   reason: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
@@ -599,6 +600,11 @@ export default function RemoteAdminCirclesPage() {
                         <p className="mt-1 text-sm text-gray-600">
                           المعلم: {request.teacherName || "بدون معلم"} - الطلب من: {request.requestedByName}
                         </p>
+                        {typeof request.activeStudentsCount === "number" && request.activeStudentsCount > 0 ? (
+                          <p className="mt-2 rounded-lg bg-white px-3 py-2 text-xs font-bold text-red-700 ring-1 ring-red-100">
+                            في الحلقة {request.activeStudentsCount} طالب نشط. انقل الطلاب قبل اعتماد الحذف النهائي.
+                          </p>
+                        ) : null}
                         {request.reason ? (
                           <p className="mt-2 text-sm leading-6 text-gray-700">{request.reason}</p>
                         ) : null}
