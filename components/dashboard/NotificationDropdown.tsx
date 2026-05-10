@@ -82,7 +82,14 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
       </button>
 
       {open ? (
-        <div className="absolute right-0 z-30 mt-3 flex max-h-[min(34rem,calc(100vh-8rem))] w-[min(24rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-[1.5rem] border border-[#d8bf83] bg-white text-[#0a3f2a] shadow-2xl">
+        <>
+        <button
+          type="button"
+          aria-label="إغلاق التنبيهات"
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 z-[80] cursor-default bg-transparent"
+        />
+        <div className="fixed left-1/2 top-20 z-[90] flex max-h-[calc(100dvh-6rem)] w-[min(30rem,calc(100vw-1rem))] -translate-x-1/2 flex-col overflow-hidden rounded-[1.5rem] border border-[#d8bf83] bg-white text-[#0a3f2a] shadow-2xl sm:top-24">
           <div className="flex items-center justify-between border-b border-[#e7d7b4] px-4 py-3">
             <p className="font-black">{title}</p>
             <button
@@ -127,6 +134,7 @@ export default function NotificationDropdown({ title = "التنبيهات", ite
             )}
           </div>
         </div>
+        </>
       ) : null}
     </div>
   );
