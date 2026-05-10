@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 type Student = {
@@ -133,39 +133,44 @@ export default function RemoteSupervisionMessagesPage() {
           ? selectedTeachers.filter((teacher) => teacher.whatsapp).length
           : selectedStudents.filter((student) => student.parentWhatsapp).length;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const [studentsResponse, teachersResponse, incomingResponse] = await Promise.all([
-          fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
-          fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
-          fetch("/api/whatsapp/incoming?channel=REMOTE&openOnly=true&limit=80", { cache: "no-store" }),
-        ]);
-        const [studentsData, teachersData, incomingData] = await Promise.all([
-          studentsResponse.json(),
-          teachersResponse.json(),
-          incomingResponse.json(),
-        ]);
+  const fetchData = useCallback(async (showSpinner = true) => {
+    try {
+      if (showSpinner) setLoading(true);
+      const [studentsResponse, teachersResponse, incomingResponse] = await Promise.all([
+        fetch("/api/students?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/teachers?studyMode=REMOTE", { cache: "no-store" }),
+        fetch("/api/whatsapp/incoming?channel=REMOTE&openOnly=true&limit=80", { cache: "no-store" }),
+      ]);
+      const [studentsData, teachersData, incomingData] = await Promise.all([
+        studentsResponse.json(),
+        teachersResponse.json(),
+        incomingResponse.json(),
+      ]);
 
-        setStudents(Array.isArray(studentsData.students) ? studentsData.students : []);
-        setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
-        setIncomingMessages(
-          Array.isArray(incomingData.messages)
-            ? incomingData.messages.filter((message: IncomingMessage) => message.followUpStatus !== "ESCALATED")
-            : []
-        );
-      } catch (error) {
-        console.error("FETCH SUPERVISION MESSAGE RECIPIENTS ERROR =>", error);
-        setStudents([]);
-        setTeachers([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
+      setStudents(Array.isArray(studentsData.students) ? studentsData.students : []);
+      setTeachers(Array.isArray(teachersData.teachers) ? teachersData.teachers : []);
+      setIncomingMessages(
+        Array.isArray(incomingData.messages)
+          ? incomingData.messages.filter((message: IncomingMessage) => message.followUpStatus !== "ESCALATED")
+          : []
+      );
+    } catch (error) {
+      console.error("FETCH SUPERVISION MESSAGE RECIPIENTS ERROR =>", error);
+      setStudents([]);
+      setTeachers([]);
+    } finally {
+      if (showSpinner) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+    const timer = window.setInterval(() => {
+      fetchData(false);
+    }, 15000);
+
+    return () => window.clearInterval(timer);
+  }, [fetchData]);
 
   const markIncomingAsRead = async (messageId: string) => {
     try {
@@ -373,6 +378,13 @@ export default function RemoteSupervisionMessagesPage() {
             <span className="rounded-full bg-[#0a3f2a] px-4 py-2 text-sm font-black text-white">
               {incomingMessages.length}
             </span>
+            <button
+              type="button"
+              onClick={() => fetchData()}
+              className="rounded-full border border-[#d8bf83] bg-white px-4 py-2 text-sm font-black text-[#0a3f2a]"
+            >
+              تحديث الرسائل
+            </button>
           </div>
           <div className="mt-4 grid gap-3 xl:grid-cols-2">
             {incomingMessages.length === 0 ? (

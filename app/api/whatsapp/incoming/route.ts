@@ -283,7 +283,6 @@ export async function GET(request: Request) {
     const status = String(url.searchParams.get("status") || "").trim();
     const limit = Math.min(Math.max(Number(url.searchParams.get("limit") || 80), 1), 200);
     const validStatuses = ["NEW", "IN_REVIEW", "REPLIED", "CLOSED", "ESCALATED"];
-    const repliedOutgoingSources = ["AUTO_REPLY", "HUMAN_REPLY"];
 
     const messages = await prisma.whatsAppIncomingMessage.findMany({
       where: {
@@ -294,13 +293,6 @@ export async function GET(request: Request) {
           : openOnly
             ? {
                 followUpStatus: { in: ["NEW", "IN_REVIEW", "ESCALATED"] as const },
-                NOT: {
-                  lastOutgoingMessage: {
-                    is: {
-                      source: { in: repliedOutgoingSources },
-                    },
-                  },
-                },
               }
             : {}),
       },

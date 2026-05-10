@@ -135,7 +135,14 @@ client.on("disconnected", (reason) => {
 });
 
 async function forwardIncomingMessage(message) {
-  if (!incomingWebhookUrl || message.fromMe || String(message.from || "").includes("@g.us")) {
+  const from = String(message.from || "");
+  if (
+    !incomingWebhookUrl ||
+    message.fromMe ||
+    from.includes("@g.us") ||
+    from === "status@broadcast" ||
+    String(message.id?._serialized || "").includes("status@broadcast")
+  ) {
     return;
   }
 
