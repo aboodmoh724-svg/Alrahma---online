@@ -392,7 +392,6 @@ export async function DELETE(req: Request) {
         ? `${teacher._count.financeAuditLogs} سجل تدقيق مالي`
         : "",
       teacher._count.teacherPayouts > 0 ? `${teacher._count.teacherPayouts} سجل صرف مالي` : "",
-      teacher.compensationRule ? "قاعدة مستحقات مالية" : "",
     ].filter(Boolean);
 
     if (blockers.length > 0) {
