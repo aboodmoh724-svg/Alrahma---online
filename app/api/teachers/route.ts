@@ -404,12 +404,9 @@ export async function DELETE(req: Request) {
     }
 
     await prisma.$transaction(async (tx) => {
-      await tx.educationConversation.updateMany({
+      await tx.educationConversation.deleteMany({
         where: {
           teacherId: teacher.id,
-        },
-        data: {
-          teacherId: null,
         },
       });
 

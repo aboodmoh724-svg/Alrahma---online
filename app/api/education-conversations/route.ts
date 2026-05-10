@@ -118,9 +118,10 @@ export async function GET(request: Request) {
         const [conversations, teachers, students] = await Promise.all([
           prisma.educationConversation.findMany({
             where: {
-              type: {
-                in: ["SUPERVISION", "SUPERVISION_TEACHER"],
-              },
+              OR: [
+                { type: "SUPERVISION" },
+                { type: "SUPERVISION_TEACHER", teacherId: { not: null } },
+              ],
             },
             include: conversationInclude(),
             orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
@@ -173,6 +174,12 @@ export async function GET(request: Request) {
       }
 
       const conversations = await prisma.educationConversation.findMany({
+        where: {
+          OR: [
+            { type: { not: "SUPERVISION_TEACHER" } },
+            { teacherId: { not: null } },
+          ],
+        },
         include: conversationInclude(),
         orderBy: [{ lastMessageAt: "desc" }, { updatedAt: "desc" }],
         take: 200,
