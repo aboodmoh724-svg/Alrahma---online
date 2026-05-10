@@ -1,6 +1,7 @@
 ﻿import Link from "next/link";
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import LogoutButton from "@/components/auth/LogoutButton";
 import NotificationDropdown from "@/components/dashboard/NotificationDropdown";
 import DashboardSectionLink from "@/components/supervision/DashboardSectionLink";
@@ -68,6 +69,10 @@ async function getCurrentSupervisor() {
 
 export default async function RemoteSupervisionDashboardPage() {
   const supervisor = await getCurrentSupervisor();
+
+  if (!supervisor) {
+    redirect("/remote/supervision/login");
+  }
 
   const [
     studentsCount,

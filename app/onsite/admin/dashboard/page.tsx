@@ -1,6 +1,9 @@
 ﻿import Link from "next/link";
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import LogoutButton from "@/components/auth/LogoutButton";
+import { prisma } from "@/lib/prisma";
 
 const sections = [
   {
@@ -47,7 +50,32 @@ const sections = [
   },
 ];
 
-export default function OnsiteAdminDashboardPage() {
+async function getCurrentOnsiteAdmin() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: "ADMIN",
+      studyMode: "ONSITE",
+      isActive: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
+export default async function OnsiteAdminDashboardPage() {
+  const admin = await getCurrentOnsiteAdmin();
+
+  if (!admin) {
+    redirect("/onsite/admin/login");
+  }
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">

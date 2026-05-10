@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
@@ -6,6 +7,25 @@ import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 function normalizeStudyMode(value: unknown) {
   if (value === "REMOTE" || value === "ONSITE") return value;
   return undefined;
+}
+
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      role: true,
+      studyMode: true,
+    },
+  });
 }
 
 function normalizeTrack(value: unknown) {
@@ -25,11 +45,19 @@ function normalizeTrack(value: unknown) {
 
 export async function GET(req: Request) {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "الرجاء تسجيل الدخول أولًا" }, { status: 401 });
+    }
+
     const url = new URL(req.url);
     const studyMode = normalizeStudyMode(url.searchParams.get("studyMode"));
+    const effectiveStudyMode = studyMode || user.studyMode;
     const circles = await prisma.circle.findMany({
       where: {
-        ...(studyMode ? { studyMode } : {}),
+        studyMode: effectiveStudyMode,
+        ...(user.role === "TEACHER" ? { teacherId: user.id } : {}),
       },
       orderBy: {
         createdAt: "desc",

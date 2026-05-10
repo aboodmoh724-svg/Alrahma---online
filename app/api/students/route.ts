@@ -22,6 +22,10 @@ export async function GET(req: Request) {
         })
       : null;
 
+    if (!user) {
+      return NextResponse.json({ error: "الرجاء تسجيل الدخول أولًا" }, { status: 401 });
+    }
+
     const students = await prisma.student.findMany({
       where:
         user?.role === "TEACHER"

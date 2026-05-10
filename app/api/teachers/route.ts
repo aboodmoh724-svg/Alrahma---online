@@ -1,4 +1,5 @@
 ﻿import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
@@ -15,15 +16,42 @@ function normalizeStudyMode(value: unknown) {
   return value === "REMOTE" || value === "ONSITE" ? value : undefined;
 }
 
+async function getCurrentUser() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      role: true,
+      studyMode: true,
+    },
+  });
+}
+
 export async function GET(req: Request) {
   try {
+    const user = await getCurrentUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "الرجاء تسجيل الدخول أولًا" }, { status: 401 });
+    }
+
     const url = new URL(req.url);
     const studyMode = normalizeStudyMode(url.searchParams.get("studyMode"));
+    const effectiveStudyMode = studyMode || user.studyMode;
 
     const teachers = await prisma.user.findMany({
       where: {
         role: "TEACHER",
-        ...(studyMode ? { studyMode } : {}),
+        studyMode: effectiveStudyMode,
+        ...(user.role === "TEACHER" ? { id: user.id } : {}),
       },
       orderBy: {
         createdAt: "desc",
