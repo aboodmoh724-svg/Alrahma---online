@@ -1,4 +1,7 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
 const sections = [
   {
@@ -38,7 +41,32 @@ const sections = [
   },
 ];
 
-export default function RemoteAdminCommunicationPage() {
+async function getCurrentRemoteAdmin() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: {
+      id: userId,
+      role: "ADMIN",
+      studyMode: "REMOTE",
+      isActive: true,
+    },
+    select: {
+      id: true,
+    },
+  });
+}
+
+export default async function RemoteAdminCommunicationPage() {
+  const currentAdmin = await getCurrentRemoteAdmin();
+
+  if (!currentAdmin) {
+    redirect("/remote/admin/login");
+  }
+
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
