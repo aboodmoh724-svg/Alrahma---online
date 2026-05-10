@@ -331,29 +331,46 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Ø§Ù„Ù…Ø¹Ù„Ù… ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯" }, { status: 404 });
     }
 
-    const circlesWithStudents = teacher.circles.filter(
-      (circle) => circle._count.students > 0
-    );
+    const [activeStudentsCount, circlesWithActiveStudents] = await Promise.all([
+      prisma.student.count({
+        where: {
+          teacherId: teacher.id,
+          isActive: true,
+          ...(studyMode ? { studyMode } : {}),
+        },
+      }),
+      prisma.circle.findMany({
+        where: {
+          teacherId: teacher.id,
+          ...(studyMode ? { studyMode } : {}),
+          students: {
+            some: {
+              isActive: true,
+            },
+          },
+        },
+        select: {
+          id: true,
+        },
+      }),
+    ]);
+
     const blockers = [
-      teacher._count.students > 0 ? `${teacher._count.students} Ø·Ø§Ù„Ø¨` : "",
-      circlesWithStudents.length > 0
-        ? `${circlesWithStudents.length} Ø­Ù„Ù‚Ø© Ø¨Ù‡Ø§ Ø·Ù„Ø§Ø¨`
-        : "",
-      teacher._count.reports > 0 ? `${teacher._count.reports} ØªÙ‚Ø±ÙŠØ±` : "",
-      teacher._count.teacherPayouts > 0 ? `${teacher._count.teacherPayouts} Ø³Ø¬Ù„ ØµØ±Ù Ù…Ø§Ù„ÙŠ` : "",
-      teacher._count.teacherAttendances > 0
-        ? `${teacher._count.teacherAttendances} Ø³Ø¬Ù„ Ø­Ø¶ÙˆØ± Ù„Ù„Ù…Ø¹Ù„Ù…`
+      activeStudentsCount > 0 ? `${activeStudentsCount} طالب نشط` : "",
+      circlesWithActiveStudents.length > 0
+        ? `${circlesWithActiveStudents.length} حلقة بها طلاب نشطون`
         : "",
       teacher._count.financeAuditLogs > 0
-        ? `${teacher._count.financeAuditLogs} Ø³Ø¬Ù„ ØªØ¯Ù‚ÙŠÙ‚ Ù…Ø§Ù„ÙŠ`
+        ? `${teacher._count.financeAuditLogs} سجل تدقيق مالي`
         : "",
-      teacher.compensationRule ? "Ù‚Ø§Ø¹Ø¯Ø© Ù…Ø³ØªØ­Ù‚Ø§Øª Ù…Ø§Ù„ÙŠØ©" : "",
+      teacher._count.teacherPayouts > 0 ? `${teacher._count.teacherPayouts} سجل صرف مالي` : "",
+      teacher.compensationRule ? "قاعدة مستحقات مالية" : "",
     ].filter(Boolean);
 
     if (blockers.length > 0) {
       return NextResponse.json(
         {
-          error: `Ù„Ø§ ÙŠÙ…ÙƒÙ† Ø­Ø°Ù Ù‡Ø°Ø§ Ø§Ù„Ù…Ø¹Ù„Ù… Ø­Ø§Ù„ÙŠÙ‹Ø§ Ù„ÙˆØ¬ÙˆØ¯ Ø§Ø±ØªØ¨Ø§Ø·Ø§Øª ÙØ¹Ù„ÙŠØ©: ${blockers.join("ØŒ ")}. Ø§Ù„Ø­Ù„Ù‚Ø§Øª Ø§Ù„ÙØ§Ø±ØºØ© Ù„Ø§ ØªÙ…Ù†Ø¹ Ø§Ù„Ø­Ø°Ù ÙˆØ³ÙŠØªÙ… ÙÙƒ Ø±Ø¨Ø·Ù‡Ø§ ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‹Ø§.`,
+          error: `لا يمكن حذف هذا المعلم حاليًا لوجود ارتباطات فعلية: ${blockers.join("، ")}. الحلقات الفارغة والتقارير القديمة لا تمنع الحذف وسيتم فك ربطها تلقائيًا.`,
         },
         { status: 400 }
       );
@@ -379,6 +396,15 @@ export async function DELETE(req: Request) {
       });
 
       await tx.trackResource.updateMany({
+        where: {
+          teacherId: teacher.id,
+        },
+        data: {
+          teacherId: null,
+        },
+      });
+
+      await tx.report.updateMany({
         where: {
           teacherId: teacher.id,
         },

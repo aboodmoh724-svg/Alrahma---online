@@ -143,7 +143,6 @@ export async function POST(req: Request) {
         id: true,
         name: true,
         teacher: { select: { fullName: true } },
-        _count: { select: { students: true } },
       },
     });
 
@@ -151,7 +150,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "الحلقة غير موجودة" }, { status: 404 });
     }
 
-    if (circle._count.students > 0) {
+    const activeStudentsCount = await prisma.student.count({
+      where: {
+        circleId: circle.id,
+        studyMode: "REMOTE",
+        isActive: true,
+      },
+    });
+
+    if (activeStudentsCount > 0) {
       return NextResponse.json(
         { error: "لا يمكن طلب حذف حلقة بها طلاب. انقل الطلاب أولًا." },
         { status: 400 }
@@ -229,7 +236,6 @@ export async function PATCH(req: Request) {
         where: { id: requestItem.circleId, studyMode: "REMOTE" },
         select: {
           id: true,
-          _count: { select: { students: true } },
         },
       });
 
@@ -246,7 +252,15 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ success: true, request: requests[index] });
       }
 
-      if (circle._count.students > 0) {
+      const activeStudentsCount = await prisma.student.count({
+        where: {
+          circleId: circle.id,
+          studyMode: "REMOTE",
+          isActive: true,
+        },
+      });
+
+      if (activeStudentsCount > 0) {
         return NextResponse.json(
           { error: "لا يمكن اعتماد الحذف لأن الحلقة أصبح بها طلاب" },
           { status: 400 }

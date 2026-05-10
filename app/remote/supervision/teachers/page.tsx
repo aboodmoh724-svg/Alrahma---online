@@ -437,6 +437,62 @@ export default function RemoteSupervisionTeachersPage() {
           </div>
         </form>
 
+        {!loading && circlesWithoutTeacher.length > 0 ? (
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-[#1c2d31]">حلقات بلا معلم</h2>
+                <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                  تظهر هنا الحلقات غير المسندة حتى يمكن طلب حذفها أو مراجعتها من الإشراف.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#8a661f] ring-1 ring-[#d8bf83]">
+                {circlesWithoutTeacher.length} حلقة
+              </span>
+            </div>
+
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              {circlesWithoutTeacher.map((circle) => {
+                const circleStudents = studentsByCircle.get(circle.id) || [];
+
+                return (
+                  <div key={circle.id} className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-4">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                      <div>
+                        <h3 className="font-black text-[#1c2d31]">{circle.name}</h3>
+                        <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                          {trackLabel(circle.track)}
+                          {circle.periodLabel ? ` - ${circle.periodLabel}` : ""}
+                          {circle.startsAt || circle.endsAt ? ` - ${circle.startsAt || "--:--"} إلى ${circle.endsAt || "--:--"}` : ""}
+                        </p>
+                        <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                          {circleStudents.length} طالب نشط
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => requestDeleteCircle(circle)}
+                        disabled={
+                          circleStudents.length > 0 ||
+                          requestingDeleteCircleId === circle.id ||
+                          pendingDeleteCircleIds.has(circle.id)
+                        }
+                        className="rounded-xl border border-red-200 bg-white px-4 py-2 text-center text-xs font-black text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {pendingDeleteCircleIds.has(circle.id)
+                          ? "طلب الحذف بانتظار الإدارة"
+                          : requestingDeleteCircleId === circle.id
+                            ? "جار إرسال الطلب..."
+                            : "طلب حذف الحلقة"}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ) : null}
+
         {loading ? (
           <div className="rounded-[2rem] border border-dashed border-[#d8bf83] bg-white/70 p-8 text-center text-sm text-[#1c2d31]/60">
             جاري تحميل بيانات المعلمين...
