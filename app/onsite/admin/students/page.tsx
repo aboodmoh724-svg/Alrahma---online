@@ -158,6 +158,46 @@ function OnsiteParentPhoneInput({
   );
 }
 
+function ParentContactSummary({
+  student,
+  onEditPhone,
+}: {
+  student: Student;
+  onEditPhone: () => void;
+}) {
+  const phoneDisplay = formatOnsitePhone(student.parentWhatsapp || "");
+
+  return (
+    <div className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-3">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <p className="text-[11px] font-black text-[#1c2d31]/55">
+            رقم ولي الأمر
+          </p>
+          <p className="mt-1 font-mono text-sm font-black text-[#0f5a35]" dir="ltr">
+            {phoneDisplay ? `+90 ${phoneDisplay}` : "لا يوجد رقم محفوظ"}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onEditPhone}
+          className="rounded-xl border border-[#0f5a35]/20 bg-white px-3 py-2 text-xs font-black text-[#0f5a35] transition hover:bg-[#edf6ee]"
+        >
+          تعديل الرقم
+        </button>
+      </div>
+      <div className="mt-2 border-t border-[#eadcc4] pt-2">
+        <p className="text-[11px] font-black text-[#1c2d31]/55">
+          إيميل ولي الأمر
+        </p>
+        <p className="mt-1 truncate text-xs font-bold text-[#1c2d31]/70" dir="ltr">
+          {student.parentEmail || "لا يوجد إيميل محفوظ"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function OnsiteAdminStudentsPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -166,6 +206,9 @@ export default function OnsiteAdminStudentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
+  const [editingPhoneStudent, setEditingPhoneStudent] = useState<Student | null>(
+    null
+  );
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -498,7 +541,7 @@ export default function OnsiteAdminStudentsPage() {
               </div>
             ) : (
               <>
-              <div className="grid gap-3">
+              <div className="grid gap-3 md:hidden">
                 {filteredStudents.map((student) => (
                   <article
                     key={student.id}
@@ -564,41 +607,10 @@ export default function OnsiteAdminStudentsPage() {
                         </select>
                       </label>
 
-                      <div className="grid gap-2">
-                        <span className="text-xs font-black text-[#1c2d31]/70">
-                          رقم ولي الأمر
-                        </span>
-                        <OnsiteParentPhoneInput
-                          value={student.parentWhatsapp || ""}
-                          studentName={student.fullName}
-                          onSave={async (next) => {
-                            const ok = await updateStudent(student.id, {
-                              parentWhatsapp: next,
-                            });
-                            if (ok) await fetchData();
-                            return ok;
-                          }}
-                        />
-                      </div>
-
-                      <label className="grid gap-2">
-                        <span className="text-xs font-black text-[#1c2d31]/70">
-                          إيميل ولي الأمر
-                        </span>
-                        <input
-                          defaultValue={student.parentEmail || ""}
-                          placeholder="إيميل ولي الأمر (اختياري)"
-                          className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#0f5a35]"
-                          onBlur={async (e) => {
-                            const next = e.target.value.trim();
-                            if ((student.parentEmail || "") === next) return;
-                            const ok = await updateStudent(student.id, {
-                              parentEmail: next || null,
-                            });
-                            if (ok) await fetchData();
-                          }}
-                        />
-                      </label>
+                      <ParentContactSummary
+                        student={student}
+                        onEditPhone={() => setEditingPhoneStudent(student)}
+                      />
 
                       <button
                         type="button"
@@ -613,7 +625,7 @@ export default function OnsiteAdminStudentsPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto">
+              <div className="hidden overflow-x-auto md:block">
                 <table className="min-w-[980px] overflow-hidden rounded-2xl">
                   <thead>
                     <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
@@ -677,32 +689,10 @@ export default function OnsiteAdminStudentsPage() {
                           </select>
                         </td>
                         <td className="w-[18rem] px-4 py-3 align-top text-xs font-bold text-[#1c2d31]/70">
-                          <div className="grid gap-2">
-                            <OnsiteParentPhoneInput
-                              value={student.parentWhatsapp || ""}
-                              studentName={student.fullName}
-                              onSave={async (next) => {
-                                const ok = await updateStudent(student.id, {
-                                  parentWhatsapp: next,
-                                });
-                                if (ok) await fetchData();
-                                return ok;
-                              }}
-                            />
-                            <input
-                              defaultValue={student.parentEmail || ""}
-                              placeholder="إيميل ولي الأمر (اختياري)"
-                              className="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#0f5a35]"
-                              onBlur={async (e) => {
-                                const next = e.target.value.trim();
-                                if ((student.parentEmail || "") === next) return;
-                                const ok = await updateStudent(student.id, {
-                                  parentEmail: next || null,
-                                });
-                                if (ok) await fetchData();
-                              }}
-                            />
-                          </div>
+                          <ParentContactSummary
+                            student={student}
+                            onEditPhone={() => setEditingPhoneStudent(student)}
+                          />
                         </td>
                         <td className="px-4 py-3">
                           <button
@@ -726,6 +716,45 @@ export default function OnsiteAdminStudentsPage() {
           </section>
         </div>
       </div>
+
+      {editingPhoneStudent ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c2d31]/45 p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-5 shadow-2xl ring-1 ring-[#d8bf83]">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-[#1c2d31]">
+                  تعديل رقم ولي الأمر
+                </h2>
+                <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
+                  {editingPhoneStudent.fullName}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingPhoneStudent(null)}
+                className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-3 py-2 text-sm font-black text-[#1c2d31]"
+              >
+                إغلاق
+              </button>
+            </div>
+
+            <OnsiteParentPhoneInput
+              value={editingPhoneStudent.parentWhatsapp || ""}
+              studentName={editingPhoneStudent.fullName}
+              onSave={async (next) => {
+                const ok = await updateStudent(editingPhoneStudent.id, {
+                  parentWhatsapp: next,
+                });
+                if (ok) {
+                  await fetchData();
+                  setEditingPhoneStudent(null);
+                }
+                return ok;
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }
