@@ -205,10 +205,11 @@ const emptyHomeworkRange: HomeworkRange = {
 function parseHomeworkRange(value: string): HomeworkRange {
   const text = value.trim();
   if (!text) return emptyHomeworkRange;
+  const normalizedText = text.replace(/\(([^)]+)\)/g, " الآية $1");
 
-  const pagesCount = text.match(/عدد الصفحات:\s*([0-9٠-٩]+)/)?.[1] || "";
-  const crossSurahMatch = text.match(
-    /من سورة\s+(.+?)(?:\s+\((.*?)\))?\s+إلى سورة\s+(.+?)(?:\s+\((.*?)\))?(?:\s+-|$)/
+  const pagesCount = normalizedText.match(/عدد الصفحات:\s*([0-9٠-٩]+)/)?.[1] || "";
+  const crossSurahMatch = normalizedText.match(
+    /من سورة\s+(.+?)(?:\s+(?:الآية\s+)?([0-9٠-٩]+))?\s+إلى سورة\s+(.+?)(?:\s+(?:الآية\s+)?([0-9٠-٩]+))?(?:\s+-|$)/
   );
 
   if (crossSurahMatch) {
@@ -221,8 +222,8 @@ function parseHomeworkRange(value: string): HomeworkRange {
     };
   }
 
-  const surah = text.match(/سورة\s+(.+?)(?:\s+-|$)/)?.[1]?.trim() || "";
-  const range = text.match(/من\s+(.+?)\s+إلى\s+(.+?)(?:\s+-|$)/);
+  const surah = normalizedText.match(/سورة\s+(.+?)(?:\s+-|$)/)?.[1]?.trim() || "";
+  const range = normalizedText.match(/من(?:\s+الآية)?\s+(.+?)\s+إلى(?:\s+الآية)?\s+(.+?)(?:\s+-|$)/);
 
   return {
     startSurah: surah,
@@ -547,8 +548,8 @@ function NewReportForm() {
     const isCrossSurah = Boolean(start && end && start !== end);
     const surahText = isCrossSurah
       ? [
-          `من سورة ${start}${fromText ? ` (${fromText})` : ""}`,
-          `إلى سورة ${end}${toText ? ` (${toText})` : ""}`,
+          `من سورة ${start}${fromText ? ` الآية ${fromText}` : ""}`,
+          `إلى سورة ${end}${toText ? ` الآية ${toText}` : ""}`,
         ].join(" ")
       : start || end
         ? `سورة ${start || end}`
@@ -557,7 +558,7 @@ function NewReportForm() {
     const rangeText = isCrossSurah
       ? ""
       : fromText || toText
-        ? `من ${fromText || "-"} إلى ${toText || "-"}`
+        ? `من الآية ${fromText || "-"} إلى الآية ${toText || "-"}`
         : "";
     const pagesLabel = pagesText ? `عدد الصفحات: ${pagesText}` : "";
 
@@ -697,7 +698,7 @@ function NewReportForm() {
           ? `${noorReviewScope} - ${formData.reviewMemorized === "true" ? "حافظ" : formData.reviewMemorized === "false" ? "غير حافظ" : "لم تحدد الحالة"}`
           : ""
         : formData.reviewSurah || formData.reviewFrom || formData.reviewTo
-          ? `سورة ${formData.reviewSurah} من ${formData.reviewFrom || "-"} إلى ${formData.reviewTo || "-"}`
+          ? `سورة ${formData.reviewSurah} من الآية ${formData.reviewFrom || "-"} إلى الآية ${formData.reviewTo || "-"}`
           : "",
       reviewSurah: isNoorAlBayanReport ? noorReviewScope : formData.reviewSurah,
       reviewFrom: isNoorAlBayanReport ? "" : formData.reviewFrom,
@@ -922,23 +923,27 @@ function NewReportForm() {
                       />
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          من
+                          من الآية
                         </label>
                         <input
+                          type="number"
+                          min="1"
                           value={formData.pageFrom}
                           onChange={(e) => setField("pageFrom", e.target.value)}
-                          placeholder="مثال: 1 أو بداية السورة"
+                          placeholder="مثال: 1"
                           className={inputClass}
                         />
                       </div>
                       <div>
                         <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          إلى
+                          إلى الآية
                         </label>
                         <input
+                          type="number"
+                          min="1"
                           value={formData.pageTo}
                           onChange={(e) => setField("pageTo", e.target.value)}
-                          placeholder="مثال: 10 أو نهاية السورة"
+                          placeholder="مثال: 10"
                           className={inputClass}
                         />
                       </div>
@@ -1031,23 +1036,27 @@ function NewReportForm() {
                     />
                     <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                        من
+                        من الآية
                       </label>
                       <input
+                        type="number"
+                        min="1"
                         value={formData.reviewFrom}
                         onChange={(e) => setField("reviewFrom", e.target.value)}
-                        placeholder="مثال: 30 أو نهاية السورة"
+                        placeholder="مثال: 30"
                         className={inputClass}
                       />
                     </div>
                     <div>
                       <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                        إلى
+                        إلى الآية
                       </label>
                       <input
+                        type="number"
+                        min="1"
                         value={formData.reviewTo}
                         onChange={(e) => setField("reviewTo", e.target.value)}
-                        placeholder="مثال: 5 أو بداية السورة"
+                        placeholder="مثال: 5"
                         className={inputClass}
                       />
                     </div>
@@ -1188,27 +1197,31 @@ function NewReportForm() {
                         />
                         <div>
                           <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                            من
+                            من الآية
                           </label>
                           <input
+                            type="number"
+                            min="1"
                             value={formData.nextLessonFrom}
                             onChange={(e) =>
                               setField("nextLessonFrom", e.target.value)
                             }
-                            placeholder="مثال: آية 1 أو نهاية السورة"
+                            placeholder="مثال: 1"
                             className={inputClass}
                           />
                         </div>
                         <div>
                           <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                            إلى
+                            إلى الآية
                           </label>
                           <input
+                            type="number"
+                            min="1"
                             value={formData.nextLessonTo}
                             onChange={(e) =>
                               setField("nextLessonTo", e.target.value)
                             }
-                            placeholder="مثال: آية 10 أو بداية السورة"
+                            placeholder="مثال: 10"
                             className={inputClass}
                           />
                         </div>
@@ -1257,27 +1270,31 @@ function NewReportForm() {
                         />
                         <div>
                           <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                            من
+                            من الآية
                           </label>
                           <input
+                            type="number"
+                            min="1"
                             value={formData.nextReviewFrom}
                             onChange={(e) =>
                               setField("nextReviewFrom", e.target.value)
                             }
-                            placeholder="مثال: آية 30 أو نهاية السورة"
+                            placeholder="مثال: 30"
                             className={inputClass}
                           />
                         </div>
                         <div>
                           <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                            إلى
+                            إلى الآية
                           </label>
                           <input
+                            type="number"
+                            min="1"
                             value={formData.nextReviewTo}
                             onChange={(e) =>
                               setField("nextReviewTo", e.target.value)
                             }
-                            placeholder="مثال: آية 5 أو بداية السورة"
+                            placeholder="مثال: 5"
                             className={inputClass}
                           />
                         </div>
