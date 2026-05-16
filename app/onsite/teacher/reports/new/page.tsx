@@ -169,21 +169,68 @@ function SurahInput({
       <label className="mb-2 block text-sm font-black text-[#1c2d31]">
         {label}
       </label>
-      <input
-        list={id}
+      <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="اختر أو اكتب اسم السورة"
         className={inputClass}
         required={required}
-      />
-      <datalist id={id}>
+      >
+        <option value="">اختر السورة</option>
         {surahNames.map((surah) => (
-          <option key={surah} value={surah} />
+          <option key={surah} value={surah}>
+            {surah}
+          </option>
         ))}
-      </datalist>
+      </select>
     </div>
   );
+}
+
+type HomeworkRange = {
+  startSurah: string;
+  endSurah: string;
+  from: string;
+  to: string;
+  pagesCount: string;
+};
+
+const emptyHomeworkRange: HomeworkRange = {
+  startSurah: "",
+  endSurah: "",
+  from: "",
+  to: "",
+  pagesCount: "",
+};
+
+function parseHomeworkRange(value: string): HomeworkRange {
+  const text = value.trim();
+  if (!text) return emptyHomeworkRange;
+
+  const pagesCount = text.match(/عدد الصفحات:\s*([0-9٠-٩]+)/)?.[1] || "";
+  const crossSurahMatch = text.match(
+    /من سورة\s+(.+?)(?:\s+\((.*?)\))?\s+إلى سورة\s+(.+?)(?:\s+\((.*?)\))?(?:\s+-|$)/
+  );
+
+  if (crossSurahMatch) {
+    return {
+      startSurah: crossSurahMatch[1]?.trim() || "",
+      endSurah: crossSurahMatch[3]?.trim() || "",
+      from: crossSurahMatch[2]?.trim() || "",
+      to: crossSurahMatch[4]?.trim() || "",
+      pagesCount,
+    };
+  }
+
+  const surah = text.match(/سورة\s+(.+?)(?:\s+-|$)/)?.[1]?.trim() || "";
+  const range = text.match(/من\s+(.+?)\s+إلى\s+(.+?)(?:\s+-|$)/);
+
+  return {
+    startSurah: surah,
+    endSurah: surah,
+    from: range?.[1]?.trim() || "",
+    to: range?.[2]?.trim() || "",
+    pagesCount,
+  };
 }
 
 function MemorizedSelect({
@@ -246,13 +293,11 @@ function NewReportForm() {
     nextLessonFrom: "",
     nextLessonTo: "",
     nextLessonPagesCount: "",
-    nextLessonHomeworkText: "",
     nextReviewStartSurah: "",
     nextReviewEndSurah: "",
     nextReviewFrom: "",
     nextReviewTo: "",
     nextReviewPagesCount: "",
-    nextReviewHomeworkText: "",
     noorLinesCount: "",
     noorProgressUnit: "PAGE",
     noorReviewScope: "مراجعة آخر درس",
@@ -327,8 +372,24 @@ function NewReportForm() {
       setSuggestedHomework("");
       setFormData((prev) => ({
         ...prev,
-        nextLessonHomeworkText: "",
-        nextReviewHomeworkText: "",
+        lessonSurah: "",
+        pageFrom: "",
+        pageTo: "",
+        pagesCount: "",
+        reviewSurah: "",
+        reviewFrom: "",
+        reviewTo: "",
+        reviewPagesCount: "",
+        nextLessonStartSurah: "",
+        nextLessonEndSurah: "",
+        nextLessonFrom: "",
+        nextLessonTo: "",
+        nextLessonPagesCount: "",
+        nextReviewStartSurah: "",
+        nextReviewEndSurah: "",
+        nextReviewFrom: "",
+        nextReviewTo: "",
+        nextReviewPagesCount: "",
       }));
       return;
     }
@@ -358,12 +419,30 @@ function NewReportForm() {
           res.ok && typeof data.lastNextHomework === "string"
             ? data.lastNextHomework
             : "";
+        const lessonHomework = parseHomeworkRange(previousLessonHomework);
+        const reviewHomework = parseHomeworkRange(previousReviewHomework);
 
         setSuggestedHomework(previousHomework);
         setFormData((prev) => ({
           ...prev,
-          nextLessonHomeworkText: previousLessonHomework,
-          nextReviewHomeworkText: previousReviewHomework,
+          lessonSurah: lessonHomework.startSurah,
+          pageFrom: lessonHomework.from,
+          pageTo: lessonHomework.to,
+          pagesCount: lessonHomework.pagesCount,
+          reviewSurah: reviewHomework.startSurah,
+          reviewFrom: reviewHomework.from,
+          reviewTo: reviewHomework.to,
+          reviewPagesCount: reviewHomework.pagesCount,
+          nextLessonStartSurah: "",
+          nextLessonEndSurah: "",
+          nextLessonFrom: "",
+          nextLessonTo: "",
+          nextLessonPagesCount: "",
+          nextReviewStartSurah: "",
+          nextReviewEndSurah: "",
+          nextReviewFrom: "",
+          nextReviewTo: "",
+          nextReviewPagesCount: "",
         }));
       } catch (error) {
         console.error("FETCH STUDENT HISTORY ERROR =>", error);
@@ -474,7 +553,6 @@ function NewReportForm() {
 
   const buildNextHomework = () => {
     const nextLessonHomework =
-      formData.nextLessonHomeworkText.trim() ||
       buildHomeworkRange({
         startSurah: formData.nextLessonStartSurah,
         endSurah: formData.nextLessonEndSurah,
@@ -483,7 +561,6 @@ function NewReportForm() {
         pagesCount: formData.nextLessonPagesCount,
       });
     const nextReviewHomework =
-      formData.nextReviewHomeworkText.trim() ||
       buildHomeworkRange({
         startSurah: formData.nextReviewStartSurah,
         endSurah: formData.nextReviewEndSurah,
@@ -548,8 +625,7 @@ function NewReportForm() {
     const nextLessonHomework =
       isNoorAlBayanReport
         ? buildNoorNextLessonHomework()
-        : formData.nextLessonHomeworkText.trim() ||
-          buildHomeworkRange({
+        : buildHomeworkRange({
             startSurah: formData.nextLessonStartSurah,
             endSurah: formData.nextLessonEndSurah,
             from: formData.nextLessonFrom,
@@ -559,8 +635,7 @@ function NewReportForm() {
     const nextReviewHomework =
       isNoorAlBayanReport
         ? ""
-        : formData.nextReviewHomeworkText.trim() ||
-          buildHomeworkRange({
+        : buildHomeworkRange({
             startSurah: formData.nextReviewStartSurah,
             endSurah: formData.nextReviewEndSurah,
             from: formData.nextReviewFrom,
@@ -837,10 +912,9 @@ function NewReportForm() {
                           من
                         </label>
                         <input
-                          type="number"
-                          min="1"
                           value={formData.pageFrom}
                           onChange={(e) => setField("pageFrom", e.target.value)}
+                          placeholder="مثال: 1 أو بداية السورة"
                           className={inputClass}
                         />
                       </div>
@@ -849,10 +923,9 @@ function NewReportForm() {
                           إلى
                         </label>
                         <input
-                          type="number"
-                          min="1"
                           value={formData.pageTo}
                           onChange={(e) => setField("pageTo", e.target.value)}
+                          placeholder="مثال: 10 أو نهاية السورة"
                           className={inputClass}
                         />
                       </div>
@@ -948,10 +1021,9 @@ function NewReportForm() {
                         من
                       </label>
                       <input
-                        type="number"
-                        min="1"
                         value={formData.reviewFrom}
                         onChange={(e) => setField("reviewFrom", e.target.value)}
+                        placeholder="مثال: 30 أو نهاية السورة"
                         className={inputClass}
                       />
                     </div>
@@ -960,10 +1032,9 @@ function NewReportForm() {
                         إلى
                       </label>
                       <input
-                        type="number"
-                        min="1"
                         value={formData.reviewTo}
                         onChange={(e) => setField("reviewTo", e.target.value)}
+                        placeholder="مثال: 5 أو بداية السورة"
                         className={inputClass}
                       />
                     </div>
@@ -1085,20 +1156,6 @@ function NewReportForm() {
                           عند الانتقال بين سورتين اختر سورة البداية وسورة النهاية.
                         </p>
                       </div>
-                      <div className="mb-4">
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          الواجب السابق أو النص المعدل
-                        </label>
-                        <textarea
-                          value={formData.nextLessonHomeworkText}
-                          onChange={(e) =>
-                            setField("nextLessonHomeworkText", e.target.value)
-                          }
-                          rows={3}
-                          placeholder="يظهر هنا واجب التقرير السابق تلقائيًا، ويمكن تعديله مباشرة."
-                          className={inputClass}
-                        />
-                      </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <SurahInput
                           id="next-lesson-start-surah-list"
@@ -1167,20 +1224,6 @@ function NewReportForm() {
                         <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
                           يصلح للمراجعة داخل سورة واحدة أو من نهاية سورة إلى بداية سورة أخرى.
                         </p>
-                      </div>
-                      <div className="mb-4">
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          الواجب السابق أو النص المعدل
-                        </label>
-                        <textarea
-                          value={formData.nextReviewHomeworkText}
-                          onChange={(e) =>
-                            setField("nextReviewHomeworkText", e.target.value)
-                          }
-                          rows={3}
-                          placeholder="يظهر هنا واجب المراجعة السابق تلقائيًا، ويمكن تعديله مباشرة."
-                          className={inputClass}
-                        />
                       </div>
                       <div className="grid gap-4 md:grid-cols-2">
                         <SurahInput
