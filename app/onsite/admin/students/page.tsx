@@ -70,10 +70,12 @@ function OnsiteParentPhoneInput({
   value,
   studentName,
   onSave,
+  className = "",
 }: {
   value: string;
   studentName: string;
   onSave: (value: string | null) => Promise<boolean>;
+  className?: string;
 }) {
   const [draft, setDraft] = useState(formatOnsitePhone(value));
   const [saving, setSaving] = useState(false);
@@ -104,9 +106,11 @@ function OnsiteParentPhoneInput({
   };
 
   return (
-    <div className="min-w-[15rem] rounded-2xl border border-[#d8bf83] bg-white p-2 shadow-sm">
-      <div className="flex items-center gap-2" dir="ltr">
-        <span className="shrink-0 rounded-xl bg-[#fffaf4] px-3 py-2 text-xs font-black text-[#0f5a35] ring-1 ring-[#eadcc4]">
+    <div
+      className={`w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-3 shadow-sm ring-1 ring-[#f0e2c8] ${className}`}
+    >
+      <div className="flex items-stretch gap-2" dir="ltr">
+        <span className="flex h-11 shrink-0 items-center rounded-xl bg-white px-3 text-sm font-black text-[#0f5a35] ring-1 ring-[#eadcc4]">
           +90
         </span>
         <input
@@ -131,11 +135,11 @@ function OnsiteParentPhoneInput({
           }}
           placeholder="5xx xxx xx xx"
           aria-label={`رقم ولي أمر ${studentName}`}
-          className="min-w-0 flex-1 bg-transparent px-1 py-2 text-left font-mono text-sm font-black text-[#1c2d31] outline-none placeholder:text-[#1c2d31]/30"
+          className="h-11 min-w-0 flex-1 rounded-xl border border-[#eadcc4] bg-white px-3 text-left font-mono text-base font-black text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/30 focus:border-[#0f5a35]"
         />
       </div>
-      <div className="mt-1 flex items-center justify-between gap-2">
-        <span className="text-[11px] font-bold text-[#1c2d31]/45">
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <span className="min-w-0 truncate text-xs font-bold text-[#1c2d31]/55">
           {savedDisplay ? `محفوظ: +90 ${savedDisplay}` : "لا يوجد رقم محفوظ"}
         </span>
         {changed ? (
@@ -493,16 +497,132 @@ export default function OnsiteAdminStudentsPage() {
                 لا توجد نتائج مطابقة للبحث.
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full overflow-hidden rounded-2xl">
+              <>
+              <div className="grid gap-3 md:hidden">
+                {filteredStudents.map((student) => (
+                  <article
+                    key={student.id}
+                    className="rounded-3xl border border-[#d8bf83] bg-[#fffdf8] p-4 shadow-sm"
+                  >
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-lg font-black text-[#1c2d31]">
+                          {student.fullName}
+                        </h3>
+                        <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                          تحديث الحلقة والمعلم وبيانات ولي الأمر
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-xl bg-[#edf6ee] px-3 py-2 font-mono text-sm font-black text-[#0f5a35] ring-1 ring-[#cfe4d4]">
+                        {student.studentCode || "-"}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3">
+                      <label className="grid gap-2">
+                        <span className="text-xs font-black text-[#1c2d31]/70">
+                          المعلم
+                        </span>
+                        <select
+                          value={student.teacher?.id || ""}
+                          onChange={async (event) => {
+                            const ok = await updateStudent(student.id, {
+                              teacherId: event.target.value,
+                            });
+                            if (ok) await fetchData();
+                          }}
+                          className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#0f5a35]"
+                        >
+                          {teachers.map((teacher) => (
+                            <option key={teacher.id} value={teacher.id}>
+                              {teacher.fullName}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="grid gap-2">
+                        <span className="text-xs font-black text-[#1c2d31]/70">
+                          الحلقة
+                        </span>
+                        <select
+                          value={student.circle?.id || ""}
+                          onChange={async (event) => {
+                            const ok = await updateStudent(student.id, {
+                              circleId: event.target.value || null,
+                            });
+                            if (ok) await fetchData();
+                          }}
+                          className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#0f5a35]"
+                        >
+                          <option value="">بدون حلقة</option>
+                          {circles.map((circle) => (
+                            <option key={circle.id} value={circle.id}>
+                              {circle.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <div className="grid gap-2">
+                        <span className="text-xs font-black text-[#1c2d31]/70">
+                          رقم ولي الأمر
+                        </span>
+                        <OnsiteParentPhoneInput
+                          value={student.parentWhatsapp || ""}
+                          studentName={student.fullName}
+                          onSave={async (next) => {
+                            const ok = await updateStudent(student.id, {
+                              parentWhatsapp: next,
+                            });
+                            if (ok) await fetchData();
+                            return ok;
+                          }}
+                        />
+                      </div>
+
+                      <label className="grid gap-2">
+                        <span className="text-xs font-black text-[#1c2d31]/70">
+                          إيميل ولي الأمر
+                        </span>
+                        <input
+                          defaultValue={student.parentEmail || ""}
+                          placeholder="إيميل ولي الأمر (اختياري)"
+                          className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:border-[#0f5a35]"
+                          onBlur={async (e) => {
+                            const next = e.target.value.trim();
+                            if ((student.parentEmail || "") === next) return;
+                            const ok = await updateStudent(student.id, {
+                              parentEmail: next || null,
+                            });
+                            if (ok) await fetchData();
+                          }}
+                        />
+                      </label>
+
+                      <button
+                        type="button"
+                        disabled={deletingStudentId === student.id}
+                        onClick={() => deleteStudent(student)}
+                        className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {deletingStudentId === student.id ? "جار الحذف..." : "حذف الطالب"}
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+
+              <div className="hidden overflow-x-auto md:block">
+                <table className="min-w-[980px] overflow-hidden rounded-2xl">
                   <thead>
                     <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
                       <th className="px-4 py-3 font-black">رقم الطالب</th>
                       <th className="px-4 py-3 font-black">اسم الطالب</th>
                       <th className="px-4 py-3 font-black">المعلم</th>
                       <th className="px-4 py-3 font-black">الحلقة</th>
-                      <th className="px-4 py-3 font-black">ولي الأمر</th>
-                      <th className="px-4 py-3 font-black">إجراءات</th>
+                      <th className="w-[18rem] px-4 py-3 font-black">ولي الأمر</th>
+                      <th className="w-24 px-4 py-3 font-black">إجراءات</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -556,7 +676,7 @@ export default function OnsiteAdminStudentsPage() {
                             ))}
                           </select>
                         </td>
-                        <td className="px-4 py-3 text-xs font-bold text-[#1c2d31]/70">
+                        <td className="w-[18rem] px-4 py-3 align-top text-xs font-bold text-[#1c2d31]/70">
                           <div className="grid gap-2">
                             <OnsiteParentPhoneInput
                               value={student.parentWhatsapp || ""}
@@ -601,6 +721,7 @@ export default function OnsiteAdminStudentsPage() {
                   </tbody>
                 </table>
               </div>
+              </>
             )}
           </section>
         </div>
