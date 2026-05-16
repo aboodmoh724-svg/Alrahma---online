@@ -392,8 +392,8 @@ export default function OnsiteAdminStudentsPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-1">
+        <div className="grid gap-6 xl:grid-cols-3">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] xl:col-span-1">
             <h2 className="mb-4 text-lg font-black text-[#1c2d31]">
               إضافة طالب جديد
             </h2>
@@ -466,7 +466,7 @@ export default function OnsiteAdminStudentsPage() {
             </form>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-2">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] xl:col-span-2">
             <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h2 className="text-lg font-black text-[#1c2d31]">قائمة الطلاب</h2>
@@ -498,7 +498,7 @@ export default function OnsiteAdminStudentsPage() {
               </div>
             ) : (
               <>
-              <div className="grid gap-3 md:hidden">
+              <div className="grid gap-3 xl:hidden">
                 {filteredStudents.map((student) => (
                   <article
                     key={student.id}
@@ -613,7 +613,7 @@ export default function OnsiteAdminStudentsPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
+              <div className="hidden overflow-x-auto xl:block">
                 <table className="min-w-[980px] overflow-hidden rounded-2xl">
                   <thead>
                     <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
