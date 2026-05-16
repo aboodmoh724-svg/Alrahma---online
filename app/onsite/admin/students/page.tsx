@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import PhoneNumberBlurInput from "@/components/forms/PhoneNumberBlurInput";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 
 type Teacher = {
   id: string;
@@ -31,6 +31,128 @@ type Student = {
   teacher: Teacher;
   circle: Circle | null;
 };
+
+function toOnsiteWhatsappNumber(value: string) {
+  let digits = normalizePhoneDigits(value);
+
+  if (!digits) return "";
+  if (digits.startsWith("0090")) digits = digits.slice(2);
+  if (digits.startsWith("90") && digits.length >= 12) return digits;
+  if (digits.startsWith("0") && digits.length === 11) return `90${digits.slice(1)}`;
+  if (digits.length === 10) return `90${digits}`;
+
+  return digits.length > 10 ? digits : `90${digits}`;
+}
+
+function toOnsiteLocalPhone(value: string) {
+  let digits = normalizePhoneDigits(value);
+
+  if (digits.startsWith("0090")) digits = digits.slice(4);
+  if (digits.startsWith("90") && digits.length > 10) digits = digits.slice(2);
+  if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
+
+  return digits.slice(0, 10);
+}
+
+function formatOnsitePhone(value: string) {
+  const digits = toOnsiteLocalPhone(value);
+  const parts = [
+    digits.slice(0, 3),
+    digits.slice(3, 6),
+    digits.slice(6, 8),
+    digits.slice(8, 10),
+  ].filter(Boolean);
+
+  return parts.join(" ");
+}
+
+function OnsiteParentPhoneInput({
+  value,
+  studentName,
+  onSave,
+}: {
+  value: string;
+  studentName: string;
+  onSave: (value: string | null) => Promise<boolean>;
+}) {
+  const [draft, setDraft] = useState(formatOnsitePhone(value));
+  const [saving, setSaving] = useState(false);
+  const savedDisplay = formatOnsitePhone(value);
+  const changed = toOnsiteWhatsappNumber(draft) !== toOnsiteWhatsappNumber(value);
+
+  useEffect(() => {
+    setDraft(formatOnsitePhone(value));
+  }, [value]);
+
+  const commit = async () => {
+    if (!changed || saving) return;
+
+    try {
+      setSaving(true);
+      const localDigits = toOnsiteLocalPhone(draft);
+      if (localDigits && localDigits.length !== 10) {
+        alert("رقم ولي الأمر يجب أن يكون 10 أرقام بعد +90، مثال: 555 555 55 55");
+        setDraft(savedDisplay);
+        return;
+      }
+      const normalized = toOnsiteWhatsappNumber(draft);
+      const ok = await onSave(normalized || null);
+      if (ok) setDraft(formatOnsitePhone(normalized));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="min-w-[15rem] rounded-2xl border border-[#d8bf83] bg-white p-2 shadow-sm">
+      <div className="flex items-center gap-2" dir="ltr">
+        <span className="shrink-0 rounded-xl bg-[#fffaf4] px-3 py-2 text-xs font-black text-[#0f5a35] ring-1 ring-[#eadcc4]">
+          +90
+        </span>
+        <input
+          type="tel"
+          inputMode="numeric"
+          value={draft}
+          onChange={(event) => setDraft(formatOnsitePhone(event.target.value))}
+          onPaste={(event) => {
+            const text = event.clipboardData.getData("text");
+            if (!text) return;
+            event.preventDefault();
+            setDraft(formatOnsitePhone(text));
+          }}
+          onBlur={() => {
+            void commit();
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void commit();
+            }
+          }}
+          placeholder="5xx xxx xx xx"
+          aria-label={`رقم ولي أمر ${studentName}`}
+          className="min-w-0 flex-1 bg-transparent px-1 py-2 text-left font-mono text-sm font-black text-[#1c2d31] outline-none placeholder:text-[#1c2d31]/30"
+        />
+      </div>
+      <div className="mt-1 flex items-center justify-between gap-2">
+        <span className="text-[11px] font-bold text-[#1c2d31]/45">
+          {savedDisplay ? `محفوظ: +90 ${savedDisplay}` : "لا يوجد رقم محفوظ"}
+        </span>
+        {changed ? (
+          <button
+            type="button"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => void commit()}
+            disabled={saving}
+            className="rounded-lg bg-[#0f5a35] px-3 py-1 text-[11px] font-black text-white disabled:opacity-60"
+          >
+            {saving ? "حفظ..." : "حفظ"}
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
 
 export default function OnsiteAdminStudentsPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -389,8 +511,10 @@ export default function OnsiteAdminStudentsPage() {
                         key={student.id}
                         className="border-b border-[#d8bf83]/30 text-sm"
                       >
-                        <td className="px-4 py-3 font-black text-[#0f5a35]">
-                          {student.studentCode || "-"}
+                        <td className="px-4 py-3">
+                          <span className="inline-flex min-w-16 justify-center rounded-xl bg-[#edf6ee] px-3 py-2 font-mono text-sm font-black text-[#0f5a35] ring-1 ring-[#cfe4d4]">
+                            {student.studentCode || "-"}
+                          </span>
                         </td>
                         <td className="px-4 py-3 font-black text-[#1c2d31]">
                           {student.fullName}
@@ -434,20 +558,12 @@ export default function OnsiteAdminStudentsPage() {
                         </td>
                         <td className="px-4 py-3 text-xs font-bold text-[#1c2d31]/70">
                           <div className="grid gap-2">
-                            <PhoneNumberBlurInput
+                            <OnsiteParentPhoneInput
                               value={student.parentWhatsapp || ""}
-                              placeholder="5xxxxxxxxx"
-                              inputClassName="w-full rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-bold outline-none focus:border-[#0f5a35]"
-                              onCommit={async (next) => {
-                                const previous = student.parentWhatsapp || "";
-                                const confirmed = window.confirm(
-                                  `هل تريد حفظ تغيير رقم ولي الأمر للطالب ${student.fullName}؟\n\nالرقم الحالي: ${previous || "لا يوجد"}\nالرقم الجديد: ${next || "حذف الرقم"}`
-                                );
-
-                                if (!confirmed) return false;
-
+                              studentName={student.fullName}
+                              onSave={async (next) => {
                                 const ok = await updateStudent(student.id, {
-                                  parentWhatsapp: next || null,
+                                  parentWhatsapp: next,
                                 });
                                 if (ok) await fetchData();
                                 return ok;
