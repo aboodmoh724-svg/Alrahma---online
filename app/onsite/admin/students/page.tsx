@@ -435,13 +435,16 @@ export default function OnsiteAdminStudentsPage() {
           </div>
         </div>
 
-        <div className="grid gap-6 2xl:grid-cols-3">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] 2xl:col-span-1">
+        <div className="grid gap-6">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <h2 className="mb-4 text-lg font-black text-[#1c2d31]">
               إضافة طالب جديد
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form
+              onSubmit={handleSubmit}
+              className="grid gap-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end"
+            >
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">
                   اسم الطالب
@@ -499,17 +502,19 @@ export default function OnsiteAdminStudentsPage() {
                 </select>
               </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {submitting ? "جاري الإضافة..." : "إضافة الطالب"}
-              </button>
+              <div>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="w-full rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-60 md:min-w-36"
+                >
+                  {submitting ? "جاري الإضافة..." : "إضافة الطالب"}
+                </button>
+              </div>
             </form>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] 2xl:col-span-2">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <h2 className="text-lg font-black text-[#1c2d31]">قائمة الطلاب</h2>
@@ -626,7 +631,7 @@ export default function OnsiteAdminStudentsPage() {
               </div>
 
               <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[980px] overflow-hidden rounded-2xl">
+                <table className="min-w-[920px] overflow-hidden rounded-2xl">
                   <thead>
                     <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
                       <th className="px-4 py-3 font-black">رقم الطالب</th>
