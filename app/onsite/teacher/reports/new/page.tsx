@@ -233,6 +233,16 @@ function parseHomeworkRange(value: string): HomeworkRange {
   };
 }
 
+function parseNoorHomeworkRange(value: string) {
+  const numbers = value.match(/[0-9٠-٩]+/g) || [];
+
+  return {
+    pageFrom: numbers[0] || "",
+    pageTo: numbers[1] || numbers[0] || "",
+    linesCount: numbers[2] || numbers[0] || "",
+  };
+}
+
 function MemorizedSelect({
   label,
   value,
@@ -421,14 +431,17 @@ function NewReportForm() {
             : "";
         const lessonHomework = parseHomeworkRange(previousLessonHomework);
         const reviewHomework = parseHomeworkRange(previousReviewHomework);
+        const noorHomework = parseNoorHomeworkRange(previousLessonHomework);
 
         setSuggestedHomework(previousHomework);
         setFormData((prev) => ({
           ...prev,
           lessonSurah: lessonHomework.startSurah,
-          pageFrom: lessonHomework.from,
-          pageTo: lessonHomework.to,
+          pageFrom: lessonHomework.from || noorHomework.pageFrom,
+          pageTo: lessonHomework.to || noorHomework.pageTo,
           pagesCount: lessonHomework.pagesCount,
+          noorLinesCount: noorHomework.linesCount,
+          noorProgressUnit: "PAGE",
           reviewSurah: reviewHomework.startSurah,
           reviewFrom: reviewHomework.from,
           reviewTo: reviewHomework.to,

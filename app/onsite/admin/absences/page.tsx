@@ -186,9 +186,19 @@ async function sendTodayAbsenceWhatsApp() {
   revalidatePath("/onsite/admin/absence-statistics");
 }
 
-export default async function OnsiteAdminAbsencesPage() {
+type PageProps = {
+  searchParams?: Promise<{
+    q?: string;
+    status?: string;
+  }>;
+};
+
+export default async function OnsiteAdminAbsencesPage({ searchParams }: PageProps) {
   const cookieStore = await cookies();
   const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const searchQuery = String(resolvedSearchParams.q || "").trim();
+  const statusFilter = String(resolvedSearchParams.status || "ALL");
 
   if (!adminId) {
     return (
@@ -286,6 +296,30 @@ export default async function OnsiteAdminAbsencesPage() {
   const todayAttendance = Array.from(latestByStudent.values()).sort((a, b) =>
     a.student.fullName.localeCompare(b.student.fullName, "ar")
   );
+  const filteredAttendance = todayAttendance.filter((report) => {
+    const haystack = [
+      report.student.fullName,
+      report.student.studentCode || "",
+      report.student.circle?.name || "",
+      report.student.teacher?.fullName || "",
+      report.student.parentWhatsapp || "",
+    ]
+      .join(" ")
+      .toLowerCase();
+    const matchesSearch = searchQuery
+      ? haystack.includes(searchQuery.toLowerCase())
+      : true;
+    const matchesStatus =
+      statusFilter === "ABSENT"
+        ? report.status === "ABSENT"
+        : statusFilter === "PRESENT"
+          ? report.status === "PRESENT"
+          : statusFilter === "PENDING"
+            ? report.status === "ABSENT" && !report.sentToParent
+            : true;
+
+    return matchesSearch && matchesStatus;
+  });
   const absences = todayAttendance.filter((report) => report.status === "ABSENT");
   const pendingAbsences = absences.filter((report) => !report.sentToParent);
   const presentCount = todayAttendance.filter((report) => report.status === "PRESENT").length;
@@ -356,13 +390,50 @@ export default async function OnsiteAdminAbsencesPage() {
             </div>
           </div>
 
+          <form className="mb-5 grid gap-3 rounded-[1.7rem] bg-[#fffaf4] p-3 ring-1 ring-[#eadcc4] md:grid-cols-[1fr_auto_auto] md:items-center">
+            <input
+              name="q"
+              defaultValue={searchQuery}
+              placeholder="ابحث باسم الطالب أو الرقم أو الحلقة أو المعلم..."
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none focus:border-[#0f5a35]"
+            />
+            <select
+              name="status"
+              defaultValue={statusFilter}
+              className="rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-black text-[#1c2d31] outline-none focus:border-[#0f5a35]"
+            >
+              <option value="ALL">كل الحالات</option>
+              <option value="PRESENT">الحضور فقط</option>
+              <option value="ABSENT">الغياب فقط</option>
+              <option value="PENDING">غياب بانتظار الرسالة</option>
+            </select>
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                className="flex-1 rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white md:flex-none"
+              >
+                عرض
+              </button>
+              <Link
+                href="/onsite/admin/absences"
+                className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-sm font-black text-[#1c2d31]"
+              >
+                مسح
+              </Link>
+            </div>
+          </form>
+
           {todayAttendance.length === 0 ? (
             <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
               لا توجد سجلات حضور أو غياب لهذا اليوم.
             </div>
+          ) : filteredAttendance.length === 0 ? (
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
+              لا توجد نتائج مطابقة للبحث أو الفلتر الحالي.
+            </div>
           ) : (
             <div className="grid gap-3">
-              {todayAttendance.map((report) => (
+              {filteredAttendance.map((report) => (
                 <div
                   key={report.id}
                   className="grid gap-3 rounded-[1.6rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4 md:grid-cols-[1fr_auto] md:items-center"

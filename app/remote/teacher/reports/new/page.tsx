@@ -18,6 +18,8 @@ type HistoryReport = {
   reviewMemorized: boolean | null;
   homework: string;
   nextHomework: string | null;
+  nextLessonHomework: string | null;
+  nextReviewHomework: string | null;
   note: string | null;
   status: "PRESENT" | "ABSENT";
   createdAt: string;
@@ -173,21 +175,68 @@ function SurahInput({
       <label className="mb-2 block text-sm font-black text-[#1c2d31]">
         {label}
       </label>
-      <input
-        list={id}
+      <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="اختر أو اكتب اسم السورة"
         className={inputClass}
         required={required}
-      />
-      <datalist id={id}>
+      >
+        <option value="">اختر السورة</option>
         {surahNames.map((surah) => (
-          <option key={surah} value={surah} />
+          <option key={surah} value={surah}>
+            {surah}
+          </option>
         ))}
-      </datalist>
+      </select>
     </div>
   );
+}
+
+type HomeworkRange = {
+  startSurah: string;
+  endSurah: string;
+  from: string;
+  to: string;
+  pagesCount: string;
+};
+
+const emptyHomeworkRange: HomeworkRange = {
+  startSurah: "",
+  endSurah: "",
+  from: "",
+  to: "",
+  pagesCount: "",
+};
+
+function parseHomeworkRange(value: string): HomeworkRange {
+  const text = value.trim();
+  if (!text) return emptyHomeworkRange;
+
+  const pagesCount = text.match(/عدد الصفحات:\s*([0-9٠-٩]+)/)?.[1] || "";
+  const crossSurahMatch = text.match(
+    /من سورة\s+(.+?)(?:\s+\((.*?)\))?\s+إلى سورة\s+(.+?)(?:\s+\((.*?)\))?(?:\s+-|$)/
+  );
+
+  if (crossSurahMatch) {
+    return {
+      startSurah: crossSurahMatch[1]?.trim() || "",
+      endSurah: crossSurahMatch[3]?.trim() || "",
+      from: crossSurahMatch[2]?.trim() || "",
+      to: crossSurahMatch[4]?.trim() || "",
+      pagesCount,
+    };
+  }
+
+  const surah = text.match(/سورة\s+(.+?)(?:\s+-|$)/)?.[1]?.trim() || "";
+  const range = text.match(/من\s+(.+?)\s+إلى\s+(.+?)(?:\s+-|$)/);
+
+  return {
+    startSurah: surah,
+    endSurah: surah,
+    from: range?.[1]?.trim() || "",
+    to: range?.[2]?.trim() || "",
+    pagesCount,
+  };
 }
 
 function MemorizedSelect({
@@ -319,6 +368,27 @@ function NewReportForm() {
       setSuggestedHomework("");
       setPreviousReport(null);
       setRecentReports([]);
+      setFormData((prev) => ({
+        ...prev,
+        lessonSurah: "",
+        pageFrom: "",
+        pageTo: "",
+        pagesCount: "",
+        reviewSurah: "",
+        reviewFrom: "",
+        reviewTo: "",
+        reviewPagesCount: "",
+        nextLessonStartSurah: "",
+        nextLessonEndSurah: "",
+        nextLessonFrom: "",
+        nextLessonTo: "",
+        nextLessonPagesCount: "",
+        nextReviewStartSurah: "",
+        nextReviewEndSurah: "",
+        nextReviewFrom: "",
+        nextReviewTo: "",
+        nextReviewPagesCount: "",
+      }));
       return;
     }
 
@@ -335,7 +405,20 @@ function NewReportForm() {
           cache: "no-store",
         });
         const data = await res.json();
-        setPreviousReport(res.ok && data.previousReport ? data.previousReport : null);
+        const previous =
+          res.ok && data.previousReport ? (data.previousReport as HistoryReport) : null;
+        const previousLessonHomework =
+          typeof previous?.nextLessonHomework === "string"
+            ? previous.nextLessonHomework
+            : "";
+        const previousReviewHomework =
+          typeof previous?.nextReviewHomework === "string"
+            ? previous.nextReviewHomework
+            : "";
+        const lessonHomework = parseHomeworkRange(previousLessonHomework);
+        const reviewHomework = parseHomeworkRange(previousReviewHomework);
+
+        setPreviousReport(previous);
         setRecentReports(
           res.ok && Array.isArray(data.reports)
             ? data.reports.slice(0, 3)
@@ -346,6 +429,27 @@ function NewReportForm() {
             ? data.lastNextHomework
             : ""
         );
+        setFormData((prev) => ({
+          ...prev,
+          lessonSurah: lessonHomework.startSurah,
+          pageFrom: lessonHomework.from,
+          pageTo: lessonHomework.to,
+          pagesCount: lessonHomework.pagesCount,
+          reviewSurah: reviewHomework.startSurah,
+          reviewFrom: reviewHomework.from,
+          reviewTo: reviewHomework.to,
+          reviewPagesCount: reviewHomework.pagesCount,
+          nextLessonStartSurah: "",
+          nextLessonEndSurah: "",
+          nextLessonFrom: "",
+          nextLessonTo: "",
+          nextLessonPagesCount: "",
+          nextReviewStartSurah: "",
+          nextReviewEndSurah: "",
+          nextReviewFrom: "",
+          nextReviewTo: "",
+          nextReviewPagesCount: "",
+        }));
       } catch (error) {
         console.error("FETCH STUDENT HISTORY ERROR =>", error);
         setPreviousReport(null);
@@ -764,20 +868,18 @@ function NewReportForm() {
                   <div>
                     <label className="mb-2 block text-sm font-black text-[#1c2d31]">من</label>
                     <input
-                      type="number"
-                      min="1"
                       value={formData.pageFrom}
                       onChange={(e) => setField("pageFrom", e.target.value)}
+                      placeholder="مثال: 1 أو بداية السورة"
                       className={inputClass}
                     />
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-black text-[#1c2d31]">إلى</label>
                     <input
-                      type="number"
-                      min="1"
                       value={formData.pageTo}
                       onChange={(e) => setField("pageTo", e.target.value)}
+                      placeholder="مثال: 10 أو نهاية السورة"
                       className={inputClass}
                     />
                   </div>
@@ -824,20 +926,18 @@ function NewReportForm() {
                   <div>
                     <label className="mb-2 block text-sm font-black text-[#1c2d31]">من</label>
                     <input
-                      type="number"
-                      min="1"
                       value={formData.reviewFrom}
                       onChange={(e) => setField("reviewFrom", e.target.value)}
+                      placeholder="مثال: 30 أو نهاية السورة"
                       className={inputClass}
                     />
                   </div>
                   <div>
                     <label className="mb-2 block text-sm font-black text-[#1c2d31]">إلى</label>
                     <input
-                      type="number"
-                      min="1"
                       value={formData.reviewTo}
                       onChange={(e) => setField("reviewTo", e.target.value)}
+                      placeholder="مثال: 5 أو بداية السورة"
                       className={inputClass}
                     />
                   </div>
