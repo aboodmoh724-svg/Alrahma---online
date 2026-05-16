@@ -18,6 +18,83 @@ function onsiteAbsenceNotice(input: { studentName: string; reportDate: string })
   );
 }
 
+async function sendAbsenceReportWhatsApp(input: {
+  reportId: string;
+  reportDate: string;
+}) {
+  const report = await prisma.report.findFirst({
+    where: {
+      id: input.reportId,
+      status: "ABSENT",
+      student: {
+        studyMode: "ONSITE",
+        isActive: true,
+      },
+    },
+    select: {
+      id: true,
+      sentToParent: true,
+      student: {
+        select: {
+          fullName: true,
+          parentWhatsapp: true,
+        },
+      },
+    },
+  });
+
+  if (!report || report.sentToParent) {
+    return;
+  }
+
+  const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp || "");
+
+  if (!phone) {
+    await prisma.report.update({
+      where: { id: report.id },
+      data: {
+        sentToParent: false,
+        parentSentAt: null,
+        parentSentChannel: null,
+        parentSentError: "لا يوجد رقم واتساب صالح لولي الأمر",
+      },
+    });
+    return;
+  }
+
+  try {
+    await sendWhatsAppText({
+      to: phone,
+      body: onsiteAbsenceNotice({
+        studentName: report.student.fullName,
+        reportDate: input.reportDate,
+      }),
+      channel: "ONSITE",
+    });
+
+    await prisma.report.update({
+      where: { id: report.id },
+      data: {
+        sentToParent: true,
+        parentSentAt: new Date(),
+        parentSentChannel: "WHATSAPP",
+        parentSentError: null,
+      },
+    });
+  } catch (error) {
+    await prisma.report.update({
+      where: { id: report.id },
+      data: {
+        sentToParent: false,
+        parentSentAt: null,
+        parentSentChannel: null,
+        parentSentError:
+          error instanceof Error ? error.message : "تعذر إرسال رسالة واتساب",
+      },
+    });
+  }
+}
+
 async function updateTodayAttendanceStatus(formData: FormData) {
   "use server";
 
@@ -134,53 +211,62 @@ async function sendTodayAbsenceWhatsApp() {
   const reportDate = formatIstanbulDateEnglish(start);
 
   for (const report of latestAbsenceByStudent.values()) {
-    const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp || "");
-
-    if (!phone) {
-      await prisma.report.update({
-        where: { id: report.id },
-        data: {
-          sentToParent: false,
-          parentSentAt: null,
-          parentSentChannel: null,
-          parentSentError: "لا يوجد رقم واتساب صالح لولي الأمر",
-        },
-      });
-      continue;
-    }
-
-    try {
-      await sendWhatsAppText({
-        to: phone,
-        body: onsiteAbsenceNotice({
-          studentName: report.student.fullName,
-          reportDate,
-        }),
-        channel: "ONSITE",
-      });
-
-      await prisma.report.update({
-        where: { id: report.id },
-        data: {
-          sentToParent: true,
-          parentSentAt: new Date(),
-          parentSentChannel: "WHATSAPP",
-          parentSentError: null,
-        },
-      });
-    } catch (error) {
-      await prisma.report.update({
-        where: { id: report.id },
-        data: {
-          sentToParent: false,
-          parentSentAt: null,
-          parentSentChannel: null,
-          parentSentError:
-            error instanceof Error ? error.message : "تعذر إرسال رسالة واتساب",
-        },
-      });
-    }
+    await sendAbsenceReportWhatsApp({
+      reportId: report.id,
+      reportDate,
+    });
   }
+
+  revalidatePath("/onsite/admin/absences");
+  revalidatePath("/onsite/admin/absence-statistics");
+}
+
+async function sendOneAbsenceWhatsApp(formData: FormData) {
+  "use server";
+
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const reportId = String(formData.get("reportId") || "");
+
+  if (!adminId || !reportId || !isWhatsAppConfigured("ONSITE")) {
+    return;
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) return;
+
+  const { start, end } = getIstanbulDayRange();
+  const report = await prisma.report.findFirst({
+    where: {
+      id: reportId,
+      status: "ABSENT",
+      createdAt: {
+        gte: start,
+        lt: end,
+      },
+      student: {
+        studyMode: "ONSITE",
+        isActive: true,
+      },
+    },
+    select: { id: true },
+  });
+
+  if (!report) return;
+
+  await sendAbsenceReportWhatsApp({
+    reportId: report.id,
+    reportDate: formatIstanbulDateEnglish(start),
+  });
 
   revalidatePath("/onsite/admin/absences");
   revalidatePath("/onsite/admin/absence-statistics");
@@ -321,7 +407,11 @@ export default async function OnsiteAdminAbsencesPage({ searchParams }: PageProp
     return matchesSearch && matchesStatus;
   });
   const absences = todayAttendance.filter((report) => report.status === "ABSENT");
-  const pendingAbsences = absences.filter((report) => !report.sentToParent);
+  const pendingAbsences = absences.filter(
+    (report) =>
+      !report.sentToParent &&
+      Boolean(normalizeWhatsAppNumber(report.student.parentWhatsapp || ""))
+  );
   const presentCount = todayAttendance.filter((report) => report.status === "PRESENT").length;
   const absentCount = absences.length;
   const reportDate = formatIstanbulDateEnglish(start);
@@ -516,7 +606,7 @@ export default async function OnsiteAdminAbsencesPage({ searchParams }: PageProp
                     {!whatsappReady
                       ? "واتساب الحضوري غير مفعّل"
                       : pendingAbsences.length === 0
-                        ? "لا يوجد غياب بانتظار الإرسال"
+                        ? "لا يوجد غياب قابل للإرسال"
                         : "إرسال رسائل الغياب لجميع الغائبين"}
                   </button>
                 </form>
@@ -576,6 +666,24 @@ export default async function OnsiteAdminAbsencesPage({ searchParams }: PageProp
                       {phone ? (
                         <p className="text-center text-xs font-bold text-[#1c2d31]/50">{phone}</p>
                       ) : null}
+                      <form action={sendOneAbsenceWhatsApp}>
+                        <input type="hidden" name="reportId" value={report.id} />
+                        <button
+                          type="submit"
+                          disabled={
+                            !whatsappReady || report.sentToParent || !phone
+                          }
+                          className="w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-45"
+                        >
+                          {!whatsappReady
+                            ? "واتساب غير مفعّل"
+                            : report.sentToParent
+                              ? "تم الإرسال"
+                              : phone
+                                ? "إرسال لهذا الطالب"
+                                : "لا يوجد رقم"}
+                        </button>
+                      </form>
                     </div>
                   </div>
                 );
