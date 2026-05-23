@@ -6,7 +6,7 @@ import { getAppBaseUrl } from "@/lib/app-url";
 const portals = [
   {
     title: "التعليم عن بعد",
-    description: "لوحات الزوم، التقارير اليومية، وسجل الطلاب.",
+    description: "قسم الحلقات الإلكترونية، تقارير المعلمين، متابعة الإشراف، وطلبات التسجيل.",
     badge: "Online",
     accent: "from-[#0f5a35] to-[#0a3f2a]",
     links: [
@@ -17,7 +17,7 @@ const portals = [
   },
   {
     title: "التعليم الحضوري - أفيون",
-    description: "إدارة مركز أفيون، الحلقات، المعلمين، والتحضير السريع.",
+    description: "قسم مركز أفيون الحضوري لإدارة الطلاب والمعلمين والحلقات والغياب اليومي.",
     badge: "Afyon",
     accent: "from-[#bd8f2d] to-[#8a661f]",
     links: [
@@ -27,36 +27,13 @@ const portals = [
   },
   {
     title: "التعليم الحضوري - سوريا",
-    description: "قسم مستقل لحلقات سوريا وطلابها ومعلميها، دون خلط مع أفيون.",
+    description: "قسم مستقل لحلقات سوريا، يبدأ ببياناته الخاصة ويُدار دون خلط مع أفيون.",
     badge: "Syria",
     accent: "from-[#2f6f73] to-[#0f5a35]",
     links: [
       { href: "/syria/admin/login", label: "دخول الإدارة" },
       { href: "/syria/teacher/login", label: "دخول المعلم" },
     ],
-  },
-];
-
-const shortcuts = [
-  {
-    href: "/registration",
-    title: "تسجيل طالب جديد",
-    description: "رابط عام لأولياء الأمور لتقديم طلب تسجيل الطالب.",
-  },
-  {
-    href: "/remote",
-    title: "صفحة التعليم عن بعد",
-    description: "اختيار نوع الدخول الخاص بالحلقات عن بعد.",
-  },
-  {
-    href: "/onsite",
-    title: "صفحة حضوري أفيون",
-    description: "اختيار نوع الدخول الخاص بحلقات أفيون.",
-  },
-  {
-    href: "/syria",
-    title: "صفحة حضوري سوريا",
-    description: "اختيار نوع الدخول الخاص بحلقات سوريا.",
   },
 ];
 
@@ -76,7 +53,7 @@ export default function HomePage() {
           </Link>
         </header>
 
-        <section className="grid flex-1 gap-4 lg:grid-cols-[0.86fr_1.14fr] lg:items-stretch">
+        <section className="grid flex-1 gap-4 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
           <div className="relative overflow-hidden rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:rounded-[2.75rem] sm:p-8">
             <BrandHeroMedia src="/images/rahma-scene-circle.jpeg" opacity="opacity-60" />
             <div className="absolute -left-20 top-12 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
@@ -103,68 +80,41 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-3">
-              {portals.map((portal) => (
-                <section
-                  key={portal.title}
-                  className="rahma-card overflow-hidden rounded-[2rem] p-4 shadow-sm sm:rounded-[2.5rem] sm:p-5"
-                >
-                  <div className={`rounded-[1.6rem] bg-gradient-to-br ${portal.accent} p-5 text-white`}>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
-                        {portal.badge}
-                      </span>
-                      <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/16 text-xl">
-                        ◆
-                      </span>
-                    </div>
-                    <h2 className="mt-5 text-2xl font-black">{portal.title}</h2>
-                    <p className="mt-2 min-h-14 text-sm leading-7 text-white/74">
-                      {portal.description}
-                    </p>
+          <div className="grid gap-4">
+            {portals.map((portal) => (
+              <section
+                key={portal.title}
+                className="rahma-card grid overflow-hidden rounded-[2rem] p-3 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2.5rem] sm:p-4 md:grid-cols-[0.9fr_1.1fr]"
+              >
+                <div className={`rounded-[1.6rem] bg-gradient-to-br ${portal.accent} p-5 text-white`}>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
+                      {portal.badge}
+                    </span>
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/16 text-xl">
+                      ◆
+                    </span>
                   </div>
-
-                  <div className="mt-3 grid gap-2">
-                    {portal.links.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className="flex items-center justify-between rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-white hover:shadow-sm"
-                      >
-                        {link.label}
-                        <span className="text-lg">←</span>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-
-            <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2.5rem] sm:p-5">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-black text-[#8a661f]">اختصارات مهمة</p>
-                  <h2 className="text-xl font-black text-[#1c2d31]">روابط سريعة</h2>
+                  <h2 className="mt-6 text-2xl font-black sm:text-3xl">{portal.title}</h2>
+                  <p className="mt-3 text-sm leading-8 text-white/78">
+                    {portal.description}
+                  </p>
                 </div>
-                <span className="rounded-full bg-[#0f5a35]/10 px-3 py-1 text-xs font-black text-[#0f5a35]">
-                  للكادر والإدارة
-                </span>
-              </div>
 
-              <div className="grid gap-2 md:grid-cols-3">
-                {shortcuts.map((shortcut) => (
-                  <Link
-                    key={shortcut.href}
-                    href={shortcut.href}
-                    className="rounded-2xl border border-[#d8bf83]/70 bg-[#fffaf4] p-4 transition hover:-translate-y-0.5 hover:bg-white"
-                  >
-                    <h3 className="text-sm font-black text-[#1c2d31]">{shortcut.title}</h3>
-                    <p className="mt-2 text-xs leading-6 text-[#1c2d31]/58">{shortcut.description}</p>
-                  </Link>
-                ))}
-              </div>
-            </section>
+                <div className="flex flex-col justify-center gap-2 p-2 sm:p-4">
+                  {portal.links.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className="flex items-center justify-between rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83]/70 transition hover:bg-white hover:shadow-sm"
+                    >
+                      {link.label}
+                      <span className="text-lg">←</span>
+                    </Link>
+                  ))}
+                </div>
+              </section>
+            ))}
           </div>
         </section>
       </div>
