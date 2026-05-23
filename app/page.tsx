@@ -16,13 +16,23 @@ const portals = [
     ],
   },
   {
-    title: "التعليم الحضوري",
-    description: "إدارة المركز، الحلقات، المعلمين، والتحضير السريع.",
-    badge: "Center",
+    title: "التعليم الحضوري - أفيون",
+    description: "إدارة مركز أفيون، الحلقات، المعلمين، والتحضير السريع.",
+    badge: "Afyon",
     accent: "from-[#bd8f2d] to-[#8a661f]",
     links: [
       { href: "/onsite/admin/login", label: "دخول الإدارة" },
       { href: "/onsite/teacher/login", label: "دخول المعلم" },
+    ],
+  },
+  {
+    title: "التعليم الحضوري - سوريا",
+    description: "قسم مستقل لحلقات سوريا وطلابها ومعلميها، دون خلط مع أفيون.",
+    badge: "Syria",
+    accent: "from-[#2f6f73] to-[#0f5a35]",
+    links: [
+      { href: "/syria/admin/login", label: "دخول الإدارة" },
+      { href: "/syria/teacher/login", label: "دخول المعلم" },
     ],
   },
 ];
@@ -40,8 +50,13 @@ const shortcuts = [
   },
   {
     href: "/onsite",
-    title: "صفحة التعليم الحضوري",
-    description: "اختيار نوع الدخول الخاص بحلقات المركز.",
+    title: "صفحة حضوري أفيون",
+    description: "اختيار نوع الدخول الخاص بحلقات أفيون.",
+  },
+  {
+    href: "/syria",
+    title: "صفحة حضوري سوريا",
+    description: "اختيار نوع الدخول الخاص بحلقات سوريا.",
   },
 ];
 
@@ -75,7 +90,8 @@ export default function HomePage() {
                   كل الحلقات في مكان واحد سريع وواضح
                 </h1>
                 <p className="mt-4 max-w-lg text-sm leading-8 text-white/72 sm:text-base">
-                  هذا هو مركز الدخول للكادر: التعليم عن بعد، التعليم الحضوري، والإشراف، ولوحة
+                  هذا هو مركز الدخول للكادر: التعليم عن بعد، حضوري أفيون، حضوري سوريا،
+                  والإشراف، ولوحة
                   التسجيل العامة كلها من رابط واحد.
                 </p>
               </div>
@@ -88,7 +104,7 @@ export default function HomePage() {
           </div>
 
           <div className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 md:grid-cols-3">
               {portals.map((portal) => (
                 <section
                   key={portal.title}
