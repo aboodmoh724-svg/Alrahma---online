@@ -10,6 +10,7 @@ import {
 import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
 function normalizeChannel(value: unknown): StudyMode {
+  if (value === "ONSITE_SYRIA") return "ONSITE_SYRIA";
   return value === "ONSITE" ? "ONSITE" : "REMOTE";
 }
 

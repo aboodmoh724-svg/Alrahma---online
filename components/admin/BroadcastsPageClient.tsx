@@ -24,7 +24,7 @@ type BroadcastResult = {
 type RecipientType = "ALL_PARENTS" | "ALL_TEACHERS" | "SELECTED_PARENTS";
 
 type BroadcastsPageClientProps = {
-  scope: "REMOTE" | "ONSITE";
+  scope: "REMOTE" | "ONSITE" | "ONSITE_SYRIA";
   sectionTitle: string;
   dashboardHref: string;
   parentOptions: RecipientOption[];

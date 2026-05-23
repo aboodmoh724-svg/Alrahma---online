@@ -1,0 +1,540 @@
+﻿import Link from "next/link";
+import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
+import { cookies } from "next/headers";
+import LogoutButton from "@/components/auth/LogoutButton";
+import QuickAttendanceButtons from "@/components/reports/QuickAttendanceButtons";
+import { prisma } from "@/lib/prisma";
+import { getIstanbulDayRange } from "@/lib/school-day";
+import { createSignedStorageUrl } from "@/lib/supabase-storage";
+
+type TodayReport = {
+  id: string;
+  lessonName: string;
+  pageFrom: number | null;
+  pageTo: number | null;
+  pagesCount: number | null;
+  status: "PRESENT" | "ABSENT";
+  sentToParent: boolean;
+  parentSentAt?: Date | null;
+  parentSentError?: string | null;
+};
+
+type StudentWithTodayReports = {
+  id: string;
+  fullName: string;
+  parentWhatsapp: string | null;
+  parentEmail: string | null;
+  reports: TodayReport[];
+};
+
+type CircleWithStudents = {
+  id: string;
+  name: string;
+  track: string | null;
+  studyMode: "REMOTE" | "ONSITE_SYRIA";
+  zoomUrl: string | null;
+  students: StudentWithTodayReports[];
+};
+
+type TeacherDashboardProps = {
+  searchParams?: Promise<{
+    circleId?: string;
+  }>;
+};
+
+function trackLabel(track: string | null) {
+  if (track === "ONSITE_ALL") return "حضوري";
+  if (track === "HIJAA") return "مسار الهجاء";
+  if (track === "RUBAI") return "المسار الرباعي";
+  if (track === "FARDI") return "المسار الفردي";
+  if (track === "TILAWA") return "مسار التلاوة";
+  return "لم يحدد";
+}
+
+export default async function OnsiteTeacherDashboardPage({
+  searchParams,
+}: TeacherDashboardProps) {
+  const cookieStore = await cookies();
+  const teacherId = cookieStore.get("alrahma_user_id")?.value;
+  const params = await searchParams;
+  const selectedCircleId = params?.circleId || "";
+  const { start, end } = getIstanbulDayRange();
+
+  if (!teacherId) {
+    return (
+      <main className="rahma-shell min-h-screen p-6" dir="rtl">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <p className="font-black">الرجاء تسجيل الدخول أولا.</p>
+          <Link
+            href="/syria/teacher/login"
+            className="mt-3 inline-flex rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700"
+          >
+            تسجيل الدخول
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const teacher = await prisma.user.findFirst({
+    where: {
+      id: teacherId,
+      role: "TEACHER",
+      studyMode: "ONSITE_SYRIA",
+      isActive: true,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      zoomLinks: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+        select: {
+          url: true,
+        },
+      },
+      circles: {
+        orderBy: {
+          createdAt: "desc",
+        },
+        include: {
+          students: {
+            where: {
+              isActive: true,
+              studyMode: "ONSITE_SYRIA",
+            },
+            orderBy: {
+              fullName: "asc",
+            },
+            include: {
+              reports: {
+                where: {
+                  createdAt: {
+                    gte: start,
+                    lt: end,
+                  },
+                },
+                orderBy: {
+                  createdAt: "desc",
+                },
+                select: {
+                  id: true,
+                  lessonName: true,
+                  pageFrom: true,
+                  pageTo: true,
+                  pagesCount: true,
+                  status: true,
+                  sentToParent: true,
+                  parentSentAt: true,
+                  parentSentError: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!teacher) {
+    return (
+      <main className="rahma-shell min-h-screen p-6" dir="rtl">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-200 bg-red-50 p-5 text-red-700">
+          <p className="font-black">لا يمكن عرض لوحة المعلم لهذا الحساب.</p>
+          <Link
+            href="/syria/teacher/login"
+            className="mt-3 inline-flex rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700"
+          >
+            تسجيل الدخول بحساب معلم
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const circles = teacher.circles.filter((circle) => circle.studyMode === "ONSITE_SYRIA") as CircleWithStudents[];
+  const activeCircle =
+    circles.find((circle) => circle.id === selectedCircleId) || circles[0] || null;
+  const fallbackStudents = activeCircle
+    ? []
+    : ((await prisma.student.findMany({
+        where: {
+          teacherId: teacher.id,
+          isActive: true,
+          studyMode: "ONSITE_SYRIA",
+        },
+        orderBy: {
+          fullName: "asc",
+        },
+        include: {
+          reports: {
+            where: {
+              createdAt: {
+                gte: start,
+                lt: end,
+              },
+            },
+            orderBy: {
+              createdAt: "desc",
+            },
+            select: {
+              id: true,
+              lessonName: true,
+              pageFrom: true,
+              pageTo: true,
+              pagesCount: true,
+              status: true,
+              sentToParent: true,
+              parentSentAt: true,
+              parentSentError: true,
+            },
+          },
+        },
+      })) as StudentWithTodayReports[]);
+  const students = activeCircle ? activeCircle.students : fallbackStudents;
+  const studentsCount = students.length;
+  const completedTodayCount = students.filter(
+    (student) => student.reports.length > 0
+  ).length;
+  const latestCircleLink =
+    activeCircle?.zoomUrl || teacher.zoomLinks[0]?.url || null;
+  const storedTrackResources = await prisma.trackResource.findMany({
+    where: {
+      track: activeCircle?.track || "ONSITE_ALL",
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+  const trackResources = await Promise.all(
+    storedTrackResources.map(async (resource) => ({
+      ...resource,
+      fileUrl: await createSignedStorageUrl(resource.fileUrl),
+    }))
+  ).then((resources) =>
+    resources.filter(
+      (resource): resource is typeof resource & { fileUrl: string } =>
+        Boolean(resource.fileUrl)
+    )
+  );
+  const addReportHref = activeCircle
+    ? `/syria/teacher/reports/new?circleId=${activeCircle.id}`
+    : "/syria/teacher/reports/new";
+
+  return (
+    <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
+      <div className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[300px_1fr]">
+        <aside className="space-y-4 lg:sticky lg:top-6 lg:self-start">
+          <section className="rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <p className="text-sm font-bold text-[#f2d18a]">لوحة المعلم</p>
+              <LogoutButton className="rounded-full bg-white px-4 py-2 text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4] disabled:opacity-60" />
+            </div>
+            <h2 className="mt-2 text-2xl font-black">{teacher.fullName}</h2>
+            <p className="mt-2 text-sm leading-7 text-white/70">
+              اختر الحلقة التي تريد العمل عليها ثم أضف تقارير طلابها.
+            </p>
+          </section>
+
+          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+            <h3 className="mb-3 text-sm font-black text-[#1c2d31]">عرض حلقاتي</h3>
+            <div className="space-y-2">
+              {circles.length === 0 ? (
+                <div className="rounded-2xl bg-[#f6eee7] p-3 text-sm text-[#1c2d31]/60">
+                  لم يتم تعيين حلقات لك حتى الآن.
+                </div>
+              ) : (
+                circles.map((circle) => {
+                  const isActive = activeCircle?.id === circle.id;
+
+                  return (
+                    <Link
+                      key={circle.id}
+                      href={`/syria/teacher/dashboard?circleId=${circle.id}`}
+                      className={`block rounded-2xl p-3 text-sm transition ${
+                        isActive
+                          ? "bg-[#0f5a35] text-white"
+                          : "bg-[#fffaf4] text-[#1c2d31] hover:bg-white"
+                      }`}
+                    >
+                      <span className="block font-black">{circle.name}</span>
+                      <span
+                        className={
+                          isActive ? "text-white/70" : "text-[#1c2d31]/55"
+                        }
+                      >
+                        {trackLabel(circle.track)} - {circle.students.length} طالب
+                      </span>
+                    </Link>
+                  );
+                })
+              )}
+            </div>
+          </section>
+
+          <section className="rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+            <h3 className="mb-3 text-sm font-black text-[#1c2d31]">القائمة</h3>
+            <div className="space-y-2 text-sm font-bold">
+              <a
+                href="#teacher-data"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
+              >
+                بيانات المعلم
+              </a>
+              <a
+                href="#students-list"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
+              >
+                طلاب الحلقة
+              </a>
+              <a
+                href="#important-files"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
+              >
+                ملفات مهمة
+              </a>
+              <a
+                href="#track-files"
+                className="block rounded-2xl bg-[#fffaf4] px-4 py-3 text-[#1c2d31] hover:bg-white"
+              >
+                ملفات المسارات
+              </a>
+            </div>
+          </section>
+        </aside>
+
+        <div className="space-y-6">
+          <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+            <BrandHeroMedia src="/images/rahma-scene-class.jpeg" opacity="opacity-50" />
+            <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
+            <div className="absolute bottom-0 right-1/3 h-72 w-72 rounded-full bg-white/8" />
+            <div className="relative grid gap-6 xl:grid-cols-[1.2fr_0.8fr] xl:items-center">
+              <div>
+                <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
+                  أهلا وسهلا بك الأستاذ {teacher.fullName}
+                </p>
+                <h1 className="mt-5 max-w-3xl text-3xl font-black leading-tight md:text-5xl">
+                  وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ
+                  <br />
+                  وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي
+                </h1>
+                <p className="mt-4 max-w-2xl text-sm leading-8 text-white/72">
+                  {activeCircle
+                    ? `أنت تعمل الآن داخل ${activeCircle.name}.`
+                    : "هذه لوحة عامة لأن المعلم لم تسند له حلقة محددة بعد."}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Link
+                  href={addReportHref}
+                  className="rounded-[1.5rem] bg-[#bd8f2d] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#a97d25]"
+                >
+                  إضافة تقرير
+                </Link>
+                {latestCircleLink ? (
+                  <a
+                    href={latestCircleLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-[1.5rem] bg-white px-5 py-4 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#f6eee7]"
+                  >
+                    فتح رابط الحلقة
+                  </a>
+                ) : (
+                  <div className="rounded-[1.5rem] bg-white/10 px-5 py-4 text-center text-sm font-black text-white/70">
+                    لا يوجد رابط للحلقة
+                  </div>
+                )}
+              </div>
+            </div>
+          </section>
+
+          <section id="teacher-data" className="grid gap-4 md:grid-cols-4">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-bold text-[#1c2d31]/55">عدد الطلاب</p>
+              <p className="mt-2 text-4xl font-black text-[#0a3f2a]">
+                {studentsCount}
+              </p>
+            </div>
+
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-bold text-[#1c2d31]/55">تقارير اليوم</p>
+              <p className="mt-2 text-4xl font-black text-[#0f5a35]">
+                {completedTodayCount} / {studentsCount}
+              </p>
+            </div>
+
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-bold text-[#1c2d31]/55">اسم الحلقة</p>
+              <p className="mt-2 text-xl font-black text-[#bd8f2d]">
+                {activeCircle?.name || "لم تحدد بعد"}
+              </p>
+            </div>
+
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-bold text-[#1c2d31]/55">مسار الحلقة</p>
+              <p className="mt-2 text-xl font-black text-[#0a3f2a]">
+                {trackLabel(activeCircle?.track || null)}
+              </p>
+              <p className="mt-2 text-sm font-bold text-[#1c2d31]/55">
+                النوع: حضوري
+              </p>
+            </div>
+          </section>
+
+          <section
+            id="students-list"
+            className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
+          >
+            <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-[#1c2d31]">
+                  طلاب الحلقة
+                </h2>
+                <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
+                  تظهر هنا تقارير اليوم للطلاب داخل الحلقة المختارة فقط.
+                  بعد تسجيل حاضر أو غائب ينتقل التعديل إلى واجهة الإدارة فقط.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
+                {studentsCount} طالب
+              </span>
+            </div>
+
+            {students.length === 0 ? (
+              <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
+                لا يوجد طلاب في هذه الحلقة حتى الآن
+              </div>
+            ) : (
+              <div className="grid gap-3">
+                {students.map((student) => {
+                  const todayReport = student.reports[0];
+                  const isAbsent = todayReport?.status === "ABSENT";
+                  const studentReportHref = activeCircle
+                    ? `/syria/teacher/reports/new?circleId=${activeCircle.id}&studentId=${student.id}`
+                    : `/syria/teacher/reports/new?studentId=${student.id}`;
+
+                  return (
+                    <div
+                      key={student.id}
+                      className="grid gap-4 rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4 md:grid-cols-[1fr_auto] md:items-center"
+                    >
+                      <div>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <p className="text-lg font-black text-[#1c2d31]">
+                            {student.fullName}
+                          </p>
+                          {todayReport ? (
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-black ${
+                                isAbsent
+                                  ? "bg-amber-100 text-amber-800"
+                                  : "bg-emerald-100 text-emerald-800"
+                              }`}
+                            >
+                              {isAbsent ? "غائب اليوم" : "تم حفظ تقرير اليوم"}
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600">
+                              لم يبدأ بعد
+                            </span>
+                          )}
+                        </div>
+
+                        {todayReport ? (
+                          <div className="mt-2 space-y-1 text-sm leading-7 text-[#1c2d31]/60">
+                            <p>{todayReport.lessonName}</p>
+                            {!isAbsent ? (
+                              <p>
+                                الصفحات:{" "}
+                                {todayReport.pageFrom && todayReport.pageTo
+                                  ? `من ${todayReport.pageFrom} إلى ${todayReport.pageTo}`
+                                  : "غير محددة"}
+                                {todayReport.pagesCount
+                                  ? ` - عدد الصفحات: ${todayReport.pagesCount}`
+                                  : ""}
+                              </p>
+                            ) : null}
+                          </div>
+                        ) : (
+                          <p className="mt-2 text-sm text-[#1c2d31]/55">
+                            أضف التقرير أو احفظ الغياب عند بداية المتابعة.
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col gap-2 md:min-w-48">
+                        {todayReport ? (
+                          <div className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-black text-emerald-800 ring-1 ring-emerald-200">
+                            تم تسجيل حضور / غياب الطالب وإرساله للإدارة
+                          </div>
+                        ) : null}
+
+                        {!todayReport ? (
+                          <QuickAttendanceButtons studentId={student.id} />
+                        ) : null}
+
+                        <Link
+                          href={studentReportHref}
+                          className="rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+                        >
+                          {todayReport ? "إضافة تقرير آخر" : "إضافة تقرير"}
+                        </Link>
+                        <Link
+                          href={`/syria/teacher/students/${student.id}/history`}
+                          className="rounded-xl border border-[#d8bf83] px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                        >
+                          سجل الطالب
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section id="important-files" className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+              <h2 className="text-xl font-black text-[#1c2d31]">ملفات مهمة</h2>
+              <p className="mt-2 text-sm leading-7 text-[#1c2d31]/58">
+                سنضيف هنا ملفات آلية سير الحلقة والملفات التشغيلية التي يحتاجها المعلم.
+              </p>
+            </div>
+            <div
+              id="track-files"
+              className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]"
+            >
+              <h2 className="text-xl font-black text-[#1c2d31]">ملفات المسارات</h2>
+              <p className="mt-2 text-sm leading-7 text-[#1c2d31]/58">
+                المسار الحالي: {trackLabel(activeCircle?.track || null)}.
+              </p>
+              <div className="mt-4 space-y-2">
+                {trackResources.length === 0 ? (
+                  <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#1c2d31]/60">
+                    لا توجد ملفات لهذا المسار حتى الآن.
+                  </p>
+                ) : (
+                  trackResources.map((resource) => (
+                    <a
+                      key={resource.id}
+                      href={resource.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="block rounded-2xl bg-[#fffaf4] p-4 text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                    >
+                      {resource.title}
+                    </a>
+                  ))
+                )}
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  );
+}

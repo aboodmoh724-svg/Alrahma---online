@@ -15,8 +15,9 @@ const clientId = String(process.env.WHATSAPP_CLIENT_ID || "alrahma-main").trim()
 const authDataPath = String(process.env.WHATSAPP_AUTH_DATA_PATH || ".wwebjs_auth").trim();
 const incomingWebhookUrl = String(process.env.APP_INCOMING_WHATSAPP_WEBHOOK_URL || "").trim();
 const incomingWebhookToken = String(process.env.APP_INCOMING_WHATSAPP_WEBHOOK_TOKEN || "").trim();
-const whatsappChannel = String(process.env.WHATSAPP_CHANNEL || "REMOTE").trim().toUpperCase() === "ONSITE"
-  ? "ONSITE"
+const requestedChannel = String(process.env.WHATSAPP_CHANNEL || "REMOTE").trim().toUpperCase();
+const whatsappChannel = ["REMOTE", "ONSITE", "ONSITE_SYRIA"].includes(requestedChannel)
+  ? requestedChannel
   : "REMOTE";
 
 let ready = false;

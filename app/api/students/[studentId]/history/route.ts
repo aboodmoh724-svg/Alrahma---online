@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizeStudyMode } from "@/lib/study-modes";
 
 type RouteContext = {
   params: Promise<{
@@ -15,8 +16,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const { studentId } = await context.params;
     const url = new URL(_request.url);
     const rawStudyMode = url.searchParams.get("studyMode") || "";
-    const studyMode =
-      rawStudyMode === "REMOTE" || rawStudyMode === "ONSITE" ? rawStudyMode : "";
+    const studyMode = normalizeStudyMode(rawStudyMode) || "";
 
     if (!teacherId) {
       return NextResponse.json(

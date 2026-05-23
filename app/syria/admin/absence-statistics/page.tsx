@@ -1,0 +1,583 @@
+﻿import Link from "next/link";
+import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
+import { DeleteAbsencesButton } from "@/components/admin/DeleteAbsencesButton";
+import { prisma } from "@/lib/prisma";
+import {
+  formatIstanbulDateEnglish,
+  getIstanbulDateKey,
+  getIstanbulDayRange,
+} from "@/lib/school-day";
+
+type AbsenceSummary = {
+  studentId: string;
+  studentCode: string | null;
+  studentName: string;
+  parentWhatsapp: string | null;
+  circleName: string;
+  teacherName: string;
+  absenceDates: string[];
+  lastAbsenceAt: Date;
+};
+
+type DailyAttendanceSummary = {
+  dateKey: string;
+  dateLabel: string;
+  presentStudents: string[];
+  absentStudents: string[];
+  notRecordedStudents: string[];
+};
+
+async function deleteStudentAbsences(formData: FormData) {
+  "use server";
+
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const studentId = String(formData.get("studentId") || "");
+
+  if (!adminId || !studentId) {
+    return;
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE_SYRIA",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) {
+    return;
+  }
+
+  const student = await prisma.student.findFirst({
+    where: {
+      id: studentId,
+      studyMode: "ONSITE_SYRIA",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!student) {
+    return;
+  }
+
+  await prisma.report.deleteMany({
+    where: {
+      studentId: student.id,
+      status: "ABSENT",
+    },
+  });
+
+  revalidatePath("/syria/admin/absence-statistics");
+  revalidatePath("/syria/admin/absences");
+}
+
+async function deleteDayAttendanceRecords(formData: FormData) {
+  "use server";
+
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+  const dateKey = String(formData.get("dateKey") || "").trim();
+
+  if (!adminId || !/^\d{4}-\d{2}-\d{2}$/.test(dateKey)) {
+    return;
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE_SYRIA",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) {
+    return;
+  }
+
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const { start, end } = getIstanbulDayRange(new Date(Date.UTC(year, month - 1, day, 12, 0, 0)));
+
+  await prisma.report.deleteMany({
+    where: {
+      createdAt: {
+        gte: start,
+        lt: end,
+      },
+      student: {
+        studyMode: "ONSITE_SYRIA",
+        isActive: true,
+      },
+    },
+  });
+
+  revalidatePath("/syria/admin/absence-statistics");
+  revalidatePath("/syria/admin/absences");
+}
+
+export default async function OnsiteAbsenceStatisticsPage() {
+  const cookieStore = await cookies();
+  const adminId = cookieStore.get("alrahma_user_id")?.value;
+
+  if (!adminId) {
+    return (
+      <main className="rahma-shell min-h-screen p-6" dir="rtl">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <p className="font-black">الرجاء تسجيل الدخول أولا.</p>
+          <Link
+            href="/syria/admin/login"
+            className="mt-3 inline-flex rounded-xl bg-amber-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-amber-700"
+          >
+            تسجيل الدخول
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const admin = await prisma.user.findFirst({
+    where: {
+      id: adminId,
+      role: "ADMIN",
+      studyMode: "ONSITE_SYRIA",
+      isActive: true,
+    },
+    select: { id: true },
+  });
+
+  if (!admin) {
+    return (
+      <main className="rahma-shell min-h-screen p-6" dir="rtl">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-200 bg-red-50 p-5 text-red-700">
+          <p className="font-black">لا تملك صلاحية عرض إحصائيات الغياب.</p>
+          <Link
+            href="/syria/admin/login"
+            className="mt-3 inline-flex rounded-xl bg-red-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-red-700"
+          >
+            تسجيل الدخول بحساب إدارة الحضوري
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
+  const [absenceReports, attendanceReports, activeStudents] = await Promise.all([
+    prisma.report.findMany({
+      where: {
+        status: "ABSENT",
+        student: {
+          studyMode: "ONSITE_SYRIA",
+          isActive: true,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        student: {
+          select: {
+            id: true,
+            studentCode: true,
+            fullName: true,
+            parentWhatsapp: true,
+            circle: {
+              select: {
+                name: true,
+              },
+            },
+            teacher: {
+              select: {
+                fullName: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.report.findMany({
+      where: {
+        student: {
+          studyMode: "ONSITE_SYRIA",
+          isActive: true,
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      select: {
+        id: true,
+        createdAt: true,
+        status: true,
+        student: {
+          select: {
+            id: true,
+            fullName: true,
+            circle: {
+              select: {
+              name: true,
+              },
+            },
+            teacher: {
+              select: {
+              fullName: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.student.findMany({
+      where: {
+        studyMode: "ONSITE_SYRIA",
+        isActive: true,
+      },
+      orderBy: {
+        fullName: "asc",
+      },
+      select: {
+        id: true,
+        fullName: true,
+        circle: {
+          select: {
+            name: true,
+          },
+        },
+        teacher: {
+          select: {
+            fullName: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const summaries = new Map<string, AbsenceSummary & { dateKeys: Set<string> }>();
+
+  for (const report of absenceReports) {
+    const student = report.student;
+    const summary =
+      summaries.get(student.id) ||
+      ({
+        studentId: student.id,
+        studentCode: student.studentCode,
+        studentName: student.fullName,
+        parentWhatsapp: student.parentWhatsapp,
+        circleName: student.circle?.name || "غير محددة",
+        teacherName: student.teacher?.fullName || "غير محدد",
+        absenceDates: [],
+        dateKeys: new Set<string>(),
+        lastAbsenceAt: report.createdAt,
+      } satisfies AbsenceSummary & { dateKeys: Set<string> });
+
+    const dateKey = getIstanbulDateKey(report.createdAt);
+    if (!summary.dateKeys.has(dateKey)) {
+      summary.dateKeys.add(dateKey);
+      summary.absenceDates.push(formatIstanbulDateEnglish(report.createdAt));
+    }
+
+    if (report.createdAt > summary.lastAbsenceAt) {
+      summary.lastAbsenceAt = report.createdAt;
+    }
+
+    summaries.set(student.id, summary);
+  }
+
+  const absenceSummaries = Array.from(summaries.values())
+    .map((summary) => ({
+      studentId: summary.studentId,
+      studentCode: summary.studentCode,
+      studentName: summary.studentName,
+      parentWhatsapp: summary.parentWhatsapp,
+      circleName: summary.circleName,
+      teacherName: summary.teacherName,
+      absenceDates: summary.absenceDates,
+      lastAbsenceAt: summary.lastAbsenceAt,
+    }))
+    .sort((a, b) => {
+      if (b.absenceDates.length !== a.absenceDates.length) {
+        return b.absenceDates.length - a.absenceDates.length;
+      }
+
+      return b.lastAbsenceAt.getTime() - a.lastAbsenceAt.getTime();
+    });
+
+  const totalAbsenceDays = absenceSummaries.reduce(
+    (sum, summary) => sum + summary.absenceDates.length,
+    0
+  );
+  const latestReportByStudentDay = new Map<string, (typeof attendanceReports)[number]>();
+
+  for (const report of attendanceReports) {
+    const dateKey = getIstanbulDateKey(report.createdAt);
+    const key = `${dateKey}:${report.student.id}`;
+
+    if (!latestReportByStudentDay.has(key)) {
+      latestReportByStudentDay.set(key, report);
+    }
+  }
+
+  const dailySummariesMap = new Map<
+    string,
+    DailyAttendanceSummary & { recordedStudentIds: Set<string> }
+  >();
+
+  const activeStudentLine = (student: (typeof activeStudents)[number]) =>
+    `${student.fullName} - ${student.circle?.name || "غير محدد"} - ${
+      student.teacher?.fullName || "غير محدد"
+    }`;
+
+  for (const report of latestReportByStudentDay.values()) {
+    const dateKey = getIstanbulDateKey(report.createdAt);
+    const summary =
+      dailySummariesMap.get(dateKey) ||
+      ({
+        dateKey,
+        dateLabel: formatIstanbulDateEnglish(report.createdAt),
+        presentStudents: [],
+        absentStudents: [],
+        notRecordedStudents: [],
+        recordedStudentIds: new Set<string>(),
+      } satisfies DailyAttendanceSummary & { recordedStudentIds: Set<string> });
+    const studentLine = `${report.student.fullName} - ${
+      report.student.circle?.name || "غير محدد"
+    } - ${report.student.teacher?.fullName || "غير محدد"}`;
+
+    summary.recordedStudentIds.add(report.student.id);
+
+    if (report.status === "ABSENT") {
+      summary.absentStudents.push(studentLine);
+    } else {
+      summary.presentStudents.push(studentLine);
+    }
+
+    dailySummariesMap.set(dateKey, summary);
+  }
+
+  const dailySummaries = Array.from(dailySummariesMap.values())
+    .map((summary) => ({
+      dateKey: summary.dateKey,
+      dateLabel: summary.dateLabel,
+      presentStudents: summary.presentStudents,
+      absentStudents: summary.absentStudents,
+      notRecordedStudents: activeStudents
+        .filter((student) => !summary.recordedStudentIds.has(student.id))
+        .map(activeStudentLine),
+    }))
+    .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+
+  return (
+    <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
+      <div className="mx-auto max-w-7xl space-y-6">
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
+          <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
+                إحصائيات الغياب
+              </p>
+              <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
+                الطلاب الأكثر غيابا
+              </h1>
+              <p className="mt-4 text-sm leading-8 text-white/72">
+                يظهر هنا كل طالب تم تسجيله غائبا، وعدد أيام الغياب وتواريخها.
+              </p>
+            </div>
+            <Link
+              href="/syria/admin/dashboard"
+              className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#fffaf4]"
+            >
+              الرجوع للوحة الإدارة
+            </Link>
+          </div>
+        </section>
+
+        <section className="grid gap-4 md:grid-cols-3">
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <p className="text-sm font-bold text-[#1c2d31]/55">طلاب لديهم غياب</p>
+            <p className="mt-2 text-4xl font-black text-[#0a3f2a]">
+              {absenceSummaries.length}
+            </p>
+          </div>
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <p className="text-sm font-bold text-[#1c2d31]/55">إجمالي أيام الغياب</p>
+            <p className="mt-2 text-4xl font-black text-[#bd8f2d]">
+              {totalAbsenceDays}
+            </p>
+          </div>
+          <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <p className="text-sm font-bold text-[#1c2d31]/55">طريقة الحساب</p>
+            <p className="mt-2 text-sm font-black leading-7 text-[#0f5a35]">
+              يحتسب غياب الطالب مرة واحدة لكل يوم بتوقيت تركيا.
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+          <div className="mb-5">
+            <h2 className="text-2xl font-black text-[#1c2d31]">
+              الإحصائيات حسب الأيام
+            </h2>
+            <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
+              كل يوم يظهر عدد الحضور والغياب، ومن هم الحاضرون والغائبون.
+            </p>
+          </div>
+
+          {dailySummaries.length === 0 ? (
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
+              لا توجد سجلات حضور أو غياب حتى الآن.
+            </div>
+          ) : (
+            <div className="grid gap-4">
+              {dailySummaries.map((day) => (
+                <details
+                  key={day.dateKey}
+                  className="rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4"
+                >
+                  <summary className="cursor-pointer list-none">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <h3 className="text-xl font-black text-[#1c2d31]">
+                        {day.dateLabel}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 text-sm font-black">
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">
+                          حضور: {day.presentStudents.length}
+                        </span>
+                        <span className="rounded-full bg-amber-100 px-3 py-1 text-amber-800">
+                          غياب: {day.absentStudents.length}
+                        </span>
+                        <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                          لم يسجل لهم: {day.notRecordedStudents.length}
+                        </span>
+                      </div>
+                    </div>
+                  </summary>
+
+                  <div className="mt-4 max-w-xs">
+                    <form action={deleteDayAttendanceRecords}>
+                      <input type="hidden" name="dateKey" value={day.dateKey} />
+                      <DeleteAbsencesButton
+                        confirmMessage={`هل تريد مسح جميع سجلات الحضوري ليوم ${day.dateLabel}؟ سيتم حذف الحضور والغياب لذلك اليوم فقط.`}
+                        idleLabel="مسح سجلات هذا اليوم"
+                        pendingLabel="جاري مسح سجلات اليوم..."
+                      />
+                    </form>
+                  </div>
+
+                  <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
+                      <h4 className="font-black text-emerald-800">الحاضرون</h4>
+                      {day.presentStudents.length === 0 ? (
+                        <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
+                      ) : (
+                        <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
+                          {day.presentStudents.map((student) => (
+                            <li key={student}>{student}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
+                      <h4 className="font-black text-amber-800">الغائبون</h4>
+                      {day.absentStudents.length === 0 ? (
+                        <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
+                      ) : (
+                        <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
+                          {day.absentStudents.map((student) => (
+                            <li key={student}>{student}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]">
+                      <h4 className="font-black text-slate-700">لم يسجل لهم حضور أو غياب</h4>
+                      {day.notRecordedStudents.length === 0 ? (
+                        <p className="mt-2 text-sm text-[#1c2d31]/55">لا يوجد</p>
+                      ) : (
+                        <ul className="mt-3 space-y-2 text-sm font-bold leading-7 text-[#1c2d31]/70">
+                          {day.notRecordedStudents.map((student) => (
+                            <li key={student}>{student}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+          {absenceSummaries.length === 0 ? (
+            <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
+              لا توجد سجلات غياب حتى الآن.
+            </div>
+          ) : (
+            <div className="grid gap-3">
+              {absenceSummaries.map((summary) => (
+                <div
+                  key={summary.studentId}
+                  className="rounded-[1.8rem] border border-[#d8bf83]/75 bg-[#fffaf4] p-4"
+                >
+                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xl font-black text-[#1c2d31]">
+                          {summary.studentName}
+                        </h2>
+                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800">
+                          {summary.absenceDates.length} مرات
+                        </span>
+                      </div>
+                      <div className="mt-2 grid gap-1 text-sm leading-7 text-[#1c2d31]/60 md:grid-cols-2">
+                        <p>رقم الطالب: {summary.studentCode || "-"}</p>
+                        <p>الحلقة: {summary.circleName}</p>
+                        <p>المعلم: {summary.teacherName}</p>
+                        <p>ولي الأمر: {summary.parentWhatsapp || "-"}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <div className="rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#0a3f2a] ring-1 ring-[#d8bf83]">
+                        آخر غياب: {formatIstanbulDateEnglish(summary.lastAbsenceAt)}
+                      </div>
+                      <form action={deleteStudentAbsences}>
+                        <input
+                          type="hidden"
+                          name="studentId"
+                          value={summary.studentId}
+                        />
+                        <DeleteAbsencesButton
+                          studentName={summary.studentName}
+                        />
+                      </form>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {summary.absenceDates.map((date) => (
+                      <span
+                        key={date}
+                        className="rounded-full bg-white px-3 py-1 text-xs font-black text-[#1c2d31]/70 ring-1 ring-[#d8bf83]"
+                      >
+                        {date}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}

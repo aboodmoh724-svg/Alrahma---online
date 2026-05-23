@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { normalizeStudyMode } from "@/lib/study-modes"
 
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
     const rawStudyMode = url.searchParams.get("studyMode") || ""
-    const studyMode =
-      rawStudyMode === "REMOTE" || rawStudyMode === "ONSITE" ? rawStudyMode : ""
+    const studyMode = normalizeStudyMode(rawStudyMode) || ""
 
     const reports = await prisma.report.findMany({
       where: studyMode

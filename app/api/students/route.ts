@@ -5,14 +5,14 @@ import { generateStudentCode } from "@/lib/student-code";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { normalizePhoneDigits } from "@/lib/phone-number";
+import { normalizeStudyMode } from "@/lib/study-modes";
 
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url);
     const circleId = url.searchParams.get("circleId") || "";
     const rawStudyMode = url.searchParams.get("studyMode") || "";
-    const studyMode =
-      rawStudyMode === "REMOTE" || rawStudyMode === "ONSITE" ? rawStudyMode : "";
+    const studyMode = normalizeStudyMode(rawStudyMode) || "";
     const cookieStore = await cookies();
     const userId = cookieStore.get("alrahma_user_id")?.value;
     const user = userId
@@ -116,7 +116,7 @@ export async function POST(req: Request) {
     const nationality = String(body.nationality || "").trim();
     const generalLevel = String(body.generalLevel || "").trim();
     const notes = String(body.notes || "").trim();
-    const studyMode = body.studyMode === "ONSITE" ? "ONSITE" : "REMOTE";
+    const studyMode = normalizeStudyMode(body.studyMode) || "REMOTE";
 
     if (!fullName) {
       return NextResponse.json({ error: "اسم الطالب مطلوب" }, { status: 400 });

@@ -580,6 +580,7 @@ enum UserRole {
 enum StudyMode {
   REMOTE
   ONSITE
+  ONSITE_SYRIA
 }
 
 enum ReportStatus {

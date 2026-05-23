@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, needsPasswordRehash, verifyPassword } from "@/lib/passwords";
+import { getAdminDashboardPath, getTeacherDashboardPath } from "@/lib/study-modes";
 
 const userCookieName = "alrahma_user_id";
 const loginAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -90,10 +91,10 @@ export async function POST(request: Request) {
       } else {
         redirectTo = "/remote/admin/dashboard";
       }
-    } else if (user.role === "TEACHER" && user.studyMode === "ONSITE") {
-      redirectTo = "/onsite/teacher/dashboard";
-    } else if (user.role === "ADMIN" && user.studyMode === "ONSITE") {
-      redirectTo = "/onsite/admin/dashboard";
+    } else if (user.role === "TEACHER") {
+      redirectTo = getTeacherDashboardPath(user.studyMode);
+    } else if (user.role === "ADMIN") {
+      redirectTo = getAdminDashboardPath(user.studyMode);
     }
 
     const response = NextResponse.json({

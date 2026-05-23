@@ -3,11 +3,7 @@ import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
-
-function normalizeStudyMode(value: unknown) {
-  if (value === "REMOTE" || value === "ONSITE") return value;
-  return undefined;
-}
+import { getTeacherDashboardPath, normalizeStudyMode } from "@/lib/study-modes";
 
 async function getCurrentUser() {
   const cookieStore = await cookies();
@@ -189,10 +185,7 @@ export async function PATCH(req: Request) {
       body.track === null || typeof body.track === "string"
         ? normalizeTrack(body.track)
         : undefined;
-    const studyMode =
-      body.studyMode === "REMOTE" || body.studyMode === "ONSITE"
-        ? body.studyMode
-        : undefined;
+    const studyMode = normalizeStudyMode(body.studyMode);
 
     if (!circleId) {
       return NextResponse.json({ error: "الحلقة مطلوبة" }, { status: 400 });
@@ -277,7 +270,7 @@ export async function PATCH(req: Request) {
           type: "STUDENT_MOVED",
           title: `تم إسناد حلقة ${existingCircle.name} لك`,
           body: `تم ربطك بحلقة ${existingCircle.name} وبها ${existingCircle._count.students} طالب/طلاب. يمكنك مراجعة تفاصيلهم من لوحة المعلم.`,
-          link: "/remote/teacher/dashboard",
+          link: getTeacherDashboardPath(circle.studyMode),
         });
       }
     }

@@ -5,16 +5,13 @@ import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { hashPassword } from "@/lib/passwords";
 import { normalizePhoneDigits } from "@/lib/phone-number";
+import { getStudyModeLabel, getTeacherLoginPath, normalizeStudyMode } from "@/lib/study-modes";
 import { prisma } from "@/lib/prisma";
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
-
-function normalizeStudyMode(value: unknown) {
-  return value === "REMOTE" || value === "ONSITE" ? value : undefined;
-}
 
 async function getCurrentUser() {
   const cookieStore = await cookies();

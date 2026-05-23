@@ -2,7 +2,7 @@ import { appUrl } from "@/lib/app-url";
 import { normalizeInternationalPhone } from "@/lib/phone-number";
 import type { Prisma } from "@prisma/client";
 
-export type WhatsAppChannel = "REMOTE" | "ONSITE";
+export type WhatsAppChannel = "REMOTE" | "ONSITE" | "ONSITE_SYRIA";
 
 type WhatsAppTextInput = {
   to: string;
@@ -46,7 +46,7 @@ function inferWhatsAppCategory(body: string) {
 async function inferWhatsAppEntities(toNumber: string, channel?: WhatsAppChannel) {
   try {
     const { prisma } = await import("@/lib/prisma");
-    const studyMode = channel === "ONSITE" ? "ONSITE" : "REMOTE";
+    const studyMode = channel || "REMOTE";
     const [students, requests] = await Promise.all([
       prisma.student.findMany({
         where: { studyMode, parentWhatsapp: { not: null } },
@@ -93,7 +93,7 @@ async function logOutgoingWhatsApp(input: {
       data: {
         toNumber,
         body: input.body,
-        channel: input.channel === "ONSITE" ? "ONSITE" : "REMOTE",
+        channel: input.channel || "REMOTE",
         source: input.source || "SYSTEM",
         context: input.context,
         category: inferWhatsAppCategory(input.body),
@@ -117,6 +117,15 @@ async function logOutgoingWhatsApp(input: {
 const DEFAULT_WEBJS_API_URL = "http://185.182.8.94/send-message";
 
 function resolveWebJsApiUrl(channel?: WhatsAppChannel) {
+  if (channel === "ONSITE_SYRIA") {
+    return (
+      process.env.WHATSAPP_WEBJS_API_URL_ONSITE_SYRIA ||
+      process.env.WHATSAPP_WEBJS_API_URL_SYRIA ||
+      process.env.WHATSAPP_WEBJS_API_URL ||
+      DEFAULT_WEBJS_API_URL
+    );
+  }
+
   if (channel === "ONSITE") {
     return (
       process.env.WHATSAPP_WEBJS_API_URL_ONSITE ||
@@ -137,11 +146,22 @@ function resolveWebJsApiUrl(channel?: WhatsAppChannel) {
     process.env.WHATSAPP_WEBJS_API_URL_REMOTE ||
     process.env.WHATSAPP_WEBJS_API_URL ||
     process.env.WHATSAPP_WEBJS_API_URL_ONSITE ||
+    process.env.WHATSAPP_WEBJS_API_URL_ONSITE_SYRIA ||
+    process.env.WHATSAPP_WEBJS_API_URL_SYRIA ||
     DEFAULT_WEBJS_API_URL
   );
 }
 
 function resolveWebJsApiToken(channel?: WhatsAppChannel) {
+  if (channel === "ONSITE_SYRIA") {
+    return (
+      process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE_SYRIA ||
+      process.env.WHATSAPP_WEBJS_API_TOKEN_SYRIA ||
+      process.env.WHATSAPP_WEBJS_API_TOKEN ||
+      ""
+    );
+  }
+
   if (channel === "ONSITE") {
     return (
       process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE ||
@@ -162,6 +182,8 @@ function resolveWebJsApiToken(channel?: WhatsAppChannel) {
     process.env.WHATSAPP_WEBJS_API_TOKEN_REMOTE ||
     process.env.WHATSAPP_WEBJS_API_TOKEN ||
     process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE ||
+    process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE_SYRIA ||
+    process.env.WHATSAPP_WEBJS_API_TOKEN_SYRIA ||
     ""
   );
 }
@@ -535,13 +557,13 @@ export function teacherWelcomeWhatsAppMessage(input: {
   teacherName: string;
   email: string;
   password: string;
-  studyMode: "REMOTE" | "ONSITE";
+  studyMode: "REMOTE" | "ONSITE" | "ONSITE_SYRIA";
 }) {
   const platformLabel = input.studyMode === "REMOTE" ? "Ø§Ù„ØªØ¹Ù„ÙŠÙ… Ø¹Ù† Ø¨Ø¹Ø¯" : "Ø§Ù„ØªØ¹Ù„ÙŠÙ… Ø§Ù„Ø­Ø¶ÙˆØ±ÙŠ";
   const loginPath =
     input.studyMode === "REMOTE"
       ? appUrl("/remote/teacher/login")
-      : appUrl("/onsite/teacher/login");
+      : appUrl(input.studyMode === "ONSITE_SYRIA" ? "/syria/teacher/login" : "/onsite/teacher/login");
 
   return (
     `Ø§Ù„Ø³Ù„Ø§Ù… Ø¹Ù„ÙŠÙƒÙ… ÙˆØ±Ø­Ù…Ø© Ø§Ù„Ù„Ù‡ ÙˆØ¨Ø±ÙƒØ§ØªÙ‡\n\n` +

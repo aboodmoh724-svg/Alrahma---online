@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 const STUDENT_CODE_BASE_BY_MODE = {
   REMOTE: 1000,
   ONSITE: 5000,
+  ONSITE_SYRIA: 7000,
 } as const;
 
 type StudyMode = keyof typeof STUDENT_CODE_BASE_BY_MODE;
