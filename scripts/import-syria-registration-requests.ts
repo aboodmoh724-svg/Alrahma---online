@@ -1,3 +1,4 @@
+import "dotenv/config";
 import fs from "fs";
 import * as XLSX from "xlsx";
 import { prisma } from "../lib/prisma";
