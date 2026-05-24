@@ -16,6 +16,14 @@ type ParsedRow = {
   parentEmail?: string;
   teacherEmail?: string;
   circleName?: string;
+  age?: string;
+  grade?: string;
+  schoolName?: string;
+  previousStudent?: string;
+  memorizedAmount?: string;
+  tajweedLevel?: string;
+  goals?: string;
+  notes?: string;
 };
 
 type ImportResult =
@@ -61,6 +69,7 @@ function scoreHeaderRow(row: unknown[]) {
     "واتساب",
     "whatsapp",
     "ولي الأمر",
+    "هاتف ولي الأمر",
     "parent",
     "teacher",
     "معلم",
@@ -88,7 +97,15 @@ function buildColumnIndexMap(headers: string[]) {
   };
 
   return {
-    fullName: findIndex(["fullname", "full name", "اسم الطالب", "الاسم", "student name"]),
+    fullName: findIndex([
+      "fullname",
+      "full name",
+      "اسم الطالب",
+      "الاسم",
+      "الاسم الثلاثي",
+      "الاسم الثلاثي:",
+      "student name",
+    ]),
     parentWhatsapp: findIndex([
       "parentwhatsapp",
       "parent whatsapp",
@@ -96,6 +113,8 @@ function buildColumnIndexMap(headers: string[]) {
       "واتساب",
       "جوال ولي الأمر",
       "رقم ولي الأمر",
+      "رقم هاتف ولي الأمر",
+      "رقم هاتف ولي الأمر (يجب أن يكون عليه وتس أب)",
       "guardian phone",
       "parent phone",
     ]),
@@ -110,6 +129,28 @@ function buildColumnIndexMap(headers: string[]) {
     ]),
     teacherEmail: findIndex(["teacheremail", "teacher email", "ايميل المعلم", "teacher mail"]),
     circleName: findIndex(["circlename", "circle name", "اسم الحلقة", "الحلقة", "group"]),
+    age: findIndex(["العمر", "العمر رقما", "العمر رقما:", "age"]),
+    grade: findIndex(["الصف", "الصف الدراسي", "الصف الدراسي:", "grade"]),
+    schoolName: findIndex(["اسم المدرسة", "اسم المدرسة:", "school", "school name"]),
+    previousStudent: findIndex([
+      "هل سبق لك الالتحاق بتحفيظ الرحمة؟",
+      "هل سبق لك الالتحاق بتحفيظ الرحمة ؟",
+      "سبق الالتحاق",
+      "previous student",
+    ]),
+    memorizedAmount: findIndex([
+      "في حال كانت الإجابة نعم، إلى أي جزء وصلت في حفظك؟",
+      "إلى أي جزء وصلت في حفظك؟",
+      "كم يحفظ الطالب",
+      "memorized",
+    ]),
+    tajweedLevel: findIndex(["مستوى تجويدك؟", "مستوى التجويد", "tajweed"]),
+    goals: findIndex([
+      "ما هي الأهداف التي تود تحقيقها بالانضمام إلى تحفيظ الرحمة ؟",
+      "الأهداف",
+      "goals",
+    ]),
+    notes: findIndex(["ملاحظات تود ذكرها", "ملاحظات", "notes"]),
   };
 }
 
@@ -150,10 +191,10 @@ export default function OnsiteAdminImportPage() {
   const helpText = useMemo(
     () =>
       [
-        "الملف المطلوب: Excel (.xlsx).",
+        "الملف المطلوب: Excel (.xlsx) أو CSV من ردود Google Form.",
         "أعمدة مقترحة (بالترتيب لا يهم):",
-        "- fullName أو اسم الطالب",
-        "- parentWhatsapp أو واتساب ولي الأمر",
+        "- fullName أو اسم الطالب أو الاسم الثلاثي",
+        "- parentWhatsapp أو واتساب ولي الأمر أو رقم هاتف ولي الأمر",
         "- parentEmail (اختياري)",
         "- teacherEmail (اختياري إن أردت ربط الطالب بمعلم بالإيميل)",
         "- circleName (اختياري)",
@@ -169,7 +210,7 @@ export default function OnsiteAdminImportPage() {
     try {
       const XLSX = await import("xlsx");
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
+      const workbook = XLSX.read(arrayBuffer, { type: "array", codepage: 65001 });
       const firstSheetName = workbook.SheetNames[0];
       if (!firstSheetName) {
         setError("الملف لا يحتوي على Sheets");
@@ -231,6 +272,14 @@ export default function OnsiteAdminImportPage() {
             parentEmail: getByIdx(columnIndex.parentEmail) || undefined,
             teacherEmail: getByIdx(columnIndex.teacherEmail) || undefined,
             circleName: getByIdx(columnIndex.circleName) || undefined,
+            age: getByIdx(columnIndex.age) || undefined,
+            grade: getByIdx(columnIndex.grade) || undefined,
+            schoolName: getByIdx(columnIndex.schoolName) || undefined,
+            previousStudent: getByIdx(columnIndex.previousStudent) || undefined,
+            memorizedAmount: getByIdx(columnIndex.memorizedAmount) || undefined,
+            tajweedLevel: getByIdx(columnIndex.tajweedLevel) || undefined,
+            goals: getByIdx(columnIndex.goals) || undefined,
+            notes: getByIdx(columnIndex.notes) || undefined,
           });
 
           return rows;
@@ -259,7 +308,7 @@ export default function OnsiteAdminImportPage() {
       });
     } catch (e) {
       console.error("IMPORT PARSE ERROR =>", e);
-      setError("تعذر قراءة الملف. تأكد أنه .xlsx");
+      setError("تعذر قراءة الملف. تأكد أنه .xlsx أو .csv بصيغة واضحة.");
       setResult({ status: "idle" });
     }
   };
@@ -321,10 +370,10 @@ export default function OnsiteAdminImportPage() {
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
       <div className="mx-auto max-w-4xl space-y-4">
         <section className="rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-xl">
-          <p className="text-sm font-bold text-[#f2d18a]">الإدارة (حضوري)</p>
-          <h1 className="mt-2 text-3xl font-black">استيراد الطلاب من Excel</h1>
+          <p className="text-sm font-bold text-[#f2d18a]">إدارة سوريا</p>
+          <h1 className="mt-2 text-3xl font-black">استيراد الطلاب من Google Form</h1>
           <p className="mt-2 text-sm leading-7 text-white/72">
-            ارفع ملف Excel ثم راجع عدد الصفوف، وبعدها نفّذ الاستيراد.
+            ارفع ملف الردود بصيغة CSV أو Excel، راجع المعاينة، ثم نفذ الاستيراد.
           </p>
         </section>
 
@@ -358,7 +407,7 @@ export default function OnsiteAdminImportPage() {
           <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center">
             <input
               type="file"
-              accept=".xlsx"
+              accept=".xlsx,.csv"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) parseFile(f);

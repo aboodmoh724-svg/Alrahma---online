@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 import { generateStudentCode } from "@/lib/student-code";
 
 function normalizeEmail(value: unknown) {
@@ -13,16 +14,27 @@ function normalizeString(value: unknown) {
   return s || null;
 }
 
+function buildNotes(parts: {
+  notes: string | null;
+  goals: string | null;
+  memorizedAmount: string | null;
+}) {
+  return [
+    parts.notes,
+    parts.goals ? `الأهداف: ${parts.goals}` : "",
+    parts.memorizedAmount ? `المحفوظ: ${parts.memorizedAmount}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
     const userId = cookieStore.get("alrahma_user_id")?.value;
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "الرجاء تسجيل الدخول أولًا" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "الرجاء تسجيل الدخول أولا" }, { status: 401 });
     }
 
     const admin = await prisma.user.findFirst({
@@ -36,19 +48,24 @@ export async function POST(req: Request) {
     });
 
     if (!admin) {
-      return NextResponse.json(
-        { error: "لا تملك صلاحية استيراد الطلاب" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "لا تملك صلاحية استيراد الطلاب" }, { status: 403 });
     }
 
     const body = await req.json();
     const fullName = normalizeString(body.fullName);
-    const parentWhatsapp = normalizeString(body.parentWhatsapp);
+    const parentWhatsapp = normalizePhoneDigits(body.parentWhatsapp) || null;
     const parentEmail = normalizeEmail(body.parentEmail);
     const teacherEmail = normalizeEmail(body.teacherEmail);
     const fallbackTeacherId = normalizeString(body.fallbackTeacherId);
     const circleName = normalizeString(body.circleName);
+    const age = normalizeString(body.age);
+    const grade = normalizeString(body.grade);
+    const schoolName = normalizeString(body.schoolName);
+    const previousStudent = normalizeString(body.previousStudent);
+    const memorizedAmount = normalizeString(body.memorizedAmount);
+    const tajweedLevel = normalizeString(body.tajweedLevel);
+    const goals = normalizeString(body.goals);
+    const notes = normalizeString(body.notes);
 
     if (!fullName) {
       return NextResponse.json({ error: "اسم الطالب مطلوب" }, { status: 400 });
@@ -69,26 +86,24 @@ export async function POST(req: Request) {
       teacherId = teacher?.id || null;
     }
 
-    if (!teacherId) {
-      if (fallbackTeacherId) {
-        const fallbackTeacher = await prisma.user.findFirst({
-          where: {
-            id: fallbackTeacherId,
-            role: "TEACHER",
-            studyMode: "ONSITE_SYRIA",
-            isActive: true,
-          },
-          select: { id: true },
-        });
-        teacherId = fallbackTeacher?.id || null;
-      }
+    if (!teacherId && fallbackTeacherId) {
+      const fallbackTeacher = await prisma.user.findFirst({
+        where: {
+          id: fallbackTeacherId,
+          role: "TEACHER",
+          studyMode: "ONSITE_SYRIA",
+          isActive: true,
+        },
+        select: { id: true },
+      });
+      teacherId = fallbackTeacher?.id || null;
     }
 
     if (!teacherId) {
       return NextResponse.json(
         {
           error:
-            "تعذر تحديد معلم للطالب. أضف teacherEmail في ملف الإكسل أو اختر (معلم افتراضي) من الصفحة.",
+            "تعذر تحديد معلم للطالب. أضف teacherEmail في الملف أو اختر معلما افتراضيا من الصفحة.",
         },
         { status: 400 }
       );
@@ -107,7 +122,6 @@ export async function POST(req: Request) {
 
       if (circle) {
         circleId = circle.id;
-        // if circle has teacher, prefer it
         if (circle.teacherId) {
           teacherId = circle.teacherId;
         }
@@ -148,6 +162,48 @@ export async function POST(req: Request) {
           select: { id: true },
         });
 
+    await prisma.studentDetail.upsert({
+      where: { studentId: student.id },
+      create: {
+        studentId: student.id,
+        source: "SYRIA_GOOGLE_FORM",
+        matchedName: fullName,
+        grade,
+        schoolName,
+        guardianPhone: parentWhatsapp,
+        generalLevel: tajweedLevel,
+        notes: buildNotes({ notes, goals, memorizedAmount }),
+        rawData: {
+          age,
+          grade,
+          schoolName,
+          previousStudent,
+          memorizedAmount,
+          tajweedLevel,
+          goals,
+          notes,
+        },
+      },
+      update: {
+        matchedName: fullName,
+        grade,
+        schoolName,
+        guardianPhone: parentWhatsapp,
+        generalLevel: tajweedLevel,
+        notes: buildNotes({ notes, goals, memorizedAmount }),
+        rawData: {
+          age,
+          grade,
+          schoolName,
+          previousStudent,
+          memorizedAmount,
+          tajweedLevel,
+          goals,
+          notes,
+        },
+      },
+    });
+
     return NextResponse.json({
       success: true,
       studentId: student.id,
@@ -155,10 +211,6 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("ONSITE_SYRIA IMPORT STUDENTS ERROR =>", error);
-    return NextResponse.json(
-      { error: "حدث خطأ أثناء استيراد الطلاب" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "حدث خطأ أثناء استيراد الطلاب" }, { status: 500 });
   }
 }
-

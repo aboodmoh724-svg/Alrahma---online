@@ -6,13 +6,13 @@ export default function Page() {
     <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6" dir="rtl">
       <div className="mx-auto max-w-7xl">
         <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:min-h-[calc(100vh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="relative min-h-[320px] overflow-hidden bg-[#0a3f2a] lg:min-h-full">
+          <div className="relative min-h-[340px] overflow-hidden bg-[#0a3f2a] lg:min-h-full">
             <img
               src="/images/syria-login-hero.png"
               alt=""
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-contain object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#071b15]/90 via-[#0a3f2a]/36 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#071b15]/92 via-[#0a3f2a]/20 to-transparent" />
             <Link
               href="/syria"
               className="absolute right-5 top-5 rounded-full bg-white/16 px-4 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/24 sm:right-8 sm:top-8"

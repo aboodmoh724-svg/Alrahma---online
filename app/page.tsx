@@ -1,4 +1,5 @@
-﻿import Link from "next/link";
+import Link from "next/link";
+import Image from "next/image";
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import BrandLockup from "@/components/brand/BrandLockup";
 import { getAppBaseUrl } from "@/lib/app-url";
@@ -6,9 +7,10 @@ import { getAppBaseUrl } from "@/lib/app-url";
 const portals = [
   {
     title: "التعليم عن بعد",
-    description: "قسم الحلقات الإلكترونية، تقارير المعلمين، متابعة الإشراف، وطلبات التسجيل.",
+    description: "حلقات إلكترونية، إشراف يومي، تقارير الطلاب، ومراسلات أولياء الأمور.",
     badge: "Online",
-    accent: "from-[#0f5a35] to-[#0a3f2a]",
+    image: "/images/afyon-circle-wide.jpeg",
+    accent: "from-[#062b1d]/94 via-[#0a3f2a]/76 to-[#0f5a35]/42",
     links: [
       { href: "/remote/admin/login", label: "دخول الإدارة" },
       { href: "/remote/supervision/login", label: "دخول الإشراف" },
@@ -17,9 +19,10 @@ const portals = [
   },
   {
     title: "التعليم الحضوري - أفيون",
-    description: "قسم مركز أفيون الحضوري لإدارة الطلاب والمعلمين والحلقات والغياب اليومي.",
+    description: "إدارة حلقات المركز، الطلاب والمعلمين، الغياب، ورسائل أولياء الأمور.",
     badge: "Afyon",
-    accent: "from-[#bd8f2d] to-[#8a661f]",
+    image: "/images/afyon-recitation-day.jpeg",
+    accent: "from-[#1c2d31]/90 via-[#0a3f2a]/58 to-[#bd8f2d]/34",
     links: [
       { href: "/onsite/admin/login", label: "دخول الإدارة" },
       { href: "/onsite/teacher/login", label: "دخول المعلم" },
@@ -27,10 +30,12 @@ const portals = [
   },
   {
     title: "التعليم الحضوري - سوريا",
-    description: "قسم مستقل لحلقات سوريا، يبدأ ببياناته الخاصة ويُدار دون خلط مع أفيون.",
+    description: "فرع مستقل ببياناته الخاصة، تسجيل أولي، وإدارة منفصلة للمعلمين والطلاب.",
     badge: "Syria",
-    accent: "from-[#2f6f73] to-[#0f5a35]",
+    image: "/images/syria-login-hero.png",
+    accent: "from-[#071b15]/92 via-[#0a3f2a]/56 to-[#2f6f73]/30",
     links: [
+      { href: "/syria/registration", label: "تسجيل طالب" },
       { href: "/syria/admin/login", label: "دخول الإدارة" },
       { href: "/syria/teacher/login", label: "دخول المعلم" },
     ],
@@ -49,33 +54,31 @@ export default function HomePage() {
             href="/registration"
             className="rounded-full bg-[#0f5a35] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a] sm:text-sm"
           >
-            تسجيل طالب
+            تسجيل التعليم عن بعد
           </Link>
         </header>
 
-        <section className="grid flex-1 gap-4 lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch">
+        <section className="grid flex-1 gap-4 lg:grid-cols-[0.8fr_1.2fr] lg:items-stretch">
           <div className="relative overflow-hidden rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:rounded-[2.75rem] sm:p-8">
-            <BrandHeroMedia src="/images/rahma-scene-circle.jpeg" opacity="opacity-60" />
-            <div className="absolute -left-20 top-12 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
-            <div className="absolute bottom-0 right-0 h-80 w-80 rounded-full bg-white/10" />
-            <div className="relative flex h-full min-h-[320px] flex-col justify-between gap-8">
+            <BrandHeroMedia src="/images/afyon-awards-wide.jpeg" opacity="opacity-48" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d]/92 via-[#0a3f2a]/58 to-transparent" />
+            <div className="relative flex h-full min-h-[340px] flex-col justify-between gap-8">
               <div>
-                  <span className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
-                  منصة واحدة
+                <span className="inline-flex rounded-full bg-white/14 px-4 py-2 text-sm font-black text-[#f2d18a]">
+                  منصة الرحمة
                 </span>
                 <h1 className="mt-5 max-w-xl text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
-                  كل الحلقات في مكان واحد سريع وواضح
+                  بوابة واحدة لكل حلقات القرآن
                 </h1>
-                <p className="mt-4 max-w-lg text-sm leading-8 text-white/72 sm:text-base">
-                  هذا هو مركز الدخول للكادر: التعليم عن بعد، حضوري أفيون، حضوري سوريا،
-                  والإشراف، ولوحة
-                  التسجيل العامة كلها من رابط واحد.
+                <p className="mt-4 max-w-lg text-sm leading-8 text-white/76 sm:text-base">
+                  اختر القسم المناسب مباشرة: التعليم عن بعد، حضوري أفيون، أو حضوري سوريا.
+                  كل قسم مستقل ببياناته ومساره التشغيلي.
                 </p>
               </div>
 
-              <div className="rounded-[1.6rem] bg-white/10 p-4 backdrop-blur">
+              <div className="rounded-[1.6rem] bg-white/12 p-4 backdrop-blur">
                 <p className="text-sm font-black text-[#f2d18a]">الرابط المعتمد للنشر</p>
-                <p className="mt-2 break-all text-sm text-white/80">{appBaseUrl}</p>
+                <p className="mt-2 break-all text-sm text-white/82">{appBaseUrl}</p>
               </div>
             </div>
           </div>
@@ -84,24 +87,29 @@ export default function HomePage() {
             {portals.map((portal) => (
               <section
                 key={portal.title}
-                className="rahma-card grid overflow-hidden rounded-[2rem] p-3 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2.5rem] sm:p-4 md:grid-cols-[0.9fr_1.1fr]"
+                className="rahma-card grid overflow-hidden rounded-[2rem] shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2.5rem] md:grid-cols-[0.92fr_1.08fr]"
               >
-                <div className={`rounded-[1.6rem] bg-gradient-to-br ${portal.accent} p-5 text-white`}>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black">
+                <div className="relative min-h-[210px] overflow-hidden bg-[#0a3f2a] p-5 text-white md:min-h-full">
+                  <Image
+                    src={portal.image}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 32vw, 100vw"
+                    className="absolute inset-0 object-cover"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-l ${portal.accent}`} />
+                  <div className="relative flex h-full min-h-[170px] flex-col justify-between">
+                    <span className="w-fit rounded-full bg-white/18 px-3 py-1 text-xs font-black text-[#f2d18a]">
                       {portal.badge}
                     </span>
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/16 text-xl">
-                      ◆
-                    </span>
+                    <div>
+                      <h2 className="text-2xl font-black sm:text-3xl">{portal.title}</h2>
+                      <p className="mt-3 text-sm leading-8 text-white/80">{portal.description}</p>
+                    </div>
                   </div>
-                  <h2 className="mt-6 text-2xl font-black sm:text-3xl">{portal.title}</h2>
-                  <p className="mt-3 text-sm leading-8 text-white/78">
-                    {portal.description}
-                  </p>
                 </div>
 
-                <div className="flex flex-col justify-center gap-2 p-2 sm:p-4">
+                <div className="flex flex-col justify-center gap-2 p-4 sm:p-5">
                   {portal.links.map((link) => (
                     <Link
                       key={link.href}

@@ -41,10 +41,8 @@ export default function RemotePage() {
 
         <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
           <div className="rahma-muted-pattern relative hidden min-h-[360px] overflow-hidden bg-[#0a3f2a] lg:block lg:min-h-[680px]">
-            <BrandHeroMedia src="/images/rahma-scene-mosque.jpg" opacity="opacity-62" />
-            <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-[#bd8f2d]/20" />
-            <div className="absolute bottom-16 right-10 h-96 w-96 rounded-full bg-white/10" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d] via-[#0a3f2a]/72 to-[#0f5a35]/35" />
+            <BrandHeroMedia src="/images/afyon-circle-wide.jpeg" opacity="opacity-68" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d] via-[#0a3f2a]/68 to-[#0f5a35]/26" />
             <div className="absolute bottom-8 right-8 max-w-md text-white">
               <BrandLockup light />
               <h1 className="text-4xl font-black">اختر بوابة الدخول</h1>
@@ -57,7 +55,7 @@ export default function RemotePage() {
           <div className="flex items-center justify-center p-4 sm:p-6 md:p-12">
             <div className="w-full max-w-xl space-y-3 sm:space-y-5">
               <div className="relative mb-2 overflow-hidden rounded-3xl bg-[#0a3f2a] p-5 text-white ring-1 ring-[#d8bf83] lg:hidden">
-                <BrandHeroMedia src="/images/rahma-scene-mosque.jpg" opacity="opacity-35" />
+                <BrandHeroMedia src="/images/afyon-circle-wide.jpeg" opacity="opacity-42" />
                 <div className="relative">
                   <p className="text-sm font-bold text-[#f1d28a]">تعليم عن بعد</p>
                   <h1 className="mt-2 text-2xl font-black">اختر بوابة الدخول</h1>
