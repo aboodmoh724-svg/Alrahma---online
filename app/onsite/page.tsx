@@ -25,23 +25,24 @@ export default function OnsitePage() {
               alt=""
               fill
               sizes="(min-width: 1024px) 55vw, 100vw"
-              className="object-cover"
+              className="object-cover object-center opacity-48 blur-[1px]"
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d]/88 via-[#0a3f2a]/36 to-transparent" />
-            <div className="absolute bottom-6 right-6 max-w-xl text-white sm:bottom-10 sm:right-10">
-              <BrandLockup light />
-              <h1 className="mt-5 text-4xl font-black leading-tight sm:text-6xl">
-                التعليم الحضوري - أفيون
-              </h1>
-              <p className="mt-4 max-w-lg text-sm leading-8 text-white/78 sm:text-base">
-                واجهة المركز لإدارة الحلقات والطلاب والمعلمين والغياب اليومي برسائل واضحة.
-              </p>
-            </div>
+            <div className="absolute inset-0 bg-[#0a3f2a]/30" />
           </div>
 
           <div className="flex items-center justify-center p-5 sm:p-8 md:p-12">
-            <div className="w-full max-w-md space-y-3">
+            <div className="w-full max-w-md space-y-4">
+              <div className="mb-6">
+                <BrandLockup className="mb-4" />
+                <h1 className="text-4xl font-black leading-tight text-[#0a3f2a] sm:text-5xl">
+                  التعليم الحضوري - أفيون
+                </h1>
+                <p className="mt-4 text-sm leading-8 text-[#1c2d31]/68">
+                  واجهة المركز لإدارة الحلقات والطلاب والمعلمين والغياب اليومي برسائل واضحة.
+                </p>
+              </div>
+
               <Link
                 href="/onsite/admin/login"
                 className="block rounded-[1.5rem] bg-[#0a3f2a] p-5 text-center text-lg font-black text-white shadow-md transition hover:-translate-y-0.5 sm:rounded-[2rem] sm:p-8 sm:text-xl"

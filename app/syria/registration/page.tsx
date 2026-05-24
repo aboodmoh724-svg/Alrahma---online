@@ -23,7 +23,6 @@ export default function SyriaRegistrationPage() {
     tajweedLevel: "",
     goals: "",
     notes: "",
-    preferredPeriod: "",
     readGuidelines: "false",
   });
 
@@ -90,8 +89,8 @@ export default function SyriaRegistrationPage() {
     <main className="rahma-shell min-h-screen px-3 py-4 sm:px-4 sm:py-8" dir="rtl">
       <div className="mx-auto max-w-4xl">
         <section className="relative mb-5 overflow-hidden rounded-[1.75rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:rounded-[2.5rem] sm:p-7">
-          <BrandHeroMedia src="/images/syria-login-hero.png" opacity="opacity-24 blur-[1px]" />
-          <div className="absolute inset-0 bg-[#0a3f2a]/30" />
+          <BrandHeroMedia src="/images/syria-login-hero.png" opacity="opacity-20 blur-[1px]" />
+          <div className="absolute inset-0 bg-[#0a3f2a]/34" />
           <div className="relative">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <BrandLockup light showLegacy={false} />
@@ -104,12 +103,23 @@ export default function SyriaRegistrationPage() {
             </div>
             <h1 className="mt-7 text-3xl font-black sm:text-5xl">تسجيل طالب - فرع سوريا</h1>
             <p className="mt-3 max-w-2xl text-sm leading-8 text-white/76 sm:text-base">
-              فضلا أدخل بيانات الطالب كما هي، وستظهر مباشرة في لوحة إدارة سوريا ضمن طلبات التسجيل.
+              التسجيل الحالي خاص بالطلاب الذكور، والتعليم في فرع سوريا تعليم حضوري داخل الحلقة.
             </p>
           </div>
         </section>
 
         <form onSubmit={submit} className="space-y-4">
+          <section className="grid gap-3 md:grid-cols-2">
+            <div className="rounded-[1.5rem] bg-[#0f5a35] p-4 text-white shadow-sm">
+              <p className="text-sm font-black text-[#f2d18a]">نوع التسجيل</p>
+              <p className="mt-2 text-lg font-black">خاص بالطلاب الذكور فقط</p>
+            </div>
+            <div className="rounded-[1.5rem] bg-[#fffaf4] p-4 text-[#1c2d31] shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-black text-[#8a661f]">نوع التعليم</p>
+              <p className="mt-2 text-lg font-black">تعليم حضوري في فرع سوريا</p>
+            </div>
+          </section>
+
           <section className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2rem] sm:p-5">
             <h2 className="mb-4 text-xl font-black text-[#1c2d31]">بيانات الطالب</h2>
             <div className="grid gap-4 md:grid-cols-2">
@@ -129,16 +139,9 @@ export default function SyriaRegistrationPage() {
                 <span className="mb-2 block text-sm font-black text-[#1c2d31]">اسم المدرسة</span>
                 <input value={formData.schoolName} onChange={(e) => setField("schoolName", e.target.value)} className={inputClass} />
               </label>
-              <label className="block">
+              <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-black text-[#1c2d31]">رقم هاتف ولي الأمر واتساب *</span>
                 <input value={formData.parentWhatsapp} onChange={(e) => setField("parentWhatsapp", e.target.value)} className={inputClass} required />
-              </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-black text-[#1c2d31]">هل سبق الالتحاق بتحفيظ الرحمة؟</span>
-                <select value={formData.previousStudent} onChange={(e) => setField("previousStudent", e.target.value)} className={inputClass}>
-                  <option>لا</option>
-                  <option>نعم</option>
-                </select>
               </label>
             </div>
           </section>
@@ -147,8 +150,11 @@ export default function SyriaRegistrationPage() {
             <h2 className="mb-4 text-xl font-black text-[#1c2d31]">المستوى والهدف</h2>
             <div className="grid gap-4 md:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-sm font-black text-[#1c2d31]">إلى أي جزء وصلت في حفظك؟</span>
-                <textarea value={formData.memorizedAmount} onChange={(e) => setField("memorizedAmount", e.target.value)} className={inputClass} rows={3} />
+                <span className="mb-2 block text-sm font-black text-[#1c2d31]">هل سبق الالتحاق بتحفيظ الرحمة؟</span>
+                <select value={formData.previousStudent} onChange={(e) => setField("previousStudent", e.target.value)} className={inputClass}>
+                  <option>لا</option>
+                  <option>نعم</option>
+                </select>
               </label>
               <label className="block">
                 <span className="mb-2 block text-sm font-black text-[#1c2d31]">مستوى التجويد</span>
@@ -160,6 +166,10 @@ export default function SyriaRegistrationPage() {
                   <option>ضعيف</option>
                   <option>مبتدئ</option>
                 </select>
+              </label>
+              <label className="block md:col-span-2">
+                <span className="mb-2 block text-sm font-black text-[#1c2d31]">إلى أي جزء وصلت في حفظك؟</span>
+                <textarea value={formData.memorizedAmount} onChange={(e) => setField("memorizedAmount", e.target.value)} className={inputClass} rows={3} />
               </label>
               <label className="block md:col-span-2">
                 <span className="mb-2 block text-sm font-black text-[#1c2d31]">الأهداف التي تود تحقيقها بالانضمام إلى التحفيظ</span>
