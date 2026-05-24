@@ -8,6 +8,8 @@ import BrandLockup from "@/components/brand/BrandLockup";
 const inputClass =
   "w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-right text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10";
 
+const supportPhone = "963930181269";
+
 export default function SyriaRegistrationPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -109,6 +111,26 @@ export default function SyriaRegistrationPage() {
         </section>
 
         <form onSubmit={submit} className="space-y-4">
+          <section className="grid gap-3 md:grid-cols-3">
+            <div className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-black text-[#8a661f]">المسجد</p>
+              <p className="mt-2 text-lg font-black text-[#1c2d31]">مسجد بدر</p>
+            </div>
+            <div className="rounded-[1.5rem] bg-white/92 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+              <p className="text-sm font-black text-[#8a661f]">العنوان</p>
+              <p className="mt-2 text-lg font-black text-[#1c2d31]">سوريا - حماة - طيبة الإمام</p>
+            </div>
+            <a
+              href={`https://wa.me/${supportPhone}`}
+              target="_blank"
+              rel="noreferrer"
+              className="rounded-[1.5rem] bg-[#0f5a35] p-4 text-white shadow-sm transition hover:bg-[#0a3f2a]"
+            >
+              <p className="text-sm font-black text-[#f2d18a]">الدعم والاستفسار</p>
+              <p className="mt-2 text-lg font-black" dir="ltr">+963 930 181 269</p>
+            </a>
+          </section>
+
           <section className="grid gap-3 md:grid-cols-2">
             <div className="rounded-[1.5rem] bg-[#0f5a35] p-4 text-white shadow-sm">
               <p className="text-sm font-black text-[#f2d18a]">نوع التسجيل</p>

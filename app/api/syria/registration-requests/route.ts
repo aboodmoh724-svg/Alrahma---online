@@ -28,7 +28,7 @@ export async function POST(req: Request) {
     }
 
     if (!yesNo(text(formData, "readGuidelines"))) {
-      return NextResponse.json({ error: "يجب تأكيد قراءة التعليمات قبل إرسال الطلب" }, { status: 400 });
+      return NextResponse.json({ error: "يجب تأكيد صحة البيانات قبل إرسال الطلب" }, { status: 400 });
     }
 
     const age = text(formData, "age");
@@ -50,7 +50,6 @@ export async function POST(req: Request) {
           .filter(Boolean)
           .join(" - ") || null,
         gender: "ذكور",
-        preferredPeriod: text(formData, "preferredPeriod") || null,
         previousStudy: previousStudent || null,
         memorizedAmount: memorizedAmount || null,
         tajweedLevel: tajweedLevel || null,

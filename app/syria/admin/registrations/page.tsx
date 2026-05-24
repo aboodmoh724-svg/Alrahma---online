@@ -27,6 +27,7 @@ export default function SyriaAdminRegistrationsPage() {
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
   const [sendingId, setSendingId] = useState("");
   const [loading, setLoading] = useState(true);
+  const [importing, setImporting] = useState(false);
 
   const fetchData = async () => {
     setLoading(true);
@@ -52,6 +53,27 @@ export default function SyriaAdminRegistrationsPage() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const importFile = async (file: File) => {
+    setImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch("/api/syria/registration-requests/import", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        alert(data.error || "تعذر استيراد الملف");
+        return;
+      }
+      alert(`تم الاستيراد: ${data.created} جديد، وتم تجاوز ${data.skipped} صف.`);
+      await fetchData();
+    } finally {
+      setImporting(false);
+    }
+  };
 
   const updateRequest = async (requestId: string, action: "ACCEPT" | "REJECT") => {
     const response = await fetch("/api/registration-requests", {
@@ -129,6 +151,24 @@ export default function SyriaAdminRegistrationsPage() {
           </div>
         </div>
 
+        <section className="rounded-[2rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+          <p className="text-sm font-black text-[#1c2d31]">استيراد الطلاب غير المقروئين</p>
+          <p className="mt-1 text-xs leading-6 text-[#1c2d31]/60">
+            ارفع ملف ردود Google Form بصيغة CSV أو Excel. النظام سيضيف غير الموجودين فقط ويتجاوز المكرر أو الصفوف الناقصة.
+          </p>
+          <input
+            type="file"
+            accept=".csv,.xlsx"
+            disabled={importing}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (file) importFile(file);
+              event.currentTarget.value = "";
+            }}
+            className="mt-3 w-full rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffaf4] px-4 py-4 text-sm"
+          />
+        </section>
+
         {loading ? (
           <div className="rounded-[2rem] bg-white/80 p-8 text-center text-sm text-[#1c2d31]/60">
             جاري تحميل الطلبات...
@@ -145,12 +185,7 @@ export default function SyriaAdminRegistrationsPage() {
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="text-2xl font-black text-[#1c2d31]">{request.studentName}</h2>
-                      <span className={`rounded-full px-3 py-1 text-xs font-black ${
-                        request.status === "PENDING" ? "bg-amber-100 text-amber-800" :
-                        request.status === "ACCEPTED" ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-700"
-                      }`}>
-                        {request.status === "PENDING" ? "قيد المراجعة" : request.status === "ACCEPTED" ? "مقبول" : "مرفوض"}
-                      </span>
+                      <StatusBadge status={request.status} />
                     </div>
                     <p className="mt-2 text-sm leading-7 text-[#1c2d31]/60">
                       ولي الأمر: {request.parentWhatsapp} - {new Date(request.createdAt).toLocaleDateString("ar-EG")}
@@ -227,6 +262,22 @@ export default function SyriaAdminRegistrationsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function StatusBadge({ status }: { status: RequestItem["status"] }) {
+  return (
+    <span
+      className={`rounded-full px-3 py-1 text-xs font-black ${
+        status === "PENDING"
+          ? "bg-amber-100 text-amber-800"
+          : status === "ACCEPTED"
+            ? "bg-emerald-100 text-emerald-800"
+            : "bg-red-100 text-red-700"
+      }`}
+    >
+      {status === "PENDING" ? "قيد المراجعة" : status === "ACCEPTED" ? "مقبول" : "مرفوض"}
+    </span>
   );
 }
 
