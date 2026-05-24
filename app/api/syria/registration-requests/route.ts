@@ -18,23 +18,23 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const studentName = text(formData, "studentName");
     const parentWhatsapp = normalizePhoneDigits(text(formData, "parentWhatsapp"));
+    const age = text(formData, "age");
+    const grade = text(formData, "grade");
+    const schoolName = text(formData, "schoolName");
+    const previousStudent = text(formData, "previousStudent");
 
-    if (!studentName) {
-      return NextResponse.json({ error: "اسم الطالب مطلوب" }, { status: 400 });
+    if (!studentName || !age || !grade || !schoolName || !parentWhatsapp) {
+      return NextResponse.json({ error: "يرجى إكمال بيانات الطالب الأساسية قبل إرسال الطلب" }, { status: 400 });
     }
 
-    if (!parentWhatsapp) {
-      return NextResponse.json({ error: "رقم ولي الأمر مطلوب" }, { status: 400 });
+    if (!previousStudent) {
+      return NextResponse.json({ error: "يرجى تحديد هل سبق الالتحاق بتحفيظ الرحمة" }, { status: 400 });
     }
 
     if (!yesNo(text(formData, "readGuidelines"))) {
       return NextResponse.json({ error: "يجب تأكيد صحة البيانات قبل إرسال الطلب" }, { status: 400 });
     }
 
-    const age = text(formData, "age");
-    const grade = text(formData, "grade");
-    const schoolName = text(formData, "schoolName");
-    const previousStudent = text(formData, "previousStudent");
     const memorizedAmount = text(formData, "memorizedAmount");
     const tajweedLevel = text(formData, "tajweedLevel");
     const goals = text(formData, "goals");
@@ -46,11 +46,9 @@ export async function POST(req: Request) {
         studentName,
         parentWhatsapp,
         previousStudent: yesNo(previousStudent),
-        grade: [grade, age ? `العمر: ${age}` : "", schoolName ? `المدرسة: ${schoolName}` : ""]
-          .filter(Boolean)
-          .join(" - ") || null,
+        grade: [grade, `العمر: ${age}`, `المدرسة: ${schoolName}`].join(" - "),
         gender: "ذكور",
-        previousStudy: previousStudent || null,
+        previousStudy: previousStudent,
         memorizedAmount: memorizedAmount || null,
         tajweedLevel: tajweedLevel || null,
         readGuidelines: true,
