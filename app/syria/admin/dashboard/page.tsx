@@ -7,6 +7,12 @@ import { prisma } from "@/lib/prisma";
 
 const sections = [
   {
+    href: "/syria/admin/registrations",
+    title: "طلبات التسجيل",
+    description: "مراجعة الطلاب المسجلين حديثا، قبولهم، ثم إرسال رسائل القبول فرديا أو جماعيا.",
+    tone: "bg-[#fffaf4] text-[#0a3f2a]",
+  },
+  {
     href: "/syria/admin/teachers",
     title: "المعلمون",
     description: "إضافة المعلمين وتفعيل/تعطيل الحسابات.",

@@ -416,6 +416,7 @@ model TrackResource {
 
 model RegistrationRequest {
   id                 String             @id @default(cuid())
+  studyMode          StudyMode          @default(REMOTE)
   studentName        String
   previousStudent    Boolean            @default(false)
   birthDate          DateTime?

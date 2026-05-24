@@ -67,12 +67,14 @@ export default function HomePage() {
                 <span className="inline-flex rounded-full bg-white/14 px-4 py-2 text-sm font-black text-[#f2d18a]">
                   منصة الرحمة
                 </span>
-                <h1 className="mt-5 max-w-xl text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
-                  بوابة واحدة لكل حلقات القرآن
+                <h1 className="mt-5 max-w-xl font-serif text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
+                  تحفيظ الرحمة للقرآن الكريم
                 </h1>
-                <p className="mt-4 max-w-lg text-sm leading-8 text-white/76 sm:text-base">
-                  اختر القسم المناسب مباشرة: التعليم عن بعد، حضوري أفيون، أو حضوري سوريا.
-                  كل قسم مستقل ببياناته ومساره التشغيلي.
+                <p className="mt-4 max-w-lg font-serif text-3xl font-black leading-tight text-[#f2d18a] sm:text-4xl">
+                  نحو غد مشرق
+                </p>
+                <p className="mt-5 max-w-lg text-sm leading-8 text-white/76 sm:text-base">
+                  اختر القسم المناسب مباشرة، وكل قسم مستقل ببياناته ومساره التشغيلي.
                 </p>
               </div>
 

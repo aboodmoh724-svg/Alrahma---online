@@ -7,6 +7,7 @@ import { renderMessageTemplate } from "@/lib/message-templates";
 import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import { generateStudentCode } from "@/lib/student-code";
+import { normalizeStudyMode } from "@/lib/study-modes";
 import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
 import {
   isWhatsAppConfigured,
@@ -209,9 +210,14 @@ async function saveUploadedFile(file: File, folder: string, defaultName: string)
   };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+    const url = new URL(req.url);
+    const studyMode = normalizeStudyMode(url.searchParams.get("studyMode")) || "REMOTE";
     const requests = await prisma.registrationRequest.findMany({
+      where: {
+        studyMode,
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -243,6 +249,8 @@ export async function POST(req: Request) {
     const formData = await req.formData();
     const studentName = getString(formData, "studentName");
     const parentWhatsapp = normalizePhoneDigits(getString(formData, "parentWhatsapp"));
+    const studyMode = normalizeStudyMode(getString(formData, "studyMode")) || "REMOTE";
+    const requiresAudio = studyMode === "REMOTE";
     const audio = formData.get("audio");
     const idImage = formData.get("idImage");
 
@@ -261,18 +269,21 @@ export async function POST(req: Request) {
       );
     }
 
-    if (!(audio instanceof File) || audio.size === 0) {
+    if (requiresAudio && (!(audio instanceof File) || audio.size === 0)) {
       return NextResponse.json(
         { error: "تسجيل آية الكرسي بصوت الطالب مطلوب" },
         { status: 400 }
       );
     }
 
-    const audioError = validateUpload(audio, {
-      maxSize: MAX_AUDIO_SIZE,
-      allowedTypes: ALLOWED_AUDIO_TYPES,
-      label: "تسجيل آية الكرسي",
-    });
+    const audioError =
+      audio instanceof File && audio.size > 0
+        ? validateUpload(audio, {
+            maxSize: MAX_AUDIO_SIZE,
+            allowedTypes: ALLOWED_AUDIO_TYPES,
+            label: "تسجيل آية الكرسي",
+          })
+        : null;
 
     if (audioError) {
       return NextResponse.json({ error: audioError }, { status: 400 });
@@ -294,11 +305,13 @@ export async function POST(req: Request) {
     let savedIdImage: { fileName: string; url: string } | null = null;
     let uploadWarning: string | null = null;
 
-    try {
-      savedAudio = await saveUploadedFile(audio, "registration-audio", "student-audio");
-    } catch (uploadError) {
-      console.error("REGISTRATION AUDIO UPLOAD ERROR =>", uploadError);
-      uploadWarning = "تم استلام الطلب، لكن تعذر حفظ التسجيل الصوتي. ستتواصل الإدارة معكم عند الحاجة.";
+    if (audio instanceof File && audio.size > 0) {
+      try {
+        savedAudio = await saveUploadedFile(audio, "registration-audio", "student-audio");
+      } catch (uploadError) {
+        console.error("REGISTRATION AUDIO UPLOAD ERROR =>", uploadError);
+        uploadWarning = "تم استلام الطلب، لكن تعذر حفظ التسجيل الصوتي. ستتواصل الإدارة معكم عند الحاجة.";
+      }
     }
 
     if (idImage instanceof File && idImage.size > 0) {
@@ -314,6 +327,7 @@ export async function POST(req: Request) {
 
     const request = await prisma.registrationRequest.create({
       data: {
+        studyMode,
         studentName,
         parentWhatsapp,
         previousStudent: getBoolean(formData, "previousStudent"),
@@ -382,7 +396,7 @@ export async function POST(req: Request) {
         await sendWhatsAppText({
           to: normalizedWhatsapp,
           body: whatsAppMessage,
-          channel: "REMOTE",
+          channel: studyMode,
         });
         whatsappSent = true;
       } catch (whatsappError) {
@@ -511,7 +525,7 @@ export async function PATCH(req: Request) {
           zoomUrl: createdStudent.circle?.zoomUrl || null,
           scheduleDetails: String(body.scheduleDetails || "").trim() || null,
         }),
-        channel: "REMOTE",
+        channel: request.studyMode,
       });
 
       return NextResponse.json({ success: true });
@@ -709,7 +723,7 @@ export async function PATCH(req: Request) {
           ? financeAmountFromBody
           : getExpectedTuitionAmount(request.requestedTracks, circle?.track);
 
-      const studentCode = await generateStudentCode(circle?.studyMode || "REMOTE");
+      const studentCode = await generateStudentCode(circle?.studyMode || request.studyMode || "REMOTE");
       const { student, updatedRequest } = await prisma.$transaction(async (tx) => {
         const createdStudent = await tx.student.create({
           data: {
@@ -719,7 +733,7 @@ export async function PATCH(req: Request) {
             parentEmail: request.parentEmail,
             teacherId,
             circleId: circle?.id || null,
-            studyMode: circle?.studyMode || "REMOTE",
+            studyMode: circle?.studyMode || request.studyMode || "REMOTE",
             isActive: true,
           },
         });
@@ -857,7 +871,7 @@ export async function PATCH(req: Request) {
         ? financeAmountFromBody
         : getExpectedTuitionAmount(request.requestedTracks, circle?.track);
 
-    const studentCode = await generateStudentCode(circle?.studyMode || "REMOTE");
+    const studentCode = await generateStudentCode(circle?.studyMode || request.studyMode || "REMOTE");
     const { student, updatedRequest } = await prisma.$transaction(async (tx) => {
       const createdStudent = await tx.student.create({
         data: {
@@ -867,7 +881,7 @@ export async function PATCH(req: Request) {
           parentEmail: request.parentEmail,
           teacherId,
           circleId: circle?.id || null,
-          studyMode: circle?.studyMode || "REMOTE",
+          studyMode: circle?.studyMode || request.studyMode || "REMOTE",
           isActive: true,
         },
       });
