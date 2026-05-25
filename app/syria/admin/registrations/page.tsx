@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 type Teacher = { id: string; fullName: string };
@@ -28,6 +28,16 @@ export default function SyriaAdminRegistrationsPage() {
   const [sendingId, setSendingId] = useState("");
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
+
+  const stats = useMemo(
+    () => ({
+      total: requests.length,
+      pending: requests.filter((request) => request.status === "PENDING").length,
+      accepted: requests.filter((request) => request.status === "ACCEPTED").length,
+      rejected: requests.filter((request) => request.status === "REJECTED").length,
+    }),
+    [requests]
+  );
 
   const fetchData = async () => {
     setLoading(true);
@@ -68,7 +78,13 @@ export default function SyriaAdminRegistrationsPage() {
         alert(data.error || "تعذر استيراد الملف");
         return;
       }
-      alert(`تم الاستيراد: ${data.created} جديد، وتم تجاوز ${data.skipped} صف.`);
+
+      const details = Array.isArray(data.skippedRows) && data.skippedRows.length > 0
+        ? `\n\nأول الصفوف المتجاوزة:\n${data.skippedRows
+            .map((row: { row: number; reason: string }) => `صف ${row.row}: ${row.reason}`)
+            .join("\n")}`
+        : "";
+      alert(`تمت قراءة ${data.total} صف: أضيف ${data.created} طلب جديد، وتم تجاوز ${data.skipped} صف.${details}`);
       await fetchData();
     } finally {
       setImporting(false);
@@ -151,10 +167,17 @@ export default function SyriaAdminRegistrationsPage() {
           </div>
         </div>
 
+        <section className="grid gap-3 md:grid-cols-4">
+          <Stat title="إجمالي الطلبات" value={stats.total} />
+          <Stat title="قيد المراجعة" value={stats.pending} />
+          <Stat title="مقبول" value={stats.accepted} />
+          <Stat title="مرفوض" value={stats.rejected} />
+        </section>
+
         <section className="rounded-[2rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d8bf83]">
           <p className="text-sm font-black text-[#1c2d31]">استيراد الطلاب غير المقروئين</p>
           <p className="mt-1 text-xs leading-6 text-[#1c2d31]/60">
-            ارفع ملف ردود Google Form بصيغة CSV أو Excel. النظام سيضيف غير الموجودين فقط ويتجاوز المكرر أو الصفوف الناقصة.
+            ارفع ملف ردود Google Form بصيغة CSV أو Excel. النظام يوحّد صيغة الأرقام، ويضيف غير الموجودين فقط، ويتجاوز المكرر أو الصفوف الناقصة.
           </p>
           <input
             type="file"
@@ -262,6 +285,15 @@ export default function SyriaAdminRegistrationsPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function Stat({ title, value }: { title: string; value: number }) {
+  return (
+    <div className="rounded-[1.5rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+      <p className="text-xs font-black text-[#8a661f]">{title}</p>
+      <p className="mt-2 text-3xl font-black text-[#1c2d31]">{value}</p>
+    </div>
   );
 }
 

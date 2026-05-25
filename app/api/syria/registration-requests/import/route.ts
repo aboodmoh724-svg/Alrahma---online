@@ -5,7 +5,36 @@ import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 
 function normalize(value: unknown) {
-  return String(value || "").trim();
+  return String(value ?? "").trim();
+}
+
+function normalizeArabicDigits(value: string) {
+  const eastern = "٠١٢٣٤٥٦٧٨٩";
+  const persian = "۰۱۲۳۴۵۶۷۸۹";
+
+  return value.replace(/[٠-٩۰-۹]/g, (digit) => {
+    const easternIndex = eastern.indexOf(digit);
+    if (easternIndex >= 0) return String(easternIndex);
+    return String(persian.indexOf(digit));
+  });
+}
+
+function compactName(value: string) {
+  return normalize(value)
+    .replace(/\s+/g, " ")
+    .replace(/[إأآ]/g, "ا");
+}
+
+function canonicalPhone(value: string) {
+  const digits = normalizePhoneDigits(normalizeArabicDigits(value));
+
+  return digits.replace(/^(00963|963|0)+/, "");
+}
+
+function isInvalidStudentName(value: string) {
+  const name = compactName(value);
+
+  return !name || name.length < 3 || ["الكل", "كل", "test", "تجربة"].includes(name.toLowerCase());
 }
 
 function cell(row: Record<string, unknown>, candidates: string[]) {
@@ -15,6 +44,7 @@ function cell(row: Record<string, unknown>, candidates: string[]) {
       return normalize(row[key]);
     }
   }
+
   return "";
 }
 
@@ -59,33 +89,40 @@ export async function POST(req: Request) {
     }
 
     const rows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, { defval: "" });
+    const existingRequests = await prisma.registrationRequest.findMany({
+      where: { studyMode: "ONSITE_SYRIA" },
+      select: { studentName: true, parentWhatsapp: true },
+    });
+    const seen = new Set(
+      existingRequests.map((request) => `${compactName(request.studentName)}|${canonicalPhone(request.parentWhatsapp)}`)
+    );
+    const seenInFile = new Set<string>();
     let created = 0;
     let skipped = 0;
     const skippedRows: { row: number; reason: string }[] = [];
 
     for (let index = 0; index < rows.length; index += 1) {
       const row = rows[index];
-      const studentName = cell(row, ["الاسم الثلاثي", "اسم الطالب", "الاسم"]);
-      const parentWhatsapp = normalizePhoneDigits(cell(row, ["رقم هاتف ولي الأمر", "ولي الأمر", "واتساب"]));
+      const studentName = compactName(cell(row, ["الاسم الثلاثي", "اسم الطالب", "الاسم"]));
+      const rawWhatsapp = cell(row, ["رقم هاتف ولي الأمر", "ولي الأمر", "واتساب"]);
+      const parentWhatsapp = normalizePhoneDigits(normalizeArabicDigits(rawWhatsapp));
+      const duplicateKey = `${studentName}|${canonicalPhone(parentWhatsapp)}`;
 
-      if (!studentName || !parentWhatsapp) {
+      if (isInvalidStudentName(studentName)) {
         skipped += 1;
-        skippedRows.push({ row: index + 2, reason: "الاسم أو رقم ولي الأمر غير موجود" });
+        skippedRows.push({ row: index + 2, reason: "اسم الطالب غير صالح ويحتاج مراجعة" });
         continue;
       }
 
-      const exists = await prisma.registrationRequest.findFirst({
-        where: {
-          studyMode: "ONSITE_SYRIA",
-          studentName,
-          parentWhatsapp,
-        },
-        select: { id: true },
-      });
-
-      if (exists) {
+      if (!parentWhatsapp || canonicalPhone(parentWhatsapp).length < 7) {
         skipped += 1;
-        skippedRows.push({ row: index + 2, reason: "طلب مكرر بنفس الاسم والرقم" });
+        skippedRows.push({ row: index + 2, reason: "رقم ولي الأمر غير موجود أو غير صالح" });
+        continue;
+      }
+
+      if (seen.has(duplicateKey) || seenInFile.has(duplicateKey)) {
+        skipped += 1;
+        skippedRows.push({ row: index + 2, reason: "طلب مكرر بنفس الاسم ورقم ولي الأمر" });
         continue;
       }
 
@@ -117,6 +154,9 @@ export async function POST(req: Request) {
           notes: [goals ? `الأهداف: ${goals}` : "", notes].filter(Boolean).join("\n") || null,
         },
       });
+
+      seen.add(duplicateKey);
+      seenInFile.add(duplicateKey);
       created += 1;
     }
 
