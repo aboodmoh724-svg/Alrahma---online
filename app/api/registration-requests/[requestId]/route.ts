@@ -1,5 +1,6 @@
 import path from "path";
 import { NextResponse } from "next/server";
+import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import { uploadToSupabaseStorage } from "@/lib/supabase-storage";
 
@@ -47,6 +48,110 @@ async function saveUploadedFile(file: File, folder: string, defaultName: string)
   };
 }
 
+function cleanText(value: unknown) {
+  return String(value ?? "").trim();
+}
+
+function yesNo(value: unknown) {
+  const text = cleanText(value).toLowerCase();
+
+  return ["true", "yes", "1", "نعم"].includes(text);
+}
+
+async function updateRequestDetails(requestId: string, body: any) {
+  const studentName = cleanText(body.studentName);
+  const parentWhatsapp = normalizePhoneDigits(cleanText(body.parentWhatsapp));
+  const grade = cleanText(body.grade);
+  const age = cleanText(body.age);
+  const schoolName = cleanText(body.schoolName);
+  const previousStudy = cleanText(body.previousStudy);
+  const memorizedAmount = cleanText(body.memorizedAmount);
+  const tajweedLevel = cleanText(body.tajweedLevel);
+  const goals = cleanText(body.goals);
+  const notes = cleanText(body.notes);
+
+  if (!studentName) {
+    return NextResponse.json({ error: "اسم الطالب مطلوب" }, { status: 400 });
+  }
+
+  if (!parentWhatsapp) {
+    return NextResponse.json({ error: "رقم ولي الأمر مطلوب" }, { status: 400 });
+  }
+
+  const packedGrade = [grade, age ? `العمر: ${age}` : "", schoolName ? `المدرسة: ${schoolName}` : ""]
+    .filter(Boolean)
+    .join(" - ") || null;
+  const packedNotes = [goals ? `الأهداف: ${goals}` : "", notes].filter(Boolean).join("\n") || null;
+
+  const updatedRequest = await prisma.$transaction(async (tx) => {
+    const request = await tx.registrationRequest.update({
+      where: { id: requestId },
+      data: {
+        studentName,
+        parentWhatsapp,
+        grade: packedGrade,
+        previousStudent: yesNo(body.previousStudent),
+        previousStudy: previousStudy || null,
+        memorizedAmount: memorizedAmount || null,
+        tajweedLevel: tajweedLevel || null,
+        notes: packedNotes,
+      },
+    });
+
+    if (request.createdStudentId) {
+      await tx.student.update({
+        where: { id: request.createdStudentId },
+        data: {
+          fullName: studentName,
+          parentWhatsapp,
+        },
+      });
+
+      const detail = await tx.studentDetail.findUnique({
+        where: { studentId: request.createdStudentId },
+        select: { rawData: true },
+      });
+      const rawData = {
+        ...((detail?.rawData && typeof detail.rawData === "object") ? detail.rawData : {}),
+        registrationRequestId: request.id,
+        previousStudy: previousStudy || null,
+        memorizedAmount: memorizedAmount || null,
+        tajweedLevel: tajweedLevel || null,
+        age: age || null,
+        schoolName: schoolName || null,
+      };
+
+      await tx.studentDetail.upsert({
+        where: { studentId: request.createdStudentId },
+        update: {
+          matchedName: studentName,
+          grade: grade || packedGrade,
+          schoolName: schoolName || null,
+          guardianPhone: parentWhatsapp,
+          generalLevel: [memorizedAmount, tajweedLevel].filter(Boolean).join(" | ") || null,
+          notes: packedNotes,
+          rawData,
+        },
+        create: {
+          studentId: request.createdStudentId,
+          source: "REGISTRATION_REQUEST",
+          matchedName: studentName,
+          grade: grade || packedGrade,
+          schoolName: schoolName || null,
+          guardianPhone: parentWhatsapp,
+          generalLevel: [memorizedAmount, tajweedLevel].filter(Boolean).join(" | ") || null,
+          notes: packedNotes,
+          rawData,
+        },
+      });
+    }
+
+    return request;
+  });
+
+  return NextResponse.json({ success: true, request: updatedRequest });
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ requestId: string }> }
@@ -70,6 +175,12 @@ export async function PATCH(
 
     if (!request) {
       return NextResponse.json({ error: "طلب التسجيل غير موجود" }, { status: 404 });
+    }
+
+    const contentType = req.headers.get("content-type") || "";
+
+    if (contentType.includes("application/json")) {
+      return updateRequestDetails(request.id, await req.json());
     }
 
     const formData = await req.formData();
