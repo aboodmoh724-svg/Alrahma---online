@@ -2,7 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 
 const DEFAULT_BUCKET = "alrahma-uploads";
-const DEFAULT_LOCAL_UPLOADS_DIR = path.join(process.cwd(), "uploads");
+const DEFAULT_LOCAL_UPLOADS_DIR = path.join(/*turbopackIgnore: true*/ process.cwd(), "uploads");
 
 function storageDriver() {
   return String(process.env.STORAGE_DRIVER || "local").trim().toLowerCase() === "local"
@@ -59,7 +59,7 @@ export function isStoredInSupabase(value: string | null | undefined) {
 export async function uploadToSupabaseStorage(file: File, folder: string, fileName: string) {
   if (storageDriver() === "local") {
     const objectPath = cleanPath(`${folder}/${fileName}`);
-    const outputPath = path.join(getLocalUploadsDir(), objectPath);
+    const outputPath = path.join(/*turbopackIgnore: true*/ getLocalUploadsDir(), objectPath);
     const bytes = await file.arrayBuffer();
 
     await fs.mkdir(path.dirname(outputPath), { recursive: true });
