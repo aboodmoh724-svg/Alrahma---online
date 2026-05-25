@@ -296,7 +296,7 @@ export default function SyriaAdminRegistrationsPage() {
           <Stat title="إجمالي الطلبات" value={stats.total} />
           <Stat title="الظاهر بعد الفلتر" value={filteredRequests.length} />
           <Stat title="قيد المراجعة" value={stats.pending} />
-          <Stat title="مقبول" value={stats.accepted} />
+          <Stat title="الطلبات المقبولة" value={stats.accepted} />
           <Stat title="مسجل كطالب" value={stats.registered} />
         </section>
 
@@ -461,7 +461,7 @@ export default function SyriaAdminRegistrationsPage() {
 function Stat({ title, value }: { title: string; value: number }) {
   return (
     <div className="rounded-[1.5rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d8bf83]">
-      <p className="text-xs font-black text-[#8a661f]">{title}</p>
+      <p className="text-sm font-black text-[#5f4314]">{title}</p>
       <p className="mt-2 text-3xl font-black text-[#1c2d31]">{value}</p>
     </div>
   );
@@ -478,7 +478,7 @@ function StatusBadge({ status }: { status: RequestItem["status"] }) {
             : "bg-red-100 text-red-700"
       }`}
     >
-      {status === "PENDING" ? "قيد المراجعة" : status === "ACCEPTED" ? "مقبول" : "مرفوض"}
+      {status === "PENDING" ? "قيد المراجعة" : status === "ACCEPTED" ? "طالب مقبول" : "مرفوض"}
     </span>
   );
 }
