@@ -73,6 +73,10 @@ function expenseRecurrenceLabel(value: string) {
   return "مرة واحدة";
 }
 
+function isRecurringExpenseTemplate(expense: { recurrence: string; isActive: boolean }) {
+  return expense.isActive && expense.recurrence !== "ONE_TIME";
+}
+
 function getMonthRange(monthKey: string) {
   const [yearText, monthText] = monthKey.split("-");
   const year = Number(yearText);
@@ -135,6 +139,35 @@ function expenseDueDateForMonth(expense: {
 
   const expenseMonthKey = expense.expenseDate.toISOString().slice(0, 7);
   return expenseMonthKey === monthKey ? expense.expenseDate : null;
+}
+
+function nextRecurringDueDate(expense: {
+  recurrence: string;
+  dueDay: number | null;
+  expenseDate: Date;
+  nextDueDate: Date | null;
+}, paidDueDate: Date) {
+  if (expense.recurrence === "MONTHLY") {
+    const nextMonth = paidDueDate.getUTCMonth() + 1;
+    const year = paidDueDate.getUTCFullYear() + Math.floor(nextMonth / 12);
+    const monthIndex = nextMonth % 12;
+    const day = Math.min(
+      Math.max(expense.dueDay || paidDueDate.getUTCDate() || 1, 1),
+      daysInUtcMonth(year, monthIndex + 1)
+    );
+
+    return new Date(Date.UTC(year, monthIndex, day, 12, 0, 0, 0));
+  }
+
+  if (expense.recurrence === "YEARLY") {
+    const year = paidDueDate.getUTCFullYear() + 1;
+    const monthIndex = (expense.nextDueDate || expense.expenseDate).getUTCMonth();
+    const day = Math.min(paidDueDate.getUTCDate(), daysInUtcMonth(year, monthIndex + 1));
+
+    return new Date(Date.UTC(year, monthIndex, day, 12, 0, 0, 0));
+  }
+
+  return null;
 }
 
 function daysUntil(date: Date) {
@@ -705,6 +738,101 @@ async function updatePlatformExpense(formData: FormData) {
   revalidatePath("/finance");
 }
 
+async function markRecurringPlatformExpensePaid(formData: FormData) {
+  "use server";
+
+  const admin = await requireFinanceAdmin();
+  if (!admin) return;
+
+  const expenseId = String(formData.get("expenseId") || "");
+  const monthKey = normalizeMonthKey(formData.get("month"));
+
+  if (!expenseId) return;
+
+  const expense = await prisma.platformExpense.findUnique({
+    where: { id: expenseId },
+  });
+
+  if (!expense || expense.recurrence === "ONE_TIME") return;
+
+  const dueDate = expenseDueDateForMonth(expense, monthKey);
+  if (!dueDate) return;
+
+  const marker = `recurring-expense:${expense.id}:${monthKey}`;
+  const existingPayment = await prisma.platformExpense.findFirst({
+    where: {
+      recurrence: "ONE_TIME",
+      note: {
+        contains: marker,
+      },
+    },
+  });
+
+  if (existingPayment) {
+    revalidatePath("/finance");
+    return;
+  }
+
+  const nextDueDate = nextRecurringDueDate(expense, dueDate);
+  const paidNote = [
+    expense.note?.trim(),
+    `تم الدفع عن شهر ${monthKey} بناء على المصروف المتكرر.`,
+    marker,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  const { paidExpense, updatedTemplate } = await prisma.$transaction(async (tx) => {
+    const createdPaidExpense = await tx.platformExpense.create({
+      data: {
+        title: expense.title,
+        category: expense.category,
+        amount: expense.amount,
+        currency: expense.currency,
+        expenseDate: dueDate,
+        recurrence: "ONE_TIME",
+        dueDay: null,
+        nextDueDate: null,
+        isActive: false,
+        paymentMethod: expense.paymentMethod,
+        receiptUrl: expense.receiptUrl,
+        note: paidNote,
+      },
+    });
+
+    const template = await tx.platformExpense.update({
+      where: { id: expense.id },
+      data: {
+        nextDueDate,
+      },
+    });
+
+    return { paidExpense: createdPaidExpense, updatedTemplate: template };
+  });
+
+  await logFinanceAction({
+    actorId: admin.id,
+    action: "MARK_RECURRING_PLATFORM_EXPENSE_PAID",
+    entity: "PlatformExpense",
+    entityId: paidExpense.id,
+    summary: `تسجيل دفع مصروف متكرر: ${expense.title} - ${toNumber(expense.amount).toFixed(2)} ${expense.currency} عن ${monthKey}`,
+    details: {
+      templateExpenseId: expense.id,
+      paidExpenseId: paidExpense.id,
+      title: expense.title,
+      category: expense.category,
+      amount: toNumber(expense.amount),
+      currency: expense.currency,
+      paidForMonth: monthKey,
+      paidAt: dueDate.toISOString(),
+      previousNextDueDate: expense.nextDueDate?.toISOString() || null,
+      nextDueDate: updatedTemplate.nextDueDate?.toISOString() || null,
+    },
+  });
+
+  revalidatePath("/finance");
+}
+
 async function deletePlatformExpense(formData: FormData) {
   "use server";
 
@@ -1257,7 +1385,8 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     };
   });
 
-  const platformExpensesTotal = expenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
+  const paidPlatformExpenses = expenses.filter((expense) => !isRecurringExpenseTemplate(expense));
+  const platformExpensesTotal = paidPlatformExpenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
   const expenseObligations = expenses
     .filter((expense) => expense.isActive)
     .map((expense) => {
@@ -1289,6 +1418,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   const teacherObligationRows = teacherRows
     .filter((row) => row.remaining > 0)
     .map((row) => ({
+      source: "teacher" as const,
       title: `مكافأة ${row.teacher.fullName}`,
       category: "مكافآت المعلمين",
       amount: row.remaining,
@@ -1296,6 +1426,26 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
       dueDate: monthEndDueDate,
       daysUntil: daysUntil(monthEndDueDate),
     }));
+  const monthlyObligationRows = [
+    ...expenseObligations.map((item) => ({
+      source: "expense" as const,
+      key: item.expense.id,
+      expenseId: item.expense.id,
+      recurrence: item.expense.recurrence,
+      title: item.expense.title,
+      category: `${item.expense.category} - ${expenseRecurrenceLabel(item.expense.recurrence)}`,
+      amount: item.amount,
+      currency: item.expense.currency,
+      dueDate: item.dueDate,
+      daysUntil: item.daysUntil,
+    })),
+    ...teacherObligationRows.map((item) => ({
+      ...item,
+      key: item.title,
+      expenseId: null,
+      recurrence: "ONE_TIME",
+    })),
+  ];
   const monthlyObligationsTotal = platformObligationsTotal + teacherRemainingTotal;
   const totalExpenses = platformExpensesTotal + teacherPayoutsTotal;
   const currentBalance = receivedIncome - totalExpenses;
@@ -1500,27 +1650,11 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
               </div>
             </div>
             <div className="mt-4 space-y-2">
-              {[...expenseObligations.map((item) => ({
-                key: item.expense.id,
-                title: item.expense.title,
-                category: `${item.expense.category} - ${expenseRecurrenceLabel(item.expense.recurrence)}`,
-                amount: item.amount,
-                currency: item.expense.currency,
-                dueDate: item.dueDate,
-                daysUntil: item.daysUntil,
-              })), ...teacherObligationRows].length === 0 ? (
+              {monthlyObligationRows.length === 0 ? (
                 <p className="rounded-2xl bg-[#fffaf4] p-4 text-sm text-[#0a3f2a]/60">لا توجد التزامات مستحقة لهذا الشهر.</p>
               ) : (
-                [...expenseObligations.map((item) => ({
-                  key: item.expense.id,
-                  title: item.expense.title,
-                  category: `${item.expense.category} - ${expenseRecurrenceLabel(item.expense.recurrence)}`,
-                  amount: item.amount,
-                  currency: item.expense.currency,
-                  dueDate: item.dueDate,
-                  daysUntil: item.daysUntil,
-                })), ...teacherObligationRows].map((item) => (
-                  <div key={`${item.title}-${item.dueDate.toISOString()}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#e7d7b4] p-4">
+                monthlyObligationRows.map((item) => (
+                  <div key={`${item.source}-${item.key}-${item.dueDate.toISOString()}`} className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#e7d7b4] p-4">
                     <div>
                       <p className="font-black">{item.title}</p>
                       <p className="mt-1 text-xs text-[#0a3f2a]/60">
@@ -1534,6 +1668,18 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
                       <span className="rounded-full bg-[#0a3f2a] px-3 py-1 text-xs font-black text-white">
                         {formatMoney(item.amount, item.currency)}
                       </span>
+                      {item.source === "expense" && item.recurrence !== "ONE_TIME" ? (
+                        <form action={markRecurringPlatformExpensePaid}>
+                          <input type="hidden" name="expenseId" value={item.expenseId || ""} />
+                          <input type="hidden" name="month" value={currentMonth} />
+                          <ConfirmSubmitButton
+                            confirmMessage={`هل تريد تسجيل دفع ${item.title} عن شهر ${currentMonth}؟`}
+                            className="rounded-full bg-[#bd8f2d] px-3 py-1 text-xs font-black text-white"
+                          >
+                            تم دفع هذا الشهر
+                          </ConfirmSubmitButton>
+                        </form>
+                      ) : null}
                     </div>
                   </div>
                 ))
