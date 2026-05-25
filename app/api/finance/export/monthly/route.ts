@@ -55,6 +55,71 @@ function safeSheetName(name: string) {
   return name.slice(0, 31);
 }
 
+function expenseRecurrenceLabel(value: string) {
+  if (value === "MONTHLY") return "شهري";
+  if (value === "YEARLY") return "سنوي";
+  return "مرة واحدة";
+}
+
+function isRecurringExpenseTemplate(expense: { recurrence: string; isActive: boolean }) {
+  return expense.isActive && expense.recurrence !== "ONE_TIME";
+}
+
+function daysInUtcMonth(year: number, month: number) {
+  return new Date(Date.UTC(year, month, 0)).getUTCDate();
+}
+
+function expenseDueDateForMonth(expense: {
+  recurrence: string;
+  expenseDate: Date;
+  nextDueDate: Date | null;
+  dueDay: number | null;
+}, monthKey: string) {
+  const [year, month] = monthKey.split("-").map(Number);
+  const baseDate = expense.nextDueDate || expense.expenseDate;
+
+  if (expense.recurrence === "MONTHLY") {
+    const day = Math.min(Math.max(expense.dueDay || baseDate.getUTCDate() || 1, 1), daysInUtcMonth(year, month));
+    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+  }
+
+  if (expense.recurrence === "YEARLY") {
+    const dueMonth = baseDate.getUTCMonth() + 1;
+    if (dueMonth !== month) return null;
+    const day = Math.min(baseDate.getUTCDate(), daysInUtcMonth(year, month));
+    return new Date(Date.UTC(year, month - 1, day, 12, 0, 0, 0));
+  }
+
+  const expenseMonthKey = expense.expenseDate.toISOString().slice(0, 7);
+  return expenseMonthKey === monthKey ? expense.expenseDate : null;
+}
+
+function applySheetLayout(worksheet: XLSX.WorkSheet, rows: Record<string, unknown>[]) {
+  const firstRow = rows[0];
+  if (!firstRow) return;
+
+  const headers = Object.keys(firstRow);
+  worksheet["!cols"] = headers.map((header) => {
+    const maxContentLength = Math.max(
+      header.length,
+      ...rows.map((row) => String(row[header] ?? "").length)
+    );
+
+    return { wch: Math.min(Math.max(maxContentLength + 4, 14), 42) };
+  });
+
+  if (worksheet["!ref"]) {
+    worksheet["!autofilter"] = { ref: worksheet["!ref"] };
+  }
+}
+
+function appendJsonSheet(workbook: XLSX.WorkBook, name: string, rows: Record<string, unknown>[]) {
+  const data = rows.length > 0 ? rows : [{ "ملاحظة": "لا توجد بيانات" }];
+  const worksheet = XLSX.utils.json_to_sheet(data);
+  applySheetLayout(worksheet, data);
+  XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName(name));
+}
+
 async function requireFinanceAdmin() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("alrahma_user_id")?.value;
@@ -110,7 +175,7 @@ export async function GET(request: NextRequest) {
   const monthStartKey = monthDateKeys[0] || `${monthKey}-01`;
   const monthEndKey = monthDateKeys[monthDateKeys.length - 1] || `${monthKey}-31`;
 
-  const [students, expenses, teachers, auditLogs] = await Promise.all([
+  const [students, expenses, teachers, allTeacherPayouts, auditLogs] = await Promise.all([
     prisma.student.findMany({
       where: { isActive: true, studyMode: "REMOTE" },
       orderBy: { fullName: "asc" },
@@ -124,12 +189,6 @@ export async function GET(request: NextRequest) {
       },
     }),
     prisma.platformExpense.findMany({
-      where: {
-        expenseDate: {
-          gte: monthRange.start,
-          lt: monthRange.end,
-        },
-      },
       orderBy: { expenseDate: "desc" },
     }),
     prisma.user.findMany({
@@ -174,6 +233,9 @@ export async function GET(request: NextRequest) {
           },
         },
       },
+    }),
+    prisma.teacherPayout.findMany({
+      orderBy: { paidAt: "desc" },
     }),
     prisma.financeAuditLog.findMany({
       where: {
@@ -225,7 +287,11 @@ export async function GET(request: NextRequest) {
       }))
   );
 
-  const expenseRows = expenses.map((expense) => ({
+  const paidPlatformExpenses = expenses.filter((expense) => !isRecurringExpenseTemplate(expense));
+  const monthlyPlatformExpenses = paidPlatformExpenses.filter(
+    (expense) => expense.expenseDate >= monthRange.start && expense.expenseDate < monthRange.end
+  );
+  const expenseRows = monthlyPlatformExpenses.map((expense) => ({
     "العنوان": expense.title,
     "التصنيف": expense.category,
     "التاريخ": expense.expenseDate.toISOString().slice(0, 10),
@@ -235,10 +301,27 @@ export async function GET(request: NextRequest) {
     "رابط الإيصال": expense.receiptUrl || "",
     "ملاحظة": expense.note || "",
   }));
+  const expenseObligationRows = expenses
+    .filter((expense) => expense.isActive)
+    .map((expense) => {
+      const dueDate = expenseDueDateForMonth(expense, monthKey);
+      return dueDate
+        ? {
+            "العنوان": expense.title,
+            "التصنيف": expense.category,
+            "نوع التكرار": expenseRecurrenceLabel(expense.recurrence),
+            "تاريخ الاستحقاق": dueDate.toISOString().slice(0, 10),
+            "المبلغ": toNumber(expense.amount),
+            "العملة": expense.currency,
+            "طريقة الدفع": expense.paymentMethod || "",
+            "ملاحظة": expense.note || "",
+          }
+        : null;
+    })
+    .filter((row): row is NonNullable<typeof row> => Boolean(row));
 
   const teacherRows = teachers.map((teacher) => {
     const monthlyAmount = toNumber(teacher.compensationRule?.monthlyAmount);
-    const expectedMonthlyHours = toNumber(teacher.compensationRule?.expectedMonthlyHours);
     const expectedMonthlyWorkDays = toNumber(teacher.compensationRule?.expectedMonthlyWorkDays) || 20;
     const paid = teacher.teacherPayouts.reduce((sum, payout) => sum + toNumber(payout.amount), 0);
     const reportDateSet = new Set(teacher.reports.map((report) => report.createdAt.toISOString().slice(0, 10)));
@@ -286,30 +369,40 @@ export async function GET(request: NextRequest) {
 
   const expectedIncome = studentRows.reduce((sum, row) => sum + Number(row["المطلوب"]), 0);
   const receivedIncome = studentRows.reduce((sum, row) => sum + Number(row["المدفوع"]), 0);
+  const monthlyReceivedIncome = studentPaymentRows.reduce((sum, row) => sum + Number(row["المبلغ"]), 0);
   const remainingIncome = studentRows.reduce((sum, row) => sum + Number(row["المتبقي"]), 0);
   const platformExpensesTotal = expenseRows.reduce((sum, row) => sum + Number(row["المبلغ"]), 0);
+  const allPlatformExpensesTotal = paidPlatformExpenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
   const teacherPayoutsTotal = teacherPayoutRows.reduce((sum, row) => sum + Number(row["المبلغ"]), 0);
+  const allTeacherPayoutsTotal = allTeacherPayouts.reduce((sum, payout) => sum + toNumber(payout.amount), 0);
   const teacherDueTotal = teacherRows.reduce((sum, row) => sum + Number(row["المستحق"]), 0);
   const teacherRemainingTotal = teacherRows.reduce((sum, row) => sum + Number(row["المتبقي"]), 0);
   const totalExpenses = platformExpensesTotal + teacherPayoutsTotal;
-  const currentBalance = receivedIncome - totalExpenses;
+  const monthlyBalance = monthlyReceivedIncome - totalExpenses;
+  const allExpensesTotal = allPlatformExpensesTotal + allTeacherPayoutsTotal;
+  const currentBalance = receivedIncome - allExpensesTotal;
 
   const summaryRows = [
-    { "البند": "الشهر", "القيمة": monthKey },
-    { "البند": "تاريخ التصدير", "القيمة": new Date().toISOString().slice(0, 19).replace("T", " ") },
-    { "البند": "صدر بواسطة", "القيمة": admin.fullName || admin.email },
-    { "البند": "عدد الطلاب", "القيمة": students.length },
-    { "البند": "عدد المعلمين", "القيمة": teachers.length },
-    { "البند": "الدخل المتوقع من الطلاب", "القيمة": expectedIncome },
-    { "البند": "الدخل الفعلي", "القيمة": receivedIncome },
-    { "البند": "المتبقي على الطلاب", "القيمة": remainingIncome },
-    { "البند": "مصروفات المنصة", "القيمة": platformExpensesTotal },
-    { "البند": "مكافآت معلمين مدفوعة", "القيمة": teacherPayoutsTotal },
-    { "البند": "إجمالي المصروفات المدفوعة", "القيمة": totalExpenses },
-    { "البند": "مستحقات المعلمين", "القيمة": teacherDueTotal },
-    { "البند": "متبقي مكافآت المعلمين", "القيمة": teacherRemainingTotal },
-    { "البند": "الرصيد الحالي", "القيمة": currentBalance },
-    { "البند": "الرصيد بعد مستحقات المعلمين", "القيمة": currentBalance - teacherRemainingTotal },
+    { "النطاق": "بيانات التقرير", "البند": "الشهر", "القيمة": monthKey },
+    { "النطاق": "بيانات التقرير", "البند": "تاريخ التصدير", "القيمة": new Date().toISOString().slice(0, 19).replace("T", " ") },
+    { "النطاق": "بيانات التقرير", "البند": "صدر بواسطة", "القيمة": admin.fullName || admin.email },
+    { "النطاق": "إحصاءات", "البند": "عدد الطلاب", "القيمة": students.length },
+    { "النطاق": "إحصاءات", "البند": "عدد المعلمين", "القيمة": teachers.length },
+    { "النطاق": "الشهر المختار", "البند": "دخل الشهر", "القيمة": monthlyReceivedIncome },
+    { "النطاق": "الشهر المختار", "البند": "مصروفات المنصة المدفوعة", "القيمة": platformExpensesTotal },
+    { "النطاق": "الشهر المختار", "البند": "مكافآت معلمين مدفوعة", "القيمة": teacherPayoutsTotal },
+    { "النطاق": "الشهر المختار", "البند": "إجمالي مصروفات الشهر", "القيمة": totalExpenses },
+    { "النطاق": "الشهر المختار", "البند": "رصيد الشهر", "القيمة": monthlyBalance },
+    { "النطاق": "إجمالي عام", "البند": "الدخل المتوقع من الطلاب", "القيمة": expectedIncome },
+    { "النطاق": "إجمالي عام", "البند": "الدخل الفعلي", "القيمة": receivedIncome },
+    { "النطاق": "إجمالي عام", "البند": "المتبقي على الطلاب", "القيمة": remainingIncome },
+    { "النطاق": "إجمالي عام", "البند": "كل مصروفات المنصة المدفوعة", "القيمة": allPlatformExpensesTotal },
+    { "النطاق": "إجمالي عام", "البند": "كل مكافآت المعلمين المدفوعة", "القيمة": allTeacherPayoutsTotal },
+    { "النطاق": "إجمالي عام", "البند": "إجمالي المصروفات المدفوعة", "القيمة": allExpensesTotal },
+    { "النطاق": "إجمالي عام", "البند": "الرصيد الإجمالي العام", "القيمة": currentBalance },
+    { "النطاق": "التزامات", "البند": "مستحقات المعلمين لهذا الشهر", "القيمة": teacherDueTotal },
+    { "النطاق": "التزامات", "البند": "متبقي مكافآت المعلمين لهذا الشهر", "القيمة": teacherRemainingTotal },
+    { "النطاق": "التزامات", "البند": "الرصيد العام بعد مستحقات المعلمين", "القيمة": currentBalance - teacherRemainingTotal },
   ];
 
   const auditRows = auditLogs.map((log) => ({
@@ -321,19 +414,28 @@ export async function GET(request: NextRequest) {
   }));
 
   const workbook = XLSX.utils.book_new();
+  workbook.Props = {
+    Title: `تقرير منصة الرحمة المالي - ${monthKey}`,
+    Subject: "تقرير مالي شهري",
+    Author: admin.fullName || admin.email || "منصة الرحمة",
+    CreatedDate: new Date(),
+  };
+  workbook.Workbook = {
+    Views: [{ RTL: true }],
+  };
   const sheets = [
     ["الملخص", summaryRows],
     ["الطلاب", studentRows],
     ["دفعات الطلاب", studentPaymentRows],
-    ["المصروفات", expenseRows],
+    ["مصروفات الشهر", expenseRows],
+    ["التزامات المنصة", expenseObligationRows],
     ["المعلمون", teacherRows],
     ["دفعات المعلمين", teacherPayoutRows],
     ["سجل العمليات", auditRows],
   ] as const;
 
   for (const [name, rows] of sheets) {
-    const worksheet = XLSX.utils.json_to_sheet(rows.length > 0 ? rows : [{ "ملاحظة": "لا توجد بيانات" }]);
-    XLSX.utils.book_append_sheet(workbook, worksheet, safeSheetName(name));
+    appendJsonSheet(workbook, name, rows);
   }
 
   await logFinanceAction({
@@ -346,9 +448,12 @@ export async function GET(request: NextRequest) {
       monthKey,
       students: students.length,
       teachers: teachers.length,
-      expenses: expenses.length,
+      expenses: monthlyPlatformExpenses.length,
+      expenseObligations: expenseObligationRows.length,
+      allPaidPlatformExpenses: paidPlatformExpenses.length,
       studentPayments: studentPaymentRows.length,
       teacherPayouts: teacherPayoutRows.length,
+      allTeacherPayouts: allTeacherPayouts.length,
     },
   });
 

@@ -1235,7 +1235,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
   const monthRange = getMonthRange(currentMonth);
   const monthDateKeys = getMonthDateKeys(currentMonth);
 
-  const [students, expenses, teachers, financeAuditLogs] = await Promise.all([
+  const [students, expenses, teachers, allTeacherPayouts, financeAuditLogs] = await Promise.all([
     prisma.student.findMany({
       where: { isActive: true, studyMode: "REMOTE" },
       orderBy: [{ studyMode: "asc" }, { fullName: "asc" }],
@@ -1248,7 +1248,6 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     }),
     prisma.platformExpense.findMany({
       orderBy: { expenseDate: "desc" },
-      take: 200,
     }),
     prisma.user.findMany({
       where: {
@@ -1292,6 +1291,9 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
           },
         },
       },
+    }),
+    prisma.teacherPayout.findMany({
+      orderBy: { paidAt: "desc" },
     }),
     prisma.financeAuditLog.findMany({
       orderBy: { createdAt: "desc" },
@@ -1387,6 +1389,12 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
 
   const paidPlatformExpenses = expenses.filter((expense) => !isRecurringExpenseTemplate(expense));
   const platformExpensesTotal = paidPlatformExpenses.reduce((sum, expense) => sum + toNumber(expense.amount), 0);
+  const monthlyReceivedIncome = studentPayments
+    .filter(({ payment }) => payment.paidAt >= monthRange.start && payment.paidAt < monthRange.end)
+    .reduce((sum, { payment }) => sum + toNumber(payment.amount), 0);
+  const monthlyPlatformExpensesTotal = paidPlatformExpenses
+    .filter((expense) => expense.expenseDate >= monthRange.start && expense.expenseDate < monthRange.end)
+    .reduce((sum, expense) => sum + toNumber(expense.amount), 0);
   const expenseObligations = expenses
     .filter((expense) => expense.isActive)
     .map((expense) => {
@@ -1412,6 +1420,7 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     )
     .sort((a, b) => b.payout.paidAt.getTime() - a.payout.paidAt.getTime());
   const teacherPayoutsTotal = teacherRows.reduce((sum, row) => sum + row.paid, 0);
+  const allTeacherPayoutsTotal = allTeacherPayouts.reduce((sum, payout) => sum + toNumber(payout.amount), 0);
   const teacherEstimatedDueTotal = teacherRows.reduce((sum, row) => sum + row.estimatedDue, 0);
   const teacherRemainingTotal = teacherRows.reduce((sum, row) => sum + row.remaining, 0);
   const monthEndDueDate = new Date(Date.UTC(Number(currentMonth.slice(0, 4)), Number(currentMonth.slice(5, 7)), 0, 12, 0, 0, 0));
@@ -1447,7 +1456,9 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
     })),
   ];
   const monthlyObligationsTotal = platformObligationsTotal + teacherRemainingTotal;
-  const totalExpenses = platformExpensesTotal + teacherPayoutsTotal;
+  const monthlyPaidExpensesTotal = monthlyPlatformExpensesTotal + teacherPayoutsTotal;
+  const monthlyBalance = monthlyReceivedIncome - monthlyPaidExpensesTotal;
+  const totalExpenses = platformExpensesTotal + allTeacherPayoutsTotal;
   const currentBalance = receivedIncome - totalExpenses;
   const projectedBalance = expectedIncome - totalExpenses;
   const balanceAfterTeacherDues = currentBalance - teacherRemainingTotal;
@@ -1456,10 +1467,13 @@ export default async function FinancePage({ searchParams }: FinancePageProps) {
 
   const cards = [
     { label: "الدخل المتوقع من الطلاب", value: expectedIncome, hint: "بعد الخصومات والمنح" },
-    { label: "الدخل الفعلي", value: receivedIncome, hint: "المبالغ المسجلة كمدفوعة" },
+    { label: "الدخل الفعلي الإجمالي", value: receivedIncome, hint: "كل دفعات الطلاب المسجلة منذ البداية" },
+    { label: "دخل الشهر المختار", value: monthlyReceivedIncome, hint: `دفعات الطلاب خلال ${currentMonth}` },
     { label: "المتبقي على الطلاب", value: remainingIncome, hint: "رسوم لم يتم تحصيلها بعد" },
-    { label: "المصروفات المسجلة", value: totalExpenses, hint: "مصروفات المنصة ومكافآت المعلمين المدفوعة" },
-    { label: "الرصيد الحالي", value: currentBalance, hint: "الدخل الفعلي ناقص المصروفات" },
+    { label: "مصروفات الشهر المدفوعة", value: monthlyPaidExpensesTotal, hint: "مصروفات المنصة ومكافآت المعلمين المدفوعة في الشهر المختار" },
+    { label: "رصيد الشهر المختار", value: monthlyBalance, hint: `دخل ${currentMonth} ناقص مصروفاته المدفوعة` },
+    { label: "المصروفات الإجمالية", value: totalExpenses, hint: "كل مصروفات المنصة ومكافآت المعلمين المدفوعة منذ البداية" },
+    { label: "الرصيد الإجمالي العام", value: currentBalance, hint: "كل الدخل الفعلي ناقص كل المصروفات المدفوعة" },
     { label: "الرصيد المتوقع", value: projectedBalance, hint: "إذا تم تحصيل كل المتبقي" },
     { label: "مستحقات المعلمين", value: teacherEstimatedDueTotal, hint: "تقدير هذا الشهر حسب أيام العمل" },
     { label: "متبقي مكافآت المعلمين", value: teacherRemainingTotal, hint: "مستحقات لم يتم دفعها بعد" },
