@@ -5,7 +5,7 @@ const DEFAULT_BUCKET = "alrahma-uploads";
 const DEFAULT_LOCAL_UPLOADS_DIR = path.join(process.cwd(), "uploads");
 
 function storageDriver() {
-  return String(process.env.STORAGE_DRIVER || "supabase").trim().toLowerCase() === "local"
+  return String(process.env.STORAGE_DRIVER || "local").trim().toLowerCase() === "local"
     ? "local"
     : "supabase";
 }

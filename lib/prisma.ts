@@ -24,8 +24,7 @@ const pool =
   globalForPrisma.pgPool ??
   new Pool({
     connectionString,
-    // Supabase "session mode" poolers can hit client limits fast in Next dev.
-    // Keep this low unless you know you need more.
+    // Keep this modest so local PostgreSQL and small VPS instances stay comfortable.
     max: envNumber("PG_POOL_MAX", 2),
     idleTimeoutMillis: envNumber("PG_POOL_IDLE_TIMEOUT_MS", 10_000),
     connectionTimeoutMillis: envNumber("PG_POOL_CONNECTION_TIMEOUT_MS", 10_000),
