@@ -531,6 +531,39 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: true });
     }
 
+    if (action === "SEND_ACCEPTANCE_NOTICE") {
+      if (request.status !== "ACCEPTED") {
+        return NextResponse.json(
+          { error: "يجب قبول الطلب أولا قبل إرسال رسالة القبول الأولية" },
+          { status: 400 }
+        );
+      }
+
+      if (!isWhatsAppConfigured()) {
+        return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
+      }
+
+      if (!(await isMessageAutomationEnabled("SUPERVISION_ACCEPTANCE_WHATSAPP"))) {
+        return NextResponse.json({ error: "رسالة القبول الأولية مغلقة من إعدادات الرسائل" }, { status: 400 });
+      }
+
+      const normalizedWhatsapp = normalizeWhatsAppNumber(request.parentWhatsapp || "");
+
+      if (!normalizedWhatsapp) {
+        return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });
+      }
+
+      await sendWhatsAppText({
+        to: normalizedWhatsapp,
+        body: await renderMessageTemplate("SUPERVISION_ACCEPTANCE", {
+          studentName: request.studentName,
+        }),
+        channel: request.studyMode,
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
     if (
       action === "SEND_SUPERVISION_ACCEPTANCE_MESSAGE" ||
       action === "SEND_SUPERVISION_CIRCLE_DETAILS_MESSAGE" ||

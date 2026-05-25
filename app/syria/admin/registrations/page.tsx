@@ -43,6 +43,34 @@ function parseDetails(value: string | null) {
   return { grade, age, schoolName };
 }
 
+function normalizeFilterText(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u064B-\u065F\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function uniqueFilterOptions(values: string[]) {
+  const options = new Map<string, string>();
+
+  values.forEach((value) => {
+    const label = value.replace(/\s+/g, " ").trim();
+    const key = normalizeFilterText(label);
+
+    if (label && key && !options.has(key)) {
+      options.set(key, label);
+    }
+  });
+
+  return Array.from(options.entries())
+    .map(([key, label]) => ({ key, label }))
+    .sort((first, second) => first.label.localeCompare(second.label, "ar"));
+}
+
 function arabicDigitsToEnglish(value: string) {
   const eastern = "٠١٢٣٤٥٦٧٨٩";
   const persian = "۰۱۲۳۴۵۶۷۸۹";
@@ -117,11 +145,11 @@ export default function SyriaAdminRegistrationsPage() {
     [requests]
   );
   const schoolOptions = useMemo(
-    () => Array.from(new Set(requests.map((request) => parseDetails(request.grade).schoolName).filter(Boolean))).sort(),
+    () => uniqueFilterOptions(requests.map((request) => parseDetails(request.grade).schoolName)),
     [requests]
   );
   const gradeOptions = useMemo(
-    () => Array.from(new Set(requests.map((request) => parseDetails(request.grade).grade).filter(Boolean))).sort(),
+    () => uniqueFilterOptions(requests.map((request) => parseDetails(request.grade).grade)),
     [requests]
   );
   const filteredRequests = useMemo(
@@ -136,8 +164,8 @@ export default function SyriaAdminRegistrationsPage() {
         (ageFilter === "UNKNOWN" && age === null);
 
       return ageMatch &&
-        (schoolFilter === "ALL" || details.schoolName === schoolFilter) &&
-        (gradeFilter === "ALL" || details.grade === gradeFilter);
+        (schoolFilter === "ALL" || normalizeFilterText(details.schoolName) === schoolFilter) &&
+        (gradeFilter === "ALL" || normalizeFilterText(details.grade) === gradeFilter);
     }),
     [ageFilter, gradeFilter, requests, schoolFilter]
   );
@@ -193,7 +221,10 @@ export default function SyriaAdminRegistrationsPage() {
     }
   };
 
-  const updateRequest = async (requestId: string, action: "ACCEPT" | "REJECT") => {
+  const updateRequest = async (
+    requestId: string,
+    action: "ACCEPT" | "REJECT" | "ACCEPT_AND_FORWARD_TO_SUPERVISION" | "PLACE_BY_SUPERVISION"
+  ) => {
     const response = await fetch("/api/registration-requests", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -241,13 +272,14 @@ export default function SyriaAdminRegistrationsPage() {
     }
   };
 
-  const sendAcceptance = async (requestId: string) => {
-    setSendingId(requestId);
+  const sendAcceptance = async (request: RequestItem) => {
+    const action = request.createdStudentId ? "SEND_ACCEPTANCE_MESSAGE" : "SEND_ACCEPTANCE_NOTICE";
+    setSendingId(request.id);
     try {
       const response = await fetch("/api/registration-requests", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId, action: "SEND_ACCEPTANCE_MESSAGE" }),
+        body: JSON.stringify({ requestId: request.id, action }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -261,13 +293,13 @@ export default function SyriaAdminRegistrationsPage() {
   };
 
   const sendBulkAcceptance = async () => {
-    const accepted = requests.filter((request) => request.status === "ACCEPTED" && request.createdStudentId);
+    const accepted = requests.filter((request) => request.status === "ACCEPTED");
     if (accepted.length === 0) {
       alert("لا يوجد طلاب مقبولون جاهزون للإرسال");
       return;
     }
     for (const request of accepted) {
-      await sendAcceptance(request.id);
+      await sendAcceptance(request);
     }
   };
 
@@ -315,14 +347,14 @@ export default function SyriaAdminRegistrationsPage() {
             <span className="mb-2 block text-sm font-black text-[#1c2d31]">المدرسة</span>
             <select value={schoolFilter} onChange={(event) => setSchoolFilter(event.target.value)} className={inputClass}>
               <option value="ALL">كل المدارس</option>
-              {schoolOptions.map((school) => <option key={school} value={school}>{school}</option>)}
+              {schoolOptions.map((school) => <option key={school.key} value={school.key}>{school.label}</option>)}
             </select>
           </label>
           <label className="block">
             <span className="mb-2 block text-sm font-black text-[#1c2d31]">الصف الدراسي</span>
             <select value={gradeFilter} onChange={(event) => setGradeFilter(event.target.value)} className={inputClass}>
               <option value="ALL">كل الصفوف</option>
-              {gradeOptions.map((grade) => <option key={grade} value={grade}>{grade}</option>)}
+              {gradeOptions.map((grade) => <option key={grade.key} value={grade.key}>{grade.label}</option>)}
             </select>
           </label>
         </section>
@@ -420,7 +452,7 @@ export default function SyriaAdminRegistrationsPage() {
                   ) : null}
 
                   {request.status === "PENDING" ? (
-                    <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto_auto] md:items-end">
+                    <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto_auto_auto] md:items-end">
                       <label className="block">
                         <span className="mb-2 block text-sm font-black text-[#1c2d31]">الحلقة</span>
                         <select value={selectedCircle[request.id] || ""} onChange={(e) => setSelectedCircle((prev) => ({ ...prev, [request.id]: e.target.value }))} className={inputClass}>
@@ -435,7 +467,8 @@ export default function SyriaAdminRegistrationsPage() {
                           {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName}</option>)}
                         </select>
                       </label>
-                      <button type="button" onClick={() => updateRequest(request.id, "ACCEPT")} className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white">قبول</button>
+                      <button type="button" onClick={() => updateRequest(request.id, "ACCEPT")} className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white">قبول وتوزيع</button>
+                      <button type="button" onClick={() => updateRequest(request.id, "ACCEPT_AND_FORWARD_TO_SUPERVISION")} className="rounded-2xl bg-[#c99b2e] px-5 py-3 text-sm font-black text-white">قبول فقط</button>
                       <button type="button" onClick={() => updateRequest(request.id, "REJECT")} className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700">رفض</button>
                     </div>
                   ) : null}
@@ -443,9 +476,40 @@ export default function SyriaAdminRegistrationsPage() {
                   {request.status === "ACCEPTED" && request.createdStudentId ? (
                     <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-[1.5rem] bg-emerald-50 p-4 ring-1 ring-emerald-200">
                       <p className="text-sm font-black text-emerald-800">تم قبول الطالب وربطه بالنظام.</p>
-                      <button type="button" onClick={() => sendAcceptance(request.id)} disabled={sendingId === request.id} className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
+                      <button type="button" onClick={() => sendAcceptance(request)} disabled={sendingId === request.id} className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
                         {sendingId === request.id ? "جاري الإرسال..." : "إرسال رسالة القبول"}
                       </button>
+                    </div>
+                  ) : null}
+
+                  {request.status === "ACCEPTED" && !request.createdStudentId ? (
+                    <div className="mt-4 rounded-[1.5rem] bg-amber-50 p-4 ring-1 ring-amber-200">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-sm font-black text-amber-900">الطالب مقبول بانتظار التوزيع على حلقة.</p>
+                          <p className="mt-1 text-xs leading-6 text-amber-900/70">يمكن إرسال رسالة قبول أولية الآن، ثم توزيع الطالب لاحقا عند توفر الحلقة أو المعلم.</p>
+                        </div>
+                        <button type="button" onClick={() => sendAcceptance(request)} disabled={sendingId === request.id} className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60">
+                          {sendingId === request.id ? "جاري الإرسال..." : "إرسال قبول أولي"}
+                        </button>
+                      </div>
+                      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+                        <label className="block">
+                          <span className="mb-2 block text-sm font-black text-[#1c2d31]">الحلقة</span>
+                          <select value={selectedCircle[request.id] || ""} onChange={(e) => setSelectedCircle((prev) => ({ ...prev, [request.id]: e.target.value }))} className={inputClass}>
+                            <option value="">اختر حلقة</option>
+                            {circles.map((circle) => <option key={circle.id} value={circle.id}>{circle.name}</option>)}
+                          </select>
+                        </label>
+                        <label className="block">
+                          <span className="mb-2 block text-sm font-black text-[#1c2d31]">أو اختر معلما</span>
+                          <select value={selectedTeacher[request.id] || ""} onChange={(e) => setSelectedTeacher((prev) => ({ ...prev, [request.id]: e.target.value }))} className={inputClass}>
+                            <option value="">اختر معلم</option>
+                            {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.fullName}</option>)}
+                          </select>
+                        </label>
+                        <button type="button" onClick={() => updateRequest(request.id, "PLACE_BY_SUPERVISION")} className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white">توزيع الطالب</button>
+                      </div>
                     </div>
                   ) : null}
                 </article>
