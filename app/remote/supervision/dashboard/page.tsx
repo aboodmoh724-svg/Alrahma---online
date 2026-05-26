@@ -103,6 +103,7 @@ export default async function RemoteSupervisionDashboardPage() {
     }),
     prisma.registrationRequest.count({
       where: {
+        studyMode: "REMOTE",
         forwardedToSupervisionAt: { not: null },
         supervisionStatus: { in: ["PENDING", "UNDER_REVIEW", "ON_HOLD"] },
       },

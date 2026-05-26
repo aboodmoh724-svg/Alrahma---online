@@ -7,7 +7,7 @@ import {
   getParentChatPhone,
 } from "@/lib/education-chat";
 import { prisma } from "@/lib/prisma";
-import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
+import { publicStorageUrl, uploadToLocalStorage } from "@/lib/local-storage";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 
 const MAX_ATTACHMENT_SIZE = 10 * 1024 * 1024;
@@ -99,7 +99,7 @@ export async function GET(_request: Request, context: RouteContext) {
             ? `\u0648\u0644\u064a \u0623\u0645\u0631 ${allowed.conversation.student?.fullName || ""}`.trim()
             : message.senderUser?.fullName || (message.senderRole === "ADMIN" ? "\u0627\u0644\u0625\u0634\u0631\u0627\u0641" : "\u0627\u0644\u0645\u0639\u0644\u0645"),
         body: message.body,
-        attachmentUrl: await createSignedStorageUrl(message.attachmentUrl),
+        attachmentUrl: publicStorageUrl(message.attachmentUrl),
         attachmentName: message.attachmentName,
         attachmentType: message.attachmentType,
         createdAt: message.createdAt,
@@ -144,7 +144,7 @@ export async function POST(request: Request, context: RouteContext) {
 
       attachmentName = attachment.name || "attachment";
       attachmentType = attachment.type || "application/octet-stream";
-      attachmentUrl = await uploadToSupabaseStorage(
+      attachmentUrl = await uploadToLocalStorage(
         attachment,
         `education-chat/${conversationId}`,
         safeFileName(attachmentName)

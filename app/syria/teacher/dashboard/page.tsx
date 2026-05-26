@@ -5,7 +5,7 @@ import LogoutButton from "@/components/auth/LogoutButton";
 import QuickAttendanceButtons from "@/components/reports/QuickAttendanceButtons";
 import { prisma } from "@/lib/prisma";
 import { getIstanbulDayRange } from "@/lib/school-day";
-import { createSignedStorageUrl } from "@/lib/supabase-storage";
+import { publicStorageUrl } from "@/lib/local-storage";
 
 type TodayReport = {
   id: string;
@@ -211,7 +211,7 @@ export default async function OnsiteTeacherDashboardPage({
   const trackResources = await Promise.all(
     storedTrackResources.map(async (resource) => ({
       ...resource,
-      fileUrl: await createSignedStorageUrl(resource.fileUrl),
+      fileUrl: publicStorageUrl(resource.fileUrl),
     }))
   ).then((resources) =>
     resources.filter(

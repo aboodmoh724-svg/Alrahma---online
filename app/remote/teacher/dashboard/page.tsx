@@ -6,7 +6,7 @@ import ParentReportCheckbox from "@/components/reports/ParentReportCheckbox";
 import PlatformWhatsAppSupport from "@/components/support/PlatformWhatsAppSupport";
 import InstantEntryRequestButtons from "@/components/teacher/InstantEntryRequestButtons";
 import { prisma } from "@/lib/prisma";
-import { createSignedStorageUrl } from "@/lib/supabase-storage";
+import { publicStorageUrl } from "@/lib/local-storage";
 
 type TodayReport = {
   id: string;
@@ -206,7 +206,7 @@ export default async function RemoteTeacherDashboardPage({
   const trackResources = await Promise.all(
     storedTrackResources.map(async (resource) => ({
       ...resource,
-      fileUrl: await createSignedStorageUrl(resource.fileUrl),
+      fileUrl: publicStorageUrl(resource.fileUrl),
     }))
   ).then((resources) =>
     resources.filter((resource): resource is typeof resource & { fileUrl: string } =>

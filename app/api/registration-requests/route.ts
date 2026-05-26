@@ -8,7 +8,7 @@ import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import { generateStudentCode } from "@/lib/student-code";
 import { normalizeStudyMode } from "@/lib/study-modes";
-import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
+import { publicStorageUrl, uploadToLocalStorage } from "@/lib/local-storage";
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
@@ -202,7 +202,7 @@ function validateUpload(file: File, options: { maxSize: number; allowedTypes: st
 
 async function saveUploadedFile(file: File, folder: string, defaultName: string) {
   const fileName = safeFileName(file.name, defaultName);
-  const filePath = await uploadToSupabaseStorage(file, folder, fileName);
+  const filePath = await uploadToLocalStorage(file, folder, fileName);
 
   return {
     fileName,
@@ -225,8 +225,8 @@ export async function GET(req: Request) {
     const requestsWithSignedUrls = await Promise.all(
       requests.map(async (request) => ({
         ...request,
-        audioUrl: await createSignedStorageUrl(request.audioUrl),
-        idImageUrl: await createSignedStorageUrl(request.idImageUrl),
+        audioUrl: publicStorageUrl(request.audioUrl),
+        idImageUrl: publicStorageUrl(request.idImageUrl),
       }))
     );
 
@@ -385,7 +385,7 @@ export async function POST(req: Request) {
 
     if (
       normalizedWhatsapp &&
-      isWhatsAppConfigured() &&
+      isWhatsAppConfigured(studyMode) &&
       (await isMessageAutomationEnabled("REGISTRATION_RECEIVED_WHATSAPP"))
     ) {
       try {
@@ -477,7 +477,7 @@ export async function PATCH(req: Request) {
         );
       }
 
-      if (!isWhatsAppConfigured()) {
+      if (!isWhatsAppConfigured(request.studyMode)) {
         return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
       }
 
@@ -539,7 +539,7 @@ export async function PATCH(req: Request) {
         );
       }
 
-      if (!isWhatsAppConfigured()) {
+      if (!isWhatsAppConfigured(request.studyMode)) {
         return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
       }
 
@@ -577,7 +577,7 @@ export async function PATCH(req: Request) {
         );
       }
 
-      if (!isWhatsAppConfigured()) {
+      if (!isWhatsAppConfigured(request.studyMode)) {
         return NextResponse.json({ error: "خدمة واتساب غير مفعلة حاليا" }, { status: 400 });
       }
 
@@ -666,7 +666,7 @@ export async function PATCH(req: Request) {
       await sendWhatsAppText({
         to,
         body: bodyText,
-        channel: "REMOTE",
+        channel: request.studyMode,
       });
 
       return NextResponse.json({ success: true });
@@ -969,9 +969,15 @@ export async function PATCH(req: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(req: Request) {
   try {
-    const deleted = await prisma.registrationRequest.deleteMany({});
+    const url = new URL(req.url);
+    const studyMode = normalizeStudyMode(url.searchParams.get("studyMode")) || "REMOTE";
+    const deleted = await prisma.registrationRequest.deleteMany({
+      where: {
+        studyMode,
+      },
+    });
 
     return NextResponse.json({
       success: true,

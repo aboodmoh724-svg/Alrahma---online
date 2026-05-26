@@ -1,7 +1,7 @@
 import path from "path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { createSignedStorageUrl, uploadToSupabaseStorage } from "@/lib/supabase-storage";
+import { publicStorageUrl, uploadToLocalStorage } from "@/lib/local-storage";
 
 const MAX_RESOURCE_FILE_SIZE = 25 * 1024 * 1024;
 
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
     const resourcesWithSignedUrls = await Promise.all(
       resources.map(async (resource) => ({
         ...resource,
-        fileUrl: await createSignedStorageUrl(resource.fileUrl),
+        fileUrl: publicStorageUrl(resource.fileUrl),
       }))
     );
 
@@ -132,7 +132,7 @@ export async function POST(req: Request) {
     }
 
     const fileName = safeFileName(file.name);
-    const filePath = await uploadToSupabaseStorage(file, "track-resources", fileName);
+    const filePath = await uploadToLocalStorage(file, "track-resources", fileName);
 
     const existingRegistrationResource =
       scope === "REGISTRATION"

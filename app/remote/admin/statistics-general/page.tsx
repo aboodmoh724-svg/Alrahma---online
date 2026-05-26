@@ -16,9 +16,10 @@ export default async function RemoteAdminStatisticsGeneralPage() {
     prisma.student.count({ where: { studyMode: "REMOTE", isActive: true } }),
     prisma.user.count({ where: { studyMode: "REMOTE", role: "TEACHER", isActive: true } }),
     prisma.circle.count({ where: { studyMode: "REMOTE" } }),
-    prisma.registrationRequest.count({ where: { status: "PENDING" } }),
+    prisma.registrationRequest.count({ where: { studyMode: "REMOTE", status: "PENDING" } }),
     prisma.registrationRequest.count({
       where: {
+        studyMode: "REMOTE",
         forwardedToSupervisionAt: { not: null },
         supervisionStatus: { in: ["PENDING", "UNDER_REVIEW", "ON_HOLD"] },
       },

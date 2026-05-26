@@ -1,6 +1,6 @@
 import { appUrl } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
-import { createSignedStorageUrl } from "@/lib/supabase-storage";
+import { publicStorageUrl } from "@/lib/local-storage";
 
 export type AutoReplyRuleKey = "REGISTRATION" | "TRACKS" | "FEES" | "SCHEDULE" | "GUIDELINES";
 
@@ -227,7 +227,7 @@ async function getGuidelinesLink() {
     return appUrl("/registration");
   }
 
-  const url = await createSignedStorageUrl(resource.fileUrl);
+  const url = publicStorageUrl(resource.fileUrl);
   if (!url) return appUrl("/registration");
   return url.startsWith("http") ? url : appUrl(url);
 }

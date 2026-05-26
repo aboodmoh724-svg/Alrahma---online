@@ -2,7 +2,7 @@ import path from "path";
 import { NextResponse } from "next/server";
 import { normalizePhoneDigits } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
-import { uploadToSupabaseStorage } from "@/lib/supabase-storage";
+import { uploadToLocalStorage } from "@/lib/local-storage";
 
 const MAX_AUDIO_SIZE = 5 * 1024 * 1024;
 const MAX_ID_FILE_SIZE = 2 * 1024 * 1024;
@@ -40,7 +40,7 @@ function validateUpload(file: File, options: { maxSize: number; allowedTypes: st
 
 async function saveUploadedFile(file: File, folder: string, defaultName: string) {
   const fileName = safeFileName(file.name, defaultName);
-  const filePath = await uploadToSupabaseStorage(file, folder, fileName);
+  const filePath = await uploadToLocalStorage(file, folder, fileName);
 
   return {
     fileName,
