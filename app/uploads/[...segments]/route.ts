@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 import path from "path";
 import { NextResponse } from "next/server";
 
-const DEFAULT_LOCAL_UPLOADS_DIR = path.join(process.cwd(), "uploads");
+const DEFAULT_LOCAL_UPLOADS_DIR = path.join(/*turbopackIgnore: true*/ process.cwd(), "uploads");
 
 function getLocalUploadsDir() {
   return String(process.env.LOCAL_UPLOADS_DIR || "").trim() || DEFAULT_LOCAL_UPLOADS_DIR;
@@ -63,7 +63,7 @@ export async function GET(
       return NextResponse.json({ error: "الملف غير موجود" }, { status: 404 });
     }
 
-    const filePath = path.join(getLocalUploadsDir(), ...safe);
+    const filePath = path.join(/*turbopackIgnore: true*/ getLocalUploadsDir(), ...safe);
     const fileStat = await fs.stat(filePath).catch(() => null);
 
     if (!fileStat?.isFile()) {
