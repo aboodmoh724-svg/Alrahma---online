@@ -518,13 +518,15 @@ export async function PATCH(req: Request) {
 
       await sendWhatsAppText({
         to: normalizedWhatsapp,
-        body: await renderMessageTemplate("REGISTRATION_ACCEPTED_DETAILS", {
-          studentName: createdStudent.fullName || request.studentName,
-          circleName: createdStudent.circle?.name || null,
-          teacherName: createdStudent.teacher?.fullName || null,
-          zoomUrl: createdStudent.circle?.zoomUrl || null,
-          scheduleDetails: String(body.scheduleDetails || "").trim() || null,
-        }),
+        body:
+          String(body.messageBody || "").trim() ||
+          (await renderMessageTemplate("REGISTRATION_ACCEPTED_DETAILS", {
+            studentName: createdStudent.fullName || request.studentName,
+            circleName: createdStudent.circle?.name || null,
+            teacherName: createdStudent.teacher?.fullName || null,
+            zoomUrl: createdStudent.circle?.zoomUrl || null,
+            scheduleDetails: String(body.scheduleDetails || "").trim() || null,
+          })),
         channel: request.studyMode,
       });
 
@@ -555,9 +557,11 @@ export async function PATCH(req: Request) {
 
       await sendWhatsAppText({
         to: normalizedWhatsapp,
-        body: await renderMessageTemplate("SUPERVISION_ACCEPTANCE", {
-          studentName: request.studentName,
-        }),
+        body:
+          String(body.messageBody || "").trim() ||
+          (await renderMessageTemplate("SUPERVISION_ACCEPTANCE", {
+            studentName: request.studentName,
+          })),
         channel: request.studyMode,
       });
 

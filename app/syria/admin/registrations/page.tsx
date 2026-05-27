@@ -118,6 +118,22 @@ function editStateFromRequest(request: RequestItem): EditState {
   };
 }
 
+function buildInitialAcceptanceMessage(request: RequestItem) {
+  return [
+    "السلام عليكم ورحمة الله وبركاته",
+    `حياكم الله ولي أمر الطالب ${request.studentName}`,
+    "",
+    "نشكر لكم حرصكم واهتمامكم بتسجيل ابنكم في تحفيظ الرحمة للقرآن الكريم.",
+    "نود إعلامكم بأنه تم قبول طلب تسجيل ابنكم قبولاً أولياً، وستبدأ الحلقات بإذن الله بتاريخ 2026/06/01.",
+    "",
+    "المكان: سوريا - حماة - طيبة الإمام - مسجد بدر.",
+    "",
+    "نسأل الله أن يبارك في أبنائنا وأن يجعلهم من أهل القرآن.",
+    "",
+    "إدارة تحفيظ الرحمة للقرآن الكريم - سوريا",
+  ].join("\n");
+}
+
 export default function SyriaAdminRegistrationsPage() {
   const [requests, setRequests] = useState<RequestItem[]>([]);
   const [teachers, setTeachers] = useState<Teacher[]>([]);
@@ -125,6 +141,8 @@ export default function SyriaAdminRegistrationsPage() {
   const [selectedCircle, setSelectedCircle] = useState<Record<string, string>>({});
   const [selectedTeacher, setSelectedTeacher] = useState<Record<string, string>>({});
   const [sendingId, setSendingId] = useState("");
+  const [deletingId, setDeletingId] = useState("");
+  const [acceptanceDraft, setAcceptanceDraft] = useState<{ request: RequestItem; message: string } | null>(null);
   const [editingId, setEditingId] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
   const [editState, setEditState] = useState<EditState | null>(null);
@@ -272,14 +290,14 @@ export default function SyriaAdminRegistrationsPage() {
     }
   };
 
-  const sendAcceptance = async (request: RequestItem) => {
+  const sendAcceptanceRequest = async (request: RequestItem, messageBody?: string) => {
     const action = request.createdStudentId ? "SEND_ACCEPTANCE_MESSAGE" : "SEND_ACCEPTANCE_NOTICE";
     setSendingId(request.id);
     try {
       const response = await fetch("/api/registration-requests", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestId: request.id, action }),
+        body: JSON.stringify({ requestId: request.id, action, messageBody }),
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
@@ -287,8 +305,35 @@ export default function SyriaAdminRegistrationsPage() {
         return;
       }
       alert("تم إرسال رسالة القبول");
+      setAcceptanceDraft(null);
     } finally {
       setSendingId("");
+    }
+  };
+
+  const sendAcceptance = async (request: RequestItem) => {
+    setAcceptanceDraft({
+      request,
+      message: buildInitialAcceptanceMessage(request),
+    });
+  };
+
+  const deleteRequest = async (request: RequestItem) => {
+    if (!window.confirm(`هل تريد حذف طلب ${request.studentName}؟`)) return;
+
+    setDeletingId(request.id);
+    try {
+      const response = await fetch(`/api/registration-requests/${request.id}`, {
+        method: "DELETE",
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        alert(data.error || "تعذر حذف الطلب");
+        return;
+      }
+      await fetchData();
+    } finally {
+      setDeletingId("");
     }
   };
 
@@ -299,7 +344,7 @@ export default function SyriaAdminRegistrationsPage() {
       return;
     }
     for (const request of accepted) {
-      await sendAcceptance(request);
+      await sendAcceptanceRequest(request, buildInitialAcceptanceMessage(request));
     }
   };
 
@@ -399,9 +444,19 @@ export default function SyriaAdminRegistrationsPage() {
                         ولي الأمر: {request.parentWhatsapp} - {new Date(request.createdAt).toLocaleDateString("ar-EG")}
                       </p>
                     </div>
-                    <button type="button" onClick={() => openEdit(request)} className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#1c2d31]">
-                      تعديل البيانات
-                    </button>
+                    <div className="flex flex-wrap gap-2">
+                      <button type="button" onClick={() => openEdit(request)} className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2 text-sm font-black text-[#1c2d31]">
+                        تعديل البيانات
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteRequest(request)}
+                        disabled={deletingId === request.id}
+                        className="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-black text-red-700 disabled:opacity-60"
+                      >
+                        {deletingId === request.id ? "جاري الحذف..." : "حذف الطلب"}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="mt-4 grid gap-3 md:grid-cols-4">
@@ -518,6 +573,42 @@ export default function SyriaAdminRegistrationsPage() {
           </section>
         )}
       </div>
+      {acceptanceDraft ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 px-4 py-6">
+          <section className="w-full max-w-2xl rounded-[2rem] bg-white p-5 shadow-2xl ring-1 ring-[#d8bf83]" dir="rtl">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-black text-[#8a661f]">رسالة القبول الأولي</p>
+                <h2 className="mt-1 text-2xl font-black text-[#1c2d31]">{acceptanceDraft.request.studentName}</h2>
+              </div>
+              <button type="button" onClick={() => setAcceptanceDraft(null)} className="rounded-full border border-[#d8bf83] px-3 py-1 text-sm font-black text-[#1c2d31]">
+                إغلاق
+              </button>
+            </div>
+            <p className="mt-3 text-sm leading-7 text-[#1c2d31]/65">
+              راجع نص الرسالة وعدله عند الحاجة، ثم اضغط إرسال.
+            </p>
+            <textarea
+              value={acceptanceDraft.message}
+              onChange={(event) => setAcceptanceDraft({ ...acceptanceDraft, message: event.target.value })}
+              className="mt-4 min-h-72 w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-4 text-sm leading-7 outline-none focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
+            />
+            <div className="mt-4 flex flex-wrap justify-end gap-2">
+              <button type="button" onClick={() => setAcceptanceDraft(null)} className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-sm font-black text-[#1c2d31]">
+                إلغاء
+              </button>
+              <button
+                type="button"
+                disabled={sendingId === acceptanceDraft.request.id || !acceptanceDraft.message.trim()}
+                onClick={() => sendAcceptanceRequest(acceptanceDraft.request, acceptanceDraft.message)}
+                className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white disabled:opacity-60"
+              >
+                {sendingId === acceptanceDraft.request.id ? "جاري الإرسال..." : "إرسال الرسالة"}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }
