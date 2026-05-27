@@ -132,12 +132,6 @@ const sections: DashboardSection[] = [
     tone: "bg-white text-[#0a3f2a]",
   },
   {
-    href: "/remote/admin/storage",
-    title: "ملفات التخزين",
-    description: "استعراض الملفات المحفوظة داخل السيرفر مثل التسجيلات والصور ومرفقات المحادثات.",
-    tone: "bg-[#102f34] text-white",
-  },
-  {
     href: "/remote/admin/broadcasts",
     title: "الرسائل الجماعية",
     description: "كتابة رسالة موحدة وإرسالها إلى أولياء الأمور في الأونلاين أو الحضوري أو الجميع.",
