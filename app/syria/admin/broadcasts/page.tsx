@@ -110,11 +110,10 @@ export default async function OnsiteAdminBroadcastsPage() {
     })
     .filter((value): value is NonNullable<typeof value> => Boolean(value));
 
-  const registeredPhones = new Set(parentOptions.map((parent) => parent.phone));
   const unregisteredParentOptions = registrationRequests
     .map((request) => {
       const phone = normalizeSyriaPhone(request.parentWhatsapp || "");
-      return phone && !registeredPhones.has(phone)
+      return phone
         ? {
             id: `request:${request.id}`,
             name: request.studentName,

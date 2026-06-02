@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
-import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
+import { normalizeWhatsAppNumber, sendWhatsAppText, type WhatsAppChannel } from "@/lib/whatsapp";
 
 type RouteContext = {
   params: Promise<{
@@ -88,9 +88,6 @@ export async function PATCH(request: Request, context: RouteContext) {
       where: {
         id: reportId,
         teacherId,
-        student: {
-          studyMode: "REMOTE",
-        },
       },
       select: {
         id: true,
@@ -113,6 +110,7 @@ export async function PATCH(request: Request, context: RouteContext) {
           select: {
             fullName: true,
             parentWhatsapp: true,
+            studyMode: true,
           },
         },
       },
@@ -132,8 +130,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       });
     }
 
+    const reportChannel = report.student.studyMode as WhatsAppChannel;
+    const defaultCountryCode = reportChannel === "ONSITE_SYRIA" ? "963" : "90";
     const phone = report.student.parentWhatsapp
-      ? normalizeWhatsAppNumber(report.student.parentWhatsapp)
+      ? normalizeWhatsAppNumber(report.student.parentWhatsapp, defaultCountryCode)
       : null;
 
     if (!phone) {
@@ -173,7 +173,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       await sendWhatsAppText({
         to: phone,
         body: messageWithSummary,
-        channel: "REMOTE",
+        channel: reportChannel,
       });
     } catch (whatsAppError) {
       const messageText =

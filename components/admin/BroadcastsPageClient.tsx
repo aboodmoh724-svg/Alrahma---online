@@ -80,6 +80,8 @@ export default function BroadcastsPageClient({
     });
     return [...recipients.values()];
   }, [parentOptions, unregisteredParentOptions]);
+  const parentRecordsCount = parentOptions.length + unregisteredParentOptions.length;
+  const duplicateParentPhonesCount = Math.max(parentRecordsCount - allParentOptions.length, 0);
 
   const filteredParents = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -229,9 +231,14 @@ export default function BroadcastsPageClient({
                 </select>
               </div>
               <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm leading-7 text-[#1c2d31]/65">
-                {recipientType === "ALL_PARENTS" && `سيتم الإرسال إلى ${allParentOptions.length} من أولياء الأمور في هذا القسم.`}
+                {recipientType === "ALL_PARENTS" &&
+                  `سيتم الإرسال إلى ${allParentOptions.length} رقم واتساب فريد من أولياء الأمور. يشمل ذلك ${parentOptions.length} طالبًا مسجلًا و${unregisteredParentOptions.length} طلب تسجيل${
+                    duplicateParentPhonesCount > 0
+                      ? `، مع دمج ${duplicateParentPhonesCount} رقم مكرر حتى لا تصل الرسالة مرتين لنفس ولي الأمر.`
+                      : "."
+                  }`}
                 {recipientType === "ALL_REGISTERED_PARENTS" && `سيتم الإرسال إلى ${parentOptions.length} من أولياء أمور الطلاب المسجلين.`}
-                {recipientType === "ALL_UNREGISTERED_PARENTS" && `سيتم الإرسال إلى ${unregisteredParentOptions.length} من أولياء أمور طلبات التسجيل غير المحولة لطالب.`}
+                {recipientType === "ALL_UNREGISTERED_PARENTS" && `سيتم الإرسال إلى ${unregisteredParentOptions.length} من أولياء أمور طلبات التسجيل.`}
                 {recipientType === "ALL_TEACHERS" && `سيتم الإرسال إلى ${teacherOptions.length} من المعلمين في هذا القسم.`}
                 {recipientType === "SELECTED_PARENTS" && `تم تحديد ${selectedCount} من أولياء الأمور حتى الآن.`}
               </div>
