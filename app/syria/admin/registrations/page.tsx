@@ -149,6 +149,7 @@ export default function SyriaAdminRegistrationsPage() {
   const [ageFilter, setAgeFilter] = useState("ALL");
   const [schoolFilter, setSchoolFilter] = useState("ALL");
   const [gradeFilter, setGradeFilter] = useState("ALL");
+  const [studentSearch, setStudentSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [importing, setImporting] = useState(false);
 
@@ -174,6 +175,8 @@ export default function SyriaAdminRegistrationsPage() {
     () => requests.filter((request) => {
       const details = parseDetails(request.grade);
       const age = ageNumber(details.age);
+      const search = normalizeFilterText(studentSearch);
+      const nameMatch = !search || normalizeFilterText(request.studentName).includes(search);
       const ageMatch =
         ageFilter === "ALL" ||
         (ageFilter === "UNDER_10" && age !== null && age < 10) ||
@@ -181,11 +184,12 @@ export default function SyriaAdminRegistrationsPage() {
         (ageFilter === "OVER_15" && age !== null && age > 15) ||
         (ageFilter === "UNKNOWN" && age === null);
 
-      return ageMatch &&
+      return nameMatch &&
+        ageMatch &&
         (schoolFilter === "ALL" || normalizeFilterText(details.schoolName) === schoolFilter) &&
         (gradeFilter === "ALL" || normalizeFilterText(details.grade) === gradeFilter);
     }),
-    [ageFilter, gradeFilter, requests, schoolFilter]
+    [ageFilter, gradeFilter, requests, schoolFilter, studentSearch]
   );
 
   const fetchData = async () => {
@@ -377,7 +381,16 @@ export default function SyriaAdminRegistrationsPage() {
           <Stat title="مسجل كطالب" value={stats.registered} />
         </section>
 
-        <section className="grid gap-3 rounded-[2rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d8bf83] md:grid-cols-3">
+        <section className="grid gap-3 rounded-[2rem] bg-white/90 p-4 shadow-sm ring-1 ring-[#d8bf83] md:grid-cols-4">
+          <label className="block">
+            <span className="mb-2 block text-sm font-black text-[#1c2d31]">بحث باسم الطالب</span>
+            <input
+              value={studentSearch}
+              onChange={(event) => setStudentSearch(event.target.value)}
+              placeholder="اكتب اسم الطالب"
+              className={inputClass}
+            />
+          </label>
           <label className="block">
             <span className="mb-2 block text-sm font-black text-[#1c2d31]">فلتر العمر</span>
             <select value={ageFilter} onChange={(event) => setAgeFilter(event.target.value)} className={inputClass}>
