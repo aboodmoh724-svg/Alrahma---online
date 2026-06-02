@@ -54,6 +54,12 @@ const sections = [
     description: "إرسال رسالة موحدة إلى أولياء الأمور أو المعلمين أو أولياء أمور محددين في الحضوري.",
     tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
+  {
+    href: "/syria/admin/data-workflow",
+    title: "سير العمل",
+    description: "متابعة تنظيف بيانات الطلاب المؤقتين، جمع أرقام أولياء الأمور، ثم إرسال استمارة تحديث البيانات خطوة بخطوة.",
+    tone: "bg-[#1c2d31] text-white",
+  },
 ];
 
 async function getCurrentOnsiteAdmin() {
