@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { normalizePhoneDigits } from "@/lib/phone-number";
+import {
+  formatSyriaLocalPhone,
+  normalizePhoneDigits,
+  normalizeSyriaPhone,
+} from "@/lib/phone-number";
 
 type Teacher = {
   id: string;
@@ -32,41 +36,25 @@ type Student = {
   circle: Circle | null;
 };
 
-function toOnsiteWhatsappNumber(value: string) {
+function toSyriaLocalPhone(value: string) {
+  return formatSyriaLocalPhone(value).replace(/\s/g, "");
+}
+
+function formatSyriaPhone(value: string) {
+  const savedFormat = formatSyriaLocalPhone(value);
+  if (savedFormat) return savedFormat;
+
   let digits = normalizePhoneDigits(value);
+  if (digits.startsWith("963")) digits = digits.slice(3);
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  digits = digits.slice(0, 9);
 
-  if (!digits) return "";
-  if (digits.startsWith("0090")) digits = digits.slice(2);
-  if (digits.startsWith("90") && digits.length >= 12) return digits;
-  if (digits.startsWith("0") && digits.length === 11) return `90${digits.slice(1)}`;
-  if (digits.length === 10) return `90${digits}`;
-
-  return digits.length > 10 ? digits : `90${digits}`;
+  return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)]
+    .filter(Boolean)
+    .join(" ");
 }
 
-function toOnsiteLocalPhone(value: string) {
-  let digits = normalizePhoneDigits(value);
-
-  if (digits.startsWith("0090")) digits = digits.slice(4);
-  if (digits.startsWith("90") && digits.length > 10) digits = digits.slice(2);
-  if (digits.startsWith("0") && digits.length === 11) digits = digits.slice(1);
-
-  return digits.slice(0, 10);
-}
-
-function formatOnsitePhone(value: string) {
-  const digits = toOnsiteLocalPhone(value);
-  const parts = [
-    digits.slice(0, 3),
-    digits.slice(3, 6),
-    digits.slice(6, 8),
-    digits.slice(8, 10),
-  ].filter(Boolean);
-
-  return parts.join(" ");
-}
-
-function OnsiteParentPhoneInput({
+function SyriaParentPhoneInput({
   value,
   studentName,
   onSave,
@@ -77,13 +65,13 @@ function OnsiteParentPhoneInput({
   onSave: (value: string | null) => Promise<boolean>;
   className?: string;
 }) {
-  const [draft, setDraft] = useState(formatOnsitePhone(value));
+  const [draft, setDraft] = useState(formatSyriaPhone(value));
   const [saving, setSaving] = useState(false);
-  const savedDisplay = formatOnsitePhone(value);
-  const changed = toOnsiteWhatsappNumber(draft) !== toOnsiteWhatsappNumber(value);
+  const savedDisplay = formatSyriaPhone(value);
+  const changed = normalizeSyriaPhone(draft) !== normalizeSyriaPhone(value);
 
   useEffect(() => {
-    setDraft(formatOnsitePhone(value));
+    setDraft(formatSyriaPhone(value));
   }, [value]);
 
   const commit = async () => {
@@ -91,15 +79,15 @@ function OnsiteParentPhoneInput({
 
     try {
       setSaving(true);
-      const localDigits = toOnsiteLocalPhone(draft);
-      if (localDigits && localDigits.length !== 10) {
-        alert("رقم ولي الأمر يجب أن يكون 10 أرقام بعد +90، مثال: 555 555 55 55");
+      const localDigits = toSyriaLocalPhone(draft);
+      if (localDigits && localDigits.length !== 9) {
+        alert("رقم ولي الأمر يجب أن يكون 9 أرقام بعد +963، مثال: 944 123 456");
         setDraft(savedDisplay);
         return;
       }
-      const normalized = toOnsiteWhatsappNumber(draft);
+      const normalized = normalizeSyriaPhone(draft);
       const ok = await onSave(normalized || null);
-      if (ok) setDraft(formatOnsitePhone(normalized));
+      if (ok) setDraft(formatSyriaPhone(normalized));
     } finally {
       setSaving(false);
     }
@@ -111,18 +99,18 @@ function OnsiteParentPhoneInput({
     >
       <div className="flex items-stretch gap-2" dir="ltr">
         <span className="flex h-11 shrink-0 items-center rounded-xl bg-white px-3 text-sm font-black text-[#0f5a35] ring-1 ring-[#eadcc4]">
-          +90
+          +963
         </span>
         <input
           type="tel"
           inputMode="numeric"
           value={draft}
-          onChange={(event) => setDraft(formatOnsitePhone(event.target.value))}
+          onChange={(event) => setDraft(formatSyriaPhone(event.target.value))}
           onPaste={(event) => {
             const text = event.clipboardData.getData("text");
             if (!text) return;
             event.preventDefault();
-            setDraft(formatOnsitePhone(text));
+            setDraft(formatSyriaPhone(text));
           }}
           onBlur={() => {
             void commit();
@@ -133,14 +121,14 @@ function OnsiteParentPhoneInput({
               void commit();
             }
           }}
-          placeholder="5xx xxx xx xx"
+          placeholder="9xx xxx xxx"
           aria-label={`رقم ولي أمر ${studentName}`}
           className="h-11 min-w-0 flex-1 rounded-xl border border-[#eadcc4] bg-white px-3 text-left font-mono text-base font-black text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/30 focus:border-[#0f5a35]"
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className="min-w-0 truncate text-xs font-bold text-[#1c2d31]/55">
-          {savedDisplay ? `محفوظ: +90 ${savedDisplay}` : "لا يوجد رقم محفوظ"}
+          {savedDisplay ? `محفوظ: +963 ${savedDisplay}` : "لا يوجد رقم محفوظ"}
         </span>
         {changed ? (
           <button
@@ -165,7 +153,7 @@ function ParentContactSummary({
   student: Student;
   onEditPhone: () => void;
 }) {
-  const phoneDisplay = formatOnsitePhone(student.parentWhatsapp || "");
+  const phoneDisplay = formatSyriaPhone(student.parentWhatsapp || "");
 
   return (
     <div className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-3">
@@ -175,7 +163,7 @@ function ParentContactSummary({
             رقم ولي الأمر
           </p>
           <p className="mt-1 font-mono text-sm font-black text-[#0f5a35]" dir="ltr">
-            {phoneDisplay ? `+90 ${phoneDisplay}` : "لا يوجد رقم محفوظ"}
+            {phoneDisplay ? `+963 ${phoneDisplay}` : "لا يوجد رقم محفوظ"}
           </p>
         </div>
         <button
@@ -743,7 +731,7 @@ export default function OnsiteAdminStudentsPage() {
               </button>
             </div>
 
-            <OnsiteParentPhoneInput
+            <SyriaParentPhoneInput
               value={editingPhoneStudent.parentWhatsapp || ""}
               studentName={editingPhoneStudent.fullName}
               onSave={async (next) => {

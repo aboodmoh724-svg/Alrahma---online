@@ -4,7 +4,6 @@ import { appUrl } from "@/lib/app-url";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { hashPassword } from "@/lib/passwords";
-import { normalizePhoneDigits } from "@/lib/phone-number";
 import { getStudyModeLabel, getTeacherLoginPath, normalizeStudyMode } from "@/lib/study-modes";
 import { prisma } from "@/lib/prisma";
 import {
@@ -88,7 +87,7 @@ export async function POST(req: Request) {
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
     const password = String(body.password || "").trim();
-    const whatsapp = normalizePhoneDigits(body.whatsapp);
+    const rawWhatsapp = String(body.whatsapp || "").trim();
     const teacherCertification = String(body.teacherCertification || "").trim();
     const teacherAvailableTimes = String(body.teacherAvailableTimes || "").trim();
     const teacherAvailableTracks = String(body.teacherAvailableTracks || "").trim();
@@ -110,6 +109,11 @@ export async function POST(req: Request) {
     if (!studyMode) {
       return NextResponse.json({ error: "Ù†ÙˆØ¹ Ø§Ù„Ø¯Ø±Ø§Ø³Ø© ØºÙŠØ± ØµØ§Ù„Ø­" }, { status: 400 });
     }
+
+    const whatsapp = normalizeWhatsAppNumber(
+      rawWhatsapp,
+      studyMode === "ONSITE_SYRIA" ? "963" : "90"
+    );
 
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -158,7 +162,10 @@ export async function POST(req: Request) {
 
     let whatsappSent = false;
     let whatsappWarning: string | null = null;
-    const normalizedWhatsapp = normalizeWhatsAppNumber(whatsapp);
+    const normalizedWhatsapp = normalizeWhatsAppNumber(
+      whatsapp || "",
+      studyMode === "ONSITE_SYRIA" ? "963" : "90"
+    );
 
     if (
       normalizedWhatsapp &&
@@ -212,7 +219,7 @@ export async function PATCH(req: Request) {
     const teacherId = String(body.teacherId || "").trim();
     const fullName = String(body.fullName || "").trim();
     const email = String(body.email || "").trim().toLowerCase();
-    const whatsapp = normalizePhoneDigits(body.whatsapp);
+    const rawWhatsapp = String(body.whatsapp || "").trim();
     const teacherCertification = String(body.teacherCertification || "").trim();
     const teacherAvailableTimes = String(body.teacherAvailableTimes || "").trim();
     const teacherAvailableTracks = String(body.teacherAvailableTracks || "").trim();
@@ -239,6 +246,7 @@ export async function PATCH(req: Request) {
       },
       select: {
         id: true,
+        studyMode: true,
       },
     });
 
@@ -261,6 +269,11 @@ export async function PATCH(req: Request) {
         { status: 400 }
       );
     }
+
+    const whatsapp = normalizeWhatsAppNumber(
+      rawWhatsapp,
+      (studyMode || teacher.studyMode) === "ONSITE_SYRIA" ? "963" : "90"
+    );
 
     const updatedTeacher = await prisma.user.update({
       where: {

@@ -261,8 +261,8 @@ export function attendanceTemplateConfig(status: "PRESENT" | "ABSENT") {
   return { templateName, languageCode };
 }
 
-export function normalizeWhatsAppNumber(raw: string) {
-  const justDigits = normalizeInternationalPhone(raw);
+export function normalizeWhatsAppNumber(raw: string, defaultCountryCode = "90") {
+  const justDigits = normalizeInternationalPhone(raw, defaultCountryCode);
 
   if (justDigits.length < 8) {
     return null;

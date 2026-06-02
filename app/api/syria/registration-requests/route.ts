@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
 import { renderMessageTemplate } from "@/lib/message-templates";
-import { normalizePhoneDigits } from "@/lib/phone-number";
+import { normalizeSyriaPhone } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 import { isWhatsAppConfigured, normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const studentName = text(formData, "studentName");
-    const parentWhatsapp = normalizePhoneDigits(text(formData, "parentWhatsapp"));
+    const parentWhatsapp = normalizeSyriaPhone(text(formData, "parentWhatsapp"));
     const age = text(formData, "age");
     const grade = text(formData, "grade");
     const schoolName = text(formData, "schoolName");
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 
     let whatsappSent = false;
     let whatsappWarning: string | null = null;
-    const normalizedWhatsapp = normalizeWhatsAppNumber(parentWhatsapp);
+    const normalizedWhatsapp = normalizeWhatsAppNumber(parentWhatsapp, "963");
 
     if (
       normalizedWhatsapp &&

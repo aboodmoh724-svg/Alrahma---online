@@ -8,11 +8,19 @@ import {
   type WhatsAppChannel,
 } from "@/lib/whatsapp";
 
-type RecipientType = "ALL_PARENTS" | "ALL_TEACHERS" | "SELECTED_PARENTS" | "SELECTED_TEACHERS";
+type RecipientType =
+  | "ALL_PARENTS"
+  | "ALL_REGISTERED_PARENTS"
+  | "ALL_UNREGISTERED_PARENTS"
+  | "ALL_TEACHERS"
+  | "SELECTED_PARENTS"
+  | "SELECTED_TEACHERS";
 
 function normalizeRecipientType(value: unknown): RecipientType | null {
   if (
     value === "ALL_PARENTS" ||
+    value === "ALL_REGISTERED_PARENTS" ||
+    value === "ALL_UNREGISTERED_PARENTS" ||
     value === "ALL_TEACHERS" ||
     value === "SELECTED_PARENTS" ||
     value === "SELECTED_TEACHERS"
@@ -72,10 +80,10 @@ export async function POST(request: Request) {
     const body = await request.json();
     const rawMessage = String(body.message || "").trim();
     const recipientType = normalizeRecipientType(body.recipientType);
-    const selectedParentIds = Array.isArray(body.selectedParentIds)
+    const selectedParentIds: string[] = Array.isArray(body.selectedParentIds)
       ? body.selectedParentIds.map((value: unknown) => String(value || "").trim()).filter(Boolean)
       : [];
-    const selectedTeacherIds = Array.isArray(body.selectedTeacherIds)
+    const selectedTeacherIds: string[] = Array.isArray(body.selectedTeacherIds)
       ? body.selectedTeacherIds.map((value: unknown) => String(value || "").trim()).filter(Boolean)
       : [];
 
@@ -88,13 +96,24 @@ export async function POST(request: Request) {
     }
 
     const recipients = new Map<string, { recipientName: string }>();
+    const defaultCountryCode = scope === "ONSITE_SYRIA" ? "963" : "90";
+    const selectedStudentIds = selectedParentIds
+      .filter((id) => !id.startsWith("request:"))
+      .map((id) => id.replace(/^student:/, ""));
+    const selectedRequestIds = selectedParentIds
+      .filter((id) => id.startsWith("request:"))
+      .map((id) => id.replace(/^request:/, ""));
 
-    if (recipientType === "ALL_PARENTS" || recipientType === "SELECTED_PARENTS") {
+    if (
+      recipientType === "ALL_PARENTS" ||
+      recipientType === "ALL_REGISTERED_PARENTS" ||
+      recipientType === "SELECTED_PARENTS"
+    ) {
       const students = await prisma.student.findMany({
         where: {
           isActive: true,
           studyMode: scope,
-          ...(recipientType === "SELECTED_PARENTS" ? { id: { in: selectedParentIds } } : {}),
+          ...(recipientType === "SELECTED_PARENTS" ? { id: { in: selectedStudentIds } } : {}),
         },
         select: {
           fullName: true,
@@ -103,13 +122,43 @@ export async function POST(request: Request) {
       });
 
       for (const student of students) {
-        const phone = normalizeWhatsAppNumber(student.parentWhatsapp || "");
+        const phone = normalizeWhatsAppNumber(student.parentWhatsapp || "", defaultCountryCode);
         if (!phone || recipients.has(phone)) {
           continue;
         }
 
         recipients.set(phone, {
           recipientName: student.fullName,
+        });
+      }
+    }
+
+    if (
+      scope === "ONSITE_SYRIA" &&
+      (recipientType === "ALL_PARENTS" ||
+        recipientType === "ALL_UNREGISTERED_PARENTS" ||
+        recipientType === "SELECTED_PARENTS")
+    ) {
+      const requests = await prisma.registrationRequest.findMany({
+        where: {
+          studyMode: scope,
+          createdStudentId: null,
+          ...(recipientType === "SELECTED_PARENTS" ? { id: { in: selectedRequestIds } } : {}),
+        },
+        select: {
+          studentName: true,
+          parentWhatsapp: true,
+        },
+      });
+
+      for (const item of requests) {
+        const phone = normalizeWhatsAppNumber(item.parentWhatsapp || "", defaultCountryCode);
+        if (!phone || recipients.has(phone)) {
+          continue;
+        }
+
+        recipients.set(phone, {
+          recipientName: item.studentName,
         });
       }
     }
@@ -129,7 +178,7 @@ export async function POST(request: Request) {
       });
 
       for (const teacher of teachers) {
-        const phone = normalizeWhatsAppNumber(teacher.whatsapp || "");
+        const phone = normalizeWhatsAppNumber(teacher.whatsapp || "", defaultCountryCode);
         if (!phone || recipients.has(phone)) {
           continue;
         }

@@ -510,7 +510,10 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "الطالب المرتبط بالطلب غير موجود" }, { status: 404 });
       }
 
-      const normalizedWhatsapp = normalizeWhatsAppNumber(createdStudent.parentWhatsapp || "");
+      const normalizedWhatsapp = normalizeWhatsAppNumber(
+        createdStudent.parentWhatsapp || "",
+        request.studyMode === "ONSITE_SYRIA" ? "963" : "90"
+      );
 
       if (!normalizedWhatsapp) {
         return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });
@@ -549,7 +552,10 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "رسالة القبول الأولية مغلقة من إعدادات الرسائل" }, { status: 400 });
       }
 
-      const normalizedWhatsapp = normalizeWhatsAppNumber(request.parentWhatsapp || "");
+      const normalizedWhatsapp = normalizeWhatsAppNumber(
+        request.parentWhatsapp || "",
+        request.studyMode === "ONSITE_SYRIA" ? "963" : "90"
+      );
 
       if (!normalizedWhatsapp) {
         return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });
@@ -614,8 +620,15 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "الطالب المرتبط بالطلب غير موجود" }, { status: 404 });
       }
 
-      const parentWhatsapp = normalizeWhatsAppNumber(createdStudent.parentWhatsapp || "");
-      const teacherWhatsapp = normalizeWhatsAppNumber(createdStudent.teacher?.whatsapp || "");
+      const defaultCountryCode = request.studyMode === "ONSITE_SYRIA" ? "963" : "90";
+      const parentWhatsapp = normalizeWhatsAppNumber(
+        createdStudent.parentWhatsapp || "",
+        defaultCountryCode
+      );
+      const teacherWhatsapp = normalizeWhatsAppNumber(
+        createdStudent.teacher?.whatsapp || "",
+        defaultCountryCode
+      );
 
       if (action !== "SEND_TEACHER_EDUCATION_CHAT_GUIDE" && !parentWhatsapp) {
         return NextResponse.json({ error: "رقم ولي الأمر غير صالح للإرسال" }, { status: 400 });

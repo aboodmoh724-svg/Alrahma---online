@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import BroadcastsPageClient from "@/components/admin/BroadcastsPageClient";
 import { prisma } from "@/lib/prisma";
-import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
+import { normalizeSyriaPhone } from "@/lib/phone-number";
 
 export default async function OnsiteAdminBroadcastsPage() {
   const cookieStore = await cookies();
@@ -50,7 +50,7 @@ export default async function OnsiteAdminBroadcastsPage() {
     );
   }
 
-  const [students, teachers] = await Promise.all([
+  const [students, registrationRequests, teachers] = await Promise.all([
     prisma.student.findMany({
       where: {
         studyMode: "ONSITE_SYRIA",
@@ -63,6 +63,20 @@ export default async function OnsiteAdminBroadcastsPage() {
       },
       orderBy: {
         fullName: "asc",
+      },
+    }),
+    prisma.registrationRequest.findMany({
+      where: {
+        studyMode: "ONSITE_SYRIA",
+        createdStudentId: null,
+      },
+      select: {
+        id: true,
+        studentName: true,
+        parentWhatsapp: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     }),
     prisma.user.findMany({
@@ -84,12 +98,28 @@ export default async function OnsiteAdminBroadcastsPage() {
 
   const parentOptions = students
     .map((student) => {
-      const phone = normalizeWhatsAppNumber(student.parentWhatsapp || "");
+      const phone = normalizeSyriaPhone(student.parentWhatsapp || "");
       return phone
         ? {
-            id: student.id,
+            id: `student:${student.id}`,
             name: student.fullName,
             phone,
+            group: "طالب مسجل",
+          }
+        : null;
+    })
+    .filter((value): value is NonNullable<typeof value> => Boolean(value));
+
+  const registeredPhones = new Set(parentOptions.map((parent) => parent.phone));
+  const unregisteredParentOptions = registrationRequests
+    .map((request) => {
+      const phone = normalizeSyriaPhone(request.parentWhatsapp || "");
+      return phone && !registeredPhones.has(phone)
+        ? {
+            id: `request:${request.id}`,
+            name: request.studentName,
+            phone,
+            group: "طلب تسجيل",
           }
         : null;
     })
@@ -97,7 +127,7 @@ export default async function OnsiteAdminBroadcastsPage() {
 
   const teacherOptions = teachers
     .map((teacher) => {
-      const phone = normalizeWhatsAppNumber(teacher.whatsapp || "");
+      const phone = normalizeSyriaPhone(teacher.whatsapp || "");
       return phone
         ? {
             id: teacher.id,
@@ -114,6 +144,7 @@ export default async function OnsiteAdminBroadcastsPage() {
       sectionTitle="الحضوري"
       dashboardHref="/syria/admin/dashboard"
       parentOptions={parentOptions}
+      unregisteredParentOptions={unregisteredParentOptions}
       teacherOptions={teacherOptions}
     />
   );

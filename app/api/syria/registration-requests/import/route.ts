@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import * as XLSX from "xlsx";
-import { normalizePhoneDigits } from "@/lib/phone-number";
+import { normalizePhoneDigits, normalizeSyriaPhone } from "@/lib/phone-number";
 import { prisma } from "@/lib/prisma";
 
 function normalize(value: unknown) {
@@ -105,7 +105,7 @@ export async function POST(req: Request) {
       const row = rows[index];
       const studentName = compactName(cell(row, ["الاسم الثلاثي", "اسم الطالب", "الاسم"]));
       const rawWhatsapp = cell(row, ["رقم هاتف ولي الأمر", "ولي الأمر", "واتساب"]);
-      const parentWhatsapp = normalizePhoneDigits(normalizeArabicDigits(rawWhatsapp));
+      const parentWhatsapp = normalizeSyriaPhone(normalizeArabicDigits(rawWhatsapp));
       const duplicateKey = `${studentName}|${canonicalPhone(parentWhatsapp)}`;
 
       if (isInvalidStudentName(studentName)) {

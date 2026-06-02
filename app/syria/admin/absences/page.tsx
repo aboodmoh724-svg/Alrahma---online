@@ -47,7 +47,7 @@ async function sendAbsenceReportWhatsApp(input: {
     return;
   }
 
-  const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp || "");
+  const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp || "", "963");
 
   if (!phone) {
     await prisma.report.update({
@@ -410,7 +410,7 @@ export default async function OnsiteAdminAbsencesPage({ searchParams }: PageProp
   const pendingAbsences = absences.filter(
     (report) =>
       !report.sentToParent &&
-      Boolean(normalizeWhatsAppNumber(report.student.parentWhatsapp || ""))
+      Boolean(normalizeWhatsAppNumber(report.student.parentWhatsapp || "", "963"))
   );
   const presentCount = todayAttendance.filter((report) => report.status === "PRESENT").length;
   const absentCount = absences.length;
@@ -613,7 +613,7 @@ export default async function OnsiteAdminAbsencesPage({ searchParams }: PageProp
               </div>
 
               {absences.map((report) => {
-                const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp || "");
+                const phone = normalizeWhatsAppNumber(report.student.parentWhatsapp || "", "963");
                 const statusLabel = report.sentToParent
                   ? "تم إرسال الرسالة"
                   : phone

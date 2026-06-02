@@ -7,6 +7,7 @@ type RecipientOption = {
   id: string;
   name: string;
   phone: string;
+  group?: string;
 };
 
 type BroadcastResult = {
@@ -21,13 +22,19 @@ type BroadcastResult = {
   }>;
 };
 
-type RecipientType = "ALL_PARENTS" | "ALL_TEACHERS" | "SELECTED_PARENTS";
+type RecipientType =
+  | "ALL_PARENTS"
+  | "ALL_REGISTERED_PARENTS"
+  | "ALL_UNREGISTERED_PARENTS"
+  | "ALL_TEACHERS"
+  | "SELECTED_PARENTS";
 
 type BroadcastsPageClientProps = {
   scope: "REMOTE" | "ONSITE" | "ONSITE_SYRIA";
   sectionTitle: string;
   dashboardHref: string;
   parentOptions: RecipientOption[];
+  unregisteredParentOptions?: RecipientOption[];
   teacherOptions: RecipientOption[];
 };
 
@@ -54,6 +61,7 @@ export default function BroadcastsPageClient({
   sectionTitle,
   dashboardHref,
   parentOptions,
+  unregisteredParentOptions = [],
   teacherOptions,
 }: BroadcastsPageClientProps) {
   const [recipientType, setRecipientType] = useState<RecipientType>("ALL_PARENTS");
@@ -63,19 +71,30 @@ export default function BroadcastsPageClient({
   const [search, setSearch] = useState("");
   const [selectedParentIds, setSelectedParentIds] = useState<string[]>([]);
 
+  const allParentOptions = useMemo(() => {
+    const recipients = new Map<string, RecipientOption>();
+    [...parentOptions, ...unregisteredParentOptions].forEach((parent) => {
+      if (!recipients.has(parent.phone)) {
+        recipients.set(parent.phone, parent);
+      }
+    });
+    return [...recipients.values()];
+  }, [parentOptions, unregisteredParentOptions]);
+
   const filteredParents = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     if (!keyword) {
-      return parentOptions;
+      return allParentOptions;
     }
 
-    return parentOptions.filter((parent) => {
+    return allParentOptions.filter((parent) => {
       return (
         parent.name.toLowerCase().includes(keyword) ||
-        parent.phone.toLowerCase().includes(keyword)
+        parent.phone.toLowerCase().includes(keyword) ||
+        (parent.group || "").toLowerCase().includes(keyword)
       );
     });
-  }, [parentOptions, search]);
+  }, [allParentOptions, search]);
 
   const selectedCount = selectedParentIds.length;
 
@@ -199,12 +218,20 @@ export default function BroadcastsPageClient({
                   className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm outline-none focus:border-[#0f5a35]"
                 >
                   <option value="ALL_PARENTS">جميع أولياء الأمور</option>
+                  {unregisteredParentOptions.length > 0 ? (
+                    <option value="ALL_REGISTERED_PARENTS">أولياء أمور الطلاب المسجلين</option>
+                  ) : null}
+                  {unregisteredParentOptions.length > 0 ? (
+                    <option value="ALL_UNREGISTERED_PARENTS">أولياء أمور طلبات التسجيل</option>
+                  ) : null}
                   <option value="ALL_TEACHERS">جميع المعلمين</option>
                   <option value="SELECTED_PARENTS">أولياء أمور محددون</option>
                 </select>
               </div>
               <div className="rounded-2xl bg-[#fffaf4] p-4 text-sm leading-7 text-[#1c2d31]/65">
-                {recipientType === "ALL_PARENTS" && `سيتم الإرسال إلى ${parentOptions.length} من أولياء الأمور في هذا القسم.`}
+                {recipientType === "ALL_PARENTS" && `سيتم الإرسال إلى ${allParentOptions.length} من أولياء الأمور في هذا القسم.`}
+                {recipientType === "ALL_REGISTERED_PARENTS" && `سيتم الإرسال إلى ${parentOptions.length} من أولياء أمور الطلاب المسجلين.`}
+                {recipientType === "ALL_UNREGISTERED_PARENTS" && `سيتم الإرسال إلى ${unregisteredParentOptions.length} من أولياء أمور طلبات التسجيل غير المحولة لطالب.`}
                 {recipientType === "ALL_TEACHERS" && `سيتم الإرسال إلى ${teacherOptions.length} من المعلمين في هذا القسم.`}
                 {recipientType === "SELECTED_PARENTS" && `تم تحديد ${selectedCount} من أولياء الأمور حتى الآن.`}
               </div>
@@ -246,7 +273,10 @@ export default function BroadcastsPageClient({
                       >
                         <div>
                           <p className="font-black text-[#1c2d31]">{parent.name}</p>
-                          <p className="text-xs text-[#1c2d31]/55">{parent.phone}</p>
+                          <p className="text-xs text-[#1c2d31]/55">
+                            {parent.phone}
+                            {parent.group ? ` - ${parent.group}` : ""}
+                          </p>
                         </div>
                         <input
                           type="checkbox"

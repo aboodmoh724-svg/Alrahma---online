@@ -105,3 +105,29 @@ export function joinInternationalPhone(countryCode: unknown, localNumber: unknow
 
   return normalizeInternationalPhone(`${country}${local}`, country);
 }
+
+export function normalizeSyriaPhone(value: unknown) {
+  const normalized = normalizeInternationalPhone(value, "963");
+  const parts = splitInternationalPhone(normalized, "963");
+  let localNumber = normalizePhoneDigits(parts.localNumber);
+
+  if (localNumber.startsWith("0") && localNumber.length > 9) {
+    localNumber = localNumber.slice(1);
+  }
+
+  if (localNumber.length !== 9) {
+    return "";
+  }
+
+  return `963${localNumber}`;
+}
+
+export function formatSyriaLocalPhone(value: unknown) {
+  const normalized = normalizeSyriaPhone(value);
+  if (!normalized) return "";
+
+  const localNumber = normalized.slice(3);
+  return [localNumber.slice(0, 3), localNumber.slice(3, 6), localNumber.slice(6, 9)]
+    .filter(Boolean)
+    .join(" ");
+}
