@@ -48,6 +48,8 @@ export async function GET(req: Request) {
         fullName: true,
         studyMode: true,
         isActive: true,
+        isTemporary: true,
+        needsRegistrationCompletion: true,
         createdAt: true,
         parentWhatsapp: true,
         parentEmail: true,
@@ -117,6 +119,9 @@ export async function POST(req: Request) {
     const generalLevel = String(body.generalLevel || "").trim();
     const notes = String(body.notes || "").trim();
     const studyMode = normalizeStudyMode(body.studyMode) || "REMOTE";
+    const isTemporary = body.isTemporary === true;
+    const needsRegistrationCompletion =
+      body.needsRegistrationCompletion === true || isTemporary;
 
     if (!fullName) {
       return NextResponse.json({ error: "اسم الطالب مطلوب" }, { status: 400 });
@@ -185,6 +190,8 @@ export async function POST(req: Request) {
         circleId: resolvedCircleId,
         studyMode: resolvedStudyMode,
         isActive: true,
+        isTemporary,
+        needsRegistrationCompletion,
       },
       select: {
         id: true,
@@ -192,6 +199,8 @@ export async function POST(req: Request) {
         fullName: true,
         studyMode: true,
         isActive: true,
+        isTemporary: true,
+        needsRegistrationCompletion: true,
         createdAt: true,
         parentWhatsapp: true,
         parentEmail: true,

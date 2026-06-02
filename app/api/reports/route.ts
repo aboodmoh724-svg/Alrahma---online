@@ -78,6 +78,9 @@ export async function POST(req: Request) {
       },
       select: {
         id: true,
+        studyMode: true,
+        parentWhatsapp: true,
+        isTemporary: true,
       },
     });
 
@@ -85,6 +88,13 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "لا يمكنك إضافة تقرير لهذا الطالب" },
         { status: 403 }
+      );
+    }
+
+    if (student.studyMode === "ONSITE_SYRIA" && student.isTemporary && !student.parentWhatsapp) {
+      return NextResponse.json(
+        { error: "هذا الطالب مضاف مؤقتاً. أدخل رقم واتساب ولي الأمر أولاً قبل تسجيل الحضور أو التقرير." },
+        { status: 400 }
       );
     }
 

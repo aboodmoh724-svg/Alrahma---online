@@ -55,6 +55,8 @@ model Student {
   studentCode    String?   @unique
   parentWhatsapp String?
   parentEmail    String?
+  isTemporary    Boolean   @default(false)
+  needsRegistrationCompletion Boolean @default(false)
   detail         StudentDetail?
   financeAccount StudentFinanceAccount?
   payments       StudentPayment[]
