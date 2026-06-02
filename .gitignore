@@ -48,3 +48,8 @@ next-env.d.ts
 # local workspace artifacts
 /.codex-pdf-preview/
 /uploads/
+/.vscode/
+/media-pilot/
+/student-details-new-registration.csv
+/student-details-source.xlsx
+/whatsapp-webjs-server/VPS_REPAIR.md
