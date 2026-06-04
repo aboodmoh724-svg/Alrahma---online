@@ -9,6 +9,7 @@ import {
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
+  sanitizeWhatsAppBody,
   sendWhatsAppText,
   type WhatsAppChannel,
 } from "@/lib/whatsapp";
@@ -262,7 +263,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø±Ù‚Ø§Ù… ÙˆØ§ØªØ³Ø§Ø¨ ØµØ§Ù„Ø­Ø© ÙÙŠ Ø§Ù„ÙØ¦Ø© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©" }, { status: 400 });
     }
 
-    const finalMessage = withFooter(rawMessage, scope);
+    const finalMessage = sanitizeWhatsAppBody(withFooter(rawMessage, scope));
     const recipientList = [...recipients.entries()].map(([phone, recipient]) => ({
       phone,
       recipientName: recipient.recipientName,

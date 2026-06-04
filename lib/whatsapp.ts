@@ -57,6 +57,34 @@ function stripBrokenAlrahmaFooter(body: string) {
   return lines.join("\n").trimEnd();
 }
 
+function stripTrailingSignatureDot(body: string) {
+  const lines = body.replace(/\r\n/g, "\n").split("\n");
+
+  for (let index = lines.length - 1; index >= 0; index -= 1) {
+    const line = lines[index].trim();
+    if (!line) {
+      continue;
+    }
+
+    const isAlrahmaSignature =
+      /الرحمة|سوريا|ALRAHMA|Alrahma|alrahma|Ã˜Â§Ã™â€žÃ˜Â±Ã˜Â­Ã™â€¦Ã˜Â©|Ã˜Â³Ã™Ë†Ã˜Â±Ã™Å Ã˜Â§/.test(
+        line
+      );
+
+    if (isAlrahmaSignature) {
+      lines[index] = lines[index].replace(/[.。]+(\s*)$/, "$1");
+    }
+
+    break;
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
+export function sanitizeWhatsAppBody(body: string) {
+  return stripTrailingSignatureDot(stripBrokenAlrahmaFooter(body));
+}
+
 function inferWhatsAppCategory(body: string) {
   const text = body.replace(/\s+/g, " ").trim();
 
@@ -628,7 +656,7 @@ export function teacherVisitReportWhatsAppMessage(input: {
 async function sendWhatsAppWebJsText({ to, body, channel, chatId }: WhatsAppTextInput) {
   const apiUrl = resolveWebJsApiUrl(channel);
   const apiToken = resolveWebJsApiToken(channel);
-  const safeBody = stripBrokenAlrahmaFooter(body);
+  const safeBody = sanitizeWhatsAppBody(body);
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -780,7 +808,7 @@ export async function sendWhatsAppText({
   context,
   relatedIncomingMessageId,
 }: WhatsAppTextInput) {
-  const safeBody = stripBrokenAlrahmaFooter(body);
+  const safeBody = sanitizeWhatsAppBody(body);
 
   if (isWhatsAppWebJsConfigured(channel)) {
     const result = await sendWhatsAppWebJsText({ to, body: safeBody, channel, chatId });
