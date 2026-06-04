@@ -29,6 +29,34 @@ type WhatsAppTemplateInput = {
   bodyVariables: string[];
 };
 
+function stripBrokenAlrahmaFooter(body: string) {
+  const lines = body.replace(/\r\n/g, "\n").split("\n");
+
+  while (lines.length > 0 && !lines[lines.length - 1].trim()) {
+    lines.pop();
+  }
+
+  while (lines.length > 0) {
+    const lastLine = lines[lines.length - 1].trim();
+    const looksBroken = /[ÃÂØÙ]/.test(lastLine);
+    const looksLikeAlrahmaFooter =
+      /Ø¥Ø¯Ø§Ø±Ø©|Ã˜|Ù…Ù†ØµØ©|Ø§Ù„Ø±Ø­Ù…Ø©|ØªØ­ÙÙŠØ¸|Ø§Ù„Ù‚Ø±Ø¢Ù†/.test(
+        lastLine
+      );
+
+    if (!looksBroken || !looksLikeAlrahmaFooter) {
+      break;
+    }
+
+    lines.pop();
+    while (lines.length > 0 && !lines[lines.length - 1].trim()) {
+      lines.pop();
+    }
+  }
+
+  return lines.join("\n").trimEnd();
+}
+
 function inferWhatsAppCategory(body: string) {
   const text = body.replace(/\s+/g, " ").trim();
 
@@ -600,6 +628,7 @@ export function teacherVisitReportWhatsAppMessage(input: {
 async function sendWhatsAppWebJsText({ to, body, channel, chatId }: WhatsAppTextInput) {
   const apiUrl = resolveWebJsApiUrl(channel);
   const apiToken = resolveWebJsApiToken(channel);
+  const safeBody = stripBrokenAlrahmaFooter(body);
 
   const response = await fetch(apiUrl, {
     method: "POST",
@@ -611,7 +640,7 @@ async function sendWhatsAppWebJsText({ to, body, channel, chatId }: WhatsAppText
     body: JSON.stringify({
       phone: to,
       chatId,
-      message: body,
+      message: safeBody,
       channel,
     }),
   });
@@ -751,11 +780,13 @@ export async function sendWhatsAppText({
   context,
   relatedIncomingMessageId,
 }: WhatsAppTextInput) {
+  const safeBody = stripBrokenAlrahmaFooter(body);
+
   if (isWhatsAppWebJsConfigured(channel)) {
-    const result = await sendWhatsAppWebJsText({ to, body, channel, chatId });
+    const result = await sendWhatsAppWebJsText({ to, body: safeBody, channel, chatId });
     await logOutgoingWhatsApp({
       to,
-      body,
+      body: safeBody,
       channel,
       result,
       source,
@@ -769,7 +800,7 @@ export async function sendWhatsAppText({
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!token || !phoneNumberId) {
-    console.warn("WhatsApp env vars missing. Message skipped:", body);
+    console.warn("WhatsApp env vars missing. Message skipped:", safeBody);
     return { skipped: true };
   }
 
@@ -786,7 +817,7 @@ export async function sendWhatsAppText({
         to,
         type: "text",
         text: {
-          body,
+          body: safeBody,
         },
       }),
     }
@@ -809,7 +840,7 @@ export async function sendWhatsAppText({
   const result = await response.json();
   await logOutgoingWhatsApp({
     to,
-    body,
+    body: safeBody,
     channel,
     result,
     source,
