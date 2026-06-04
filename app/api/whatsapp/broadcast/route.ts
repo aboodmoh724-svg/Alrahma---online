@@ -25,7 +25,7 @@ type FailedBroadcast = BroadcastRecipient & {
   error: string;
 };
 
-const BROADCAST_BATCH_SIZE = 5;
+const BROADCAST_BATCH_SIZE = 3;
 
 function normalizeRecipientType(value: unknown): RecipientType | null {
   if (
@@ -74,6 +74,7 @@ async function sendBroadcastInBatches(input: {
         try {
           await sendWhatsAppText({
             to: recipient.phone,
+            chatId: `${recipient.phone}@c.us`,
             body: input.message,
             channel: input.scope,
             source: "HUMAN_BROADCAST",
