@@ -16,6 +16,17 @@ type RecipientType =
   | "SELECTED_PARENTS"
   | "SELECTED_TEACHERS";
 
+type BroadcastRecipient = {
+  phone: string;
+  recipientName: string;
+};
+
+type FailedBroadcast = BroadcastRecipient & {
+  error: string;
+};
+
+const BROADCAST_BATCH_SIZE = 5;
+
 function normalizeRecipientType(value: unknown): RecipientType | null {
   if (
     value === "ALL_PARENTS" ||
@@ -44,6 +55,58 @@ function withFooter(message: string, scope: WhatsAppChannel) {
   }
 
   return `${body}\n\n${broadcastFooter(scope)}`;
+}
+
+async function sendBroadcastInBatches(input: {
+  recipients: BroadcastRecipient[];
+  message: string;
+  scope: WhatsAppChannel;
+  recipientType: RecipientType;
+}) {
+  let sentCount = 0;
+  const failed: FailedBroadcast[] = [];
+
+  for (let index = 0; index < input.recipients.length; index += BROADCAST_BATCH_SIZE) {
+    const batch = input.recipients.slice(index, index + BROADCAST_BATCH_SIZE);
+
+    const results = await Promise.all(
+      batch.map(async (recipient) => {
+        try {
+          await sendWhatsAppText({
+            to: recipient.phone,
+            body: input.message,
+            channel: input.scope,
+            source: "HUMAN_BROADCAST",
+            context: {
+              recipientType: input.recipientType,
+            },
+          });
+
+          return { ok: true as const, recipient };
+        } catch (error) {
+          return {
+            ok: false as const,
+            recipient,
+            error: error instanceof Error ? error.message : "تعذر الإرسال",
+          };
+        }
+      })
+    );
+
+    for (const result of results) {
+      if (result.ok) {
+        sentCount += 1;
+      } else {
+        failed.push({
+          phone: result.recipient.phone,
+          recipientName: result.recipient.recipientName,
+          error: result.error,
+        });
+      }
+    }
+  }
+
+  return { sentCount, failed };
 }
 
 export async function POST(request: Request) {
@@ -194,29 +257,16 @@ export async function POST(request: Request) {
     }
 
     const finalMessage = withFooter(rawMessage, scope);
-    let sentCount = 0;
-    const failed: Array<{ phone: string; recipientName: string; error: string }> = [];
-
-    for (const [phone, recipient] of recipients.entries()) {
-      try {
-        await sendWhatsAppText({
-          to: phone,
-          body: finalMessage,
-          channel: scope,
-          source: "HUMAN_BROADCAST",
-          context: {
-            recipientType,
-          },
-        });
-        sentCount += 1;
-      } catch (error) {
-        failed.push({
-          phone,
-          recipientName: recipient.recipientName,
-          error: error instanceof Error ? error.message : "ØªØ¹Ø°Ø± Ø§Ù„Ø¥Ø±Ø³Ø§Ù„",
-        });
-      }
-    }
+    const recipientList = [...recipients.entries()].map(([phone, recipient]) => ({
+      phone,
+      recipientName: recipient.recipientName,
+    }));
+    const { sentCount, failed } = await sendBroadcastInBatches({
+      recipients: recipientList,
+      message: finalMessage,
+      scope,
+      recipientType,
+    });
 
     return NextResponse.json({
       success: failed.length === 0,
