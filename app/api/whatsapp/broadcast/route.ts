@@ -54,7 +54,7 @@ function withFooter(message: string, scope: WhatsAppChannel) {
     return "";
   }
 
-  return `${body}\n\n${broadcastFooter(scope)}`;
+  return body;
 }
 
 async function sendBroadcastInBatches(input: {
