@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import type { BroadcastHistoryItem, BroadcastTemplateItem } from "@/lib/broadcast-store";
 
 type RecipientOption = {
   id: string;
@@ -20,6 +21,8 @@ type BroadcastResult = {
     recipientName: string;
     error: string;
   }>;
+  historyItem?: BroadcastHistoryItem;
+  savedTemplate?: BroadcastTemplateItem | null;
 };
 
 type RecipientType =
@@ -36,6 +39,8 @@ type BroadcastsPageClientProps = {
   parentOptions: RecipientOption[];
   unregisteredParentOptions?: RecipientOption[];
   teacherOptions: RecipientOption[];
+  history?: BroadcastHistoryItem[];
+  savedTemplates?: BroadcastTemplateItem[];
 };
 
 const templateMessages = [
@@ -63,6 +68,8 @@ export default function BroadcastsPageClient({
   parentOptions,
   unregisteredParentOptions = [],
   teacherOptions,
+  history = [],
+  savedTemplates = [],
 }: BroadcastsPageClientProps) {
   const [recipientType, setRecipientType] = useState<RecipientType>("ALL_PARENTS");
   const [message, setMessage] = useState(templateMessages[0].body);
@@ -70,6 +77,29 @@ export default function BroadcastsPageClient({
   const [result, setResult] = useState<BroadcastResult | null>(null);
   const [search, setSearch] = useState("");
   const [selectedParentIds, setSelectedParentIds] = useState<string[]>([]);
+  const [localHistory, setLocalHistory] = useState(history);
+  const [localTemplates, setLocalTemplates] = useState(savedTemplates);
+
+  const allTemplates = useMemo(() => {
+    const templates = new Map<string, { title: string; body: string; saved?: boolean; useCount?: number }>();
+
+    localTemplates.forEach((template) => {
+      templates.set(template.body.trim(), {
+        title: template.title,
+        body: template.body,
+        saved: true,
+        useCount: template.useCount,
+      });
+    });
+
+    templateMessages.forEach((template) => {
+      if (!templates.has(template.body.trim())) {
+        templates.set(template.body.trim(), template);
+      }
+    });
+
+    return [...templates.values()];
+  }, [localTemplates]);
 
   const allParentOptions = useMemo(() => {
     const recipients = new Map<string, RecipientOption>();
@@ -162,6 +192,19 @@ export default function BroadcastsPageClient({
       }
 
       setResult(data);
+      if (data.historyItem) {
+        setLocalHistory((current) => [data.historyItem, ...current.filter((item) => item.id !== data.historyItem.id)].slice(0, 40));
+      }
+      if (data.savedTemplate) {
+        setLocalTemplates((current) => [
+          data.savedTemplate,
+          ...current.filter(
+            (template) =>
+              template.id !== data.savedTemplate?.id &&
+              template.body.trim() !== data.savedTemplate?.body.trim()
+          ),
+        ].slice(0, 20));
+      }
     } catch (error) {
       console.error("WHATSAPP BROADCAST SUBMIT ERROR =>", error);
       alert("حدث خطأ أثناء إرسال الرسالة الجماعية");
@@ -194,14 +237,19 @@ export default function BroadcastsPageClient({
           <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <h2 className="text-xl font-black text-[#1c2d31]">قوالب جاهزة</h2>
             <div className="mt-4 space-y-3">
-              {templateMessages.map((template) => (
+              {allTemplates.map((template) => (
                 <button
-                  key={template.title}
+                  key={template.body}
                   type="button"
                   onClick={() => setMessage(template.body)}
                   className="block w-full rounded-2xl bg-[#fffaf4] p-4 text-right transition hover:bg-white"
                 >
                   <span className="block text-sm font-black text-[#1c2d31]">{template.title}</span>
+                  {template.saved ? (
+                    <span className="mt-1 inline-flex rounded-full bg-emerald-50 px-2 py-1 text-[11px] font-black text-emerald-700">
+                      محفوظ تلقائيًا{template.useCount ? ` - استخدم ${template.useCount}` : ""}
+                    </span>
+                  ) : null}
                   <span className="mt-2 block text-xs leading-6 text-[#1c2d31]/60">
                     {template.body}
                   </span>
@@ -347,6 +395,75 @@ export default function BroadcastsPageClient({
                     </div>
                   </div>
                 ) : null}
+              </div>
+            ) : null}
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+          <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+            <div>
+              <h2 className="text-2xl font-black text-[#1c2d31]">سجل الرسائل الجماعية</h2>
+              <p className="mt-1 text-sm text-[#1c2d31]/60">
+                آخر الرسائل المرسلة، عدد المستهدفين، والحالات التي تعذر إرسالها.
+              </p>
+            </div>
+            <span className="rounded-full bg-[#fffaf4] px-4 py-2 text-xs font-black text-[#8a661f]">
+              {localHistory.length} سجل محفوظ
+            </span>
+          </div>
+
+          <div className="mt-4 space-y-3">
+            {localHistory.map((entry) => (
+              <article key={entry.id} className="rounded-2xl border border-[#ead8aa] bg-[#fffaf4] p-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <p className="text-sm font-black text-[#1c2d31]">{entry.title}</p>
+                    <p className="mt-1 text-xs text-[#1c2d31]/55">
+                      {new Date(entry.createdAt).toLocaleString("ar", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-xs font-black">
+                    <span className="rounded-full bg-white px-3 py-1 text-[#1c2d31]">
+                      المستهدفون: {entry.recipientsCount}
+                    </span>
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-emerald-700">
+                      تم الإرسال: {entry.sentCount}
+                    </span>
+                    <span className="rounded-full bg-red-50 px-3 py-1 text-red-700">
+                      تعذر: {entry.failedCount}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="mt-3 whitespace-pre-wrap rounded-2xl bg-white p-3 text-sm leading-7 text-[#1c2d31]/75">
+                  {entry.message}
+                </p>
+
+                {entry.failed.length > 0 ? (
+                  <div className="mt-3 rounded-2xl bg-red-50 p-3 text-sm text-red-700">
+                    <p className="font-black">الحالات التي تعذر إرسالها:</p>
+                    <div className="mt-2 space-y-1">
+                      {entry.failed.slice(0, 10).map((item) => (
+                        <p key={`${entry.id}-${item.phone}`}>
+                          {item.recipientName} - {item.phone} - {item.error}
+                        </p>
+                      ))}
+                      {entry.failed.length > 10 ? (
+                        <p className="font-black">و{entry.failed.length - 10} حالات أخرى.</p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+
+            {localHistory.length === 0 ? (
+              <div className="rounded-2xl bg-[#fffaf4] px-4 py-8 text-center text-sm text-[#1c2d31]/55">
+                لا يوجد سجل رسائل حتى الآن.
               </div>
             ) : null}
           </div>

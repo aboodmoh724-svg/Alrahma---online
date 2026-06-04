@@ -2,6 +2,11 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
+  saveBroadcastHistory,
+  saveBroadcastTemplateFromMessage,
+  suggestBroadcastTemplateTitle,
+} from "@/lib/broadcast-store";
+import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
   sendWhatsAppText,
@@ -268,6 +273,30 @@ export async function POST(request: Request) {
       scope,
       recipientType,
     });
+    const historyItem = {
+      id: crypto.randomUUID(),
+      title: suggestBroadcastTemplateTitle(finalMessage),
+      scope,
+      recipientType,
+      message: finalMessage,
+      recipientsCount: recipients.size,
+      sentCount,
+      failedCount: failed.length,
+      failed,
+      createdAt: new Date().toISOString(),
+    };
+    let savedTemplate = null;
+
+    try {
+      await saveBroadcastHistory(historyItem);
+      savedTemplate = await saveBroadcastTemplateFromMessage({
+        scope,
+        message: finalMessage,
+        title: historyItem.title,
+      });
+    } catch (logError) {
+      console.error("WHATSAPP BROADCAST LOG ERROR =>", logError);
+    }
 
     return NextResponse.json({
       success: failed.length === 0,
@@ -275,6 +304,8 @@ export async function POST(request: Request) {
       failedCount: failed.length,
       recipientsCount: recipients.size,
       failed,
+      historyItem,
+      savedTemplate,
     });
   } catch (error) {
     console.error("WHATSAPP BROADCAST ERROR =>", error);

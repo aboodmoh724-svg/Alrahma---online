@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import BroadcastsPageClient from "@/components/admin/BroadcastsPageClient";
+import { getBroadcastHistory, getBroadcastTemplates } from "@/lib/broadcast-store";
 import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
 
@@ -50,7 +51,7 @@ export default async function RemoteAdminBroadcastsPage() {
     );
   }
 
-  const [students, teachers] = await Promise.all([
+  const [students, teachers, history, savedTemplates] = await Promise.all([
     prisma.student.findMany({
       where: {
         studyMode: "REMOTE",
@@ -80,6 +81,8 @@ export default async function RemoteAdminBroadcastsPage() {
         fullName: "asc",
       },
     }),
+    getBroadcastHistory("REMOTE"),
+    getBroadcastTemplates("REMOTE"),
   ]);
 
   const parentOptions = students
@@ -115,6 +118,8 @@ export default async function RemoteAdminBroadcastsPage() {
       dashboardHref="/remote/admin/dashboard"
       parentOptions={parentOptions}
       teacherOptions={teacherOptions}
+      history={history}
+      savedTemplates={savedTemplates}
     />
   );
 }

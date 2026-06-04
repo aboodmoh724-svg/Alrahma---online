@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import BroadcastsPageClient from "@/components/admin/BroadcastsPageClient";
+import { getBroadcastHistory, getBroadcastTemplates } from "@/lib/broadcast-store";
 import { prisma } from "@/lib/prisma";
 import { normalizeSyriaPhone } from "@/lib/phone-number";
 
@@ -50,7 +51,7 @@ export default async function OnsiteAdminBroadcastsPage() {
     );
   }
 
-  const [students, registrationRequests, teachers] = await Promise.all([
+  const [students, registrationRequests, teachers, history, savedTemplates] = await Promise.all([
     prisma.student.findMany({
       where: {
         studyMode: "ONSITE_SYRIA",
@@ -94,6 +95,8 @@ export default async function OnsiteAdminBroadcastsPage() {
         fullName: "asc",
       },
     }),
+    getBroadcastHistory("ONSITE_SYRIA"),
+    getBroadcastTemplates("ONSITE_SYRIA"),
   ]);
 
   const parentOptions = students
@@ -145,6 +148,8 @@ export default async function OnsiteAdminBroadcastsPage() {
       parentOptions={parentOptions}
       unregisteredParentOptions={unregisteredParentOptions}
       teacherOptions={teacherOptions}
+      history={history}
+      savedTemplates={savedTemplates}
     />
   );
 }
