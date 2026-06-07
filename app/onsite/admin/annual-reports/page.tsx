@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import AnnualReportActions from "@/components/annual-reports/AnnualReportActions";
+import AnnualReportReviewPanel from "@/components/annual-reports/AnnualReportReviewPanel";
 import { AnnualReportsBulkSendButton } from "@/components/annual-reports/AnnualReportsBulkSendButton";
 import AnnualReportsImportForm from "@/components/annual-reports/AnnualReportsImportForm";
 import { publicStorageUrl } from "@/lib/local-storage";
@@ -11,6 +12,7 @@ import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
 type PageProps = {
   searchParams?: Promise<{
     circleId?: string;
+    review?: string;
     year?: string;
   }>;
 };
@@ -58,6 +60,9 @@ export default async function OnsiteAnnualReportsPage({
   const params = await searchParams;
   const academicYear = params?.year || "2025-2026";
   const selectedCircleId = params?.circleId || "";
+  const reviewIndex = Number.isFinite(Number(params?.review))
+    ? Number(params?.review)
+    : null;
 
   const [circles, unlinkedReports] = await Promise.all([
     prisma.circle.findMany({
@@ -141,6 +146,31 @@ export default async function OnsiteAnnualReportsPage({
   const sentCount = allReports.filter(
     (report) => report.reviewStatus === "SENT"
   ).length;
+  const selectedBaseHref = `/onsite/admin/annual-reports?year=${academicYear}&circleId=${selectedCircleId}`;
+  const reviewPanelReports = visibleReports.map((report) => {
+    const imageUrl = publicStorageUrl(report.reportImagePath);
+    const parentPhone = normalizeWhatsAppNumber(
+      report.student?.parentWhatsapp || "",
+      "90"
+    );
+
+    return {
+      id: report.id,
+      studentName: report.student?.fullName || report.studentName,
+      teacherName: report.teacherName || "",
+      finalRating: report.finalRating || "",
+      memorizedDuringYear: report.memorizedDuringYear || "",
+      learnedDuringYear: report.learnedDuringYear || "",
+      studentStrengths: report.studentStrengths || "",
+      behaviorNotes: report.behaviorNotes || "",
+      studentNeeds: report.studentNeeds || "",
+      parentMessage: report.parentMessage || "",
+      imageUrl,
+      reviewStatus: report.reviewStatus,
+      hasParentPhone: Boolean(parentPhone),
+      sendError: report.sendError,
+    };
+  });
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -285,17 +315,27 @@ export default async function OnsiteAnnualReportsPage({
                   راجع الصور ثم اعتمد التقرير قبل الإرسال.
                 </p>
               </div>
-              {selectedCircle ? (
-                <AnnualReportsBulkSendButton
-                  circleId={selectedCircle.id}
-                  label="إرسال تقارير هذه الحلقة"
-                  disabled={
-                    selectedCircle.annualReports.filter(
-                      (report) => report.reviewStatus === "APPROVED"
-                    ).length === 0
-                  }
-                />
-              ) : null}
+              <div className="flex flex-wrap gap-2">
+                {visibleReports.length > 0 ? (
+                  <Link
+                    href={`${selectedBaseHref}&review=0`}
+                    className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+                  >
+                    بدء المراجعة السريعة
+                  </Link>
+                ) : null}
+                {selectedCircle ? (
+                  <AnnualReportsBulkSendButton
+                    circleId={selectedCircle.id}
+                    label="إرسال تقارير هذه الحلقة"
+                    disabled={
+                      selectedCircle.annualReports.filter(
+                        (report) => report.reviewStatus === "APPROVED"
+                      ).length === 0
+                    }
+                  />
+                ) : null}
+              </div>
             </div>
 
             {visibleReports.length === 0 ? (
@@ -303,90 +343,100 @@ export default async function OnsiteAnnualReportsPage({
                 لا توجد تقارير سنوية لهذه الحلقة حتى الآن.
               </div>
             ) : (
-              <div className="grid gap-5 lg:grid-cols-2">
-                {visibleReports.map((report) => {
-                  const imageUrl = publicStorageUrl(report.reportImagePath);
-                  const parentPhone = normalizeWhatsAppNumber(
-                    report.student?.parentWhatsapp || "",
-                    "90"
-                  );
+              <div className="space-y-5">
+                {reviewIndex !== null ? (
+                  <AnnualReportReviewPanel
+                    reports={reviewPanelReports}
+                    currentIndex={reviewIndex}
+                    baseHref={selectedBaseHref}
+                  />
+                ) : null}
 
-                  return (
-                    <article
-                      key={report.id}
-                      className="grid gap-4 rounded-[2rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4] xl:grid-cols-[260px_1fr]"
-                    >
-                      <div className="overflow-hidden rounded-[1.4rem] bg-white ring-1 ring-[#e7d7b4]">
-                        {imageUrl ? (
-                          <a href={imageUrl} target="_blank" rel="noreferrer">
-                            <img
-                              src={imageUrl}
-                              alt={`التقرير السنوي للطالب ${report.studentName}`}
-                              className="h-96 w-full object-contain"
-                            />
-                          </a>
-                        ) : (
-                          <div className="flex h-96 items-center justify-center p-6 text-center text-sm font-black text-[#1c2d31]/45">
-                            لا توجد صورة مرفوعة
-                          </div>
-                        )}
-                      </div>
+                <div className="grid gap-5 lg:grid-cols-2">
+                  {visibleReports.map((report) => {
+                    const imageUrl = publicStorageUrl(report.reportImagePath);
+                    const parentPhone = normalizeWhatsAppNumber(
+                      report.student?.parentWhatsapp || "",
+                      "90"
+                    );
 
-                      <div className="flex min-w-0 flex-col gap-3">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <div>
-                            <h3 className="text-xl font-black text-[#1c2d31]">
-                              {report.student?.fullName || report.studentName}
-                            </h3>
-                            <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
-                              {report.teacherName || "لم يحدد المعلم"} -{" "}
-                              {report.finalRating || "لا يوجد تقدير"}
-                            </p>
-                          </div>
-                          <span
-                            className={`rounded-full px-3 py-1 text-xs font-black ${statusTone(
-                              report.reviewStatus
-                            )}`}
-                          >
-                            {statusLabel(report.reviewStatus)}
-                          </span>
+                    return (
+                      <article
+                        key={report.id}
+                        className="grid gap-4 rounded-[2rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4] xl:grid-cols-[260px_1fr]"
+                      >
+                        <div className="overflow-hidden rounded-[1.4rem] bg-white ring-1 ring-[#e7d7b4]">
+                          {imageUrl ? (
+                            <a href={imageUrl} target="_blank" rel="noreferrer">
+                              <img
+                                src={imageUrl}
+                                alt={`التقرير السنوي للطالب ${report.studentName}`}
+                                className="h-96 w-full object-contain"
+                              />
+                            </a>
+                          ) : (
+                            <div className="flex h-96 items-center justify-center p-6 text-center text-sm font-black text-[#1c2d31]/45">
+                              لا توجد صورة مرفوعة
+                            </div>
+                          )}
                         </div>
 
-                        <div className="grid gap-2 text-sm">
-                          <div className="rounded-2xl bg-white p-3 ring-1 ring-[#eadcc4]">
-                            <p className="font-black text-[#0a3f2a]">
-                              ما حفظه الطالب
-                            </p>
-                            <p className="mt-1 leading-7 text-[#1c2d31]/70">
-                              {report.memorizedDuringYear || "-"}
-                            </p>
+                        <div className="flex min-w-0 flex-col gap-3">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <h3 className="text-xl font-black text-[#1c2d31]">
+                                {report.student?.fullName || report.studentName}
+                              </h3>
+                              <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
+                                {report.teacherName || "لم يحدد المعلم"} -{" "}
+                                {report.finalRating || "لا يوجد تقدير"}
+                              </p>
+                            </div>
+                            <span
+                              className={`rounded-full px-3 py-1 text-xs font-black ${statusTone(
+                                report.reviewStatus
+                              )}`}
+                            >
+                              {statusLabel(report.reviewStatus)}
+                            </span>
                           </div>
-                          <div className="rounded-2xl bg-white p-3 ring-1 ring-[#eadcc4]">
-                            <p className="font-black text-[#0a3f2a]">
-                              رسالة الأهل
-                            </p>
-                            <p className="mt-1 line-clamp-3 leading-7 text-[#1c2d31]/70">
-                              {report.parentMessage || "-"}
-                            </p>
+
+                          <div className="grid gap-2 text-sm">
+                            <div className="rounded-2xl bg-white p-3 ring-1 ring-[#eadcc4]">
+                              <p className="font-black text-[#0a3f2a]">
+                                ما حفظه الطالب
+                              </p>
+                              <p className="mt-1 leading-7 text-[#1c2d31]/70">
+                                {report.memorizedDuringYear || "-"}
+                              </p>
+                            </div>
+                            <div className="rounded-2xl bg-white p-3 ring-1 ring-[#eadcc4]">
+                              <p className="font-black text-[#0a3f2a]">
+                                رسالة الأهل
+                              </p>
+                              <p className="mt-1 line-clamp-3 leading-7 text-[#1c2d31]/70">
+                                {report.parentMessage || "-"}
+                              </p>
+                            </div>
                           </div>
+
+                          {report.sendError ? (
+                            <p className="rounded-2xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-100">
+                              {report.sendError}
+                            </p>
+                          ) : null}
+
+                          <AnnualReportActions
+                            reportId={report.id}
+                            reviewStatus={report.reviewStatus}
+                            hasImage={Boolean(imageUrl)}
+                            hasParentPhone={Boolean(parentPhone)}
+                          />
                         </div>
-
-                        {report.sendError ? (
-                          <p className="rounded-2xl bg-red-50 px-3 py-2 text-xs font-black text-red-700 ring-1 ring-red-100">
-                            {report.sendError}
-                          </p>
-                        ) : null}
-
-                        <AnnualReportActions
-                          reportId={report.id}
-                          reviewStatus={report.reviewStatus}
-                          hasImage={Boolean(imageUrl)}
-                          hasParentPhone={Boolean(parentPhone)}
-                        />
-                      </div>
-                    </article>
-                  );
-                })}
+                      </article>
+                    );
+                  })}
+                </div>
               </div>
             )}
           </section>
