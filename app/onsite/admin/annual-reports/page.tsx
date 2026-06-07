@@ -367,13 +367,23 @@ export default async function OnsiteAnnualReportsPage({
                       >
                         <div className="overflow-hidden rounded-[1.4rem] bg-white ring-1 ring-[#e7d7b4]">
                           {imageUrl ? (
+                            <>
                             <a href={imageUrl} target="_blank" rel="noreferrer">
                               <img
                                 src={imageUrl}
                                 alt={`التقرير السنوي للطالب ${report.studentName}`}
-                                className="h-96 w-full object-contain"
+                                className="h-80 w-full object-contain"
                               />
                             </a>
+                            <a
+                              href={imageUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mx-2 mb-2 block rounded-xl bg-[#0a3f2a] px-3 py-2 text-center text-xs font-black text-white transition hover:bg-[#0f5a35]"
+                            >
+                              فتح الصورة للتكبير
+                            </a>
+                            </>
                           ) : (
                             <div className="flex h-96 items-center justify-center p-6 text-center text-sm font-black text-[#1c2d31]/45">
                               لا توجد صورة مرفوعة

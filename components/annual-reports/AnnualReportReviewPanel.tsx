@@ -165,11 +165,26 @@ export default function AnnualReportReviewPanel({
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.55fr)]">
         <div className="overflow-hidden rounded-[1.75rem] bg-white p-3 ring-1 ring-white/20">
           {report.imageUrl ? (
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-black text-[#1c2d31]/55">
+                افتح الصورة في تبويب مستقل إذا احتجت إلى التكبير.
+              </span>
+              <a
+                href={report.imageUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-xl bg-[#0a3f2a] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0f5a35]"
+              >
+                فتح الصورة للتكبير
+              </a>
+            </div>
+          ) : null}
+          {report.imageUrl ? (
             <a href={report.imageUrl} target="_blank" rel="noreferrer">
               <img
                 src={report.imageUrl}
                 alt={`التقرير السنوي للطالب ${report.studentName}`}
-                className="max-h-[76vh] w-full object-contain"
+                className="mx-auto max-h-[76vh] w-auto max-w-full object-contain"
               />
             </a>
           ) : (

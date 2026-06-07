@@ -538,31 +538,17 @@ export default async function OnsiteTeacherDashboardPage({
                 لا توجد تقارير سنوية مرفوعة لطلابك حتى الآن.
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <div className="grid gap-3 md:grid-cols-2">
                 {annualReports.map((report) => {
                   const imageUrl = publicStorageUrl(report.reportImagePath);
 
                   return (
                     <article
                       key={report.id}
-                      className="overflow-hidden rounded-[2rem] bg-[#fffaf4] ring-1 ring-[#e7d7b4]"
+                      className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]"
                     >
-                      <div className="bg-white p-3">
-                        {imageUrl ? (
-                          <a href={imageUrl} target="_blank" rel="noreferrer">
-                            <img
-                              src={imageUrl}
-                              alt={`التقرير السنوي للطالب ${report.studentName}`}
-                              className="h-80 w-full rounded-[1.4rem] object-contain"
-                            />
-                          </a>
-                        ) : (
-                          <div className="flex h-80 items-center justify-center rounded-[1.4rem] bg-[#f6eee7] p-6 text-center text-sm font-black text-[#1c2d31]/45">
-                            صورة التقرير قيد التجهيز
-                          </div>
-                        )}
-                      </div>
-                      <div className="p-4">
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0">
                         <h3 className="text-lg font-black text-[#1c2d31]">
                           {report.student?.fullName || report.studentName}
                         </h3>
@@ -570,9 +556,22 @@ export default async function OnsiteTeacherDashboardPage({
                           {report.circle?.name || "حلقة غير محددة"} -{" "}
                           {report.finalRating || "لا يوجد تقدير"}
                         </p>
-                        <p className="mt-3 line-clamp-2 text-sm leading-7 text-[#1c2d31]/65">
+                        <p className="mt-2 line-clamp-1 text-sm leading-7 text-[#1c2d31]/65">
                           {report.memorizedDuringYear || "لا توجد بيانات حفظ"}
                         </p>
+                        </div>
+                        {imageUrl ? (
+                          <Link
+                            href={`/onsite/teacher/annual-reports/${report.id}`}
+                            className="shrink-0 rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+                          >
+                            عرض التقرير
+                          </Link>
+                        ) : (
+                          <span className="shrink-0 rounded-xl bg-[#1c2d31]/10 px-4 py-3 text-center text-sm font-black text-[#1c2d31]/45">
+                            قيد التجهيز
+                          </span>
+                        )}
                       </div>
                     </article>
                   );
