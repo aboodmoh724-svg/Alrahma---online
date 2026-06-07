@@ -216,9 +216,30 @@ export default async function OnsiteTeacherDashboardPage({
   ).then((resources) =>
     resources.filter(
       (resource): resource is typeof resource & { fileUrl: string } =>
-        Boolean(resource.fileUrl)
+      Boolean(resource.fileUrl)
     )
   );
+  const annualReports = await prisma.annualReport.findMany({
+    where: {
+      teacherId: teacher.id,
+      academicYear: "2025-2026",
+    },
+    orderBy: [{ circle: { name: "asc" } }, { studentName: "asc" }],
+    include: {
+      student: {
+        select: {
+          id: true,
+          fullName: true,
+        },
+      },
+      circle: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
   const addReportHref = activeCircle
     ? `/onsite/teacher/reports/new?circleId=${activeCircle.id}`
     : "/onsite/teacher/reports/new";
@@ -491,6 +512,69 @@ export default async function OnsiteTeacherDashboardPage({
                         </Link>
                       </div>
                     </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+
+          <section className="rounded-[2.5rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <div className="mb-5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 className="text-2xl font-black text-[#1c2d31]">
+                  التقارير السنوية
+                </h2>
+                <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
+                  تقارير طلابك السنوية للعام 2025-2026 بعد رفعها من قسم الإشراف.
+                </p>
+              </div>
+              <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
+                {annualReports.length} تقرير
+              </span>
+            </div>
+
+            {annualReports.length === 0 ? (
+              <div className="rounded-[2rem] border border-dashed border-[#d8bf83] p-8 text-center text-sm text-[#1c2d31]/55">
+                لا توجد تقارير سنوية مرفوعة لطلابك حتى الآن.
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {annualReports.map((report) => {
+                  const imageUrl = publicStorageUrl(report.reportImagePath);
+
+                  return (
+                    <article
+                      key={report.id}
+                      className="overflow-hidden rounded-[2rem] bg-[#fffaf4] ring-1 ring-[#e7d7b4]"
+                    >
+                      <div className="bg-white p-3">
+                        {imageUrl ? (
+                          <a href={imageUrl} target="_blank" rel="noreferrer">
+                            <img
+                              src={imageUrl}
+                              alt={`التقرير السنوي للطالب ${report.studentName}`}
+                              className="h-80 w-full rounded-[1.4rem] object-contain"
+                            />
+                          </a>
+                        ) : (
+                          <div className="flex h-80 items-center justify-center rounded-[1.4rem] bg-[#f6eee7] p-6 text-center text-sm font-black text-[#1c2d31]/45">
+                            صورة التقرير قيد التجهيز
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
+                        <h3 className="text-lg font-black text-[#1c2d31]">
+                          {report.student?.fullName || report.studentName}
+                        </h3>
+                        <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
+                          {report.circle?.name || "حلقة غير محددة"} -{" "}
+                          {report.finalRating || "لا يوجد تقدير"}
+                        </p>
+                        <p className="mt-3 line-clamp-2 text-sm leading-7 text-[#1c2d31]/65">
+                          {report.memorizedDuringYear || "لا توجد بيانات حفظ"}
+                        </p>
+                      </div>
+                    </article>
                   );
                 })}
               </div>

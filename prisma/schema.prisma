@@ -41,6 +41,9 @@ model User {
   teacherVisitReportsAsSupervisor TeacherVisitReport[] @relation("TeacherVisitSupervisor")
   educationConversationsAsTeacher EducationConversation[] @relation("EducationConversationTeacher")
   educationMessages EducationMessage[] @relation("EducationMessageUser")
+  annualReports AnnualReport[] @relation("AnnualReportTeacher")
+  reviewedAnnualReports AnnualReport[] @relation("AnnualReportReviewer")
+  sentAnnualReports AnnualReport[] @relation("AnnualReportSender")
 }
 
 model Student {
@@ -67,6 +70,7 @@ model Student {
   incomingWhatsAppMessages WhatsAppIncomingMessage[]
   outgoingWhatsAppMessages WhatsAppOutgoingMessage[]
   educationConversations EducationConversation[]
+  annualReports AnnualReport[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 }
@@ -398,6 +402,53 @@ model Circle {
   track     String?
   teacher   User?     @relation("CircleTeacher", fields: [teacherId], references: [id])
   students  Student[]
+  annualReports AnnualReport[]
+}
+
+model AnnualReport {
+  id                    String                   @id @default(cuid())
+  studentKey            String
+  academicYear          String
+  studentName           String
+  teacherName           String?
+  halaqaType            String?
+  firstEvaluation       String?
+  secondEvaluation      String?
+  finalRating           String?
+  memorizedDuringYear   String?
+  learnedDuringYear     String?
+  studentStrengths      String?
+  behaviorNotes         String?
+  studentNeeds          String?
+  parentMessage         String?
+  reportImagePath       String?
+  reportImageFilename   String?
+  sourceRowNumber       Int?
+  dataStatus            String                   @default("needs_review")
+  reviewStatus          AnnualReportReviewStatus @default(REVIEW)
+  reviewNotes           String?
+  reviewedAt            DateTime?
+  sentAt                DateTime?
+  sendError             String?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+  studentId             String?
+  teacherId             String?
+  circleId              String?
+  reviewedBy            String?
+  sentBy                String?
+  student               Student?                 @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  teacher               User?                    @relation("AnnualReportTeacher", fields: [teacherId], references: [id], onDelete: SetNull)
+  circle                Circle?                  @relation(fields: [circleId], references: [id], onDelete: SetNull)
+  reviewer              User?                    @relation("AnnualReportReviewer", fields: [reviewedBy], references: [id], onDelete: SetNull)
+  sender                User?                    @relation("AnnualReportSender", fields: [sentBy], references: [id], onDelete: SetNull)
+
+  @@unique([academicYear, studentKey])
+  @@unique([academicYear, studentId])
+  @@index([academicYear, reviewStatus])
+  @@index([teacherId, academicYear])
+  @@index([circleId, academicYear])
+  @@index([studentName])
 }
 
 model TrackResource {
@@ -699,4 +750,10 @@ enum StudentFollowUpActionType {
 enum TeacherVisitType {
   FIELD
   SECRET
+}
+
+enum AnnualReportReviewStatus {
+  REVIEW
+  APPROVED
+  SENT
 }

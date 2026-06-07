@@ -284,7 +284,7 @@ export default async function OnsiteEducationSupervisionPage({
           </div>
         </section>
 
-        <section className="grid gap-3 md:grid-cols-3">
+        <section className="grid gap-3 md:grid-cols-4">
           {[
             { key: "quran", title: "إشراف حلقات القرآن الكريم" },
             { key: "nour", title: "إشراف حلقات نور البيان" },
@@ -315,6 +315,15 @@ export default async function OnsiteEducationSupervisionPage({
             <h2 className="text-2xl font-black">متابعة أداء الحلقات</h2>
             <p className="mt-3 text-sm leading-7 opacity-75">
               مؤشر سريع لانتظام تقارير التسميع وجودة التسميع وعدد الصفحات.
+            </p>
+          </Link>
+          <Link
+            href="/onsite/admin/annual-reports"
+            className="rounded-[1.8rem] bg-white/88 p-5 text-[#0a3f2a] shadow-sm ring-1 ring-[#d8bf83] transition hover:-translate-y-0.5"
+          >
+            <h2 className="text-2xl font-black">التقارير السنوية</h2>
+            <p className="mt-3 text-sm leading-7 opacity-75">
+              مراجعة صور التقارير السنوية واعتمادها ثم إرسالها لأولياء الأمور.
             </p>
           </Link>
         </section>
