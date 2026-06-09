@@ -2,7 +2,7 @@
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
-import QuickAttendanceButtons from "@/components/reports/QuickAttendanceButtons";
+import BulkParentReportsButton from "@/components/reports/BulkParentReportsButton";
 import TemporaryStudentPhoneForm from "@/components/students/TemporaryStudentPhoneForm";
 import { prisma } from "@/lib/prisma";
 import { getIstanbulDayRange } from "@/lib/school-day";
@@ -201,6 +201,13 @@ export default async function OnsiteTeacherDashboardPage({
   const completedTodayCount = students.filter(
     (student) => student.reports.length > 0
   ).length;
+  const todayReportIds = students
+    .map((student) => student.reports[0]?.id)
+    .filter((reportId): reportId is string => Boolean(reportId));
+  const unsentTodayReportIds = students
+    .map((student) => student.reports[0])
+    .filter((report): report is TodayReport => Boolean(report) && !report.sentToParent)
+    .map((report) => report.id);
   const latestCircleLink =
     activeCircle?.zoomUrl || teacher.zoomLinks[0]?.url || null;
   const storedTrackResources = await prisma.trackResource.findMany({
@@ -399,12 +406,20 @@ export default async function OnsiteTeacherDashboardPage({
                 </h2>
                 <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
                   تظهر هنا تقارير اليوم للطلاب داخل الحلقة المختارة فقط.
-                  بعد تسجيل حاضر أو غائب ينتقل التعديل إلى واجهة الإدارة فقط.
+                  أضف تقرير الطالب من زر إضافة تقرير، ويمكن تحديد الغياب من داخل التقرير.
                 </p>
               </div>
-              <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
-                {studentsCount} طالب
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <BulkParentReportsButton reportIds={unsentTodayReportIds} />
+                <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
+                  {studentsCount} طالب
+                </span>
+                {todayReportIds.length > 0 ? (
+                  <span className="rounded-full bg-[#bd8f2d]/10 px-4 py-2 text-sm font-black text-[#bd8f2d]">
+                    {todayReportIds.length} تقرير اليوم
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             {students.length === 0 ? (
@@ -478,7 +493,7 @@ export default async function OnsiteTeacherDashboardPage({
                           </div>
                         ) : (
                           <p className="mt-2 text-sm text-[#1c2d31]/55">
-                            أضف التقرير أو احفظ الغياب عند بداية المتابعة.
+                            أضف التقرير، ويمكن تحديد الغياب من داخل التقرير.
                           </p>
                         )}
                       </div>
@@ -490,12 +505,8 @@ export default async function OnsiteTeacherDashboardPage({
                           </div>
                         ) : todayReport ? (
                           <div className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-black text-emerald-800 ring-1 ring-emerald-200">
-                            تم تسجيل حضور / غياب الطالب وإرساله للإدارة
+                            تم حفظ تقرير اليوم وإرساله للإدارة
                           </div>
-                        ) : null}
-
-                        {!todayReport && !isBlockedTemporaryStudent ? (
-                          <QuickAttendanceButtons studentId={student.id} />
                         ) : null}
 
                         {!isBlockedTemporaryStudent ? (
