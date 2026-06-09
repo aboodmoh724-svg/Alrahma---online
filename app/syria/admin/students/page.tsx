@@ -126,21 +126,19 @@ function SyriaParentPhoneInput({
           className="h-11 min-w-0 flex-1 rounded-xl border border-[#eadcc4] bg-white px-3 text-left font-mono text-base font-black text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/30 focus:border-[#0f5a35]"
         />
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <span className="min-w-0 truncate text-xs font-bold text-[#1c2d31]/55">
           {savedDisplay ? `محفوظ: +963 ${savedDisplay}` : "لا يوجد رقم محفوظ"}
         </span>
-        {changed ? (
-          <button
-            type="button"
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => void commit()}
-            disabled={saving}
-            className="rounded-lg bg-[#0f5a35] px-3 py-1 text-[11px] font-black text-white disabled:opacity-60"
-          >
-            {saving ? "حفظ..." : "حفظ"}
-          </button>
-        ) : null}
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => void commit()}
+          disabled={!changed || saving}
+          className="rounded-xl bg-[#0f5a35] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:bg-[#0f5a35]/35"
+        >
+          {saving ? "جاري الحفظ..." : changed ? "حفظ الرقم" : "الرقم محفوظ"}
+        </button>
       </div>
     </div>
   );
