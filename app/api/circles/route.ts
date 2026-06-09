@@ -66,6 +66,20 @@ export async function GET(req: Request) {
             email: true,
           },
         },
+        students: {
+          where: {
+            isActive: true,
+          },
+          orderBy: {
+            fullName: "asc",
+          },
+          select: {
+            id: true,
+            studentCode: true,
+            fullName: true,
+            parentWhatsapp: true,
+          },
+        },
         _count: {
           select: {
             students: true,

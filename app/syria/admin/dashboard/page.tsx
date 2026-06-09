@@ -13,21 +13,15 @@ const sections = [
     tone: "bg-[#fffaf4] text-[#0a3f2a]",
   },
   {
-    href: "/syria/admin/teachers",
-    title: "المعلمون",
-    description: "إضافة المعلمين وتفعيل/تعطيل الحسابات.",
-    tone: "bg-[#0a3f2a] text-white",
-  },
-  {
-    href: "/syria/admin/students",
-    title: "الطلاب",
-    description: "عرض الطلاب ونقلهم بين الحلقات وتحديث أرقام وإيميلات أولياء الأمور.",
+    href: "/syria/admin/circles",
+    title: "الحلقات والطلاب",
+    description: "إدارة الحلقات ومعلميها وطلابها من شاشة واحدة: إضافة حلقة، تعيين معلم، عرض الطلاب، نقل طالب أو حذفه.",
     tone: "bg-[#0f5a35] text-white",
   },
   {
-    href: "/syria/admin/circles",
-    title: "الحلقات",
-    description: "إنشاء الحلقات وتعيين المعلمين وربط الطلاب.",
+    href: "/syria/admin/students",
+    title: "قاعدة الطلاب",
+    description: "بحث سريع باسم الطالب أو رقمه، وتحديث رقم ولي الأمر أو نقل الطالب عند الحاجة.",
     tone: "bg-[#bd8f2d] text-white",
   },
   {
