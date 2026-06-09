@@ -3,10 +3,11 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
-  formatSyriaLocalPhone,
+  joinInternationalPhone,
   normalizePhoneDigits,
-  normalizeSyriaPhone,
+  splitInternationalPhone,
 } from "@/lib/phone-number";
+import { PHONE_COUNTRIES } from "@/lib/phone-countries";
 
 type Teacher = {
   id: string;
@@ -36,25 +37,18 @@ type Student = {
   circle: Circle | null;
 };
 
-function toSyriaLocalPhone(value: string) {
-  return formatSyriaLocalPhone(value).replace(/\s/g, "");
+function formatPhoneGroups(value: string) {
+  const digits = normalizePhoneDigits(value);
+  return digits.replace(/(\d{3})(?=\d)/g, "$1 ").trim();
 }
 
-function formatSyriaPhone(value: string) {
-  const savedFormat = formatSyriaLocalPhone(value);
-  if (savedFormat) return savedFormat;
-
-  let digits = normalizePhoneDigits(value);
-  if (digits.startsWith("963")) digits = digits.slice(3);
-  if (digits.startsWith("0")) digits = digits.slice(1);
-  digits = digits.slice(0, 9);
-
-  return [digits.slice(0, 3), digits.slice(3, 6), digits.slice(6, 9)]
-    .filter(Boolean)
-    .join(" ");
+function formatSavedPhone(value: string | null | undefined) {
+  const parts = splitInternationalPhone(value || "", "963");
+  const localNumber = formatPhoneGroups(parts.localNumber);
+  return localNumber ? `+${parts.countryCode} ${localNumber}` : "";
 }
 
-function SyriaParentPhoneInput({
+function ParentPhoneInput({
   value,
   studentName,
   onSave,
@@ -65,29 +59,44 @@ function SyriaParentPhoneInput({
   onSave: (value: string | null) => Promise<boolean>;
   className?: string;
 }) {
-  const [draft, setDraft] = useState(formatSyriaPhone(value));
+  const initialParts = splitInternationalPhone(value, "963");
+  const [countryCode, setCountryCode] = useState(initialParts.countryCode || "963");
+  const [localNumber, setLocalNumber] = useState(formatPhoneGroups(initialParts.localNumber));
   const [saving, setSaving] = useState(false);
-  const savedDisplay = formatSyriaPhone(value);
-  const changed = normalizeSyriaPhone(draft) !== normalizeSyriaPhone(value);
+  const savedDisplay = formatSavedPhone(value);
+  const normalizedDraft = localNumber.trim()
+    ? joinInternationalPhone(countryCode, localNumber)
+    : "";
+  const normalizedSaved = normalizePhoneDigits(value);
+  const changed = normalizedDraft !== normalizedSaved;
 
   useEffect(() => {
-    setDraft(formatSyriaPhone(value));
+    const parts = splitInternationalPhone(value, "963");
+    setCountryCode(parts.countryCode || "963");
+    setLocalNumber(formatPhoneGroups(parts.localNumber));
   }, [value]);
 
   const commit = async () => {
-    if (!changed || saving) return;
+    if (saving) return;
 
     try {
       setSaving(true);
-      const localDigits = toSyriaLocalPhone(draft);
-      if (localDigits && localDigits.length !== 9) {
-        alert("رقم ولي الأمر يجب أن يكون 9 أرقام بعد +963، مثال: 944 123 456");
-        setDraft(savedDisplay);
+      const localDigits = normalizePhoneDigits(localNumber);
+      if (!localDigits) {
+        alert("أدخل رقم ولي الأمر قبل الحفظ");
         return;
       }
-      const normalized = normalizeSyriaPhone(draft);
+      if (countryCode === "963" && localDigits.replace(/^0/, "").length !== 9) {
+        alert("رقم سوريا يجب أن يكون 9 أرقام بعد +963، مثال: 944 123 456");
+        return;
+      }
+      const normalized = joinInternationalPhone(countryCode, localNumber);
       const ok = await onSave(normalized || null);
-      if (ok) setDraft(formatSyriaPhone(normalized));
+      if (ok) {
+        const parts = splitInternationalPhone(normalized, countryCode);
+        setCountryCode(parts.countryCode || countryCode);
+        setLocalNumber(formatPhoneGroups(parts.localNumber));
+      }
     } finally {
       setSaving(false);
     }
@@ -97,23 +106,31 @@ function SyriaParentPhoneInput({
     <div
       className={`w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-3 shadow-sm ring-1 ring-[#f0e2c8] ${className}`}
     >
-      <div className="flex items-stretch gap-2" dir="ltr">
-        <span className="flex h-11 shrink-0 items-center rounded-xl bg-white px-3 text-sm font-black text-[#0f5a35] ring-1 ring-[#eadcc4]">
-          +963
-        </span>
+      <div className="grid gap-2 sm:grid-cols-[8.5rem_1fr]" dir="ltr">
+        <select
+          value={countryCode}
+          onChange={(event) => setCountryCode(event.target.value)}
+          className="h-11 rounded-xl border border-[#eadcc4] bg-white px-2 text-left text-sm font-black text-[#0f5a35] outline-none transition focus:border-[#0f5a35]"
+          aria-label="رمز الدولة"
+        >
+          {PHONE_COUNTRIES.map((country) => (
+            <option key={`${country.iso}-${country.code}`} value={country.code}>
+              +{country.code} {country.iso}
+            </option>
+          ))}
+        </select>
         <input
           type="tel"
           inputMode="numeric"
-          value={draft}
-          onChange={(event) => setDraft(formatSyriaPhone(event.target.value))}
+          value={localNumber}
+          onChange={(event) => setLocalNumber(formatPhoneGroups(event.target.value))}
           onPaste={(event) => {
             const text = event.clipboardData.getData("text");
             if (!text) return;
             event.preventDefault();
-            setDraft(formatSyriaPhone(text));
-          }}
-          onBlur={() => {
-            void commit();
+            const pastedParts = splitInternationalPhone(text, countryCode);
+            setCountryCode(pastedParts.countryCode || countryCode);
+            setLocalNumber(formatPhoneGroups(pastedParts.localNumber));
           }}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -121,23 +138,23 @@ function SyriaParentPhoneInput({
               void commit();
             }
           }}
-          placeholder="9xx xxx xxx"
+          placeholder={countryCode === "963" ? "944 123 456" : "رقم ولي الأمر"}
           aria-label={`رقم ولي أمر ${studentName}`}
           className="h-11 min-w-0 flex-1 rounded-xl border border-[#eadcc4] bg-white px-3 text-left font-mono text-base font-black text-[#1c2d31] outline-none transition placeholder:text-[#1c2d31]/30 focus:border-[#0f5a35]"
         />
       </div>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <span className="min-w-0 truncate text-xs font-bold text-[#1c2d31]/55">
-          {savedDisplay ? `محفوظ: +963 ${savedDisplay}` : "لا يوجد رقم محفوظ"}
+          {savedDisplay ? `محفوظ: ${savedDisplay}` : "لا يوجد رقم محفوظ"}
         </span>
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => void commit()}
-          disabled={!changed || saving}
+          disabled={saving}
           className="rounded-xl bg-[#0f5a35] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:bg-[#0f5a35]/35"
         >
-          {saving ? "جاري الحفظ..." : changed ? "حفظ الرقم" : "الرقم محفوظ"}
+          {saving ? "جاري الحفظ..." : changed ? "حفظ رقم الطالب" : "حفظ رقم الطالب"}
         </button>
       </div>
     </div>
@@ -151,7 +168,7 @@ function ParentContactSummary({
   student: Student;
   onEditPhone: () => void;
 }) {
-  const phoneDisplay = formatSyriaPhone(student.parentWhatsapp || "");
+  const phoneDisplay = formatSavedPhone(student.parentWhatsapp || "");
 
   return (
     <div className="rounded-2xl border border-[#d8bf83] bg-[#fffaf4] p-3">
@@ -161,7 +178,7 @@ function ParentContactSummary({
             رقم ولي الأمر
           </p>
           <p className="mt-1 font-mono text-sm font-black text-[#0f5a35]" dir="ltr">
-            {phoneDisplay ? `+963 ${phoneDisplay}` : "لا يوجد رقم محفوظ"}
+            {phoneDisplay || "لا يوجد رقم محفوظ"}
           </p>
         </div>
         <button
@@ -200,6 +217,8 @@ export default function OnsiteAdminStudentsPage() {
     fullName: "",
     teacherId: "",
     circleId: "",
+    parentCountryCode: "963",
+    parentLocalNumber: "",
     studyMode: "ONSITE_SYRIA",
   });
 
@@ -284,13 +303,29 @@ export default function OnsiteAdminStudentsPage() {
 
     try {
       setSubmitting(true);
+      const localDigits = normalizePhoneDigits(formData.parentLocalNumber);
+      if (
+        formData.parentCountryCode === "963" &&
+        localDigits &&
+        localDigits.replace(/^0/, "").length !== 9
+      ) {
+        alert("رقم سوريا يجب أن يكون 9 أرقام بعد +963، مثال: 944 123 456");
+        return;
+      }
+      const parentWhatsapp = formData.parentLocalNumber.trim()
+        ? joinInternationalPhone(formData.parentCountryCode, formData.parentLocalNumber)
+        : "";
 
       const res = await fetch("/api/students", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ ...formData, studyMode: "ONSITE_SYRIA" }),
+        body: JSON.stringify({
+          ...formData,
+          parentWhatsapp,
+          studyMode: "ONSITE_SYRIA",
+        }),
       });
 
       const data = await res.json();
@@ -306,6 +341,8 @@ export default function OnsiteAdminStudentsPage() {
         fullName: "",
         teacherId: "",
         circleId: "",
+        parentCountryCode: "963",
+        parentLocalNumber: "",
         studyMode: "ONSITE_SYRIA",
       });
 
@@ -429,7 +466,7 @@ export default function OnsiteAdminStudentsPage() {
 
             <form
               onSubmit={handleSubmit}
-              className="grid gap-4 md:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end"
+              className="grid gap-4 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.9fr)_minmax(0,0.9fr)_minmax(0,1.1fr)_auto] md:items-end"
             >
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1c2d31]">
@@ -486,6 +523,48 @@ export default function OnsiteAdminStudentsPage() {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                  رقم ولي الأمر
+                </label>
+                <div className="grid gap-2 sm:grid-cols-[7.5rem_1fr]" dir="ltr">
+                  <select
+                    value={formData.parentCountryCode}
+                    onChange={(event) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        parentCountryCode: event.target.value,
+                      }))
+                    }
+                    className="rounded-2xl border border-[#d8bf83] bg-white px-2 py-3 text-left text-sm font-black text-[#0f5a35] outline-none focus:border-[#0f5a35]"
+                    aria-label="رمز الدولة"
+                  >
+                    {PHONE_COUNTRIES.map((country) => (
+                      <option key={`${country.iso}-${country.code}`} value={country.code}>
+                        +{country.code} {country.iso}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    value={formData.parentLocalNumber}
+                    onChange={(event) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        parentLocalNumber: formatPhoneGroups(event.target.value),
+                      }))
+                    }
+                    placeholder={
+                      formData.parentCountryCode === "963"
+                        ? "944 123 456"
+                        : "اختياري"
+                    }
+                    className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-left font-mono font-black outline-none focus:border-[#0f5a35]"
+                  />
+                </div>
               </div>
 
               <div>
@@ -729,7 +808,7 @@ export default function OnsiteAdminStudentsPage() {
               </button>
             </div>
 
-            <SyriaParentPhoneInput
+            <ParentPhoneInput
               value={editingPhoneStudent.parentWhatsapp || ""}
               studentName={editingPhoneStudent.fullName}
               onSave={async (next) => {
