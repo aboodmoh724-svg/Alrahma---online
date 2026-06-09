@@ -60,12 +60,47 @@ function insertEvaluationBeforeSignature(message: string, evaluationSummary: str
   return `${message.trim()}\n\n${evaluationSummary}`.trim();
 }
 
-function absenceReportMessage(input: { studentName: string; reportDate: string }) {
+function absenceReportMessage(input: {
+  studentName: string;
+  reportDate: string;
+  circleName?: string | null;
+  teacherName?: string | null;
+}) {
   return (
-    `\u0627\u0644\u0633\u0644\u0627\u0645 \u0639\u0644\u064a\u0643\u0645 \u0648\u0631\u062d\u0645\u0629 \u0627\u0644\u0644\u0647 \u0648\u0628\u0631\u0643\u0627\u062a\u0647\n\n` +
-    `\u0646\u0648\u062f \u0625\u0628\u0644\u0627\u063a\u0643\u0645 \u0623\u0646 \u0627\u0628\u0646\u0643\u0645 *${input.studentName}* \u062a\u063a\u064a\u0628 \u0627\u0644\u064a\u0648\u0645 \u0639\u0646 \u062d\u0636\u0648\u0631 \u0627\u0644\u062d\u0644\u0642\u0629 \u0628\u062a\u0627\u0631\u064a\u062e ${input.reportDate}.\n\n` +
-    `\u0646\u0631\u062c\u0648 \u0645\u0646\u0643\u0645 \u0627\u0644\u0627\u0647\u062a\u0645\u0627\u0645 \u0628\u0627\u0644\u062d\u0636\u0648\u0631\u061b \u0644\u0623\u0646 \u0627\u0644\u063a\u064a\u0627\u0628 \u064a\u0624\u062b\u0631 \u0639\u0644\u0649 \u0645\u0633\u062a\u0648\u0649 \u0627\u0644\u062a\u0639\u0644\u0645 \u0648\u0627\u0644\u0645\u062a\u0627\u0628\u0639\u0629.\n\n` +
-    `\u0625\u062f\u0627\u0631\u0629 \u0645\u0646\u0635\u0629 \u0627\u0644\u0631\u062d\u0645\u0629 \u0644\u062a\u062d\u0641\u064a\u0638 \u0627\u0644\u0642\u0631\u0622\u0646 \u0627\u0644\u0643\u0631\u064a\u0645`
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `ابنكم الكريم *${input.studentName}* لم يحضر إلى حلقة التحفيظ بتاريخ ${input.reportDate}.\n\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n\n` +
+    `نرجو المتابعة والحرص على انتظامه في الحضور؛ لأن الغياب يؤثر على مستوى الحفظ والمراجعة.\n\n` +
+    `إدارة تحفيظ الرحمة - قسم سوريا`
+  );
+}
+
+function syriaDailyReportMessage(input: {
+  studentName: string;
+  teacherName?: string | null;
+  circleName?: string | null;
+  reportDate: string;
+  lessonName: string;
+  review: string;
+  homework: string;
+  note: string;
+  evaluationSummary: string;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `تقرير الطالب اليومي - قسم سوريا\n\n` +
+    `*الطالب:* ${input.studentName}\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n` +
+    `*التاريخ:* ${input.reportDate}\n\n` +
+    `*ما حفظه الطالب:* ${input.lessonName}\n` +
+    `*المراجعة:* ${input.review}\n` +
+    `*واجب الغد:* ${input.homework}\n\n` +
+    `${input.evaluationSummary || "نتيجة التقييم: -"}\n\n` +
+    `*الملاحظات:* ${input.note || "-"}\n\n` +
+    `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +
+    `إدارة تحفيظ الرحمة - قسم سوريا`
   );
 }
 
@@ -111,6 +146,11 @@ export async function PATCH(request: Request, context: RouteContext) {
             fullName: true,
             parentWhatsapp: true,
             studyMode: true,
+            circle: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
@@ -154,7 +194,21 @@ export async function PATCH(request: Request, context: RouteContext) {
         ? absenceReportMessage({
             studentName: report.student.fullName,
             reportDate,
+            circleName: report.student.circle?.name,
+            teacherName: report.teacher?.fullName,
           })
+        : reportChannel === "ONSITE_SYRIA"
+          ? syriaDailyReportMessage({
+              studentName: report.student.fullName,
+              teacherName: report.teacher?.fullName || "غير محدد",
+              circleName: report.student.circle?.name,
+              reportDate,
+              lessonName: cleanReportField(report.lessonName),
+              review: cleanReportField(report.review),
+              homework: cleanReportField(report.nextHomework),
+              note: cleanReportField(report.note),
+              evaluationSummary,
+            })
         : insertEvaluationBeforeSignature(
             await renderMessageTemplate("REMOTE_REPORT", {
               studentName: report.student.fullName,

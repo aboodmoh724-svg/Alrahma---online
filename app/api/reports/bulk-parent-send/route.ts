@@ -62,12 +62,47 @@ function insertEvaluationBeforeSignature(message: string, evaluationSummary: str
   return `${message.trim()}\n\n${evaluationSummary}`.trim();
 }
 
-function absenceReportMessage(input: { studentName: string; reportDate: string }) {
+function absenceReportMessage(input: {
+  studentName: string;
+  reportDate: string;
+  circleName?: string | null;
+  teacherName?: string | null;
+}) {
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
-    `نود إبلاغكم أن ابنكم *${input.studentName}* تغيب اليوم عن حضور الحلقة بتاريخ ${input.reportDate}.\n\n` +
-    `نرجو منكم الاهتمام بالحضور؛ لأن الغياب يؤثر على مستوى التعلم والمتابعة.\n\n` +
-    `إدارة منصة الرحمة لتحفيظ القرآن الكريم`
+    `ابنكم الكريم *${input.studentName}* لم يحضر إلى حلقة التحفيظ بتاريخ ${input.reportDate}.\n\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n\n` +
+    `نرجو المتابعة والحرص على انتظامه في الحضور؛ لأن الغياب يؤثر على مستوى الحفظ والمراجعة.\n\n` +
+    `إدارة تحفيظ الرحمة - قسم سوريا`
+  );
+}
+
+function syriaDailyReportMessage(input: {
+  studentName: string;
+  teacherName?: string | null;
+  circleName?: string | null;
+  reportDate: string;
+  lessonName: string;
+  review: string;
+  homework: string;
+  note: string;
+  evaluationSummary: string;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `تقرير الطالب اليومي - قسم سوريا\n\n` +
+    `*الطالب:* ${input.studentName}\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n` +
+    `*التاريخ:* ${input.reportDate}\n\n` +
+    `*ما حفظه الطالب:* ${input.lessonName}\n` +
+    `*المراجعة:* ${input.review}\n` +
+    `*واجب الغد:* ${input.homework}\n\n` +
+    `${input.evaluationSummary || "نتيجة التقييم: -"}\n\n` +
+    `*الملاحظات:* ${input.note || "-"}\n\n` +
+    `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +
+    `إدارة تحفيظ الرحمة - قسم سوريا`
   );
 }
 
@@ -124,6 +159,11 @@ export async function POST(request: Request) {
             fullName: true,
             parentWhatsapp: true,
             studyMode: true,
+            circle: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
@@ -162,7 +202,21 @@ export async function POST(request: Request) {
           ? absenceReportMessage({
               studentName: report.student.fullName,
               reportDate,
+              circleName: report.student.circle?.name,
+              teacherName: report.teacher?.fullName,
             })
+          : reportChannel === "ONSITE_SYRIA"
+            ? syriaDailyReportMessage({
+                studentName: report.student.fullName,
+                teacherName: report.teacher?.fullName || "غير محدد",
+                circleName: report.student.circle?.name,
+                reportDate,
+                lessonName: cleanReportField(report.lessonName),
+                review: cleanReportField(report.review),
+                homework: cleanReportField(report.nextHomework),
+                note: cleanReportField(report.note),
+                evaluationSummary,
+              })
           : insertEvaluationBeforeSignature(
               await renderMessageTemplate("REMOTE_REPORT", {
                 studentName: report.student.fullName,

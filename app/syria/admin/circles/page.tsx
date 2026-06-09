@@ -466,7 +466,7 @@ export default function OnsiteAdminCirclesPage() {
                       key={circle.id}
                       className="overflow-hidden rounded-[1.8rem] border border-[#d8bf83] bg-[#fffdf8] shadow-sm"
                     >
-                      <div className="grid gap-4 p-4 xl:grid-cols-[1.1fr_0.9fr_0.9fr_auto] xl:items-center">
+                      <div className="grid gap-4 p-4 xl:grid-cols-[minmax(16rem,1.3fr)_0.85fr_0.85fr_auto] xl:items-center">
                         <div className="min-w-0">
                           {editingCircleId === circle.id ? (
                             <input
@@ -481,7 +481,7 @@ export default function OnsiteAdminCirclesPage() {
                             />
                           ) : (
                             <>
-                              <h3 className="truncate text-xl font-black text-[#1c2d31]">
+                              <h3 className="break-words text-xl font-black leading-8 text-[#1c2d31]">
                                 {circle.name}
                               </h3>
                               <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
@@ -616,7 +616,7 @@ export default function OnsiteAdminCirclesPage() {
                                     </p>
                                   </div>
 
-                                  <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black text-[#1c2d31]/70 ring-1 ring-[#eadcc4]">
+                                  <span className="rounded-xl bg-white px-3 py-2 text-center text-xs font-black leading-5 text-[#1c2d31]/70 ring-1 ring-[#eadcc4]">
                                     {circle.name}
                                   </span>
 

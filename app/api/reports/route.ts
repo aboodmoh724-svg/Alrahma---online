@@ -92,13 +92,6 @@ export async function POST(req: Request) {
       );
     }
 
-    if (student.studyMode === "ONSITE_SYRIA" && student.isTemporary && !student.parentWhatsapp) {
-      return NextResponse.json(
-        { error: "هذا الطالب مضاف مؤقتاً. أدخل رقم واتساب ولي الأمر أولاً قبل تسجيل الحضور أو التقرير." },
-        { status: 400 }
-      );
-    }
-
     const { start, end } = getIstanbulDayRange();
     const existingTodayReport = await prisma.report.findFirst({
       where: {

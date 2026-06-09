@@ -60,10 +60,10 @@ export default function TemporaryStudentPhoneForm({
         return;
       }
 
-      alert("تم حفظ رقم ولي الأمر. يمكن الآن متابعة الطالب.");
+      alert("تم حفظ رقم ولي الأمر. يمكن الآن إرسال التقرير عبر واتساب.");
       router.refresh();
     } catch (error) {
-      console.error("SAVE TEMP STUDENT PHONE ERROR =>", error);
+      console.error("SAVE STUDENT PHONE ERROR =>", error);
       alert("حدث خطأ أثناء حفظ رقم ولي الأمر");
     } finally {
       setSaving(false);
@@ -73,10 +73,10 @@ export default function TemporaryStudentPhoneForm({
   return (
     <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
       <p className="text-sm font-black text-amber-900">
-        الطالب {studentName} مضاف مؤقتاً
+        لا يوجد رقم واتساب لولي أمر الطالب {studentName}
       </p>
       <p className="mt-1 text-xs leading-6 text-amber-800/80">
-        أدخل رقم واتساب ولي الأمر أولاً، ثم تظهر خيارات الحضور والتقرير.
+        سيبقى التقرير محفوظًا ومرفوعًا للإدارة، لكن لن يتم إرسال رسالة واتساب حتى يتم حفظ رقم ولي الأمر.
       </p>
       <div className="mt-3 flex flex-col gap-2 sm:flex-row" dir="ltr">
         <span className="flex h-11 shrink-0 items-center rounded-xl bg-white px-3 text-sm font-black text-[#0f5a35] ring-1 ring-amber-200">

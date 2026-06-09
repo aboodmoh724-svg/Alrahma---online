@@ -436,8 +436,7 @@ export default async function OnsiteTeacherDashboardPage({
                 {students.map((student) => {
                   const todayReport = student.reports[0];
                   const isAbsent = todayReport?.status === "ABSENT";
-                  const isBlockedTemporaryStudent =
-                    student.isTemporary && !student.parentWhatsapp;
+                  const hasNoParentPhone = !student.parentWhatsapp;
                   const studentReportHref = activeCircle
                     ? `/syria/teacher/reports/new?circleId=${activeCircle.id}&studentId=${student.id}`
                     : `/syria/teacher/reports/new?studentId=${student.id}`;
@@ -474,39 +473,41 @@ export default async function OnsiteTeacherDashboardPage({
                           )}
                         </div>
 
-                        {isBlockedTemporaryStudent ? (
-                          <div className="mt-3">
+                        <div className="mt-3 space-y-3">
+                          {hasNoParentPhone ? (
                             <TemporaryStudentPhoneForm
                               studentId={student.id}
                               studentName={student.fullName}
                             />
-                          </div>
-                        ) : todayReport ? (
-                          <div className="mt-2 space-y-1 text-sm leading-7 text-[#1c2d31]/60">
-                            <p>{todayReport.lessonName}</p>
-                            {!isAbsent ? (
-                              <p>
-                                الصفحات:{" "}
-                                {todayReport.pageFrom && todayReport.pageTo
-                                  ? `من ${todayReport.pageFrom} إلى ${todayReport.pageTo}`
-                                  : "غير محددة"}
-                                {todayReport.pagesCount
-                                  ? ` - عدد الصفحات: ${todayReport.pagesCount}`
-                                  : ""}
-                              </p>
-                            ) : null}
-                          </div>
-                        ) : (
-                          <p className="mt-2 text-sm text-[#1c2d31]/55">
-                            أضف التقرير، ويمكن تحديد الغياب من داخل التقرير.
-                          </p>
-                        )}
+                          ) : null}
+
+                          {todayReport ? (
+                            <div className="space-y-1 text-sm leading-7 text-[#1c2d31]/60">
+                              <p>{todayReport.lessonName}</p>
+                              {!isAbsent ? (
+                                <p>
+                                  الصفحات:{" "}
+                                  {todayReport.pageFrom && todayReport.pageTo
+                                    ? `من ${todayReport.pageFrom} إلى ${todayReport.pageTo}`
+                                    : "غير محددة"}
+                                  {todayReport.pagesCount
+                                    ? ` - عدد الصفحات: ${todayReport.pagesCount}`
+                                    : ""}
+                                </p>
+                              ) : null}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-[#1c2d31]/55">
+                              أضف التقرير، ويمكن تحديد الغياب من داخل التقرير.
+                            </p>
+                          )}
+                        </div>
                       </div>
 
                       <div className="flex flex-col gap-2 md:min-w-48">
-                        {isBlockedTemporaryStudent ? (
+                        {hasNoParentPhone ? (
                           <div className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-black text-amber-800 ring-1 ring-amber-200">
-                            يلزم إدخال رقم ولي الأمر أولاً
+                            لا يوجد رقم، لن ترسل رسالة واتساب حتى يحفظ الرقم
                           </div>
                         ) : todayReport ? (
                           <div className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-black text-emerald-800 ring-1 ring-emerald-200">
@@ -514,37 +515,33 @@ export default async function OnsiteTeacherDashboardPage({
                           </div>
                         ) : null}
 
-                        {!isBlockedTemporaryStudent ? (
+                        {todayReport ? (
                           <>
-                            {todayReport ? (
-                              <>
-                                <ParentReportSendButton
-                                  reportId={todayReport.id}
-                                  initialSent={todayReport.sentToParent}
-                                  parentWhatsapp={student.parentWhatsapp}
-                                />
-                                {todayReport.parentSentError ? (
-                                  <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
-                                    آخر خطأ: {todayReport.parentSentError}
-                                  </p>
-                                ) : null}
-                              </>
-                            ) : (
-                              <Link
-                                href={studentReportHref}
-                                className="rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
-                              >
-                                إضافة تقرير
-                              </Link>
-                            )}
-                            <Link
-                              href={`/syria/teacher/students/${student.id}/history`}
-                              className="rounded-xl border border-[#d8bf83] px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-white"
-                            >
-                              سجل الطالب
-                            </Link>
+                            <ParentReportSendButton
+                              reportId={todayReport.id}
+                              initialSent={todayReport.sentToParent}
+                              parentWhatsapp={student.parentWhatsapp}
+                            />
+                            {todayReport.parentSentError ? (
+                              <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
+                                آخر خطأ: {todayReport.parentSentError}
+                              </p>
+                            ) : null}
                           </>
-                        ) : null}
+                        ) : (
+                          <Link
+                            href={studentReportHref}
+                            className="rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+                          >
+                            إضافة تقرير
+                          </Link>
+                        )}
+                        <Link
+                          href={`/syria/teacher/students/${student.id}/history`}
+                          className="rounded-xl border border-[#d8bf83] px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-white"
+                        >
+                          سجل الطالب
+                        </Link>
                       </div>
                     </div>
                   );
