@@ -3,6 +3,7 @@ import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
 import BulkParentReportsButton from "@/components/reports/BulkParentReportsButton";
+import ParentReportSendButton from "@/components/reports/ParentReportSendButton";
 import TemporaryStudentPhoneForm from "@/components/students/TemporaryStudentPhoneForm";
 import { prisma } from "@/lib/prisma";
 import { getIstanbulDayRange } from "@/lib/school-day";
@@ -406,11 +407,15 @@ export default async function OnsiteTeacherDashboardPage({
                 </h2>
                 <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
                   تظهر هنا تقارير اليوم للطلاب داخل الحلقة المختارة فقط.
-                  أضف تقرير الطالب من زر إضافة تقرير، ويمكن تحديد الغياب من داخل التقرير.
+                  الإرسال الجماعي يتاح بعد اكتمال تقارير جميع طلاب الحلقة، ويمكن إرسال تقرير طالب واحد من بطاقته.
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <BulkParentReportsButton reportIds={unsentTodayReportIds} />
+                <BulkParentReportsButton
+                  reportIds={unsentTodayReportIds}
+                  totalStudents={studentsCount}
+                  completedReports={completedTodayCount}
+                />
                 <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
                   {studentsCount} طالب
                 </span>
@@ -505,18 +510,33 @@ export default async function OnsiteTeacherDashboardPage({
                           </div>
                         ) : todayReport ? (
                           <div className="rounded-xl bg-emerald-50 px-3 py-2 text-center text-xs font-black text-emerald-800 ring-1 ring-emerald-200">
-                            تم حفظ تقرير اليوم وإرساله للإدارة
+                            تم حفظ تقرير اليوم
                           </div>
                         ) : null}
 
                         {!isBlockedTemporaryStudent ? (
                           <>
-                            <Link
-                              href={studentReportHref}
-                              className="rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
-                            >
-                              {todayReport ? "إضافة تقرير آخر" : "إضافة تقرير"}
-                            </Link>
+                            {todayReport ? (
+                              <>
+                                <ParentReportSendButton
+                                  reportId={todayReport.id}
+                                  initialSent={todayReport.sentToParent}
+                                  parentWhatsapp={student.parentWhatsapp}
+                                />
+                                {todayReport.parentSentError ? (
+                                  <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
+                                    آخر خطأ: {todayReport.parentSentError}
+                                  </p>
+                                ) : null}
+                              </>
+                            ) : (
+                              <Link
+                                href={studentReportHref}
+                                className="rounded-xl bg-[#0f5a35] px-4 py-3 text-center text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+                              >
+                                إضافة تقرير
+                              </Link>
+                            )}
                             <Link
                               href={`/syria/teacher/students/${student.id}/history`}
                               className="rounded-xl border border-[#d8bf83] px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-white"

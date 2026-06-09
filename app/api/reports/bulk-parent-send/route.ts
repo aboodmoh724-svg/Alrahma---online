@@ -8,7 +8,8 @@ import {
   type WhatsAppChannel,
 } from "@/lib/whatsapp";
 
-const REPORT_FIELD_PREFIX = /^(الدرس\s*الجديد|الدرس|المراجعة|الواجب|واجب\s*الغد)\s*[:：-]\s*/i;
+const REPORT_FIELD_PREFIX =
+  /^(الدرس\s*الجديد|الدرس|المراجعة|الواجب|واجب\s*الغد)\s*[:：-]\s*/i;
 const REPORT_FIELD_REPEAT_PREFIX = /^(الدرس\s*الجديد|المراجعة)\s*[:：-]\s*/i;
 const HAFIZ = "حافظ";
 const NOT_HAFIZ = "غير حافظ";
@@ -77,7 +78,7 @@ export async function POST(request: Request) {
 
     if (!teacherId) {
       return NextResponse.json(
-        { error: "الرجاء تسجيل الدخول أولًا" },
+        { error: "الرجاء تسجيل الدخول أولاً" },
         { status: 401 }
       );
     }
@@ -181,6 +182,7 @@ export async function POST(request: Request) {
           to: phone,
           body: messageWithSummary,
           channel: reportChannel,
+          source: "TEACHER_BULK_DAILY_REPORT",
         });
 
         await prisma.report.update({

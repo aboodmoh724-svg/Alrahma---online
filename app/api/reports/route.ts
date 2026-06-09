@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getIstanbulDayRange } from "@/lib/school-day";
 
 function optionalNumber(value: unknown) {
   if (value === null || value === undefined || value === "") {
@@ -95,6 +96,28 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "هذا الطالب مضاف مؤقتاً. أدخل رقم واتساب ولي الأمر أولاً قبل تسجيل الحضور أو التقرير." },
         { status: 400 }
+      );
+    }
+
+    const { start, end } = getIstanbulDayRange();
+    const existingTodayReport = await prisma.report.findFirst({
+      where: {
+        studentId: student.id,
+        teacherId,
+        createdAt: {
+          gte: start,
+          lt: end,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (existingTodayReport) {
+      return NextResponse.json(
+        { error: "تم حفظ تقرير لهذا الطالب اليوم بالفعل. يمكن إضافة تقرير واحد فقط لكل طالب في اليوم." },
+        { status: 409 }
       );
     }
 
