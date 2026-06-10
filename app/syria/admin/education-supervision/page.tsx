@@ -735,12 +735,25 @@ export default async function SyriaEducationSupervisionPage({
                     <p className="mt-1 text-sm opacity-70">
                       {row.circle.teacher?.fullName || "لم يحدد"}
                     </p>
-                    <div className="mt-3 grid grid-cols-5 gap-2 text-center text-xs font-black">
-                      <span>تقارير {row.reportsCount}</span>
-                      <span>تسميع {row.recitationsCount}</span>
-                      <span>حفظ {row.pages}</span>
-                      <span>مراجعة {row.reviewPages}</span>
-                      <span>واتساب {row.sent}</span>
+                    <div className="mt-3 grid grid-cols-2 gap-2 text-xs font-black sm:grid-cols-3">
+                      {[
+                        ["تقارير", row.reportsCount],
+                        ["تسميع", row.recitationsCount],
+                        ["حفظ", row.pages],
+                        ["مراجعة", row.reviewPages],
+                        ["واتساب", row.sent],
+                      ].map(([label, value]) => (
+                        <span
+                          key={label}
+                          className={`rounded-xl px-2 py-1.5 text-center ${
+                            selectedMonthlyCircle?.circle.id === row.circle.id
+                              ? "bg-white/12 text-white"
+                              : "bg-white text-[#1c2d31]"
+                          }`}
+                        >
+                          {label}: {value}
+                        </span>
+                      ))}
                     </div>
                   </Link>
                 ))}
@@ -751,91 +764,91 @@ export default async function SyriaEducationSupervisionPage({
                   <h3 className="text-2xl font-black text-[#1c2d31]">
                     {selectedMonthlyCircle.circle.name}
                   </h3>
-                  <div className="mt-4 overflow-x-auto">
-                    <table className="min-w-full overflow-hidden rounded-2xl text-sm">
-                      <thead>
-                        <tr className="bg-[#0a3f2a] text-right text-white">
-                          <th className="px-4 py-3 font-black">الطالب</th>
-                          <th className="px-4 py-3 font-black">بداية الطالب</th>
-                          <th className="px-4 py-3 font-black">التقارير</th>
-                          <th className="px-4 py-3 font-black">الحفظ الجديد</th>
-                          <th className="px-4 py-3 font-black">المراجعة</th>
-                          <th className="px-4 py-3 font-black">غير حافظ</th>
-                          <th className="px-4 py-3 font-black">غياب</th>
-                          <th className="px-4 py-3 font-black">آخر تقرير</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedMonthlyCircle.circle.students.map((student) => {
-                          const reports = reportsInRange(
-                            student.reports as ReportLike[],
-                            monthRange.start,
-                            monthRange.end
-                          ).filter(isReportEntered);
-                          const recitations = reports.filter(isRecitationReport);
-                          const pages = recitations.reduce(
-                            (total, report) => total + (report.pagesCount || 0),
-                            0
-                          );
-                          const reviewPages = recitations.reduce(
-                            (total, report) => total + (report.reviewPagesCount || 0),
-                            0
-                          );
-                          const notMemorized = recitations.filter(
-                            (report) => report.lessonMemorized === false
-                          ).length;
-                          const absences = reports.filter((report) => report.status === "ABSENT").length;
-                          const latest = reports[0] || null;
-                          const progress = (
-                            student.teacherProgressRecords as Array<{
-                              teacherId: string;
-                              startSurah: string;
-                              startAyah: number | null;
-                              startPage: number | null;
-                              note: string | null;
-                            }>
-                          ).find(
-                            (item) => item.teacherId === selectedMonthlyCircle.circle.teacherId
-                          );
+                  <div className="mt-4 space-y-3">
+                    {selectedMonthlyCircle.circle.students.map((student) => {
+                      const reports = reportsInRange(
+                        student.reports as ReportLike[],
+                        monthRange.start,
+                        monthRange.end
+                      ).filter(isReportEntered);
+                      const recitations = reports.filter(isRecitationReport);
+                      const pages = recitations.reduce(
+                        (total, report) => total + (report.pagesCount || 0),
+                        0
+                      );
+                      const reviewPages = recitations.reduce(
+                        (total, report) => total + (report.reviewPagesCount || 0),
+                        0
+                      );
+                      const notMemorized = recitations.filter(
+                        (report) => report.lessonMemorized === false
+                      ).length;
+                      const absences = reports.filter((report) => report.status === "ABSENT").length;
+                      const latest = reports[0] || null;
+                      const progress = (
+                        student.teacherProgressRecords as Array<{
+                          teacherId: string;
+                          startSurah: string;
+                          startAyah: number | null;
+                          startPage: number | null;
+                          note: string | null;
+                        }>
+                      ).find(
+                        (item) => item.teacherId === selectedMonthlyCircle.circle.teacherId
+                      );
 
-                          return (
-                            <tr key={student.id} className="border-b border-[#e7d7b4] bg-white">
-                              <td className="px-4 py-3 font-black text-[#1c2d31]">
+                      return (
+                        <article
+                          key={student.id}
+                          className="rounded-[1.5rem] bg-white p-4 ring-1 ring-[#eadcc4]"
+                        >
+                          <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+                            <div className="min-w-0">
+                              <h4 className="text-xl font-black leading-8 text-[#1c2d31]">
                                 {student.fullName}
-                              </td>
-                              <td className="min-w-56 px-4 py-3 text-[#1c2d31]/70">
+                              </h4>
+                              <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
                                 {progress ? (
-                                  <div>
-                                    <p className="font-black text-[#0a3f2a]">
-                                      سورة {progress.startSurah}
-                                      {progress.startAyah ? ` - آية ${progress.startAyah}` : ""}
-                                      {progress.startPage ? ` - صفحة ${progress.startPage}` : ""}
-                                    </p>
-                                    {progress.note ? (
-                                      <p className="mt-1 text-xs leading-6 text-[#1c2d31]/55">
-                                        {progress.note}
-                                      </p>
-                                    ) : null}
-                                  </div>
+                                  <span className="rounded-full bg-[#edf6ee] px-3 py-1 font-black text-[#0a3f2a]">
+                                    بداية الحفظ: سورة {progress.startSurah}
+                                    {progress.startAyah ? ` - آية ${progress.startAyah}` : ""}
+                                    {progress.startPage ? ` - صفحة ${progress.startPage}` : ""}
+                                  </span>
                                 ) : (
-                                  <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800">
-                                    لم تسجل
+                                  <span className="rounded-full bg-amber-100 px-3 py-1 font-black text-amber-800">
+                                    بداية الحفظ غير مسجلة
                                   </span>
                                 )}
-                              </td>
-                              <td className="px-4 py-3 text-[#1c2d31]/70">{reports.length}</td>
-                              <td className="px-4 py-3 font-black text-[#0a3f2a]">{pages}</td>
-                              <td className="px-4 py-3 font-black text-[#bd8f2d]">{reviewPages}</td>
-                              <td className="px-4 py-3 text-[#1c2d31]/70">{notMemorized}</td>
-                              <td className="px-4 py-3 text-[#1c2d31]/70">{absences}</td>
-                              <td className="min-w-72 px-4 py-3 text-[#1c2d31]/70">
-                                {latest ? reportSummary(latest) : "-"}
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
+                                <span className="rounded-full bg-[#f8f1e7] px-3 py-1 font-bold text-[#1c2d31]/65">
+                                  آخر تقرير: {latest ? reportSummary(latest) : "-"}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="grid grid-cols-3 gap-2 sm:grid-cols-6 xl:min-w-[30rem]">
+                              {[
+                                ["تقارير", reports.length, "text-[#1c2d31]"],
+                                ["حفظ", pages, "text-[#0a3f2a]"],
+                                ["مراجعة", reviewPages, "text-[#bd8f2d]"],
+                                ["غير حافظ", notMemorized, "text-amber-700"],
+                                ["غياب", absences, "text-red-700"],
+                                ["واتساب", reports.filter((report) => report.sentToParent).length, "text-[#0f5a35]"],
+                              ].map(([label, value, color]) => (
+                                <div
+                                  key={label}
+                                  className="rounded-2xl bg-[#fffaf4] px-3 py-2 text-center ring-1 ring-[#eadcc4]"
+                                >
+                                  <p className="text-[11px] font-black text-[#1c2d31]/50">{label}</p>
+                                  <p className={`mt-1 text-2xl font-black leading-none ${color}`}>
+                                    {value}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        </article>
+                      );
+                    })}
                   </div>
 
                   <div className="mt-6">
