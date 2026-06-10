@@ -283,6 +283,9 @@ model MeetingMinute {
   decisions    Json
   notes        Json
   whatsappText String?
+  htmlPath     String?
+  pdfPath      String?
+  pdfGeneratedAt DateTime?
   createdById  String?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
@@ -290,6 +293,19 @@ model MeetingMinute {
 
   @@index([studyMode, createdAt])
   @@index([createdById])
+}
+
+model MeetingMinuteRecipient {
+  id        String    @id @default(cuid())
+  studyMode StudyMode @default(REMOTE)
+  name      String?
+  phone     String
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([studyMode, phone])
+  @@index([studyMode, isActive])
 }
 
 model TeacherRequest {
