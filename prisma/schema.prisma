@@ -44,6 +44,7 @@ model User {
   annualReports AnnualReport[] @relation("AnnualReportTeacher")
   reviewedAnnualReports AnnualReport[] @relation("AnnualReportReviewer")
   sentAnnualReports AnnualReport[] @relation("AnnualReportSender")
+  studentProgressRecords StudentTeacherProgress[]
 }
 
 model Student {
@@ -71,8 +72,29 @@ model Student {
   outgoingWhatsAppMessages WhatsAppOutgoingMessage[]
   educationConversations EducationConversation[]
   annualReports AnnualReport[]
+  teacherProgressRecords StudentTeacherProgress[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+}
+
+model StudentTeacherProgress {
+  id          String   @id @default(cuid())
+  studentId   String
+  teacherId   String
+  circleId    String?
+  startSurah  String
+  startAyah   Int?
+  startPage   Int?
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher     User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  circle      Circle?  @relation(fields: [circleId], references: [id], onDelete: SetNull)
+
+  @@unique([studentId, teacherId])
+  @@index([teacherId, updatedAt])
+  @@index([circleId])
 }
 
 model ParentPortalCode {
@@ -403,6 +425,7 @@ model Circle {
   teacher   User?     @relation("CircleTeacher", fields: [teacherId], references: [id])
   students  Student[]
   annualReports AnnualReport[]
+  studentProgressRecords StudentTeacherProgress[]
 }
 
 model AnnualReport {

@@ -284,9 +284,18 @@ function NewReportForm() {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [loadingReport, setLoadingReport] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(false);
+  const [savingProgress, setSavingProgress] = useState(false);
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
   const [suggestedHomework, setSuggestedHomework] = useState("");
   const [selectedNotePreset, setSelectedNotePreset] = useState("");
   const [reportNotePresetOptions, setReportNotePresetOptions] = useState(notePresetOptions);
+  const [progressData, setProgressData] = useState({
+    startSurah: "",
+    startAyah: "",
+    startPage: "",
+    note: "",
+  });
 
   const [formData, setFormData] = useState({
     studentId: studentIdFromUrl,
@@ -476,6 +485,45 @@ function NewReportForm() {
     fetchStudentHistory();
   }, [formData.studentId, reportIdFromUrl]);
 
+  useEffect(() => {
+    if (!formData.studentId || reportIdFromUrl) {
+      setHasSavedProgress(false);
+      setProgressData({
+        startSurah: "",
+        startAyah: "",
+        startPage: "",
+        note: "",
+      });
+      return;
+    }
+
+    const fetchStudentProgress = async () => {
+      try {
+        setLoadingProgress(true);
+        const response = await fetch(`/api/students/${formData.studentId}/progress`, {
+          cache: "no-store",
+        });
+        const data = await response.json();
+        const progress = response.ok ? data.progress : null;
+
+        setHasSavedProgress(Boolean(progress));
+        setProgressData({
+          startSurah: progress?.startSurah || "",
+          startAyah: progress?.startAyah ? String(progress.startAyah) : "",
+          startPage: progress?.startPage ? String(progress.startPage) : "",
+          note: progress?.note || "",
+        });
+      } catch (error) {
+        console.error("FETCH STUDENT PROGRESS ERROR =>", error);
+        setHasSavedProgress(false);
+      } finally {
+        setLoadingProgress(false);
+      }
+    };
+
+    void fetchStudentProgress();
+  }, [formData.studentId, reportIdFromUrl]);
+
   const selectedStudentExists = students.some(
     (student) => student.id === formData.studentId
   );
@@ -515,6 +563,52 @@ function NewReportForm() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const setProgressField = (name: keyof typeof progressData, value: string) => {
+    setProgressData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setHasSavedProgress(false);
+  };
+
+  const saveStudentProgress = async () => {
+    if (!formData.studentId) {
+      alert("اختر الطالب أولا");
+      return false;
+    }
+
+    if (!progressData.startSurah.trim()) {
+      alert("اسم سورة بداية الطالب مطلوب");
+      return false;
+    }
+
+    try {
+      setSavingProgress(true);
+      const response = await fetch(`/api/students/${formData.studentId}/progress`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(progressData),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || "حدث خطأ أثناء حفظ بداية الطالب");
+        return false;
+      }
+
+      setHasSavedProgress(true);
+      return true;
+    } catch (error) {
+      console.error("SAVE STUDENT PROGRESS ERROR =>", error);
+      alert("حدث خطأ أثناء حفظ بداية الطالب");
+      return false;
+    } finally {
+      setSavingProgress(false);
+    }
   };
 
   const booleanToField = (value: boolean | null | undefined) => {
@@ -726,6 +820,11 @@ function NewReportForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!isEditingReport && !formData.isAbsent && !hasSavedProgress) {
+      const saved = await saveStudentProgress();
+      if (!saved) return;
+    }
+
     const nextHomework = isNoorAlBayanReport
       ? buildNoorNextHomework()
       : buildNextHomework();
@@ -911,6 +1010,89 @@ function NewReportForm() {
                 </option>
               ))}
             </select>
+
+            {formData.studentId && !isEditingReport ? (
+              <div className="mt-4 rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
+                <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <h2 className="text-lg font-black text-[#1c2d31]">
+                      بداية الطالب مع هذا المعلم
+                    </h2>
+                    <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
+                      تسجل مرة واحدة، ويمكن تعديلها عند الحاجة. تُستخدم لاحقا في ملخصات الإنجاز الشهرية.
+                    </p>
+                  </div>
+                  <span
+                    className={`w-fit rounded-full px-3 py-1 text-xs font-black ${
+                      hasSavedProgress
+                        ? "bg-emerald-100 text-emerald-800"
+                        : "bg-amber-100 text-amber-800"
+                    }`}
+                  >
+                    {loadingProgress
+                      ? "جاري الفحص"
+                      : hasSavedProgress
+                        ? "محفوظة"
+                        : "تحتاج حفظ"}
+                  </span>
+                </div>
+                <div className="grid gap-4 md:grid-cols-[1.5fr_0.75fr_0.75fr]">
+                  <SurahInput
+                    id="progress-start-surah-list"
+                    label="سورة البداية"
+                    value={progressData.startSurah}
+                    onChange={(value) => setProgressField("startSurah", value)}
+                    required={!formData.isAbsent}
+                  />
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                      رقم الآية
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={progressData.startAyah}
+                      onChange={(e) => setProgressField("startAyah", e.target.value)}
+                      className={inputClass}
+                      placeholder="اختياري"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                      رقم الصفحة
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="604"
+                      value={progressData.startPage}
+                      onChange={(e) => setProgressField("startPage", e.target.value)}
+                      className={inputClass}
+                      placeholder="اختياري"
+                    />
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <label className="mb-2 block text-sm font-black text-[#1c2d31]">
+                    ملاحظة البداية
+                  </label>
+                  <input
+                    value={progressData.note}
+                    onChange={(e) => setProgressField("note", e.target.value)}
+                    className={inputClass}
+                    placeholder="مثال: بدأ من سورة الناس للمراجعة والتثبيت"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={saveStudentProgress}
+                  disabled={savingProgress || loadingProgress}
+                  className="mt-4 rounded-2xl bg-[#0a3f2a] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0f5a35] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {savingProgress ? "جاري حفظ البداية..." : "حفظ بداية الطالب"}
+                </button>
+              </div>
+            ) : null}
 
             <label className="mt-4 flex items-center gap-3 rounded-2xl bg-[#f6eee7] p-4 text-sm font-black text-[#1c2d31]">
               <input

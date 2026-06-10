@@ -243,6 +243,15 @@ export default async function SyriaEducationSupervisionPage({
           fullName: "asc",
         },
         include: {
+          teacherProgressRecords: {
+            select: {
+              teacherId: true,
+              startSurah: true,
+              startAyah: true,
+              startPage: true,
+              note: true,
+            },
+          },
           reports: {
             where: {
               createdAt: {
@@ -739,6 +748,7 @@ export default async function SyriaEducationSupervisionPage({
                       <thead>
                         <tr className="bg-[#0a3f2a] text-right text-white">
                           <th className="px-4 py-3 font-black">الطالب</th>
+                          <th className="px-4 py-3 font-black">بداية الطالب</th>
                           <th className="px-4 py-3 font-black">التقارير</th>
                           <th className="px-4 py-3 font-black">الصفحات</th>
                           <th className="px-4 py-3 font-black">غير حافظ</th>
@@ -763,11 +773,42 @@ export default async function SyriaEducationSupervisionPage({
                           ).length;
                           const absences = reports.filter((report) => report.status === "ABSENT").length;
                           const latest = reports[0] || null;
+                          const progress = (
+                            student.teacherProgressRecords as Array<{
+                              teacherId: string;
+                              startSurah: string;
+                              startAyah: number | null;
+                              startPage: number | null;
+                              note: string | null;
+                            }>
+                          ).find(
+                            (item) => item.teacherId === selectedMonthlyCircle.circle.teacherId
+                          );
 
                           return (
                             <tr key={student.id} className="border-b border-[#e7d7b4] bg-white">
                               <td className="px-4 py-3 font-black text-[#1c2d31]">
                                 {student.fullName}
+                              </td>
+                              <td className="min-w-56 px-4 py-3 text-[#1c2d31]/70">
+                                {progress ? (
+                                  <div>
+                                    <p className="font-black text-[#0a3f2a]">
+                                      سورة {progress.startSurah}
+                                      {progress.startAyah ? ` - آية ${progress.startAyah}` : ""}
+                                      {progress.startPage ? ` - صفحة ${progress.startPage}` : ""}
+                                    </p>
+                                    {progress.note ? (
+                                      <p className="mt-1 text-xs leading-6 text-[#1c2d31]/55">
+                                        {progress.note}
+                                      </p>
+                                    ) : null}
+                                  </div>
+                                ) : (
+                                  <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800">
+                                    لم تسجل
+                                  </span>
+                                )}
                               </td>
                               <td className="px-4 py-3 text-[#1c2d31]/70">{reports.length}</td>
                               <td className="px-4 py-3 font-black text-[#0a3f2a]">{pages}</td>

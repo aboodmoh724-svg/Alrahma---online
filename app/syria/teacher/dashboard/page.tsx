@@ -28,6 +28,7 @@ type StudentWithTodayReports = {
   parentEmail: string | null;
   isTemporary: boolean;
   needsRegistrationCompletion: boolean;
+  teacherProgressRecords: { id: string }[];
   reports: TodayReport[];
 };
 
@@ -113,6 +114,14 @@ export default async function OnsiteTeacherDashboardPage({
               fullName: "asc",
             },
             include: {
+              teacherProgressRecords: {
+                where: {
+                  teacherId: teacherId,
+                },
+                select: {
+                  id: true,
+                },
+              },
               reports: {
                 where: {
                   createdAt: {
@@ -193,6 +202,14 @@ export default async function OnsiteTeacherDashboardPage({
               sentToParent: true,
               parentSentAt: true,
               parentSentError: true,
+            },
+          },
+          teacherProgressRecords: {
+            where: {
+              teacherId: teacher.id,
+            },
+            select: {
+              id: true,
             },
           },
         },
@@ -437,6 +454,7 @@ export default async function OnsiteTeacherDashboardPage({
                   const todayReport = student.reports[0];
                   const isAbsent = todayReport?.status === "ABSENT";
                   const hasNoParentPhone = !student.parentWhatsapp;
+                  const hasProgressStart = student.teacherProgressRecords.length > 0;
                   const studentReportHref = activeCircle
                     ? `/syria/teacher/reports/new?circleId=${activeCircle.id}&studentId=${student.id}`
                     : `/syria/teacher/reports/new?studentId=${student.id}`;
@@ -454,6 +472,11 @@ export default async function OnsiteTeacherDashboardPage({
                           {student.isTemporary ? (
                             <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800">
                               طالب مؤقت
+                            </span>
+                          ) : null}
+                          {!hasProgressStart ? (
+                            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-black text-amber-800">
+                              بداية الطالب غير مسجلة
                             </span>
                           ) : null}
                           {todayReport ? (
