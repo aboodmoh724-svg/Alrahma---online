@@ -20,6 +20,7 @@ type WhatsAppDocumentInput = {
   fileName: string;
   caption?: string;
   channel?: WhatsAppChannel;
+  chatId?: string | null;
 };
 
 type WhatsAppTemplateInput = {
@@ -698,6 +699,7 @@ async function sendWhatsAppWebJsDocument({
   fileName,
   caption,
   channel,
+  chatId,
 }: WhatsAppDocumentInput) {
   const apiUrl = resolveWebJsApiUrl(channel);
   const apiToken = resolveWebJsApiToken(channel);
@@ -711,6 +713,7 @@ async function sendWhatsAppWebJsDocument({
     },
     body: JSON.stringify({
       phone: to,
+      chatId,
       documentUrl,
       fileName,
       caption,
@@ -884,6 +887,7 @@ export async function sendWhatsAppDocument({
   fileName,
   caption,
   channel,
+  chatId,
 }: WhatsAppDocumentInput) {
   if (isWhatsAppWebJsConfigured(channel)) {
     return sendWhatsAppWebJsDocument({
@@ -892,6 +896,7 @@ export async function sendWhatsAppDocument({
       fileName,
       caption,
       channel,
+      chatId,
     });
   }
 

@@ -107,12 +107,15 @@ export async function POST(
       continue;
     }
 
+    const chatId = `${phone}@c.us`;
+
     try {
       if (mode === "pdf") {
         const caption = `محضر اجتماع: ${minute.title}`;
         try {
           await sendWhatsAppDocument({
             to: phone,
+            chatId,
             documentUrl: pdfUrl,
             fileName: `meeting-minute-${minute.id}.pdf`,
             caption,
@@ -121,6 +124,7 @@ export async function POST(
         } catch {
           await sendWhatsAppText({
             to: phone,
+            chatId,
             body: `${caption}\n\nرابط المحضر:\n${pdfUrl}`,
             channel: "REMOTE",
             source: "MEETING_MINUTE_PDF_FALLBACK",
@@ -130,6 +134,7 @@ export async function POST(
       } else {
         await sendWhatsAppText({
           to: phone,
+          chatId,
           body: minute.whatsappText || `محضر اجتماع: ${minute.title}`,
           channel: "REMOTE",
           source: "MEETING_MINUTE",
