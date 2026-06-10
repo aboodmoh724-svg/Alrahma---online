@@ -209,6 +209,8 @@ export default function OnsiteAdminStudentsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
+  const [editingNameStudent, setEditingNameStudent] = useState<Student | null>(null);
+  const [nameDraft, setNameDraft] = useState("");
   const [editingPhoneStudent, setEditingPhoneStudent] = useState<Student | null>(
     null
   );
@@ -357,7 +359,7 @@ export default function OnsiteAdminStudentsPage() {
 
   const updateStudent = async (
     studentId: string,
-    patch: Partial<Pick<Student, "parentWhatsapp" | "parentEmail">> & {
+    patch: Partial<Pick<Student, "fullName" | "parentWhatsapp" | "parentEmail">> & {
       teacherId?: string;
       circleId?: string | null;
     }
@@ -375,6 +377,28 @@ export default function OnsiteAdminStudentsPage() {
     }
 
     return true;
+  };
+
+  const startNameEdit = (student: Student) => {
+    setEditingNameStudent(student);
+    setNameDraft(student.fullName);
+  };
+
+  const saveStudentName = async () => {
+    if (!editingNameStudent) return;
+    const fullName = nameDraft.trim();
+
+    if (!fullName) {
+      alert("اسم الطالب مطلوب");
+      return;
+    }
+
+    const ok = await updateStudent(editingNameStudent.id, { fullName });
+    if (ok) {
+      await fetchData();
+      setEditingNameStudent(null);
+      setNameDraft("");
+    }
   };
 
   const deleteStudent = async (student: Student) => {
@@ -626,9 +650,18 @@ export default function OnsiteAdminStudentsPage() {
                           تحديث الحلقة والمعلم وبيانات ولي الأمر
                         </p>
                       </div>
-                      <span className="shrink-0 rounded-xl bg-[#edf6ee] px-3 py-2 font-mono text-sm font-black text-[#0f5a35] ring-1 ring-[#cfe4d4]">
-                        {student.studentCode || "-"}
-                      </span>
+                      <div className="flex shrink-0 flex-col gap-2">
+                        <span className="rounded-xl bg-[#edf6ee] px-3 py-2 text-center font-mono text-sm font-black text-[#0f5a35] ring-1 ring-[#cfe4d4]">
+                          {student.studentCode || "-"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => startNameEdit(student)}
+                          className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 text-xs font-black text-[#0a3f2a] transition hover:bg-[#edf6ee]"
+                        >
+                          تعديل الاسم
+                        </button>
+                      </div>
                     </div>
 
                     <div className="grid gap-3">
@@ -695,33 +728,32 @@ export default function OnsiteAdminStudentsPage() {
                 ))}
               </div>
 
-              <div className="hidden overflow-x-auto md:block">
-                <table className="min-w-[920px] overflow-hidden rounded-2xl">
-                  <thead>
-                    <tr className="bg-[#fffaf4] text-right text-sm text-[#1c2d31]/70">
-                      <th className="px-4 py-3 font-black">رقم الطالب</th>
-                      <th className="px-4 py-3 font-black">اسم الطالب</th>
-                      <th className="px-4 py-3 font-black">المعلم</th>
-                      <th className="px-4 py-3 font-black">الحلقة</th>
-                      <th className="w-[18rem] px-4 py-3 font-black">ولي الأمر</th>
-                      <th className="w-24 px-4 py-3 font-black">إجراءات</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredStudents.map((student) => (
-                      <tr
-                        key={student.id}
-                        className="border-b border-[#d8bf83]/30 text-sm"
-                      >
-                        <td className="px-4 py-3">
-                          <span className="inline-flex min-w-16 justify-center rounded-xl bg-[#edf6ee] px-3 py-2 font-mono text-sm font-black text-[#0f5a35] ring-1 ring-[#cfe4d4]">
-                            {student.studentCode || "-"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3 font-black text-[#1c2d31]">
+              <div className="hidden grid-cols-2 gap-4 md:grid xl:grid-cols-3">
+                {filteredStudents.map((student) => (
+                  <article
+                    key={student.id}
+                    className="flex min-h-full flex-col rounded-[1.7rem] bg-[#fffdf8] p-4 shadow-sm ring-1 ring-[#eadcc4]"
+                  >
+                    <div className="mb-4 flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <h3 className="text-lg font-black leading-8 text-[#1c2d31]">
                           {student.fullName}
-                        </td>
-                        <td className="px-4 py-3 text-[#1c2d31]/70">
+                        </h3>
+                        <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                          {student.circle?.name || "بدون حلقة"} - {student.teacher?.fullName || "بدون معلم"}
+                        </p>
+                      </div>
+                      <span className="shrink-0 rounded-xl bg-[#edf6ee] px-3 py-2 text-center font-mono text-sm font-black text-[#0f5a35] ring-1 ring-[#cfe4d4]">
+                        {student.studentCode || "-"}
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3">
+                      <div className="grid gap-3 lg:grid-cols-2">
+                        <label className="grid gap-2">
+                          <span className="text-xs font-black text-[#1c2d31]/70">
+                            المعلم
+                          </span>
                           <select
                             value={student.teacher?.id || ""}
                             onChange={async (event) => {
@@ -730,7 +762,7 @@ export default function OnsiteAdminStudentsPage() {
                               });
                               if (ok) await fetchData();
                             }}
-                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
+                            className="w-full rounded-2xl border border-[#d8bf83] bg-white px-3 py-3 text-sm font-bold outline-none focus:border-[#0f5a35]"
                           >
                             {teachers.map((teacher) => (
                               <option key={teacher.id} value={teacher.id}>
@@ -738,8 +770,12 @@ export default function OnsiteAdminStudentsPage() {
                               </option>
                             ))}
                           </select>
-                        </td>
-                        <td className="px-4 py-3 text-[#1c2d31]/70">
+                        </label>
+
+                        <label className="grid gap-2">
+                          <span className="text-xs font-black text-[#1c2d31]/70">
+                            الحلقة
+                          </span>
                           <select
                             value={student.circle?.id || ""}
                             onChange={async (event) => {
@@ -748,7 +784,7 @@ export default function OnsiteAdminStudentsPage() {
                               });
                               if (ok) await fetchData();
                             }}
-                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
+                            className="w-full rounded-2xl border border-[#d8bf83] bg-white px-3 py-3 text-sm font-bold outline-none focus:border-[#0f5a35]"
                           >
                             <option value="">بدون حلقة</option>
                             {circles.map((circle) => (
@@ -757,35 +793,93 @@ export default function OnsiteAdminStudentsPage() {
                               </option>
                             ))}
                           </select>
-                        </td>
-                        <td className="w-[18rem] px-4 py-3 align-top text-xs font-bold text-[#1c2d31]/70">
-                          <ParentContactSummary
-                            student={student}
-                            onEditPhone={() => setEditingPhoneStudent(student)}
-                          />
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            type="button"
-                            disabled={deletingStudentId === student.id}
-                            onClick={() => deleteStudent(student)}
-                            className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs font-black text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {deletingStudentId === student.id
-                              ? "جار الحذف..."
-                              : "حذف"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </label>
+                      </div>
+
+                      <ParentContactSummary
+                        student={student}
+                        onEditPhone={() => setEditingPhoneStudent(student)}
+                      />
+
+                      <div className="mt-auto grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => startNameEdit(student)}
+                          className="rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-black text-[#0a3f2a] transition hover:bg-[#edf6ee]"
+                        >
+                          تعديل الاسم
+                        </button>
+                        <button
+                          type="button"
+                          disabled={deletingStudentId === student.id}
+                          onClick={() => deleteStudent(student)}
+                          className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {deletingStudentId === student.id ? "جار الحذف..." : "حذف الطالب"}
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                ))}
               </div>
               </>
             )}
           </section>
         </div>
       </div>
+
+      {editingNameStudent ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c2d31]/45 p-4">
+          <div className="w-full max-w-md rounded-[2rem] bg-white p-5 shadow-2xl ring-1 ring-[#d8bf83]">
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-[#1c2d31]">
+                  تعديل اسم الطالب
+                </h2>
+                <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
+                  الرقم: {editingNameStudent.studentCode || "-"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditingNameStudent(null);
+                  setNameDraft("");
+                }}
+                className="rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-3 py-2 text-sm font-black text-[#1c2d31]"
+              >
+                إغلاق
+              </button>
+            </div>
+
+            <label className="grid gap-2">
+              <span className="text-sm font-black text-[#1c2d31]">
+                الاسم الكامل
+              </span>
+              <input
+                value={nameDraft}
+                onChange={(event) => setNameDraft(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    void saveStudentName();
+                  }
+                }}
+                className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-base font-black text-[#1c2d31] outline-none focus:border-[#0f5a35]"
+                autoFocus
+              />
+            </label>
+
+            <button
+              type="button"
+              onClick={() => void saveStudentName()}
+              className="mt-4 w-full rounded-2xl bg-[#0f5a35] px-4 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+            >
+              حفظ اسم الطالب
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {editingPhoneStudent ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c2d31]/45 p-4">

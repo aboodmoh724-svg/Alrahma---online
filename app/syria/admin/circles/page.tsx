@@ -55,6 +55,7 @@ export default function OnsiteAdminCirclesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [editingCircleId, setEditingCircleId] = useState<string | null>(null);
   const [expandedCircleId, setExpandedCircleId] = useState<string | null>(null);
+  const [circleSearchTerm, setCircleSearchTerm] = useState("");
   const [movingStudentId, setMovingStudentId] = useState<string | null>(null);
   const [deletingStudentId, setDeletingStudentId] = useState<string | null>(null);
   const [editData, setEditData] = useState({
@@ -301,6 +302,23 @@ export default function OnsiteAdminCirclesPage() {
     () => circles.reduce((sum, circle) => sum + (circle.students?.length || circle._count.students || 0), 0),
     [circles]
   );
+  const filteredCircles = useMemo(() => {
+    const query = circleSearchTerm.trim().toLowerCase();
+    if (!query) return circles;
+
+    return circles.filter((circle) => {
+      const haystack = [
+        circle.name,
+        circle.teacher?.fullName || "",
+        trackLabel(circle.track),
+        ...(circle.students || []).map((student) => student.fullName),
+      ]
+        .join(" ")
+        .toLowerCase();
+
+      return haystack.includes(query);
+    });
+  }, [circleSearchTerm, circles]);
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -351,8 +369,8 @@ export default function OnsiteAdminCirclesPage() {
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-1">
+        <div className="grid gap-6 xl:grid-cols-[24rem_1fr]">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] xl:sticky xl:top-6 xl:self-start">
             <h2 className="mb-4 text-lg font-black text-[#1c2d31]">
               إضافة حلقة جديدة
             </h2>
@@ -434,30 +452,39 @@ export default function OnsiteAdminCirclesPage() {
             </form>
           </section>
 
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] lg:col-span-2">
-            <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
               <div>
                 <h2 className="text-lg font-black text-[#1c2d31]">الحلقات والطلاب</h2>
                 <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
                   افتح الحلقة لعرض الطلاب ونقلهم أو حذفهم من نفس الشاشة.
                 </p>
               </div>
-              <span className="rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
-                {circles.length} حلقة
-              </span>
+              <div className="w-full max-w-md space-y-2">
+                <input
+                  type="search"
+                  value={circleSearchTerm}
+                  onChange={(event) => setCircleSearchTerm(event.target.value)}
+                  placeholder="ابحث باسم الحلقة أو المعلم أو الطالب..."
+                  className="w-full rounded-2xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-3 text-sm font-bold text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white"
+                />
+                <p className="text-xs font-bold text-[#1c2d31]/55">
+                  {filteredCircles.length} من {circles.length} حلقة
+                </p>
+              </div>
             </div>
 
             {loading ? (
               <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
                 جاري التحميل...
               </div>
-            ) : circles.length === 0 ? (
+            ) : filteredCircles.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-[#d8bf83] p-6 text-center text-sm text-[#1c2d31]/55">
-                لا توجد حلقات حضورية حتى الآن
+                لا توجد حلقات مطابقة للبحث.
               </div>
             ) : (
               <div className="space-y-4">
-                {circles.map((circle) => {
+                {filteredCircles.map((circle) => {
                   const isExpanded = expandedCircleId === circle.id;
                   const students = circle.students || [];
 
@@ -466,7 +493,8 @@ export default function OnsiteAdminCirclesPage() {
                       key={circle.id}
                       className="overflow-hidden rounded-[1.8rem] border border-[#d8bf83] bg-[#fffdf8] shadow-sm"
                     >
-                      <div className="grid gap-4 p-4 xl:grid-cols-[minmax(16rem,1.3fr)_0.85fr_0.85fr_auto] xl:items-center">
+                      <div className="space-y-4 p-4">
+                        <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                         <div className="min-w-0">
                           {editingCircleId === circle.id ? (
                             <input
@@ -484,53 +512,26 @@ export default function OnsiteAdminCirclesPage() {
                               <h3 className="break-words text-xl font-black leading-8 text-[#1c2d31]">
                                 {circle.name}
                               </h3>
-                              <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                                {students.length || circle._count.students} طالب - {trackLabel(circle.track)}
-                              </p>
+                              <div className="mt-2 flex flex-wrap gap-2 text-xs font-black">
+                                <span className="rounded-full bg-[#edf6ee] px-3 py-1 text-[#0f5a35]">
+                                  {students.length || circle._count.students} طالب
+                                </span>
+                                <span className="rounded-full bg-[#fffaf4] px-3 py-1 text-[#8a661f] ring-1 ring-[#eadcc4]">
+                                  {trackLabel(circle.track)}
+                                </span>
+                                <span className="rounded-full bg-white px-3 py-1 text-[#1c2d31]/65 ring-1 ring-[#eadcc4]">
+                                  {circle.teacher?.fullName || "بدون معلم"}
+                                </span>
+                              </div>
                             </>
                           )}
-                        </div>
-
-                        <div>
-                          <p className="mb-1 text-xs font-black text-[#1c2d31]/55">المسار</p>
-                          <select
-                            value={circle.track || ""}
-                            onChange={(event) =>
-                              handleTrackChange(circle.id, event.target.value)
-                            }
-                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
-                          >
-                            {syriaTrackOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.label}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div>
-                          <p className="mb-1 text-xs font-black text-[#1c2d31]/55">المعلم</p>
-                          <select
-                            value={circle.teacher?.id || ""}
-                            onChange={(event) =>
-                              handleTeacherChange(circle.id, event.target.value)
-                            }
-                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
-                          >
-                            <option value="">بدون معلم</option>
-                            {teacherOptions.map((teacher) => (
-                              <option key={teacher.id} value={teacher.id}>
-                                {teacher.fullName}
-                              </option>
-                            ))}
-                          </select>
                         </div>
 
                         <div className="flex flex-wrap gap-2 xl:justify-end">
                           <button
                             type="button"
                             onClick={() => setExpandedCircleId(isExpanded ? null : circle.id)}
-                            className="rounded-xl bg-[#0f5a35] px-3 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a]"
+                            className="rounded-xl bg-[#0f5a35] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a]"
                           >
                             {isExpanded ? "إخفاء الطلاب" : "عرض الطلاب"}
                           </button>
@@ -573,7 +574,7 @@ export default function OnsiteAdminCirclesPage() {
                                 onClick={() => startEdit(circle)}
                                 className="rounded-xl bg-amber-100 px-3 py-2 text-xs font-black text-amber-800"
                               >
-                                تعديل
+                                تعديل الحلقة
                               </button>
                               <button
                                 type="button"
@@ -586,6 +587,44 @@ export default function OnsiteAdminCirclesPage() {
                               </button>
                             </>
                           )}
+                        </div>
+                        </div>
+
+                        <div className="grid gap-3 rounded-[1.4rem] bg-[#fffaf4] p-3 ring-1 ring-[#eadcc4] md:grid-cols-2">
+                        <div>
+                          <p className="mb-1 text-xs font-black text-[#1c2d31]/55">المسار</p>
+                          <select
+                            value={circle.track || ""}
+                            onChange={(event) =>
+                              handleTrackChange(circle.id, event.target.value)
+                            }
+                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
+                          >
+                            {syriaTrackOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div>
+                          <p className="mb-1 text-xs font-black text-[#1c2d31]/55">المعلم</p>
+                          <select
+                            value={circle.teacher?.id || ""}
+                            onChange={(event) =>
+                              handleTeacherChange(circle.id, event.target.value)
+                            }
+                            className="rounded-xl border border-[#d8bf83] bg-white px-3 py-2 outline-none focus:border-[#0f5a35]"
+                          >
+                            <option value="">بدون معلم</option>
+                            {teacherOptions.map((teacher) => (
+                              <option key={teacher.id} value={teacher.id}>
+                                {teacher.fullName}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         </div>
                       </div>
 
