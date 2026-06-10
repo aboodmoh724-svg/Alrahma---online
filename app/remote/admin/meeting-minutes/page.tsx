@@ -3,7 +3,6 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
-import MeetingMinuteActions from "@/components/meeting-minutes/MeetingMinuteActions";
 import MeetingMinuteWhatsappSender from "@/components/meeting-minutes/MeetingMinuteWhatsappSender";
 import { prisma } from "@/lib/prisma";
 import {
@@ -97,7 +96,6 @@ function buildWhatsAppText(input: {
 
 function noticeText(notice?: string) {
   if (notice === "text-sent") return "تم إرسال نص المحضر عبر الواتساب.";
-  if (notice === "pdf-sent") return "تم إرسال PDF المحضر عبر الواتساب.";
   if (notice === "recipient-added") return "تم حفظ المستلم الجديد.";
   if (notice === "recipient-deleted") return "تم حذف المستلم من القائمة.";
   if (notice === "no-recipient") return "اختر مستلمًا واحدًا على الأقل قبل الإرسال.";
@@ -154,10 +152,11 @@ async function saveMeetingMinute(formData: FormData) {
   const agendaItems = parseLines(formData.get("agendaItems"));
   const decisions = parseLines(formData.get("decisions"));
   const notes = parseLines(formData.get("notes"));
+  const customWhatsappText = String(formData.get("whatsappText") || "").trim();
 
   if (!title) return;
 
-  const whatsappText = buildWhatsAppText({
+  const generatedWhatsappText = buildWhatsAppText({
     title,
     meetingType,
     location,
@@ -172,6 +171,7 @@ async function saveMeetingMinute(formData: FormData) {
     preparedBy,
     reviewedBy,
   });
+  const whatsappText = customWhatsappText || generatedWhatsappText;
 
   const data = {
     studyMode: "REMOTE" as const,
@@ -343,29 +343,11 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
     agendaItems: jsonList(editMinute?.agendaItems).join("\n"),
     decisions: jsonList(editMinute?.decisions).join("\n"),
     notes: jsonList(editMinute?.notes).join("\n"),
+    whatsappText: editMinute?.whatsappText || "",
   };
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
-      <style>{`
-        @media print {
-          @page { size: A4; margin: 8mm; }
-          body { background: #ffffff !important; }
-          .no-print { display: none !important; }
-          .print-area { display: block !important; margin: 0 !important; padding: 0 !important; max-width: none !important; }
-          .print-document {
-            width: 100% !important;
-            min-height: 281mm !important;
-            box-shadow: none !important;
-            border-radius: 18px !important;
-            color: #1c2d31 !important;
-          }
-          .print-document * {
-            print-color-adjust: exact;
-            -webkit-print-color-adjust: exact;
-          }
-        }
-      `}</style>
       <div className="mx-auto max-w-7xl space-y-6">
         <section className="no-print relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
           <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
@@ -378,7 +360,7 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                 محضر رسمي جاهز للإرسال.
               </h1>
               <p className="mt-4 max-w-3xl text-sm leading-8 text-white/72">
-                أنشئ المحضر، راجعه كصفحة PDF، ثم أرسله للمستلمين المحفوظين نصًا أو ملفًا عبر الواتساب.
+                أنشئ المحضر، راجع نص الواتساب وعدّله عند الحاجة، ثم أرسله للمستلمين المحفوظين.
               </p>
             </div>
             <Link
@@ -396,7 +378,7 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
           </div>
         ) : null}
 
-        <div className="print-area grid gap-6 xl:grid-cols-[25rem_1fr]">
+        <div className="grid gap-6 xl:grid-cols-[25rem_1fr]">
           <aside className="no-print space-y-5 xl:sticky xl:top-6 xl:self-start">
             <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="mb-4 flex items-center justify-between gap-3">
@@ -514,6 +496,20 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                   </label>
                 ))}
 
+                <label className="grid gap-2">
+                  <span className="text-sm font-black text-[#1c2d31]">نص الواتساب</span>
+                  <textarea
+                    name="whatsappText"
+                    defaultValue={formDefaults.whatsappText}
+                    rows={8}
+                    className="resize-y rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold leading-7 outline-none focus:border-[#0f5a35]"
+                    placeholder="اتركه فارغًا عند إنشاء محضر جديد ليتم توليد النص تلقائيًا، أو عدّله هنا عند مراجعة المحضر."
+                  />
+                  <span className="text-xs font-bold leading-6 text-[#1c2d31]/55">
+                    هذا هو النص الذي سيظهر في المعاينة ويُرسل عبر الواتساب.
+                  </span>
+                </label>
+
                 <div className="grid gap-3 sm:grid-cols-2">
                   <label className="grid gap-2">
                     <span className="text-sm font-black text-[#1c2d31]">معد المحضر</span>
@@ -595,189 +591,18 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
               <>
                 <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
                   <div>
-                    <h3 className="text-lg font-black text-[#1c2d31]">معاينة المحضر</h3>
+                    <h3 className="text-lg font-black text-[#1c2d31]">نص المحضر قبل الإرسال</h3>
                     <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                      التصميم مهيأ ليكون صفحة واحدة عند المحتوى المعتدل.
+                      راجع النص كما سيصل عبر الواتساب قبل اختيار المستلمين.
                     </p>
                   </div>
-                  <MeetingMinuteActions />
                 </div>
 
-                <article className="print-document overflow-hidden bg-white p-6 shadow-sm ring-1 ring-black">
-                  <table className="w-full border-collapse border-2 border-black text-center text-[#1c2d31]">
-                    <tbody>
-                      <tr>
-                        <td className="w-[16%] border-2 border-black bg-[#76923c] px-3 py-4 text-2xl font-black text-white" rowSpan={2}>
-                          محضر اجتماع
-                        </td>
-                        <td className="border-2 border-black bg-[#d9d9d9] px-3 py-2 text-lg font-black">
-                          عنوان الاجتماع
-                        </td>
-                        <td className="w-[28%] border-2 border-black bg-[#d9d9d9] px-3 py-2 text-lg font-black">
-                          نوع الاجتماع
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black px-4 py-4 text-xl font-black leading-8">
-                          {selectedMinute.title}
-                        </td>
-                        <td className="border-2 border-black px-3 py-2">
-                          <div className="grid grid-cols-4 gap-1 text-sm font-black">
-                            {["دوري", "فصلي", "سنوي", "طارئ"].map((type) => (
-                              <span
-                                key={type}
-                                className={`border border-black px-2 py-2 ${
-                                  selectedMinute.meetingType === type
-                                    ? "bg-[#76923c] text-white"
-                                    : "bg-white text-[#1c2d31]"
-                                }`}
-                              >
-                                {type}
-                              </span>
-                            ))}
-                          </div>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black">
-                          مكان الاجتماع
-                        </td>
-                        <td className="border-2 border-black px-3 py-3 text-lg font-black">
-                          {selectedMinute.location || "-"}
-                        </td>
-                        <td className="border-2 border-black px-3 py-3 text-base font-black leading-8">
-                          <span className="ml-2 text-[#76923c]">تاريخ الاجتماع:</span>
-                          {formatDisplayDate(selectedMinute.meetingDate)}
-                          {selectedMinute.hijriDate ? ` - ${selectedMinute.hijriDate}` : ""}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black">
-                          المشاركون
-                        </td>
-                        <td className="border-2 border-black px-0 py-0" colSpan={2}>
-                          <table className="w-full border-collapse">
-                            <tbody>
-                              {(jsonList(selectedMinute.participants).length
-                                ? jsonList(selectedMinute.participants)
-                                : ["لم يحدد"]
-                              ).map((name, index) => (
-                                <tr key={`${name}-${index}`}>
-                                  <td className="w-14 border-l border-black bg-[#d9d9d9] px-3 py-2 font-black">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-3 py-2 text-base font-bold leading-7">{name}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black">
-                          محاور الاجتماع
-                        </td>
-                        <td className="border-2 border-black px-0 py-0" colSpan={2}>
-                          <table className="w-full border-collapse">
-                            <tbody>
-                              {(jsonList(selectedMinute.agendaItems).length
-                                ? jsonList(selectedMinute.agendaItems)
-                                : ["لا يوجد"]
-                              ).map((item, index) => (
-                                <tr key={`${item}-${index}`} className={index % 2 === 0 ? "bg-[#ebf6f9]" : "bg-white"}>
-                                  <td className="w-14 border-l border-black bg-[#d9d9d9] px-3 py-2 font-black">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-4 py-2 text-base font-bold leading-8">{item}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black leading-8">
-                          قرارات وتوصيات الاجتماع
-                        </td>
-                        <td className="border-2 border-black px-0 py-0" colSpan={2}>
-                          <table className="w-full border-collapse">
-                            <tbody>
-                              {(jsonList(selectedMinute.decisions).length
-                                ? jsonList(selectedMinute.decisions)
-                                : ["لا يوجد"]
-                              ).map((item, index) => (
-                                <tr key={`${item}-${index}`} className={index % 2 === 0 ? "bg-[#ebf6f9]" : "bg-white"}>
-                                  <td className="w-14 border-l border-black bg-[#d9d9d9] px-3 py-2 font-black">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-4 py-2 text-base font-bold leading-8">{item}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black">
-                          ملاحظات
-                        </td>
-                        <td className="border-2 border-black px-0 py-0" colSpan={2}>
-                          <table className="w-full border-collapse">
-                            <tbody>
-                              {(jsonList(selectedMinute.notes).length
-                                ? jsonList(selectedMinute.notes)
-                                : ["لا يوجد"]
-                              ).map((item, index) => (
-                                <tr key={`${item}-${index}`}>
-                                  <td className="w-14 border-l border-black bg-[#d9d9d9] px-3 py-2 font-black">
-                                    {index + 1}
-                                  </td>
-                                  <td className="px-4 py-2 text-base font-bold leading-8">{item}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black">
-                          وقت انتهاء الاجتماع
-                        </td>
-                        <td className="border-2 border-black px-3 py-3 text-lg font-black">
-                          {selectedMinute.endTime || "-"}
-                        </td>
-                        <td className="border-2 border-black px-3 py-3 text-lg font-black">
-                          <span className="text-[#76923c]">وقت البداية: </span>
-                          {selectedMinute.startTime || "-"}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#f2f2f2] px-3 py-3 text-lg font-black">
-                          معد المحضر
-                        </td>
-                        <td className="border-2 border-black px-3 py-3 text-lg font-black">
-                          {selectedMinute.preparedBy || "-"}
-                        </td>
-                        <td className="border-2 border-black px-3 py-3 text-lg font-black">
-                          <span className="text-[#76923c]">تاريخ الإعداد: </span>
-                          {formatDisplayDate(selectedMinute.preparedAt)}
-                        </td>
-                      </tr>
-                      <tr>
-                        <td className="border-2 border-black bg-[#76923c] px-3 py-4 text-lg font-black text-white">
-                          إدارة منصة الرحمة
-                        </td>
-                        <td className="border-2 border-black px-3 py-4 text-lg font-black">
-                          قسم التعليم عن بعد
-                        </td>
-                        <td className="border-2 border-black px-3 py-4 text-lg font-black">
-                          <span className="text-[#76923c]">مدقق المحضر: </span>
-                          {selectedMinute.reviewedBy || "-"}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </article>
+                <section className="rounded-[2rem] bg-white/90 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+                  <pre className="max-h-[38rem] overflow-auto whitespace-pre-wrap rounded-[1.2rem] bg-[#fffaf4] p-5 text-right text-sm font-bold leading-8 text-[#1c2d31] ring-1 ring-[#eadcc4]">
+                    {selectedMinute.whatsappText || ""}
+                  </pre>
+                </section>
 
                 <section className="no-print grid gap-4 lg:grid-cols-[1fr_18rem]">
                   <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
@@ -785,7 +610,7 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                       <div>
                         <h3 className="text-xl font-black text-[#1c2d31]">إرسال عبر الواتساب</h3>
                         <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                          اختر المستلمين ثم أرسل المحضر كنص أو PDF.
+                          اختر المستلمين ثم أرسل نص المحضر عبر الواتساب.
                         </p>
                       </div>
                       <span className={`rounded-full px-3 py-2 text-xs font-black ${isWhatsAppConfigured("REMOTE") ? "bg-[#edf6ee] text-[#0f5a35]" : "bg-red-50 text-red-700"}`}>
@@ -832,16 +657,6 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                     >
                       تعديل هذا المحضر
                     </Link>
-                    {selectedMinute.pdfPath ? (
-                      <a
-                        href={selectedMinute.pdfPath}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-black text-[#0f5a35] ring-1 ring-[#d8bf83]"
-                      >
-                        فتح آخر PDF
-                      </a>
-                    ) : null}
                     <form action={deleteMeetingMinute}>
                       <input type="hidden" name="minuteId" value={selectedMinute.id} />
                       <button

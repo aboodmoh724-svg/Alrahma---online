@@ -1,16 +1,13 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { generateMeetingMinutePdf } from "@/lib/meeting-minute-pdf";
 import { prisma } from "@/lib/prisma";
 import {
   isWhatsAppConfigured,
   normalizeWhatsAppNumber,
-  sendWhatsAppDocument,
   sendWhatsAppText,
 } from "@/lib/whatsapp";
 
 type SendBody = {
-  mode?: "text" | "pdf";
   recipientIds?: string[];
 };
 
@@ -48,7 +45,6 @@ export async function POST(
 
   const { minuteId } = await context.params;
   const body = (await request.json().catch(() => ({}))) as SendBody;
-  const mode = body.mode === "pdf" ? "pdf" : "text";
   const recipientIds = Array.isArray(body.recipientIds)
     ? body.recipientIds.map((id) => String(id || "").trim()).filter(Boolean)
     : [];
@@ -84,20 +80,6 @@ export async function POST(
   let sent = 0;
   const failed: string[] = [];
 
-  let pdfUrl = "";
-  if (mode === "pdf") {
-    const pdf = await generateMeetingMinutePdf(minute);
-    pdfUrl = pdf.pdfUrl;
-    await prisma.meetingMinute.update({
-      where: { id: minute.id },
-      data: {
-        htmlPath: pdf.htmlPath,
-        pdfPath: pdf.pdfPath,
-        pdfGeneratedAt: new Date(),
-      },
-    });
-  }
-
   for (const recipient of recipients) {
     const phone = normalizeWhatsAppNumber(recipient.phone, "90");
     const label = recipient.name || recipient.phone;
@@ -110,37 +92,14 @@ export async function POST(
     const chatId = `${phone}@c.us`;
 
     try {
-      if (mode === "pdf") {
-        const caption = `محضر اجتماع: ${minute.title}`;
-        try {
-          await sendWhatsAppDocument({
-            to: phone,
-            chatId,
-            documentUrl: pdfUrl,
-            fileName: `meeting-minute-${minute.id}.pdf`,
-            caption,
-            channel: "REMOTE",
-          });
-        } catch {
-          await sendWhatsAppText({
-            to: phone,
-            chatId,
-            body: `${caption}\n\nرابط المحضر:\n${pdfUrl}`,
-            channel: "REMOTE",
-            source: "MEETING_MINUTE_PDF_FALLBACK",
-            context: { minuteId: minute.id, recipientName: recipient.name, sentBy: admin.id },
-          });
-        }
-      } else {
-        await sendWhatsAppText({
-          to: phone,
-          chatId,
-          body: minute.whatsappText || `محضر اجتماع: ${minute.title}`,
-          channel: "REMOTE",
-          source: "MEETING_MINUTE",
-          context: { minuteId: minute.id, recipientName: recipient.name, sentBy: admin.id },
-        });
-      }
+      await sendWhatsAppText({
+        to: phone,
+        chatId,
+        body: minute.whatsappText || `محضر اجتماع: ${minute.title}`,
+        channel: "REMOTE",
+        source: "MEETING_MINUTE",
+        context: { minuteId: minute.id, recipientName: recipient.name, sentBy: admin.id },
+      });
 
       sent += 1;
     } catch {
@@ -154,7 +113,7 @@ export async function POST(
     failed,
     message:
       failed.length > 0
-        ? `تم إرسال ${sent} وتعذر إرسال ${failed.length}.`
-        : `تم إرسال المحضر إلى ${sent} مستلم.`,
+        ? `تم إرسال النص إلى ${sent} مستلم وتعذر إرسال ${failed.length}.`
+        : `تم إرسال نص المحضر إلى ${sent} مستلم.`,
   });
 }

@@ -18,7 +18,7 @@ export default function MeetingMinuteWhatsappSender({
   recipients,
 }: MeetingMinuteWhatsappSenderProps) {
   const [selected, setSelected] = useState<string[]>([]);
-  const [sending, setSending] = useState<"text" | "pdf" | null>(null);
+  const [sending, setSending] = useState(false);
   const [message, setMessage] = useState("");
 
   const toggleRecipient = (recipientId: string) => {
@@ -29,13 +29,13 @@ export default function MeetingMinuteWhatsappSender({
     );
   };
 
-  const send = async (mode: "text" | "pdf") => {
+  const send = async () => {
     if (!selected.length) {
       setMessage("اختر مستلمًا واحدًا على الأقل.");
       return;
     }
 
-    setSending(mode);
+    setSending(true);
     setMessage("");
 
     try {
@@ -45,7 +45,6 @@ export default function MeetingMinuteWhatsappSender({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode,
           recipientIds: selected,
         }),
       });
@@ -59,7 +58,7 @@ export default function MeetingMinuteWhatsappSender({
     } catch {
       setMessage("حدث خطأ أثناء الإرسال.");
     } finally {
-      setSending(null);
+      setSending(false);
     }
   };
 
@@ -102,19 +101,11 @@ export default function MeetingMinuteWhatsappSender({
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
-          onClick={() => send("text")}
-          disabled={Boolean(sending)}
+          onClick={send}
+          disabled={sending}
           className="bg-[#76923c] px-5 py-3 text-sm font-black text-white transition hover:bg-[#5e7430] disabled:opacity-60"
         >
-          {sending === "text" ? "جار الإرسال..." : "إرسال نص عبر الواتساب"}
-        </button>
-        <button
-          type="button"
-          onClick={() => send("pdf")}
-          disabled={Boolean(sending)}
-          className="bg-[#1c2d31] px-5 py-3 text-sm font-black text-white transition hover:bg-[#101b1e] disabled:opacity-60"
-        >
-          {sending === "pdf" ? "جار الإرسال..." : "إرسال PDF عبر الواتساب"}
+          {sending ? "جار الإرسال..." : "إرسال النص عبر الواتساب"}
         </button>
       </div>
 
