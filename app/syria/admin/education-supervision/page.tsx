@@ -28,6 +28,7 @@ type ReportLike = {
   lastFiveMemorized: boolean | null;
   review: string | null;
   reviewSurah: string | null;
+  reviewPagesCount: number | null;
   reviewMemorized: boolean | null;
   pageFrom: number | null;
   pageTo: number | null;
@@ -342,6 +343,10 @@ export default async function SyriaEducationSupervisionPage({
     );
     const recitations = reports.filter(isRecitationReport);
     const pages = recitations.reduce((total, report) => total + (report.pagesCount || 0), 0);
+    const reviewPages = recitations.reduce(
+      (total, report) => total + (report.reviewPagesCount || 0),
+      0
+    );
     const absent = reports.filter((report) => report.status === "ABSENT").length;
     const notMemorized = recitations.filter((report) => report.lessonMemorized === false).length;
     const sent = reports.filter((report) => report.sentToParent).length;
@@ -352,6 +357,7 @@ export default async function SyriaEducationSupervisionPage({
       reportsCount: reports.length,
       recitationsCount: recitations.length,
       pages,
+      reviewPages,
       absent,
       notMemorized,
       sent,
@@ -698,11 +704,12 @@ export default async function SyriaEducationSupervisionPage({
               </div>
             </div>
 
-            <div className="mb-5 grid gap-3 md:grid-cols-4">
+            <div className="mb-5 grid gap-3 md:grid-cols-5">
               {[
                 ["تقارير الشهر", enteredReports.length],
                 ["تقارير تسميع", recitationReports.length],
-                ["صفحات منجزة", recitationReports.reduce((total, report) => total + (report.pagesCount || 0), 0)],
+                ["صفحات حفظ جديد", recitationReports.reduce((total, report) => total + (report.pagesCount || 0), 0)],
+                ["صفحات مراجعة", recitationReports.reduce((total, report) => total + (report.reviewPagesCount || 0), 0)],
                 ["رسائل واتساب", sentReports],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
@@ -728,10 +735,11 @@ export default async function SyriaEducationSupervisionPage({
                     <p className="mt-1 text-sm opacity-70">
                       {row.circle.teacher?.fullName || "لم يحدد"}
                     </p>
-                    <div className="mt-3 grid grid-cols-4 gap-2 text-center text-xs font-black">
+                    <div className="mt-3 grid grid-cols-5 gap-2 text-center text-xs font-black">
                       <span>تقارير {row.reportsCount}</span>
                       <span>تسميع {row.recitationsCount}</span>
-                      <span>صفحات {row.pages}</span>
+                      <span>حفظ {row.pages}</span>
+                      <span>مراجعة {row.reviewPages}</span>
                       <span>واتساب {row.sent}</span>
                     </div>
                   </Link>
@@ -750,7 +758,8 @@ export default async function SyriaEducationSupervisionPage({
                           <th className="px-4 py-3 font-black">الطالب</th>
                           <th className="px-4 py-3 font-black">بداية الطالب</th>
                           <th className="px-4 py-3 font-black">التقارير</th>
-                          <th className="px-4 py-3 font-black">الصفحات</th>
+                          <th className="px-4 py-3 font-black">الحفظ الجديد</th>
+                          <th className="px-4 py-3 font-black">المراجعة</th>
                           <th className="px-4 py-3 font-black">غير حافظ</th>
                           <th className="px-4 py-3 font-black">غياب</th>
                           <th className="px-4 py-3 font-black">آخر تقرير</th>
@@ -766,6 +775,10 @@ export default async function SyriaEducationSupervisionPage({
                           const recitations = reports.filter(isRecitationReport);
                           const pages = recitations.reduce(
                             (total, report) => total + (report.pagesCount || 0),
+                            0
+                          );
+                          const reviewPages = recitations.reduce(
+                            (total, report) => total + (report.reviewPagesCount || 0),
                             0
                           );
                           const notMemorized = recitations.filter(
@@ -812,6 +825,7 @@ export default async function SyriaEducationSupervisionPage({
                               </td>
                               <td className="px-4 py-3 text-[#1c2d31]/70">{reports.length}</td>
                               <td className="px-4 py-3 font-black text-[#0a3f2a]">{pages}</td>
+                              <td className="px-4 py-3 font-black text-[#bd8f2d]">{reviewPages}</td>
                               <td className="px-4 py-3 text-[#1c2d31]/70">{notMemorized}</td>
                               <td className="px-4 py-3 text-[#1c2d31]/70">{absences}</td>
                               <td className="min-w-72 px-4 py-3 text-[#1c2d31]/70">
@@ -822,6 +836,114 @@ export default async function SyriaEducationSupervisionPage({
                         })}
                       </tbody>
                     </table>
+                  </div>
+
+                  <div className="mt-6">
+                    <div className="mb-3">
+                      <h4 className="text-xl font-black text-[#1c2d31]">ملخص الطالب الشهري</h4>
+                      <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                        الحسبة الأساسية هنا على الحفظ الجديد، وتظهر المراجعة مستقلة حتى تأخذ حقها دون خلطها بالإنجاز.
+                      </p>
+                    </div>
+                    <div className="grid gap-3 xl:grid-cols-2">
+                      {selectedMonthlyCircle.circle.students.map((student) => {
+                        const reports = reportsInRange(
+                          student.reports as ReportLike[],
+                          monthRange.start,
+                          monthRange.end
+                        ).filter(isReportEntered);
+                        const recitations = reports.filter(isRecitationReport);
+                        const newPages = recitations.reduce(
+                          (total, report) => total + (report.pagesCount || 0),
+                          0
+                        );
+                        const reviewPages = recitations.reduce(
+                          (total, report) => total + (report.reviewPagesCount || 0),
+                          0
+                        );
+                        const absences = reports.filter((report) => report.status === "ABSENT").length;
+                        const notMemorized = recitations.filter(
+                          (report) => report.lessonMemorized === false
+                        ).length;
+                        const latest = reports[0] || null;
+                        const latestRecitation = recitations[0] || null;
+                        const progress = (
+                          student.teacherProgressRecords as Array<{
+                            teacherId: string;
+                            startSurah: string;
+                            startAyah: number | null;
+                            startPage: number | null;
+                            note: string | null;
+                          }>
+                        ).find(
+                          (item) => item.teacherId === selectedMonthlyCircle.circle.teacherId
+                        );
+
+                        return (
+                          <article
+                            key={student.id}
+                            className="rounded-[1.5rem] bg-white p-4 ring-1 ring-[#eadcc4]"
+                          >
+                            <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                              <div>
+                                <h5 className="text-lg font-black text-[#1c2d31]">
+                                  {student.fullName}
+                                </h5>
+                                <p className="mt-1 text-sm leading-7 text-[#1c2d31]/60">
+                                  بداية الحفظ الجديد:{" "}
+                                  {progress
+                                    ? `سورة ${progress.startSurah}${progress.startAyah ? ` - آية ${progress.startAyah}` : ""}${progress.startPage ? ` - صفحة ${progress.startPage}` : ""}`
+                                    : "لم تسجل"}
+                                </p>
+                              </div>
+                              <span
+                                className={`w-fit rounded-full px-3 py-1 text-xs font-black ${
+                                  newPages > 0
+                                    ? "bg-emerald-100 text-emerald-800"
+                                    : reports.length > 0
+                                      ? "bg-amber-100 text-amber-800"
+                                      : "bg-slate-100 text-slate-600"
+                                }`}
+                              >
+                                {newPages > 0 ? "يوجد إنجاز حفظ" : reports.length > 0 ? "بحاجة متابعة" : "لا تقارير"}
+                              </span>
+                            </div>
+
+                            <div className="mt-4 grid grid-cols-2 gap-2 md:grid-cols-5">
+                              {[
+                                ["تقارير", reports.length],
+                                ["حفظ جديد", newPages],
+                                ["مراجعة", reviewPages],
+                                ["غير حافظ", notMemorized],
+                                ["غياب", absences],
+                              ].map(([label, value]) => (
+                                <div key={label} className="rounded-2xl bg-[#fffaf4] p-3">
+                                  <p className="text-xs font-black text-[#1c2d31]/55">{label}</p>
+                                  <p className="mt-1 text-xl font-black text-[#0a3f2a]">{value}</p>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="mt-4 grid gap-2 md:grid-cols-2">
+                              <div className="rounded-2xl bg-[#f8f1e7] p-3">
+                                <p className="text-xs font-black text-[#1c2d31]/55">آخر موضع حفظ جديد</p>
+                                <p className="mt-1 text-sm font-black leading-7 text-[#1c2d31]">
+                                  {latestRecitation?.lessonSurah
+                                    ? `سورة ${latestRecitation.lessonSurah}${latestRecitation.pageTo ? ` - إلى آية ${latestRecitation.pageTo}` : ""}`
+                                    : "لا يوجد تسميع حفظ جديد"}
+                                </p>
+                              </div>
+                              <div className="rounded-2xl bg-[#f8f1e7] p-3">
+                                <p className="text-xs font-black text-[#1c2d31]/55">آخر واجب / ملاحظة</p>
+                                <p className="mt-1 text-sm font-black leading-7 text-[#1c2d31]">
+                                  {latest?.nextHomework || latest?.note || "-"}
+                                </p>
+                              </div>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               ) : null}
