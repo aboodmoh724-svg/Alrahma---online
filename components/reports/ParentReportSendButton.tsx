@@ -8,17 +8,6 @@ type ParentReportSendButtonProps = {
   parentWhatsapp?: string | null;
 };
 
-function cleanMessage(value: unknown) {
-  const text = String(value || "").trim();
-
-  if (!text) return "تعذر إرسال التقرير عبر واتساب";
-  if (/<!doctype html>|<html/i.test(text)) {
-    return "تعذر إرسال التقرير عبر واتساب. أعاد الخادم صفحة غير متوقعة.";
-  }
-
-  return text;
-}
-
 export default function ParentReportSendButton({
   reportId,
   initialSent,
@@ -42,24 +31,25 @@ export default function ParentReportSendButton({
         },
         body: JSON.stringify({ sentToParent: true }),
       });
-      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(cleanMessage(data.error));
+        setError("حدث خطأ أثناء إرسال التقرير عبر الواتساب");
+        return;
       }
 
       setSent(true);
     } catch (sendError) {
-      setError(cleanMessage(sendError instanceof Error ? sendError.message : sendError));
+      console.error("PARENT REPORT SEND ERROR =>", sendError);
+      setError("حدث خطأ أثناء إرسال التقرير عبر الواتساب");
     } finally {
       setSending(false);
     }
   }
 
-  let label = "إرسال هذا التقرير";
+  let label = "إرسال التقرير لولي الأمر عبر الواتساب";
   if (!parentWhatsapp) label = "لا يوجد رقم لولي الأمر";
-  else if (sent) label = "تم الإرسال لولي الأمر";
-  else if (sending) label = "جاري الإرسال...";
+  else if (sent) label = "تم إرسال التقرير لولي الأمر عبر الواتساب";
+  else if (sending) label = "جاري الإرسال عبر الواتساب...";
 
   return (
     <div className="space-y-2">
@@ -72,7 +62,7 @@ export default function ParentReportSendButton({
         {label}
       </button>
       {error ? (
-        <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
+        <p className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800">
           {error}
         </p>
       ) : null}

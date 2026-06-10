@@ -522,9 +522,15 @@ export default async function OnsiteTeacherDashboardPage({
                               initialSent={todayReport.sentToParent}
                               parentWhatsapp={student.parentWhatsapp}
                             />
+                            <Link
+                              href={`${studentReportHref}&reportId=${todayReport.id}`}
+                              className="rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf4]"
+                            >
+                              تعديل التقرير
+                            </Link>
                             {todayReport.parentSentError ? (
-                              <p className="rounded-xl bg-red-50 px-3 py-2 text-center text-xs font-bold text-red-700">
-                                آخر خطأ: {todayReport.parentSentError}
+                              <p className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800">
+                                حدث خطأ أثناء إرسال التقرير عبر الواتساب
                               </p>
                             ) : null}
                           </>

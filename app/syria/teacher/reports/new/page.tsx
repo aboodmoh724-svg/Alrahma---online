@@ -276,10 +276,13 @@ function NewReportForm() {
   const searchParams = useSearchParams();
   const studentIdFromUrl = searchParams.get("studentId") || "";
   const circleIdFromUrl = searchParams.get("circleId") || "";
+  const reportIdFromUrl = searchParams.get("reportId") || "";
+  const isEditingReport = Boolean(reportIdFromUrl);
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [loadingReport, setLoadingReport] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [suggestedHomework, setSuggestedHomework] = useState("");
   const [selectedNotePreset, setSelectedNotePreset] = useState("");
@@ -379,6 +382,10 @@ function NewReportForm() {
   }, []);
 
   useEffect(() => {
+    if (reportIdFromUrl) {
+      return;
+    }
+
     if (!formData.studentId) {
       setSuggestedHomework("");
       setFormData((prev) => ({
@@ -467,7 +474,7 @@ function NewReportForm() {
     };
 
     fetchStudentHistory();
-  }, [formData.studentId]);
+  }, [formData.studentId, reportIdFromUrl]);
 
   const selectedStudentExists = students.some(
     (student) => student.id === formData.studentId
@@ -508,6 +515,12 @@ function NewReportForm() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const booleanToField = (value: boolean | null | undefined) => {
+    if (value === true) return "true";
+    if (value === false) return "false";
+    return "";
   };
 
   const toBooleanOrNull = (value: string) => {
@@ -630,6 +643,86 @@ function NewReportForm() {
     return nextLessonHomework ? `واجب نور البيان: ${nextLessonHomework}` : "";
   };
 
+  useEffect(() => {
+    if (!reportIdFromUrl) return;
+
+    const fetchReport = async () => {
+      try {
+        setLoadingReport(true);
+        const response = await fetch(`/api/reports/${reportIdFromUrl}`, {
+          cache: "no-store",
+        });
+        const data = await response.json();
+
+        if (!response.ok || !data.report) {
+          alert(data.error || "تعذر جلب التقرير للتعديل");
+          return;
+        }
+
+        const report = data.report as {
+          studentId: string;
+          status: "PRESENT" | "ABSENT";
+          lessonSurah: string | null;
+          lessonMemorized: boolean | null;
+          lastFiveMemorized: boolean | null;
+          pageFrom: number | null;
+          pageTo: number | null;
+          pagesCount: number | null;
+          reviewSurah: string | null;
+          reviewFrom: number | null;
+          reviewTo: number | null;
+          reviewPagesCount: number | null;
+          reviewMemorized: boolean | null;
+          nextLessonHomework: string | null;
+          nextReviewHomework: string | null;
+          note: string | null;
+        };
+        const lessonHomework = parseHomeworkRange(report.nextLessonHomework || "");
+        const reviewHomework = parseHomeworkRange(report.nextReviewHomework || "");
+        const noorHomework = parseNoorHomeworkRange(report.nextLessonHomework || "");
+
+        setSuggestedHomework("");
+        setFormData((prev) => ({
+          ...prev,
+          studentId: report.studentId,
+          isAbsent: report.status === "ABSENT",
+          lessonSurah: report.lessonSurah || "",
+          pageFrom: report.pageFrom ? String(report.pageFrom) : "",
+          pageTo: report.pageTo ? String(report.pageTo) : "",
+          pagesCount: report.pagesCount ? String(report.pagesCount) : "",
+          lessonMemorized: booleanToField(report.lessonMemorized),
+          lastFiveMemorized: booleanToField(report.lastFiveMemorized),
+          reviewSurah: report.reviewSurah || "",
+          reviewFrom: report.reviewFrom ? String(report.reviewFrom) : "",
+          reviewTo: report.reviewTo ? String(report.reviewTo) : "",
+          reviewPagesCount: report.reviewPagesCount ? String(report.reviewPagesCount) : "",
+          reviewMemorized: booleanToField(report.reviewMemorized),
+          nextLessonStartSurah: lessonHomework.startSurah,
+          nextLessonEndSurah: lessonHomework.endSurah,
+          nextLessonFrom: lessonHomework.from || noorHomework.pageFrom,
+          nextLessonTo: lessonHomework.to || noorHomework.pageTo,
+          nextLessonPagesCount: lessonHomework.pagesCount,
+          nextReviewStartSurah: reviewHomework.startSurah,
+          nextReviewEndSurah: reviewHomework.endSurah,
+          nextReviewFrom: reviewHomework.from,
+          nextReviewTo: reviewHomework.to,
+          nextReviewPagesCount: reviewHomework.pagesCount,
+          noorNextPageFrom: noorHomework.pageFrom,
+          noorNextPageTo: noorHomework.pageTo,
+          noorNextLinesCount: noorHomework.linesCount,
+          note: report.note || "",
+        }));
+      } catch (error) {
+        console.error("FETCH REPORT FOR EDIT ERROR =>", error);
+        alert("تعذر جلب التقرير للتعديل");
+      } finally {
+        setLoadingReport(false);
+      }
+    };
+
+    void fetchReport();
+  }, [reportIdFromUrl]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -714,13 +807,16 @@ function NewReportForm() {
 
     try {
       setSubmitting(true);
-      const res = await fetch("/api/reports", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const res = await fetch(
+        isEditingReport ? `/api/reports/${reportIdFromUrl}` : "/api/reports",
+        {
+          method: isEditingReport ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await res.json();
 
@@ -735,7 +831,11 @@ function NewReportForm() {
           : "";
 
       alert(
-        (formData.isAbsent ? "تم حفظ غياب الطالب" : "تم حفظ التقرير بنجاح") +
+        (isEditingReport
+          ? "تم تعديل التقرير بنجاح"
+          : formData.isAbsent
+            ? "تم حفظ غياب الطالب"
+            : "تم حفظ التقرير بنجاح") +
           whatsappStatus
       );
       router.push(
@@ -758,9 +858,13 @@ function NewReportForm() {
         <div className="mb-6 flex flex-col gap-4 rounded-[2rem] bg-[#0a3f2a] p-6 text-white shadow-lg md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-bold text-[#f2d18a]">تقرير اليوم</p>
-            <h1 className="mt-2 text-3xl font-black">إضافة تقرير للطالب</h1>
+            <h1 className="mt-2 text-3xl font-black">
+              {isEditingReport ? "تعديل تقرير الطالب" : "إضافة تقرير للطالب"}
+            </h1>
             <p className="mt-2 text-sm leading-7 text-white/72">
-              اختر الطالب، ثم إن كان غائبا احفظ الغياب مباشرة. وإن كان حاضرا أدخل الدرس والمراجعة وواجب الغد.
+              {isEditingReport
+                ? "عدّل البيانات المطلوبة ثم احفظ التقرير. عند التعديل سيحتاج التقرير إلى إرسال جديد لولي الأمر."
+                : "اختر الطالب، ثم إن كان غائبا احفظ الغياب مباشرة. وإن كان حاضرا أدخل الدرس والمراجعة وواجب الغد."}
             </p>
           </div>
           <Link
@@ -775,6 +879,12 @@ function NewReportForm() {
           </Link>
         </div>
 
+        {loadingReport ? (
+          <div className="mb-4 rounded-2xl bg-[#edf6ee] p-4 text-sm font-bold text-[#0f5a35]">
+            جاري تحميل التقرير للتعديل...
+          </div>
+        ) : null}
+
         <form onSubmit={handleSubmit} className="space-y-5">
           <section className={sectionClass}>
             <label className="mb-2 block text-sm font-black text-[#1c2d31]">
@@ -785,7 +895,7 @@ function NewReportForm() {
               onChange={(e) => setField("studentId", e.target.value)}
               className={inputClass}
               required
-              disabled={loadingStudents}
+              disabled={loadingStudents || isEditingReport}
             >
               <option value="">
                 {loadingStudents ? "جاري تحميل الطلاب..." : "اختر الطالب"}
@@ -823,11 +933,7 @@ function NewReportForm() {
             <>
               {loadingHistory ? (
                 <div className="rounded-2xl bg-[#edf6ee] p-4 text-sm font-bold text-[#0f5a35]">
-                  جاري جلب واجب الغد السابق للطالب...
-                </div>
-              ) : suggestedHomework ? (
-                <div className="rounded-2xl bg-[#edf6ee] p-4 text-sm leading-7 text-[#0f5a35]">
-                  واجب اليوم المقترح من آخر تقرير: {suggestedHomework}
+                  جاري تعبئة واجب اليوم من آخر تقرير...
                 </div>
               ) : null}
 
@@ -1360,9 +1466,11 @@ function NewReportForm() {
             >
               {submitting
                 ? "جاري الحفظ..."
-                : formData.isAbsent
-                  ? "حفظ غياب الطالب"
-                  : "حفظ التقرير"}
+                : isEditingReport
+                  ? "حفظ التعديل"
+                  : formData.isAbsent
+                    ? "حفظ غياب الطالب"
+                    : "حفظ التقرير"}
             </button>
             <button
               type="button"

@@ -86,9 +86,9 @@ export default function BulkParentReportsButton({
 
       if (result.failed?.length) {
         notes.push(
-          `أخطاء الإرسال: ${result.failed
-            .map((item) => `${item.studentName}: ${item.error}`)
-            .join(" | ")}`
+          `حدث خطأ أثناء إرسال التقرير لهؤلاء الطلاب: ${result.failed
+            .map((item) => item.studentName)
+            .join("، ")}`
         );
       }
 
@@ -101,7 +101,7 @@ export default function BulkParentReportsButton({
     }
   }
 
-  let label = "إرسال جميع التقارير للأهل";
+  let label = "إرسال جميع التقارير لأولياء الأمور عبر الواتساب";
   if (isSending) label = "جاري الإرسال...";
   else if (!allReportsCompleted) label = "أكمل تقارير الحلقة أولاً";
   else if (!hasPendingReports) label = "تم إرسال تقارير الحلقة";
@@ -113,7 +113,7 @@ export default function BulkParentReportsButton({
       disabled={disabled}
       title={
         allReportsCompleted
-          ? "إرسال تقارير اليوم غير المرسلة للأهل"
+          ? "إرسال تقارير اليوم غير المرسلة لأولياء الأمور عبر الواتساب"
           : "يظهر الإرسال الجماعي بعد اكتمال تقارير جميع الطلاب"
       }
       className="rounded-full bg-[#bd8f2d] px-4 py-2 text-sm font-black text-white transition hover:bg-[#a97d25] disabled:cursor-not-allowed disabled:bg-[#d8bf83]/60"
