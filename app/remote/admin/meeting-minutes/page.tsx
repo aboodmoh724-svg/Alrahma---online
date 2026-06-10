@@ -96,6 +96,7 @@ function buildWhatsAppText(input: {
 
 function noticeText(notice?: string) {
   if (notice === "text-sent") return "تم إرسال نص المحضر عبر الواتساب.";
+  if (notice === "text-updated") return "تم حفظ نص الواتساب.";
   if (notice === "recipient-added") return "تم حفظ المستلم الجديد.";
   if (notice === "recipient-deleted") return "تم حذف المستلم من القائمة.";
   if (notice === "no-recipient") return "اختر مستلمًا واحدًا على الأقل قبل الإرسال.";
@@ -236,6 +237,31 @@ async function deleteMeetingMinute(formData: FormData) {
 
   revalidatePath("/remote/admin/meeting-minutes");
   redirect("/remote/admin/meeting-minutes");
+}
+
+async function updateMeetingMinuteWhatsappText(formData: FormData) {
+  "use server";
+
+  const admin = await getCurrentRemoteAdmin();
+  if (!admin) return;
+
+  const minuteId = String(formData.get("minuteId") || "").trim();
+  const whatsappText = String(formData.get("whatsappText") || "").trim();
+
+  if (!minuteId) return;
+
+  await prisma.meetingMinute.updateMany({
+    where: {
+      id: minuteId,
+      studyMode: "REMOTE",
+    },
+    data: {
+      whatsappText,
+    },
+  });
+
+  revalidatePath("/remote/admin/meeting-minutes");
+  redirectWithNotice(minuteId, "text-updated");
 }
 
 async function addMeetingMinuteRecipient(formData: FormData) {
@@ -593,16 +619,34 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                   <div>
                     <h3 className="text-lg font-black text-[#1c2d31]">نص المحضر قبل الإرسال</h3>
                     <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
-                      راجع النص كما سيصل عبر الواتساب قبل اختيار المستلمين.
+                      عدّل النص واحفظه قبل اختيار المستلمين وإرساله.
                     </p>
                   </div>
                 </div>
 
-                <section className="rounded-[2rem] bg-white/90 p-5 shadow-sm ring-1 ring-[#d8bf83]">
-                  <pre className="max-h-[38rem] overflow-auto whitespace-pre-wrap rounded-[1.2rem] bg-[#fffaf4] p-5 text-right text-sm font-bold leading-8 text-[#1c2d31] ring-1 ring-[#eadcc4]">
-                    {selectedMinute.whatsappText || ""}
-                  </pre>
-                </section>
+                <form
+                  action={updateMeetingMinuteWhatsappText}
+                  className="rounded-[2rem] bg-white/90 p-5 shadow-sm ring-1 ring-[#d8bf83]"
+                >
+                  <input type="hidden" name="minuteId" value={selectedMinute.id} />
+                  <textarea
+                    name="whatsappText"
+                    defaultValue={selectedMinute.whatsappText || ""}
+                    rows={16}
+                    className="min-h-[26rem] w-full resize-y rounded-[1.2rem] border border-[#eadcc4] bg-[#fffaf4] p-5 text-right text-sm font-bold leading-8 text-[#1c2d31] outline-none transition focus:border-[#0f5a35]"
+                  />
+                  <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs font-bold leading-6 text-[#1c2d31]/55">
+                      الإرسال عبر الواتساب يعتمد آخر نص محفوظ هنا.
+                    </p>
+                    <button
+                      type="submit"
+                      className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a]"
+                    >
+                      حفظ النص قبل الإرسال
+                    </button>
+                  </div>
+                </form>
 
                 <section className="no-print grid gap-4 lg:grid-cols-[1fr_18rem]">
                   <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
