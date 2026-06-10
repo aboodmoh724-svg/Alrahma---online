@@ -50,6 +50,12 @@ const sections: DashboardSection[] = [
     tone: "bg-white text-[#0a3f2a]",
   },
   {
+    href: "/remote/admin/meeting-minutes",
+    title: "محاضر الاجتماعات",
+    description: "إنشاء محضر اجتماع رسمي للتعليم عن بعد مع معاينة منسقة ونص واتساب جاهز للإرسال.",
+    tone: "bg-[#bd8f2d] text-white",
+  },
+  {
     href: "/remote/admin/supervisors",
     requiresFinanceAccess: true,
     title: "المشرفون والصلاحيات",
