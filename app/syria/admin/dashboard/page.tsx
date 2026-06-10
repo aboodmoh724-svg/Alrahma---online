@@ -31,15 +31,9 @@ const sections = [
     tone: "bg-[#0a3f2a] text-white",
   },
   {
-    href: "/syria/admin/absences",
-    title: "غياب اليوم",
-    description: "عرض الطلاب الغائبين وإرسال رسائل الغياب الجماعية مباشرة إلى أولياء الأمور.",
-    tone: "bg-amber-600 text-white",
-  },
-  {
     href: "/syria/admin/absence-statistics",
-    title: "إحصائيات الغائبين",
-    description: "معرفة عدد مرات غياب كل طالب والأيام التي غاب فيها.",
+    title: "متابعة الحضور والغياب",
+    description: "متابعة كل حلقة حسب تقارير المعلمين: حاضر، غائب، أو لم يدخل له تقرير بعد.",
     tone: "bg-[#8a661f] text-white",
   },
   {

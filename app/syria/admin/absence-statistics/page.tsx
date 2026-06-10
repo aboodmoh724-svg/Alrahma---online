@@ -26,6 +26,14 @@ type DailyAttendanceSummary = {
   presentStudents: string[];
   absentStudents: string[];
   notRecordedStudents: string[];
+  circleSummaries: {
+    circleName: string;
+    teacherName: string;
+    totalStudents: number;
+    presentCount: number;
+    absentCount: number;
+    notRecordedCount: number;
+  }[];
 };
 
 async function deleteStudentAbsences(formData: FormData) {
@@ -345,6 +353,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
         presentStudents: [],
         absentStudents: [],
         notRecordedStudents: [],
+        circleSummaries: [],
         recordedStudentIds: new Set<string>(),
       } satisfies DailyAttendanceSummary & { recordedStudentIds: Set<string> });
     const studentLine = `${report.student.fullName} - ${
@@ -371,6 +380,36 @@ export default async function OnsiteAbsenceStatisticsPage() {
       notRecordedStudents: activeStudents
         .filter((student) => !summary.recordedStudentIds.has(student.id))
         .map(activeStudentLine),
+      circleSummaries: Array.from(
+        activeStudents.reduce((circleMap, student) => {
+          const circleName = student.circle?.name || "غير محددة";
+          const teacherName = student.teacher?.fullName || "غير محدد";
+          const circleKey = `${circleName}::${teacherName}`;
+          const current =
+            circleMap.get(circleKey) ||
+            {
+              circleName,
+              teacherName,
+              totalStudents: 0,
+              presentCount: 0,
+              absentCount: 0,
+              notRecordedCount: 0,
+            };
+          const report = latestReportByStudentDay.get(`${summary.dateKey}:${student.id}`);
+
+          current.totalStudents += 1;
+          if (!report) {
+            current.notRecordedCount += 1;
+          } else if (report.status === "ABSENT") {
+            current.absentCount += 1;
+          } else {
+            current.presentCount += 1;
+          }
+
+          circleMap.set(circleKey, current);
+          return circleMap;
+        }, new Map<string, DailyAttendanceSummary["circleSummaries"][number]>()).values()
+      ).sort((a, b) => a.circleName.localeCompare(b.circleName, "ar")),
     }))
     .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
 
@@ -382,13 +421,14 @@ export default async function OnsiteAbsenceStatisticsPage() {
           <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="inline-flex rounded-full bg-white/12 px-4 py-2 text-sm font-black text-[#f2d18a]">
-                إحصائيات الغياب
+                متابعة الحضور والغياب
               </p>
               <h1 className="mt-5 text-4xl font-black leading-tight md:text-5xl">
-                الطلاب الأكثر غيابا
+                حضور الحلقات من تقارير المعلمين.
               </h1>
               <p className="mt-4 text-sm leading-8 text-white/72">
-                يظهر هنا كل طالب تم تسجيله غائبا، وعدد أيام الغياب وتواريخها.
+                إذا أدخل المعلم تقرير الطالب فهو حاضر، وإذا اختار غائب يحتسب غيابا،
+                وإذا لم يدخل تقريرا يبقى الطالب في خانة لم يسجل له.
               </p>
             </div>
             <Link
@@ -416,7 +456,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
           <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
             <p className="text-sm font-bold text-[#1c2d31]/55">طريقة الحساب</p>
             <p className="mt-2 text-sm font-black leading-7 text-[#0f5a35]">
-              يحتسب غياب الطالب مرة واحدة لكل يوم بتوقيت تركيا.
+              آخر تقرير للطالب في اليوم هو المعتمد. لا يوجد إدخال غياب مستقل خارج تقرير المعلم.
             </p>
           </div>
         </section>
@@ -427,7 +467,7 @@ export default async function OnsiteAbsenceStatisticsPage() {
               الإحصائيات حسب الأيام
             </h2>
             <p className="mt-1 text-sm leading-7 text-[#1c2d31]/58">
-              كل يوم يظهر عدد الحضور والغياب، ومن هم الحاضرون والغائبون.
+              كل يوم يظهر ملخص الحلقات أولا، ثم تفاصيل الطلاب: حاضر، غائب، أو لم يسجل له تقرير.
             </p>
           </div>
 
@@ -470,6 +510,49 @@ export default async function OnsiteAbsenceStatisticsPage() {
                         pendingLabel="جاري مسح سجلات اليوم..."
                       />
                     </form>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    {day.circleSummaries.map((circle) => (
+                      <div
+                        key={`${day.dateKey}-${circle.circleName}-${circle.teacherName}`}
+                        className="rounded-2xl bg-white p-4 ring-1 ring-[#d8bf83]"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <h4 className="font-black leading-7 text-[#1c2d31]">
+                              {circle.circleName}
+                            </h4>
+                            <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                              {circle.teacherName}
+                            </p>
+                          </div>
+                          <span className="rounded-xl bg-[#edf6ee] px-3 py-2 text-sm font-black text-[#0f5a35]">
+                            {circle.totalStudents} طالب
+                          </span>
+                        </div>
+                        <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+                          <div className="rounded-xl bg-emerald-50 px-2 py-3 ring-1 ring-emerald-100">
+                            <p className="text-[11px] font-black text-emerald-800">حاضر</p>
+                            <p className="mt-1 text-2xl font-black text-emerald-800">
+                              {circle.presentCount}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-amber-50 px-2 py-3 ring-1 ring-amber-100">
+                            <p className="text-[11px] font-black text-amber-800">غائب</p>
+                            <p className="mt-1 text-2xl font-black text-amber-800">
+                              {circle.absentCount}
+                            </p>
+                          </div>
+                          <div className="rounded-xl bg-slate-50 px-2 py-3 ring-1 ring-slate-100">
+                            <p className="text-[11px] font-black text-slate-700">لم يسجل</p>
+                            <p className="mt-1 text-2xl font-black text-slate-700">
+                              {circle.notRecordedCount}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
                   <div className="mt-4 grid gap-4 lg:grid-cols-3">
