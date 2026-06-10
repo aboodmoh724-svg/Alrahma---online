@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import type { Prisma } from "@prisma/client";
+import MeetingMinuteActions from "@/components/meeting-minutes/MeetingMinuteActions";
 import { prisma } from "@/lib/prisma";
 
 type PageProps = {
@@ -245,8 +246,44 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
+      <style>{`
+        @media print {
+          @page {
+            size: A4;
+            margin: 14mm;
+          }
+
+          body {
+            background: #ffffff !important;
+          }
+
+          .no-print {
+            display: none !important;
+          }
+
+          .print-area {
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            max-width: none !important;
+          }
+
+          .print-document {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            border: 1px solid #d8bf83 !important;
+            background: #ffffff !important;
+            color: #1c2d31 !important;
+          }
+
+          .print-document * {
+            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+          }
+        }
+      `}</style>
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
+        <section className="no-print relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
           <div className="absolute -left-24 top-8 h-64 w-64 rounded-full bg-[#bd8f2d]/20" />
           <div className="relative flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
@@ -269,8 +306,8 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
           </div>
         </section>
 
-        <div className="grid gap-6 xl:grid-cols-[26rem_1fr]">
-          <section className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] xl:sticky xl:top-6 xl:self-start">
+        <div className="print-area grid gap-6 xl:grid-cols-[26rem_1fr]">
+          <section className="no-print rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83] xl:sticky xl:top-6 xl:self-start">
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
                 <h2 className="text-xl font-black text-[#1c2d31]">
@@ -425,7 +462,7 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
           </section>
 
           <section className="space-y-6">
-            <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
+            <div className="no-print rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
               <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h2 className="text-xl font-black text-[#1c2d31]">المحاضر المحفوظة</h2>
@@ -466,42 +503,54 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
 
             {selectedMinute ? (
               <>
-                <article className="overflow-hidden rounded-[2.2rem] bg-[#fbf6ed] shadow-sm ring-1 ring-[#d8bf83]">
-                  <div className="border-b border-[#d8bf83] bg-[#f8efe2] p-6 text-center">
+                <div className="no-print flex flex-wrap items-center justify-between gap-3 rounded-[2rem] bg-white/88 p-4 shadow-sm ring-1 ring-[#d8bf83]">
+                  <div>
+                    <h3 className="text-lg font-black text-[#1c2d31]">معاينة المحضر</h3>
+                    <p className="mt-1 text-xs font-bold text-[#1c2d31]/55">
+                      التصدير يستخدم هذه المعاينة فقط بصيغة PDF.
+                    </p>
+                  </div>
+                  <MeetingMinuteActions whatsappText={selectedMinute.whatsappText || ""} />
+                </div>
+
+                <article className="print-document overflow-hidden rounded-[1.4rem] bg-white shadow-sm ring-1 ring-[#d8bf83]">
+                  <div className="border-b-4 border-[#0a3f2a] bg-white p-8 text-center">
                     <p className="text-sm font-black text-[#bd8f2d]">تحفيظ الرحمة للقرآن الكريم</p>
-                    <h2 className="mt-2 text-3xl font-black leading-tight text-[#1c2d31]">
+                    <h2 className="mt-3 text-4xl font-black leading-tight text-[#1c2d31]">
                       محضر اجتماع
                     </h2>
-                    <p className="mt-2 text-sm font-bold text-[#1c2d31]/60">
+                    <p className="mx-auto mt-3 w-fit rounded-full bg-[#f8efe2] px-5 py-2 text-sm font-black text-[#0a3f2a] ring-1 ring-[#d8bf83]">
                       قسم التعليم عن بعد
                     </p>
                   </div>
 
-                  <div className="p-6">
-                    <div className="rounded-[1.7rem] bg-[#0a3f2a] p-6 text-white">
-                      <p className="text-sm font-black text-[#f2d18a]">عنوان الاجتماع</p>
-                      <h3 className="mt-2 text-2xl font-black leading-10">
+                  <div className="p-8">
+                    <div className="border-y border-[#d8bf83] py-6 text-center">
+                      <p className="text-sm font-black text-[#bd8f2d]">عنوان الاجتماع</p>
+                      <h3 className="mt-2 text-3xl font-black leading-10 text-[#1c2d31]">
                         {selectedMinute.title}
                       </h3>
                     </div>
 
-                    <div className="mt-4 grid gap-3 md:grid-cols-4">
+                    <div className="mt-6 overflow-hidden rounded-[1.2rem] border border-[#d8bf83]">
                       {[
                         ["نوع الاجتماع", selectedMinute.meetingType || "-"],
                         ["مكان الاجتماع", selectedMinute.location || "-"],
                         ["التاريخ", `${formatDisplayDate(selectedMinute.meetingDate)}${selectedMinute.hijriDate ? ` - ${selectedMinute.hijriDate}` : ""}`],
                         ["الوقت", `${selectedMinute.startTime || "-"} إلى ${selectedMinute.endTime || "-"}`],
                       ].map(([label, value]) => (
-                        <div key={label} className="rounded-2xl bg-white p-4 ring-1 ring-[#eadcc4]">
-                          <p className="text-xs font-black text-[#1c2d31]/50">{label}</p>
-                          <p className="mt-2 text-sm font-black leading-7 text-[#1c2d31]">{value}</p>
+                        <div key={label} className="grid border-b border-[#eadcc4] last:border-b-0 md:grid-cols-[12rem_1fr]">
+                          <p className="bg-[#f8efe2] px-4 py-3 text-sm font-black text-[#0a3f2a] md:border-l md:border-[#eadcc4]">
+                            {label}
+                          </p>
+                          <p className="px-4 py-3 text-sm font-black leading-7 text-[#1c2d31]">{value}</p>
                         </div>
                       ))}
                     </div>
 
-                    <div className="mt-5 grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-                      <section className="rounded-[1.7rem] bg-white p-5 ring-1 ring-[#eadcc4]">
-                        <h4 className="text-lg font-black text-[#1c2d31]">المشاركون</h4>
+                    <div className="mt-7 grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
+                      <section className="rounded-[1.2rem] border border-[#d8bf83] bg-[#fffdf8] p-5">
+                        <h4 className="border-b border-[#eadcc4] pb-3 text-xl font-black text-[#1c2d31]">المشاركون</h4>
                         <div className="mt-4 grid gap-2">
                           {jsonList(selectedMinute.participants).length === 0 ? (
                             <p className="text-sm text-[#1c2d31]/55">لم يحدد</p>
@@ -509,30 +558,34 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                             jsonList(selectedMinute.participants).map((name, index) => (
                               <div
                                 key={`${name}-${index}`}
-                                className="rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#eadcc4]"
+                                className="flex gap-3 rounded-xl bg-white px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#eadcc4]"
                               >
-                                {index + 1}. {name}
+                                <span className="text-[#bd8f2d]">{index + 1}</span>
+                                <span>{name}</span>
                               </div>
                             ))
                           )}
                         </div>
                       </section>
 
-                      <section className="space-y-4">
+                      <section className="space-y-5">
                         {[
                           ["محاور الاجتماع", jsonList(selectedMinute.agendaItems)],
                           ["القرارات والتوصيات", jsonList(selectedMinute.decisions)],
                           ["ملاحظات", jsonList(selectedMinute.notes)],
                         ].map(([title, items]) => (
-                          <div key={String(title)} className="rounded-[1.7rem] bg-white p-5 ring-1 ring-[#eadcc4]">
-                            <h4 className="text-lg font-black text-[#1c2d31]">{String(title)}</h4>
+                          <div key={String(title)} className="rounded-[1.2rem] border border-[#d8bf83] bg-white p-5">
+                            <h4 className="border-b border-[#eadcc4] pb-3 text-xl font-black text-[#1c2d31]">{String(title)}</h4>
                             {(items as string[]).length === 0 ? (
                               <p className="mt-3 text-sm text-[#1c2d31]/55">لا يوجد</p>
                             ) : (
-                              <ol className="mt-3 space-y-2 text-sm font-bold leading-8 text-[#1c2d31]/75">
+                              <ol className="mt-4 space-y-3 text-sm font-bold leading-8 text-[#1c2d31]/78">
                                 {(items as string[]).map((item, index) => (
-                                  <li key={`${item}-${index}`}>
-                                    <span className="font-black text-[#0a3f2a]">{index + 1}.</span> {item}
+                                  <li key={`${item}-${index}`} className="grid grid-cols-[2rem_1fr] gap-2">
+                                    <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#edf6ee] text-xs font-black text-[#0a3f2a]">
+                                      {index + 1}
+                                    </span>
+                                    <span>{item}</span>
                                   </li>
                                 ))}
                               </ol>
@@ -542,13 +595,13 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                       </section>
                     </div>
 
-                    <div className="mt-5 grid gap-3 md:grid-cols-3">
+                    <div className="mt-7 grid gap-3 border-t border-[#d8bf83] pt-5 md:grid-cols-3">
                       {[
                         ["تاريخ إعداد المحضر", formatDisplayDate(selectedMinute.preparedAt)],
                         ["معد المحضر", selectedMinute.preparedBy || "-"],
                         ["مدقق المحضر", selectedMinute.reviewedBy || "-"],
                       ].map(([label, value]) => (
-                        <div key={label} className="rounded-2xl bg-[#f8efe2] p-4 ring-1 ring-[#d8bf83]">
+                        <div key={label} className="rounded-xl bg-[#f8efe2] p-4 ring-1 ring-[#d8bf83]">
                           <p className="text-xs font-black text-[#1c2d31]/50">{label}</p>
                           <p className="mt-2 text-sm font-black text-[#1c2d31]">{value}</p>
                         </div>
@@ -557,7 +610,7 @@ export default async function RemoteMeetingMinutesPage({ searchParams }: PagePro
                   </div>
                 </article>
 
-                <div className="grid gap-4 lg:grid-cols-[1fr_auto]">
+                <div className="no-print grid gap-4 lg:grid-cols-[1fr_auto]">
                   <div className="rounded-[2rem] bg-white/88 p-5 shadow-sm ring-1 ring-[#d8bf83]">
                     <h3 className="text-xl font-black text-[#1c2d31]">نص واتساب جاهز</h3>
                     <pre className="mt-4 max-h-96 overflow-auto whitespace-pre-wrap rounded-2xl bg-[#fffaf4] p-4 text-sm font-bold leading-8 text-[#1c2d31] ring-1 ring-[#eadcc4]">
