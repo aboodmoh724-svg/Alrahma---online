@@ -995,23 +995,29 @@ function NewReportForm() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 max-w-xs">
+                <div className="mt-4 max-w-sm">
                   <MemorizedSelect
                     label="حالة الدرس"
                     value={formData.lessonMemorized}
                     onChange={(value) => setField("lessonMemorized", value)}
                   />
+                  <p className="mt-2 text-xs font-bold text-[#8a661f] leading-5">
+                    💡 تنبيه: لا يُسمح بأي خطأ (تلقيني، تجويدي، أو تنبيه) لاجتياز الدرس الجديد.
+                  </p>
                 </div>
               </section>
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">آخر خمس صفحات</h2>
-                <div className="max-w-xs">
+                <div className="max-w-sm">
                   <MemorizedSelect
                     label="هل أتقن آخر خمس صفحات؟"
                     value={formData.lastFiveMemorized}
                     onChange={(value) => setField("lastFiveMemorized", value)}
                   />
+                  <p className="mt-2 text-xs font-bold text-[#8a661f] leading-5">
+                    💡 تنبيه: لا يُسمح بأي خطأ، تنبيه، أو تردد لاجتياز آخر 5 صفحات.
+                  </p>
                 </div>
               </section>
 
