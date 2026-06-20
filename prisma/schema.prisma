@@ -667,12 +667,21 @@ model Report {
   nextHomework       String?
   lessonSurah        String?
   lessonMemorized    Boolean?
+  lessonErrors       Int?               @default(0)
+  lessonWarnings     Int?               @default(0)
+  lessonHasHesitation Boolean?          @default(false)
   lastFiveMemorized  Boolean?
+  lastFiveErrors     Int?               @default(0)
+  lastFiveWarnings   Int?               @default(0)
+  lastFiveHasHesitation Boolean?        @default(false)
   reviewSurah        String?
   reviewFrom         Int?
   reviewTo           Int?
   reviewPagesCount   Int?
   reviewMemorized    Boolean?
+  reviewErrors       Int?               @default(0)
+  reviewWarnings     Int?               @default(0)
+  reviewPenaltyScore Int?               @default(0)
   nextLessonHomework String?
   nextReviewHomework String?
   parentSentAt       DateTime?

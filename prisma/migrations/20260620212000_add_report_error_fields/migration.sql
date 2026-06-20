@@ -1,0 +1,10 @@
+-- AlterTable
+ALTER TABLE "Report" ADD COLUMN "lessonErrors" INTEGER DEFAULT 0;
+ALTER TABLE "Report" ADD COLUMN "lessonWarnings" INTEGER DEFAULT 0;
+ALTER TABLE "Report" ADD COLUMN "lessonHasHesitation" BOOLEAN DEFAULT false;
+ALTER TABLE "Report" ADD COLUMN "lastFiveErrors" INTEGER DEFAULT 0;
+ALTER TABLE "Report" ADD COLUMN "lastFiveWarnings" INTEGER DEFAULT 0;
+ALTER TABLE "Report" ADD COLUMN "lastFiveHasHesitation" BOOLEAN DEFAULT false;
+ALTER TABLE "Report" ADD COLUMN "reviewErrors" INTEGER DEFAULT 0;
+ALTER TABLE "Report" ADD COLUMN "reviewWarnings" INTEGER DEFAULT 0;
+ALTER TABLE "Report" ADD COLUMN "reviewPenaltyScore" INTEGER DEFAULT 0;

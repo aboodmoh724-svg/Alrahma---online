@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -208,6 +208,66 @@ const emptyHomeworkRange: HomeworkRange = {
   pagesCount: "",
 };
 
+function CounterInput({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  onChange: (value: number) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-black text-[#1c2d31]">{label}</label>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onChange(Math.max(0, value - 1))}
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d8bf83] bg-white text-lg font-black text-[#1c2d31] hover:bg-[#f6eee7] transition-all active:scale-90"
+        >
+          -
+        </button>
+        <div className="flex h-11 w-16 items-center justify-center rounded-2xl bg-white text-base font-black text-[#1c2d31] ring-1 ring-[#d8bf83] shadow-inner">
+          {value}
+        </div>
+        <button
+          type="button"
+          onClick={() => onChange(value + 1)}
+          className="flex h-11 w-11 items-center justify-center rounded-2xl border border-[#d8bf83] bg-white text-lg font-black text-[#1c2d31] hover:bg-[#f6eee7] transition-all active:scale-90"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function StatusIndicator({
+  isPassed,
+  message,
+}: {
+  isPassed: boolean;
+  message: string;
+}) {
+  return (
+    <div
+      className={`inline-flex items-center gap-2.5 rounded-2xl px-4 py-2 text-xs font-black transition-all ${
+        isPassed
+          ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+          : "bg-rose-50 text-rose-800 border border-rose-200"
+      }`}
+    >
+      <span
+        className={`h-3 w-3 rounded-full ${
+          isPassed ? "bg-emerald-600 animate-pulse" : "bg-rose-600"
+        }`}
+      />
+      <span>{message}</span>
+    </div>
+  );
+}
+
 function parseHomeworkRange(value: string): HomeworkRange {
   const text = value.trim();
   if (!text) return emptyHomeworkRange;
@@ -238,29 +298,6 @@ function parseHomeworkRange(value: string): HomeworkRange {
     to: range?.[2]?.trim() || "",
     pagesCount,
   };
-}
-
-function MemorizedSelect({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div>
-      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-        {label}
-      </label>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className={inputClass}>
-        <option value="">اختر الحالة</option>
-        <option value="true">حافظ</option>
-        <option value="false">غير حافظ</option>
-      </select>
-    </div>
-  );
 }
 
 function NewReportForm() {
@@ -304,6 +341,14 @@ function NewReportForm() {
     nextReviewTo: "",
     nextReviewPagesCount: "",
     note: "",
+    lessonErrors: 0,
+    lessonWarnings: 0,
+    lessonHasHesitation: false,
+    lastFiveErrors: 0,
+    lastFiveWarnings: 0,
+    lastFiveHasHesitation: false,
+    reviewErrors: 0,
+    reviewWarnings: 0,
   });
 
   useEffect(() => {
@@ -389,6 +434,14 @@ function NewReportForm() {
         nextReviewFrom: "",
         nextReviewTo: "",
         nextReviewPagesCount: "",
+        lessonErrors: 0,
+        lessonWarnings: 0,
+        lessonHasHesitation: false,
+        lastFiveErrors: 0,
+        lastFiveWarnings: 0,
+        lastFiveHasHesitation: false,
+        reviewErrors: 0,
+        reviewWarnings: 0,
       }));
       return;
     }
@@ -450,6 +503,14 @@ function NewReportForm() {
           nextReviewFrom: "",
           nextReviewTo: "",
           nextReviewPagesCount: "",
+          lessonErrors: 0,
+          lessonWarnings: 0,
+          lessonHasHesitation: false,
+          lastFiveErrors: 0,
+          lastFiveWarnings: 0,
+          lastFiveHasHesitation: false,
+          reviewErrors: 0,
+          reviewWarnings: 0,
         }));
       } catch (error) {
         console.error("FETCH STUDENT HISTORY ERROR =>", error);
@@ -475,7 +536,7 @@ function NewReportForm() {
     [formData.studentId, students]
   );
 
-  const setField = (name: keyof typeof formData, value: string | boolean) => {
+  const setField = (name: keyof typeof formData, value: string | boolean | number) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -600,8 +661,14 @@ function NewReportForm() {
       pageFrom: formData.pageFrom,
       pageTo: formData.pageTo,
       pagesCount: formData.pagesCount,
-      lessonMemorized: toBooleanOrNull(formData.lessonMemorized),
-      lastFiveMemorized: toBooleanOrNull(formData.lastFiveMemorized),
+      lessonMemorized: formData.lessonErrors === 0 && formData.lessonWarnings === 0 && !formData.lessonHasHesitation,
+      lessonErrors: formData.lessonErrors,
+      lessonWarnings: formData.lessonWarnings,
+      lessonHasHesitation: formData.lessonHasHesitation,
+      lastFiveMemorized: formData.lastFiveErrors === 0 && formData.lastFiveWarnings === 0 && !formData.lastFiveHasHesitation,
+      lastFiveErrors: formData.lastFiveErrors,
+      lastFiveWarnings: formData.lastFiveWarnings,
+      lastFiveHasHesitation: formData.lastFiveHasHesitation,
       review:
         formData.reviewSurah || formData.reviewFrom || formData.reviewTo
           ? `سورة ${formData.reviewSurah} من الآية ${formData.reviewFrom || "-"} إلى الآية ${formData.reviewTo || "-"}`
@@ -610,7 +677,9 @@ function NewReportForm() {
       reviewFrom: formData.reviewFrom,
       reviewTo: formData.reviewTo,
       reviewPagesCount: formData.reviewPagesCount,
-      reviewMemorized: toBooleanOrNull(formData.reviewMemorized),
+      reviewMemorized: (formData.reviewErrors * 2 + formData.reviewWarnings) <= 6,
+      reviewErrors: formData.reviewErrors,
+      reviewWarnings: formData.reviewWarnings,
       homework: suggestedHomework || "-",
       nextHomework,
       nextLessonHomework,
@@ -899,22 +968,74 @@ function NewReportForm() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 max-w-xs">
-                  <MemorizedSelect
-                    label="حالة الدرس"
-                    value={formData.lessonMemorized}
-                    onChange={(value) => setField("lessonMemorized", value)}
-                  />
+                <div className="mt-5 border-t border-[#d8bf83]/30 pt-4">
+                  <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <CounterInput
+                        label="الأخطاء في الدرس"
+                        value={formData.lessonErrors}
+                        onChange={(val) => setField("lessonErrors", val)}
+                      />
+                      <CounterInput
+                        label="التنبيهات في الدرس"
+                        value={formData.lessonWarnings}
+                        onChange={(val) => setField("lessonWarnings", val)}
+                      />
+                      <label className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83] select-none cursor-pointer hover:bg-[#f6eee7] transition mt-6">
+                        <input
+                          type="checkbox"
+                          checked={formData.lessonHasHesitation}
+                          onChange={(e) => setField("lessonHasHesitation", e.target.checked)}
+                          className="h-5 w-5"
+                        />
+                        تردد أو تلكؤ
+                      </label>
+                    </div>
+
+                    <StatusIndicator
+                      isPassed={formData.lessonErrors === 0 && formData.lessonWarnings === 0 && !formData.lessonHasHesitation}
+                      message={
+                        formData.lessonErrors === 0 && formData.lessonWarnings === 0 && !formData.lessonHasHesitation
+                          ? "حفظ متقن (مقبول)"
+                          : "غير متقن (توقف الدرس الجديد)"
+                      }
+                    />
+                  </div>
                 </div>
               </section>
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">آخر خمس صفحات</h2>
-                <div className="max-w-xs">
-                  <MemorizedSelect
-                    label="هل أتقن آخر خمس صفحات؟"
-                    value={formData.lastFiveMemorized}
-                    onChange={(value) => setField("lastFiveMemorized", value)}
+                <div className="flex flex-wrap items-end justify-between gap-4">
+                  <div className="flex flex-wrap items-center gap-4">
+                    <CounterInput
+                      label="الأخطاء في آخر 5 صفحات"
+                      value={formData.lastFiveErrors}
+                      onChange={(val) => setField("lastFiveErrors", val)}
+                    />
+                    <CounterInput
+                      label="التنبيهات في آخر 5 صفحات"
+                      value={formData.lastFiveWarnings}
+                      onChange={(val) => setField("lastFiveWarnings", val)}
+                    />
+                    <label className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83] select-none cursor-pointer hover:bg-[#f6eee7] transition mt-6">
+                      <input
+                        type="checkbox"
+                        checked={formData.lastFiveHasHesitation}
+                        onChange={(e) => setField("lastFiveHasHesitation", e.target.checked)}
+                        className="h-5 w-5"
+                      />
+                      تردد أو تلكؤ
+                    </label>
+                  </div>
+
+                  <StatusIndicator
+                    isPassed={formData.lastFiveErrors === 0 && formData.lastFiveWarnings === 0 && !formData.lastFiveHasHesitation}
+                    message={
+                      formData.lastFiveErrors === 0 && formData.lastFiveWarnings === 0 && !formData.lastFiveHasHesitation
+                        ? "متقن ومقبول"
+                        : "غير متقن (يحتاج تثبيت ومتابعة)"
+                    }
                   />
                 </div>
               </section>
@@ -961,12 +1082,30 @@ function NewReportForm() {
                     />
                   </div>
                 </div>
-                <div className="mt-4 max-w-xs">
-                  <MemorizedSelect
-                    label="حالة المراجعة"
-                    value={formData.reviewMemorized}
-                    onChange={(value) => setField("reviewMemorized", value)}
-                  />
+                <div className="mt-5 border-t border-[#d8bf83]/30 pt-4">
+                  <div className="flex flex-wrap items-end justify-between gap-4">
+                    <div className="flex flex-wrap gap-4">
+                      <CounterInput
+                        label="الأخطاء في المراجعة"
+                        value={formData.reviewErrors}
+                        onChange={(val) => setField("reviewErrors", val)}
+                      />
+                      <CounterInput
+                        label="التنبيهات في المراجعة"
+                        value={formData.reviewWarnings}
+                        onChange={(val) => setField("reviewWarnings", val)}
+                      />
+                    </div>
+
+                    <StatusIndicator
+                      isPassed={(formData.reviewErrors * 2 + formData.reviewWarnings) <= 6}
+                      message={
+                        (formData.reviewErrors * 2 + formData.reviewWarnings) <= 6
+                          ? `حفظ مقبول (النقاط: ${formData.reviewErrors * 2 + formData.reviewWarnings} من 6)`
+                          : `غير مقبول (تجاوز حد الأخطاء المسموح، النقاط: ${formData.reviewErrors * 2 + formData.reviewWarnings} من 6)`
+                      }
+                    />
+                  </div>
                 </div>
               </section>
 

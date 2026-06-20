@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createTeacherNotification } from "@/lib/teacher-notifications";
 import { isMessageAutomationEnabled } from "@/lib/message-automation-settings";
+import { getIstanbulDateKey } from "@/lib/school-day";
 import type {
   StudentFollowUpActionType,
   SupervisionTaskCategory,
@@ -202,4 +203,92 @@ export async function updateSupervisionTaskStatus(params: {
   }
 
   return updatedTask;
+}
+
+export async function checkAndCreateAutomaticTasksForReport(reportId: string) {
+  const report = await prisma.report.findUnique({
+    where: { id: reportId },
+    include: {
+      student: {
+        select: {
+          id: true,
+          fullName: true,
+        },
+      },
+    },
+  });
+
+  if (!report || !report.student) return;
+
+  const student = report.student;
+  const dateKey = getIstanbulDateKey(report.createdAt);
+
+  // 1. Check for Absence Streak (3 consecutive absences)
+  if (report.status === "ABSENT") {
+    const latestReports = await prisma.report.findMany({
+      where: { studentId: student.id },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+      select: { status: true },
+    });
+
+    if (latestReports.length >= 3 && latestReports.every((r) => r.status === "ABSENT")) {
+      await createSupervisionTask({
+        studentId: student.id,
+        source: "AUTOMATIC",
+        category: "ABSENCE_STREAK",
+        title: `غياب متكرر: ${student.fullName}`,
+        details: "الطالب غاب 3 حصص متتالية، ويحتاج متابعة إشرافية وتواصلًا مع ولي الأمر.",
+        triggerKey: `absence-streak:${student.id}:${dateKey}`,
+      });
+    }
+  }
+
+  // 2. Check for Lesson Pause Conditions (if student is present)
+  if (report.status === "PRESENT") {
+    const latestReports = await prisma.report.findMany({
+      where: { studentId: student.id },
+      orderBy: { createdAt: "desc" },
+      take: 2,
+      select: {
+        id: true,
+        lessonMemorized: true,
+        lastFiveMemorized: true,
+        reviewMemorized: true,
+      },
+    });
+
+    if (latestReports.length > 0) {
+      const today = latestReports[0];
+      const yesterday = latestReports[1] || null;
+
+      let shouldPause = false;
+      let reason = "";
+
+      if (today.lessonMemorized === false) {
+        shouldPause = true;
+        reason = "عدم حفظ الدرس الجديد اليوم";
+      } else if (today.lastFiveMemorized === false && today.reviewMemorized === false) {
+        shouldPause = true;
+        reason = "عدم حفظ آخر 5 صفحات والمراجعة معاً اليوم";
+      } else if (today.lastFiveMemorized === false && yesterday && yesterday.lastFiveMemorized === false) {
+        shouldPause = true;
+        reason = "عدم حفظ آخر 5 صفحات ليومين متتاليين";
+      } else if (today.reviewMemorized === false && yesterday && yesterday.reviewMemorized === false) {
+        shouldPause = true;
+        reason = "عدم حفظ المراجعة ليومين متتاليين";
+      }
+
+      if (shouldPause) {
+        await createSupervisionTask({
+          studentId: student.id,
+          source: "AUTOMATIC",
+          category: "MEMORIZATION_STREAK",
+          title: `توقف الدرس الجديد: ${student.fullName}`,
+          details: `تم إيقاف الدرس الجديد للطالب بسبب: ${reason}. يرجى المتابعة وتثبيت المحفوظ.`,
+          triggerKey: `lesson-pause:${student.id}:${dateKey}`,
+        });
+      }
+    }
+  }
 }

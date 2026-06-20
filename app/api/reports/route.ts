@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getIstanbulDayRange } from "@/lib/school-day";
+import { checkAndCreateAutomaticTasksForReport } from "@/lib/supervision";
 
 function optionalNumber(value: unknown) {
   if (value === null || value === undefined || value === "") {
@@ -40,6 +41,15 @@ export async function POST(req: Request) {
       nextReviewHomework,
       note,
       status,
+      // حقول الأخطاء والتنبيهات الجديدة
+      lessonErrors,
+      lessonWarnings,
+      lessonHasHesitation,
+      lastFiveErrors,
+      lastFiveWarnings,
+      lastFiveHasHesitation,
+      reviewErrors,
+      reviewWarnings,
     } = body;
 
     const isAbsent = status === "ABSENT";
@@ -114,6 +124,36 @@ export async function POST(req: Request) {
       );
     }
 
+    // احتساب حالة الحفظ تلقائياً بناءً على الأخطاء والتنبيهات
+    const hasErrorFields =
+      lessonErrors !== undefined ||
+      lessonWarnings !== undefined ||
+      lastFiveErrors !== undefined ||
+      reviewErrors !== undefined;
+
+    let calculatedLessonMemorized = typeof lessonMemorized === "boolean" ? lessonMemorized : null;
+    let calculatedLastFiveMemorized = typeof lastFiveMemorized === "boolean" ? lastFiveMemorized : null;
+    let calculatedReviewMemorized = typeof reviewMemorized === "boolean" ? reviewMemorized : null;
+    let calculatedReviewPenaltyScore = 0;
+
+    const lErrors = optionalNumber(lessonErrors) ?? 0;
+    const lWarnings = optionalNumber(lessonWarnings) ?? 0;
+    const lHasHesitation = Boolean(lessonHasHesitation);
+
+    const lfErrors = optionalNumber(lastFiveErrors) ?? 0;
+    const lfWarnings = optionalNumber(lastFiveWarnings) ?? 0;
+    const lfHasHesitation = Boolean(lastFiveHasHesitation);
+
+    const rErrors = optionalNumber(reviewErrors) ?? 0;
+    const rWarnings = optionalNumber(reviewWarnings) ?? 0;
+
+    if (hasErrorFields && !isAbsent && !isAttendanceOnly) {
+      calculatedLessonMemorized = lErrors === 0 && lWarnings === 0 && !lHasHesitation;
+      calculatedLastFiveMemorized = lfErrors === 0 && lfWarnings === 0 && !lfHasHesitation;
+      calculatedReviewPenaltyScore = rErrors * 2 + rWarnings;
+      calculatedReviewMemorized = calculatedReviewPenaltyScore <= 6;
+    }
+
     const report = await prisma.report.create({
       data: {
         studentId: student.id,
@@ -125,14 +165,23 @@ export async function POST(req: Request) {
             : typeof lessonSurah === "string"
               ? lessonSurah.trim()
               : null,
-        lessonMemorized: typeof lessonMemorized === "boolean" ? lessonMemorized : null,
-        lastFiveMemorized: typeof lastFiveMemorized === "boolean" ? lastFiveMemorized : null,
+        lessonMemorized: calculatedLessonMemorized,
+        lessonErrors: isAbsent || isAttendanceOnly ? null : lErrors,
+        lessonWarnings: isAbsent || isAttendanceOnly ? null : lWarnings,
+        lessonHasHesitation: isAbsent || isAttendanceOnly ? null : lHasHesitation,
+        lastFiveMemorized: calculatedLastFiveMemorized,
+        lastFiveErrors: isAbsent || isAttendanceOnly ? null : lfErrors,
+        lastFiveWarnings: isAbsent || isAttendanceOnly ? null : lfWarnings,
+        lastFiveHasHesitation: isAbsent || isAttendanceOnly ? null : lfHasHesitation,
         review: typeof review === "string" ? review.trim() : "",
         reviewSurah: typeof reviewSurah === "string" ? reviewSurah.trim() : null,
         reviewFrom: optionalNumber(reviewFrom),
         reviewTo: optionalNumber(reviewTo),
         reviewPagesCount: optionalNumber(reviewPagesCount),
-        reviewMemorized: typeof reviewMemorized === "boolean" ? reviewMemorized : null,
+        reviewMemorized: calculatedReviewMemorized,
+        reviewErrors: isAbsent || isAttendanceOnly ? null : rErrors,
+        reviewWarnings: isAbsent || isAttendanceOnly ? null : rWarnings,
+        reviewPenaltyScore: isAbsent || isAttendanceOnly ? null : calculatedReviewPenaltyScore,
         pageFrom: optionalNumber(pageFrom),
         pageTo: optionalNumber(pageTo),
         pagesCount: optionalNumber(pagesCount),
@@ -146,6 +195,13 @@ export async function POST(req: Request) {
         status: isAbsent ? "ABSENT" : "PRESENT",
       },
     });
+
+    // تشغيل منطق التحقق التلقائي لمهام الإشراف (توقف الدرس الجديد والغياب المتكرر)
+    try {
+      await checkAndCreateAutomaticTasksForReport(report.id);
+    } catch (taskError) {
+      console.error("RUN AUTOMATIC SUPERVISION TASKS ERROR =>", taskError);
+    }
 
     return NextResponse.json({
       success: true,
