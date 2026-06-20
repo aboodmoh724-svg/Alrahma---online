@@ -125,33 +125,15 @@ export async function POST(req: Request) {
     }
 
     // احتساب حالة الحفظ تلقائياً بناءً على الأخطاء والتنبيهات
-    const hasErrorFields =
-      lessonErrors !== undefined ||
-      lessonWarnings !== undefined ||
-      lastFiveErrors !== undefined ||
-      reviewErrors !== undefined;
-
     let calculatedLessonMemorized = typeof lessonMemorized === "boolean" ? lessonMemorized : null;
     let calculatedLastFiveMemorized = typeof lastFiveMemorized === "boolean" ? lastFiveMemorized : null;
     let calculatedReviewMemorized = typeof reviewMemorized === "boolean" ? reviewMemorized : null;
-    let calculatedReviewPenaltyScore = 0;
-
-    const lErrors = optionalNumber(lessonErrors) ?? 0;
-    const lWarnings = optionalNumber(lessonWarnings) ?? 0;
-    const lHasHesitation = Boolean(lessonHasHesitation);
-
-    const lfErrors = optionalNumber(lastFiveErrors) ?? 0;
-    const lfWarnings = optionalNumber(lastFiveWarnings) ?? 0;
-    const lfHasHesitation = Boolean(lastFiveHasHesitation);
 
     const rErrors = optionalNumber(reviewErrors) ?? 0;
     const rWarnings = optionalNumber(reviewWarnings) ?? 0;
 
-    if (hasErrorFields && !isAbsent && !isAttendanceOnly) {
-      calculatedLessonMemorized = lErrors === 0 && lWarnings === 0 && !lHasHesitation;
-      calculatedLastFiveMemorized = lfErrors === 0 && lfWarnings === 0 && !lfHasHesitation;
-      calculatedReviewPenaltyScore = rErrors * 2 + rWarnings;
-      calculatedReviewMemorized = calculatedReviewPenaltyScore <= 6;
+    if (!isAbsent && !isAttendanceOnly && reviewErrors !== undefined) {
+      calculatedReviewMemorized = rErrors <= 3 && rWarnings <= 6;
     }
 
     const report = await prisma.report.create({
@@ -166,13 +148,13 @@ export async function POST(req: Request) {
               ? lessonSurah.trim()
               : null,
         lessonMemorized: calculatedLessonMemorized,
-        lessonErrors: isAbsent || isAttendanceOnly ? null : lErrors,
-        lessonWarnings: isAbsent || isAttendanceOnly ? null : lWarnings,
-        lessonHasHesitation: isAbsent || isAttendanceOnly ? null : lHasHesitation,
+        lessonErrors: null,
+        lessonWarnings: null,
+        lessonHasHesitation: null,
         lastFiveMemorized: calculatedLastFiveMemorized,
-        lastFiveErrors: isAbsent || isAttendanceOnly ? null : lfErrors,
-        lastFiveWarnings: isAbsent || isAttendanceOnly ? null : lfWarnings,
-        lastFiveHasHesitation: isAbsent || isAttendanceOnly ? null : lfHasHesitation,
+        lastFiveErrors: null,
+        lastFiveWarnings: null,
+        lastFiveHasHesitation: null,
         review: typeof review === "string" ? review.trim() : "",
         reviewSurah: typeof reviewSurah === "string" ? reviewSurah.trim() : null,
         reviewFrom: optionalNumber(reviewFrom),
@@ -181,7 +163,7 @@ export async function POST(req: Request) {
         reviewMemorized: calculatedReviewMemorized,
         reviewErrors: isAbsent || isAttendanceOnly ? null : rErrors,
         reviewWarnings: isAbsent || isAttendanceOnly ? null : rWarnings,
-        reviewPenaltyScore: isAbsent || isAttendanceOnly ? null : calculatedReviewPenaltyScore,
+        reviewPenaltyScore: null,
         pageFrom: optionalNumber(pageFrom),
         pageTo: optionalNumber(pageTo),
         pagesCount: optionalNumber(pagesCount),
