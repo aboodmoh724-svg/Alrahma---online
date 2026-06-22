@@ -14,7 +14,9 @@ async function getAllowedUser() {
   return prisma.user.findFirst({
     where: {
       id: userId,
-      studyMode: "REMOTE",
+      studyMode: {
+        in: ["REMOTE", "ONSITE_SYRIA"],
+      },
       isActive: true,
       role: {
         in: ["ADMIN", "TEACHER"],

@@ -143,12 +143,12 @@ const sectionClass =
   "rounded-[2rem] border border-[#d8bf83]/70 bg-white/86 p-5 shadow-sm";
 
 const notePresetOptions = [
-  "ممتاز ومتابع بشكل جيد.",
-  "يحتاج إلى مزيد من المراجعة اليومية.",
-  "مستواه جيد لكن يحتاج إلى تثبيت الحفظ.",
-  "نرجو متابعة ولي الأمر للواجب بشكل يومي.",
-  "يوجد تشتت أثناء الحلقة ويحتاج إلى تركيز أكبر.",
-  "تحسن واضح عن الحصص السابقة.",
+  "نشكر الطالب على أدائه المميز هذا اليوم.",
+  "نحث الطالب على الحضور في الوقت المحدد وعدم التأخر.",
+  "نحث الطالب على الانضباط في الحلقة والإستماع إلى توجيهات المعلم.",
+  "نحث الطالب على تحضير المراجعة اليومية جيدا في المنزل.",
+  "نحث الطالب على تحضير الدرس جيدا في المنزل.",
+  "نحث الطالب على مراجعة الأخطاء المكررة جيدا.",
 ];
 
 function SurahInput({
@@ -377,7 +377,8 @@ function NewReportForm() {
 
         const normalizedPresets = data.presets
           .map((item: unknown) => String(item || "").trim())
-          .filter(Boolean);
+          .filter(Boolean)
+          .filter((item: string) => !item.includes("خمس") && !item.includes("5"));
 
         if (normalizedPresets.length > 0) {
           setReportNotePresetOptions(normalizedPresets);
@@ -667,9 +668,7 @@ function NewReportForm() {
       : fromText || toText
         ? `من الآية ${fromText || "-"} إلى الآية ${toText || "-"}`
         : "";
-    const pagesLabel = pagesText ? `عدد الصفحات: ${pagesText}` : "";
-
-    return [surahText, rangeText, pagesLabel].filter(Boolean).join(" - ");
+    return [surahText, rangeText].filter(Boolean).join(" - ");
   };
 
   const buildNextHomework = () => {
