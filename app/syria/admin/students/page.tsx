@@ -6,6 +6,7 @@ import {
   joinInternationalPhone,
   normalizePhoneDigits,
   splitInternationalPhone,
+  normalizeInternationalPhone,
 } from "@/lib/phone-number";
 import { PHONE_COUNTRIES } from "@/lib/phone-countries";
 
@@ -445,9 +446,9 @@ export default function OnsiteAdminStudentsPage() {
       list = list.filter((s) => {
         const phone = s.parentWhatsapp;
         if (!phone) return true;
-        const digits = normalizePhoneDigits(phone);
-        if (!digits || digits.length < 8) return true;
-        const parts = splitInternationalPhone(phone, "963");
+        const normalized = normalizeInternationalPhone(phone, "963");
+        if (!normalized || normalized.length < 8) return true;
+        const parts = splitInternationalPhone(normalized, "963");
         if (parts.countryCode === "963" && parts.localNumber.length !== 9) {
           return true;
         }
@@ -680,9 +681,9 @@ export default function OnsiteAdminStudentsPage() {
                   students.filter((s) => {
                     const phone = s.parentWhatsapp;
                     if (!phone) return true;
-                    const digits = normalizePhoneDigits(phone);
-                    if (!digits || digits.length < 8) return true;
-                    const parts = splitInternationalPhone(phone, "963");
+                    const normalized = normalizeInternationalPhone(phone, "963");
+                    if (!normalized || normalized.length < 8) return true;
+                    const parts = splitInternationalPhone(normalized, "963");
                     if (parts.countryCode === "963" && parts.localNumber.length !== 9) {
                       return true;
                     }
