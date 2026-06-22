@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
@@ -41,6 +41,12 @@ const sections = [
     title: "الرسائل الجماعية",
     description: "إرسال رسالة موحدة إلى أولياء الأمور أو المعلمين أو أولياء أمور محددين في الحضوري.",
     tone: "bg-[#fffaf4] text-[#0a3f2a]",
+  },
+  {
+    href: "/syria/admin/messages",
+    title: "قوالب الرسائل وتجربتها",
+    description: "معاينة القوالب الرسمية الموحدة لتقارير الحفظ والغياب لقسم سوريا، وتجربة إرسالها إلى رقمك.",
+    tone: "bg-[#bd8f2d] text-white",
   },
   {
     href: "/syria/admin/data-workflow",

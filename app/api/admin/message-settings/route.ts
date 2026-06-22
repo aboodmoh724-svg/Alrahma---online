@@ -68,70 +68,9 @@ export async function GET() {
       getWhatsAppAutoReplySettings(),
     ]);
 
-    const virtualTemplates = [
-      {
-        key: "SYRIA_DAILY_REPORT",
-        title: "تقرير سوريا اليومي (معاينة وتجريب)",
-        description: "التقرير اليومي الموحد المرسل لأولياء أمور طلاب سوريا عند رصد الدروس والأخطاء.",
-        variables: ["studentName", "circleName", "teacherName", "reportDate", "lessonName", "review", "homework", "note", "evaluationSummary"],
-        defaultBody:
-          `السلام عليكم ورحمة الله وبركاته\n\n` +
-          `تقرير الطالب اليومي - قسم سوريا\n\n` +
-          `*الطالب:* {{studentName}}\n` +
-          `*الحلقة:* {{circleName}}\n` +
-          `*المعلم:* {{teacherName}}\n` +
-          `*التاريخ:* {{reportDate}}\n\n` +
-          `*الدرس:* {{lessonName}}\n` +
-          `*المراجعة:* {{review}}\n` +
-          `*الواجب:* {{homework}}\n\n` +
-          `{{evaluationSummary}}\n\n` +
-          `*الملاحظات:* {{note}}\n\n` +
-          `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +
-          `إدارة تحفيظ الرحمة للقرآن الكريم - سوريا`,
-        body:
-          `السلام عليكم ورحمة الله وبركاته\n\n` +
-          `تقرير الطالب اليومي - قسم سوريا\n\n` +
-          `*الطالب:* {{studentName}}\n` +
-          `*الحلقة:* {{circleName}}\n` +
-          `*المعلم:* {{teacherName}}\n` +
-          `*التاريخ:* {{reportDate}}\n\n` +
-          `*الدرس:* {{lessonName}}\n` +
-          `*المراجعة:* {{review}}\n` +
-          `*الواجب:* {{homework}}\n\n` +
-          `{{evaluationSummary}}\n\n` +
-          `*الملاحظات:* {{note}}\n\n` +
-          `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +
-          `إدارة تحفيظ الرحمة للقرآن الكريم - سوريا`,
-        isVirtual: true,
-      },
-      {
-        key: "SYRIA_ABSENCE",
-        title: "تنبيه غياب سوريا (معاينة وتجريب)",
-        description: "رسالة التنبيه بالغياب الموحدة لطلاب سوريا.",
-        variables: ["studentName", "reportDate"],
-        defaultBody:
-          `السلام عليكم ورحمة الله وبركاته\n\n` +
-          `نفيدكم أن ابنكم الكريم / *{{studentName}}*\n` +
-          `غائب عن التحفيظ اليوم بتاريخ {{reportDate}} بدون عذر.\n\n` +
-          `نرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\n` +
-          `نشكر لكم حسن تعاونكم.\n\n` +
-          `إدارة تحفيظ الرحمة للقرآن الكريم - سوريا`,
-        body:
-          `السلام عليكم ورحمة الله وبركاته\n\n` +
-          `نفيدكم أن ابنكم الكريم / *{{studentName}}*\n` +
-          `غائب عن التحفيظ اليوم بتاريخ {{reportDate}} بدون عذر.\n\n` +
-          `نرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\n` +
-          `نشكر لكم حسن تعاونكم.\n\n` +
-          `إدارة تحفيظ الرحمة للقرآن الكريم - سوريا`,
-        isVirtual: true,
-      }
-    ];
-
-    const allTemplates = [...templates, ...virtualTemplates];
-
     return NextResponse.json({
       success: true,
-      templates: allTemplates,
+      templates,
       reminderSettings,
       notePresets,
       automationSettings,
