@@ -25,8 +25,8 @@ function cleanReportField(value: string | null | undefined) {
 }
 
 function statusLabel(value: boolean | null | undefined) {
-  if (value === true) return HAFIZ;
-  if (value === false) return NOT_HAFIZ;
+  if (value === true) return `*${HAFIZ}*`;
+  if (value === false) return `*${NOT_HAFIZ}*`;
   return "";
 }
 
@@ -36,14 +36,13 @@ function reportEvaluationSummary(input: {
   reviewMemorized?: boolean | null;
 }) {
   const lines = [
-    ["\u0627\u0644\u062f\u0631\u0633 \u0627\u0644\u062c\u062f\u064a\u062f", statusLabel(input.lessonMemorized)],
-    ["\u0622\u062e\u0631 \u062e\u0645\u0633 \u0635\u0641\u062d\u0627\u062a", statusLabel(input.lastFiveMemorized)],
-    ["\u0627\u0644\u0645\u0631\u0627\u062c\u0639\u0629", statusLabel(input.reviewMemorized)],
+    ["الدرس الجديد", statusLabel(input.lessonMemorized)],
+    ["المراجعة", statusLabel(input.reviewMemorized)],
   ]
     .filter(([, value]) => Boolean(value))
-    .map(([label, value]) => `- ${label}: ${value}`);
+    .map(([label, value]) => `- *${label}:* ${value}`);
 
-  return lines.length ? `${EVALUATION_TITLE}\n${lines.join("\n")}` : "";
+  return lines.length ? `*${EVALUATION_TITLE}*\n${lines.join("\n")}` : "";
 }
 
 function insertEvaluationBeforeSignature(message: string, evaluationSummary: string) {
@@ -68,11 +67,11 @@ function absenceReportMessage(input: {
 }) {
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
-    `ابنكم الكريم *${input.studentName}* لم يحضر إلى حلقة التحفيظ بتاريخ ${input.reportDate}.\n\n` +
-    `*الحلقة:* ${input.circleName || "-"}\n` +
-    `*المعلم:* ${input.teacherName || "-"}\n\n` +
-    `نرجو المتابعة والحرص على انتظامه في الحضور؛ لأن الغياب يؤثر على مستوى الحفظ والمراجعة.\n\n` +
-    `إدارة تحفيظ الرحمة - قسم سوريا`
+    `نفيدكم أن ابنكم الكريم / *${input.studentName}*\n` +
+    `غائب عن التحفيظ اليوم بتاريخ ${input.reportDate} بدون عذر.\n\n` +
+    `نرجو منكم الاهتمام بحضور ابنكم إلى التحفيظ لأن هذا يؤثر على مستواه التعليمي.\n\n` +
+    `نشكر لكم حسن تعاونكم.\n\n` +
+    `إدارة تحفيظ الرحمة للقرآن الكريم - سوريا`
   );
 }
 
@@ -94,13 +93,13 @@ function syriaDailyReportMessage(input: {
     `*الحلقة:* ${input.circleName || "-"}\n` +
     `*المعلم:* ${input.teacherName || "-"}\n` +
     `*التاريخ:* ${input.reportDate}\n\n` +
-    `*ما حفظه الطالب:* ${input.lessonName}\n` +
+    `*الدرس:* ${input.lessonName}\n` +
     `*المراجعة:* ${input.review}\n` +
-    `*واجب الغد:* ${input.homework}\n\n` +
-    `${input.evaluationSummary || "نتيجة التقييم: -"}\n\n` +
+    `*الواجب:* ${input.homework}\n\n` +
+    `${input.evaluationSummary || "*نتيجة التقييم:* -"}\n\n` +
     `*الملاحظات:* ${input.note || "-"}\n\n` +
     `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +
-    `إدارة تحفيظ الرحمة - قسم سوريا`
+    `إدارة تحفيظ الرحمة للقرآن الكريم - سوريا`
   );
 }
 

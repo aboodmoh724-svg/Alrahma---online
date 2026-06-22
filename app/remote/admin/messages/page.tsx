@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -819,33 +819,68 @@ export default function RemoteAdminMessagesPage() {
                   <textarea
                     value={template.body}
                     onChange={(event) => updateTemplateBody(template.key, event.target.value)}
+                    readOnly={(template as any).isVirtual}
                     rows={12}
-                    className="mt-4 w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm leading-7 text-[#1c2d31] outline-none focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10"
+                    className={`mt-4 w-full rounded-2xl border border-[#d8bf83] px-4 py-3 text-sm leading-7 text-[#1c2d31] outline-none focus:border-[#0f5a35] focus:ring-4 focus:ring-[#0f5a35]/10 ${
+                      (template as any).isVirtual ? "bg-gray-50/50 cursor-not-allowed opacity-80" : "bg-white"
+                    }`}
                   />
 
-                  <div className="mt-4 flex flex-wrap gap-3">
+                  <div className="mt-4 flex flex-wrap items-center gap-3">
+                    {!(template as any).isVirtual ? (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => saveTemplate(template)}
+                          disabled={savingKey === template.key}
+                          className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
+                        >
+                          {savingKey === template.key ? "جارٍ الحفظ..." : "حفظ القالب"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => restoreDefault(template)}
+                          className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf4]"
+                        >
+                          استرجاع النص الافتراضي
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteSavedTemplate(template)}
+                          disabled={deletingKey === template.key}
+                          className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:opacity-60"
+                        >
+                          {deletingKey === template.key ? "جارٍ الحذف..." : "حذف النص المحفوظ"}
+                        </button>
+                      </>
+                    ) : (
+                      <span className="text-xs font-bold text-[#8a661f] bg-[#fffaf4] px-3 py-2 rounded-xl ring-1 ring-[#d8bf83]/30">
+                        هذا القالب موحد وثابت، التعديل عليه يكون برمجياً.
+                      </span>
+                    )}
+
                     <button
                       type="button"
-                      onClick={() => saveTemplate(template)}
-                      disabled={savingKey === template.key}
-                      className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white transition hover:bg-[#0a3f2a] disabled:opacity-60"
+                      onClick={async () => {
+                        try {
+                          const res = await fetch("/api/admin/send-test-template", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ templateKey: template.key }),
+                          });
+                          const data = await res.json();
+                          if (res.ok && data.success) {
+                            alert(`تم إرسال رسالة تجريبية بنجاح إلى هاتفك: +963 930 181 269`);
+                          } else {
+                            alert(`فشل الإرسال: ${data.error || "خطأ غير معروف"}`);
+                          }
+                        } catch (e) {
+                          alert("حدث خطأ أثناء محاولة الإرسال التجريبي");
+                        }
+                      }}
+                      className="rounded-2xl border border-[#0f5a35]/25 bg-white px-5 py-3 text-sm font-black text-[#0f5a35] transition hover:bg-[#edf6ee] md:mr-auto"
                     >
-                      {savingKey === template.key ? "جارٍ الحفظ..." : "حفظ القالب"}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => restoreDefault(template)}
-                      className="rounded-2xl border border-[#d8bf83] bg-white px-5 py-3 text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf4]"
-                    >
-                      استرجاع النص الافتراضي
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deleteSavedTemplate(template)}
-                      disabled={deletingKey === template.key}
-                      className="rounded-2xl border border-red-200 bg-red-50 px-5 py-3 text-sm font-black text-red-700 transition hover:bg-red-100 disabled:opacity-60"
-                    >
-                      {deletingKey === template.key ? "جارٍ الحذف..." : "حذف النص المحفوظ"}
+                      إرسال تجربة للرقم (+963930181269) 📲
                     </button>
                   </div>
                 </div>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -214,6 +214,7 @@ export default function OnsiteAdminStudentsPage() {
   const [editingPhoneStudent, setEditingPhoneStudent] = useState<Student | null>(
     null
   );
+  const [filterType, setFilterType] = useState<"ALL" | "NO_CIRCLE" | "INVALID_PHONE">("ALL");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -437,10 +438,27 @@ export default function OnsiteAdminStudentsPage() {
   );
 
   const filteredStudents = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    if (!query) return students;
+    let list = students;
+    if (filterType === "NO_CIRCLE") {
+      list = list.filter((s) => !s.circle?.id);
+    } else if (filterType === "INVALID_PHONE") {
+      list = list.filter((s) => {
+        const phone = s.parentWhatsapp;
+        if (!phone) return true;
+        const digits = normalizePhoneDigits(phone);
+        if (!digits || digits.length < 8) return true;
+        const parts = splitInternationalPhone(phone, "963");
+        if (parts.countryCode === "963" && parts.localNumber.length !== 9) {
+          return true;
+        }
+        return false;
+      });
+    }
 
-    return students.filter((student) => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return list;
+
+    return list.filter((student) => {
       const haystack = [
         student.fullName,
         student.studentCode || "",
@@ -454,7 +472,7 @@ export default function OnsiteAdminStudentsPage() {
 
       return haystack.includes(query);
     });
-  }, [searchTerm, students]);
+  }, [searchTerm, students, filterType]);
 
   return (
     <main className="rahma-shell min-h-screen px-4 py-6" dir="rtl">
@@ -623,6 +641,55 @@ export default function OnsiteAdminStudentsPage() {
                   {filteredStudents.length} من {students.length} طالب
                 </p>
               </div>
+            </div>
+
+            {/* أزرار التصفية السريعة */}
+            <div className="mb-6 flex flex-wrap gap-2 border-b border-[#eadcc4] pb-4">
+              <button
+                type="button"
+                onClick={() => setFilterType("ALL")}
+                className={`rounded-xl px-4 py-2 text-xs font-black transition ${
+                  filterType === "ALL"
+                    ? "bg-[#0f5a35] text-white"
+                    : "bg-white text-[#0f5a35] border border-[#d8bf83] hover:bg-[#edf6ee]"
+                }`}
+              >
+                كل الطلاب ({students.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType("NO_CIRCLE")}
+                className={`rounded-xl px-4 py-2 text-xs font-black transition ${
+                  filterType === "NO_CIRCLE"
+                    ? "bg-[#8a661f] text-white"
+                    : "bg-white text-[#8a661f] border border-[#d8bf83] hover:bg-[#fffaf4]"
+                }`}
+              >
+                طلاب بلا حلقة ({students.filter((s) => !s.circle?.id).length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setFilterType("INVALID_PHONE")}
+                className={`rounded-xl px-4 py-2 text-xs font-black transition ${
+                  filterType === "INVALID_PHONE"
+                    ? "bg-[#b91c1c] text-white"
+                    : "bg-white text-[#b91c1c] border border-[#d8bf83] hover:bg-red-50"
+                }`}
+              >
+                أرقام مفقودة أو ناقصة ({
+                  students.filter((s) => {
+                    const phone = s.parentWhatsapp;
+                    if (!phone) return true;
+                    const digits = normalizePhoneDigits(phone);
+                    if (!digits || digits.length < 8) return true;
+                    const parts = splitInternationalPhone(phone, "963");
+                    if (parts.countryCode === "963" && parts.localNumber.length !== 9) {
+                      return true;
+                    }
+                    return false;
+                  }).length
+                })
+              </button>
             </div>
 
             {loading ? (
