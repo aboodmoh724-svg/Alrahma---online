@@ -857,7 +857,9 @@ function NewReportForm() {
       ? "غياب"
       : isNoorAlBayanReport
         ? `نور البيان: ${noorLessonTitle}${noorProgressText ? ` - الإنجاز: ${noorProgressText}` : ""}`
-        : `الدرس الجديد: سورة ${formData.lessonSurah}`;
+        : formData.pageFrom || formData.pageTo
+          ? `الدرس الجديد: سورة ${formData.lessonSurah} من الآية ${formData.pageFrom || "-"} إلى الآية ${formData.pageTo || "-"}`
+          : `الدرس الجديد: سورة ${formData.lessonSurah}`;
 
     const payload = {
       studentId: formData.studentId,
@@ -1195,7 +1197,7 @@ function NewReportForm() {
                   </>
                 ) : (
                   <>
-                    <div className="grid gap-4 md:grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr]">
+                    <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
                       <SurahInput
                         id="lesson-surah-list"
                         label="اسم السورة"
@@ -1226,18 +1228,6 @@ function NewReportForm() {
                           value={formData.pageTo}
                           onChange={(e) => setField("pageTo", e.target.value)}
                           placeholder="مثال: 10"
-                          className={inputClass}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                          عدد الصفحات
-                        </label>
-                        <input
-                          type="number"
-                          min="1"
-                          value={formData.pagesCount}
-                          onChange={(e) => setField("pagesCount", e.target.value)}
                           className={inputClass}
                         />
                       </div>
@@ -1296,7 +1286,7 @@ function NewReportForm() {
                     ) : null}
                   </div>
                 ) : (
-                  <div className="grid gap-4 md:grid-cols-[1.5fr_0.7fr_0.7fr_0.9fr]">
+                  <div className="grid gap-4 md:grid-cols-[2fr_1fr_1fr]">
                     <SurahInput
                       id="review-surah-list"
                       label="اسم السورة"
@@ -1326,20 +1316,6 @@ function NewReportForm() {
                         value={formData.reviewTo}
                         onChange={(e) => setField("reviewTo", e.target.value)}
                         placeholder="مثال: 5"
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                        عدد الصفحات
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={formData.reviewPagesCount}
-                        onChange={(e) =>
-                          setField("reviewPagesCount", e.target.value)
-                        }
                         className={inputClass}
                       />
                     </div>
@@ -1494,20 +1470,6 @@ function NewReportForm() {
                             className={inputClass}
                           />
                         </div>
-                        <div className="md:col-span-2">
-                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                            عدد الصفحات
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={formData.nextLessonPagesCount}
-                            onChange={(e) =>
-                              setField("nextLessonPagesCount", e.target.value)
-                            }
-                            className={inputClass}
-                          />
-                        </div>
                       </div>
                     </div>
 
@@ -1564,20 +1526,6 @@ function NewReportForm() {
                               setField("nextReviewTo", e.target.value)
                             }
                             placeholder="مثال: 5"
-                            className={inputClass}
-                          />
-                        </div>
-                        <div className="md:col-span-2">
-                          <label className="mb-2 block text-sm font-black text-[#1c2d31]">
-                            عدد الصفحات
-                          </label>
-                          <input
-                            type="number"
-                            min="1"
-                            value={formData.nextReviewPagesCount}
-                            onChange={(e) =>
-                              setField("nextReviewPagesCount", e.target.value)
-                            }
                             className={inputClass}
                           />
                         </div>
