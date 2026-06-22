@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -820,11 +820,6 @@ function NewReportForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!isEditingReport && !formData.isAbsent && !hasSavedProgress) {
-      const saved = await saveStudentProgress();
-      if (!saved) return;
-    }
-
     const nextHomework = isNoorAlBayanReport
       ? buildNoorNextHomework()
       : buildNextHomework();
@@ -1259,20 +1254,7 @@ function NewReportForm() {
                 )}
               </section>
 
-              {!isNoorAlBayanReport ? (
-                <section className={sectionClass}>
-                  <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
-                    آخر خمس صفحات
-                  </h2>
-                  <div className="max-w-xs">
-                    <MemorizedSelect
-                      label="هل أتقن آخر خمس صفحات؟"
-                      value={formData.lastFiveMemorized}
-                      onChange={(value) => setField("lastFiveMemorized", value)}
-                    />
-                  </div>
-                </section>
-              ) : null}
+
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">

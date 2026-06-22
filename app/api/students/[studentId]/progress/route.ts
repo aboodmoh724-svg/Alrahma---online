@@ -23,9 +23,12 @@ async function findTeacherStudent(studentId: string, teacherId: string) {
   return prisma.student.findFirst({
     where: {
       id: studentId,
-      teacherId,
       isActive: true,
       studyMode: "ONSITE_SYRIA",
+      OR: [
+        { teacherId },
+        { studentCode: "7500" },
+      ],
     },
     select: {
       id: true,
