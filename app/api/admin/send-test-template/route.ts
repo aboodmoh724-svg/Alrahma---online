@@ -13,7 +13,7 @@ const dummyVariables = {
   reportDate: "2026-06-23",
   lessonName: "سورة البقرة من الآية 1 إلى 10",
   review: "سورة الفاتحة كاملة",
-  homework: "حفظ سورة البقرة من الآية 11 إلى 15",
+  homework: "الدرس الجديد: سورة البقرة من الآية 11 إلى 15 | المراجعة: سورة الفاتحة كاملة",
   note: "ممتاز ومثابر ما شاء الله تبارك الله",
   evaluationSummary: "*نتيجة التقييم:*\n- *الدرس الجديد:* *حافظ*\n- *المراجعة:* *حافظ*",
   zoomUrl: "https://zoom.us/j/123456789",
@@ -69,16 +69,21 @@ export async function POST(request: Request) {
     let messageText = "";
 
     if (templateKey === "SYRIA_DAILY_REPORT") {
+      const homeworkVal = dummyVariables.homework || "-";
+      const homeworkLines = homeworkVal.includes(" | ")
+        ? homeworkVal.split(" | ").map(line => `- ${line}`).join("\n")
+        : `- ${homeworkVal}`;
+
       messageText =
         `السلام عليكم ورحمة الله وبركاته\n\n` +
-        `تقرير الطالب اليومي - قسم سوريا\n\n` +
+        `تقرير الطالب اليومي\n\n` +
         `*الطالب:* ${dummyVariables.studentName}\n` +
         `*الحلقة:* ${dummyVariables.circleName}\n` +
         `*المعلم:* ${dummyVariables.teacherName}\n` +
         `*التاريخ:* ${dummyVariables.reportDate}\n\n` +
         `*الدرس:* ${dummyVariables.lessonName}\n` +
         `*المراجعة:* ${dummyVariables.review}\n` +
-        `*الواجب:* ${dummyVariables.homework}\n\n` +
+        `*الواجب:* \n${homeworkLines}\n\n` +
         `${dummyVariables.evaluationSummary}\n\n` +
         `*الملاحظات:* ${dummyVariables.note}\n\n` +
         `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +

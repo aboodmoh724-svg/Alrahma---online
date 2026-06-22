@@ -86,16 +86,24 @@ function syriaDailyReportMessage(input: {
   note: string;
   evaluationSummary: string;
 }) {
+  let homeworkLines = "-";
+  if (input.homework && input.homework !== "-") {
+    homeworkLines = input.homework
+      .split(" | ")
+      .map((line) => `- ${line}`)
+      .join("\n");
+  }
+
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
-    `تقرير الطالب اليومي - قسم سوريا\n\n` +
+    `تقرير الطالب اليومي\n\n` +
     `*الطالب:* ${input.studentName}\n` +
     `*الحلقة:* ${input.circleName || "-"}\n` +
     `*المعلم:* ${input.teacherName || "-"}\n` +
     `*التاريخ:* ${input.reportDate}\n\n` +
     `*الدرس:* ${input.lessonName}\n` +
     `*المراجعة:* ${input.review}\n` +
-    `*الواجب:* ${input.homework}\n\n` +
+    `*الواجب:* \n${homeworkLines}\n\n` +
     `${input.evaluationSummary || "*نتيجة التقييم:* -"}\n\n` +
     `*الملاحظات:* ${input.note || "-"}\n\n` +
     `جزاكم الله خيرًا على المتابعة والحرص.\n\n` +
