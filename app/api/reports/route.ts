@@ -50,6 +50,7 @@ export async function POST(req: Request) {
       lastFiveHasHesitation,
       reviewErrors,
       reviewWarnings,
+      quranMarks,
     } = body;
 
     const isAbsent = status === "ABSENT";
@@ -148,13 +149,13 @@ export async function POST(req: Request) {
               ? lessonSurah.trim()
               : null,
         lessonMemorized: calculatedLessonMemorized,
-        lessonErrors: null,
-        lessonWarnings: null,
-        lessonHasHesitation: null,
+        lessonErrors: isAbsent || isAttendanceOnly ? null : optionalNumber(lessonErrors),
+        lessonWarnings: isAbsent || isAttendanceOnly ? null : optionalNumber(lessonWarnings),
+        lessonHasHesitation: isAbsent || isAttendanceOnly ? null : (lessonHasHesitation === true || lessonHasHesitation === "true"),
         lastFiveMemorized: calculatedLastFiveMemorized,
-        lastFiveErrors: null,
-        lastFiveWarnings: null,
-        lastFiveHasHesitation: null,
+        lastFiveErrors: isAbsent || isAttendanceOnly ? null : optionalNumber(lastFiveErrors),
+        lastFiveWarnings: isAbsent || isAttendanceOnly ? null : optionalNumber(lastFiveWarnings),
+        lastFiveHasHesitation: isAbsent || isAttendanceOnly ? null : (lastFiveHasHesitation === true || lastFiveHasHesitation === "true"),
         review: typeof review === "string" ? review.trim() : "",
         reviewSurah: typeof reviewSurah === "string" ? reviewSurah.trim() : null,
         reviewFrom: optionalNumber(reviewFrom),
@@ -175,6 +176,7 @@ export async function POST(req: Request) {
           typeof nextReviewHomework === "string" ? nextReviewHomework.trim() : "",
         note: typeof note === "string" ? note.trim() : "",
         status: isAbsent ? "ABSENT" : "PRESENT",
+        quranMarks: isAbsent || isAttendanceOnly ? undefined : (Array.isArray(quranMarks) ? quranMarks : []),
       },
     });
 

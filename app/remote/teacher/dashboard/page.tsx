@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
@@ -320,6 +320,13 @@ export default async function RemoteTeacherDashboardPage({
                 <span>مراسلات أولياء الأمور</span>
                 <span className="rounded-full bg-white/15 px-2.5 py-1 text-xs font-black">جديد</span>
               </Link>
+              <Link
+                href={activeCircle ? `/remote/teacher/quran?circleId=${activeCircle.id}` : "/remote/teacher/quran"}
+                target="_blank"
+                className="block rounded-2xl bg-[#bd8f2d]/10 border border-[#bd8f2d]/30 px-4 py-3 text-[#8a661f] font-black hover:bg-[#bd8f2d]/20 transition"
+              >
+                📖 المصحف الكامل والعشر الأخير
+              </Link>
             </div>
           </section>
 
@@ -351,21 +358,21 @@ export default async function RemoteTeacherDashboardPage({
               <div className="grid gap-3 sm:grid-cols-2">
                 <Link
                   href={addReportHref}
-                  className="rounded-[1.5rem] bg-[#bd8f2d] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#a97d25]"
+                  className="rounded-[1.5rem] bg-[#bd8f2d] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#a97d25] flex items-center justify-center"
                 >
-                  إضافة تقرير
+                  إضافة تقرير فردي
                 </Link>
                 {latestZoomLink ? (
                   <a
                     href={latestZoomLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="rounded-[1.5rem] bg-white px-5 py-4 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#f6eee7]"
+                    className="rounded-[1.5rem] bg-white px-5 py-4 text-center text-sm font-black text-[#0a3f2a] transition hover:bg-[#f6eee7] flex items-center justify-center"
                   >
                     فتح درس الزوم
                   </a>
                 ) : (
-                  <div className="rounded-[1.5rem] bg-white/10 px-5 py-4 text-center text-sm font-black text-white/70">
+                  <div className="rounded-[1.5rem] bg-white/10 px-5 py-4 text-center text-sm font-black text-white/70 flex items-center justify-center">
                     لا يوجد رابط زوم
                   </div>
                 )}

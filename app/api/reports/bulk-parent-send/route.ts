@@ -111,6 +111,26 @@ export async function POST(request: Request) {
     const cookieStore = await cookies();
     const teacherId = cookieStore.get("alrahma_user_id")?.value;
 
+    const formatQuranMarksGuidance = (quranMarks: unknown) => {
+      if (!Array.isArray(quranMarks) || quranMarks.length === 0) return "";
+
+      const lines = quranMarks.map((mark: { surah: string; ayah: number; type: string; word?: string }) => {
+        const typeLabels: Record<string, string> = {
+          tajweed_error: "خطأ تجويدي",
+          warning: "تنبيه تلقيني",
+          hesitation: "تردد",
+          stutter: "تلكؤ",
+        };
+        const typeLabel = typeLabels[mark.type] || mark.type;
+        return `- سورة ${mark.surah} (الآية ${mark.ayah}): ${typeLabel}${mark.word ? ` في كلمة (${mark.word})` : ""}`;
+      });
+
+      return (
+        `⚠️ يرجى تكرار الاستماع وتكرار هذه الآيات 10 مرات في المنزل:\n` +
+        lines.join("\n")
+      );
+    };
+
     if (!teacherId) {
       return NextResponse.json(
         { error: "الرجاء تسجيل الدخول أولاً" },
@@ -118,10 +138,53 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = (await request.json()) as { reportIds?: unknown };
-    const reportIds = Array.isArray(body.reportIds)
-      ? body.reportIds.filter((id): id is string => typeof id === "string" && id.length > 0)
-      : [];
+    const body = (await request.json()) as { reportIds?: unknown; reports?: unknown[] };
+    let reportIds: string[] = [];
+
+    if (Array.isArray(body.reports)) {
+      const createdIds: string[] = [];
+      for (const r of body.reports as any[]) {
+        const newReport = await prisma.report.create({
+          data: {
+            studentId: r.studentId,
+            teacherId,
+            status: r.status,
+            lessonName: r.lessonName || "",
+            lessonSurah: r.lessonSurah || null,
+            pageFrom: r.pageFrom || null,
+            pageTo: r.pageTo || null,
+            pagesCount: r.pagesCount || null,
+            lessonMemorized: r.lessonMemorized ?? null,
+            lessonErrors: r.lessonErrors || 0,
+            lessonWarnings: r.lessonWarnings || 0,
+            lessonHasHesitation: r.lessonHasHesitation || false,
+            lastFiveMemorized: r.lastFiveMemorized ?? null,
+            lastFiveErrors: r.lastFiveErrors || 0,
+            lastFiveWarnings: r.lastFiveWarnings || 0,
+            lastFiveHasHesitation: r.lastFiveHasHesitation || false,
+            review: r.review || "",
+            reviewSurah: r.reviewSurah || null,
+            reviewFrom: r.reviewFrom || null,
+            reviewTo: r.reviewTo || null,
+            reviewPagesCount: r.reviewPagesCount || null,
+            reviewMemorized: r.reviewMemorized ?? null,
+            reviewErrors: r.reviewErrors || 0,
+            reviewWarnings: r.reviewWarnings || 0,
+            reviewPenaltyScore: r.reviewPenaltyScore || 0,
+            homework: r.homework || "-",
+            nextHomework: r.nextHomework || null,
+            nextLessonHomework: r.nextLessonHomework || null,
+            nextReviewHomework: r.nextReviewHomework || null,
+            note: r.note || "",
+            quranMarks: r.quranMarks ? JSON.parse(JSON.stringify(r.quranMarks)) : null,
+          },
+        });
+        createdIds.push(newReport.id);
+      }
+      reportIds = createdIds;
+    } else if (Array.isArray(body.reportIds)) {
+      reportIds = body.reportIds.filter((id): id is string => typeof id === "string" && id.length > 0);
+    }
 
     if (reportIds.length === 0) {
       return NextResponse.json(
@@ -149,6 +212,7 @@ export async function POST(request: Request) {
         lessonMemorized: true,
         lastFiveMemorized: true,
         reviewMemorized: true,
+        quranMarks: true,
         teacher: {
           select: {
             fullName: true,
@@ -197,7 +261,9 @@ export async function POST(request: Request) {
         lastFiveMemorized: report.lastFiveMemorized,
         reviewMemorized: report.reviewMemorized,
       });
-      const messageWithSummary =
+      const quranMarksGuidance = formatQuranMarksGuidance(report.quranMarks);
+
+      let messageWithSummary =
         report.status === "ABSENT"
           ? absenceReportMessage({
               studentName: report.student.fullName,
@@ -230,6 +296,10 @@ export async function POST(request: Request) {
               }),
               evaluationSummary
             );
+
+      if (report.status !== "ABSENT" && quranMarksGuidance) {
+        messageWithSummary = insertEvaluationBeforeSignature(messageWithSummary, quranMarksGuidance);
+      }
 
       try {
         await sendWhatsAppText({

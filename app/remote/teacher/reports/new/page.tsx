@@ -9,6 +9,14 @@ type Student = {
   fullName: string;
 };
 
+type QuranMark = {
+  surah: string;
+  page: number;
+  ayah: number;
+  type: "tajweed_error" | "warning" | "hesitation" | "stutter";
+  word?: string;
+};
+
 type HistoryReport = {
   id: string;
   lessonName: string;
@@ -149,12 +157,14 @@ const sectionClass =
   "rounded-[2rem] border border-[#d8bf83]/70 bg-white/86 p-5 shadow-sm";
 
 const notePresetOptions = [
-  "ممتاز ومتابع بشكل جيد.",
-  "يحتاج إلى مزيد من المراجعة اليومية.",
-  "مستواه جيد لكن يحتاج إلى تثبيت الحفظ.",
-  "نرجو متابعة ولي الأمر للواجب بشكل يومي.",
-  "يوجد تشتت أثناء الحلقة ويحتاج إلى تركيز أكبر.",
-  "تحسن واضح عن الحصص السابقة.",
+  "نشكر الطالب على أدائه المميز هذا اليوم.",
+  "نحث الطالب على الحضور في الوقت المحدد وعدم التأخر.",
+  "نحث الطالب على الانضباط في الحلقة والإستماع إلى توجيهات المعلم.",
+  "نحث الطالب على تحضير المراجعة اليومية جيدا في المنزل.",
+  "نحث الطالب على تحضير اخر 5 صفحات جيدا في المنزل.",
+  "نحث الطالب على تحضير اخر 5 صفحات والمراجعة اليومية جيدا في المنزل.",
+  "نحث الطالب على تحضير الدرس جيدا في المنزل.",
+  "نحث الطالب على مراجعة الأخطاء المكررة جيدا."
 ];
 
 function SurahInput({
@@ -371,11 +381,21 @@ function NewReportForm() {
     lessonErrors: 0,
     lessonWarnings: 0,
     lessonHasHesitation: false,
+    lessonTaqeeni: 0,
+    lessonTanbeehi: 0,
+    lessonTajweedi: 0,
     lastFiveErrors: 0,
     lastFiveWarnings: 0,
     lastFiveHasHesitation: false,
+    lastFiveTaqeeni: 0,
+    lastFiveTanbeehi: 0,
+    lastFiveTajweedi: 0,
     reviewErrors: 0,
     reviewWarnings: 0,
+    reviewTaqeeni: 0,
+    reviewTanbeehi: 0,
+    reviewTajweedi: 0,
+    quranMarks: [] as QuranMark[],
   });
 
   useEffect(() => {
@@ -384,6 +404,234 @@ function NewReportForm() {
       studentId: studentIdFromUrl,
     }));
   }, [studentIdFromUrl]);
+
+  // BroadcastChannel synchronization for individual report page
+  useEffect(() => {
+    if (!formData.studentId) return;
+
+    const channel = new BroadcastChannel("alrahma-quran-sync");
+    
+    // Broadcast active student to the Quran tab
+    channel.postMessage({
+      type: "SET_ACTIVE_STUDENT",
+      payload: { studentId: formData.studentId }
+    });
+
+    // Also reply to REQUEST_SYNC
+    const sendSyncData = () => {
+      const mockDraft = {
+        studentId: formData.studentId,
+        isAbsent: formData.isAbsent,
+        lessonSurah: formData.lessonSurah,
+        pageFrom: formData.pageFrom,
+        pageTo: formData.pageTo,
+        pagesCount: formData.pagesCount,
+        lessonMemorized: formData.lessonMemorized,
+        lessonErrors: formData.lessonErrors,
+        lessonWarnings: formData.lessonWarnings,
+        lessonHasHesitation: formData.lessonHasHesitation,
+        lessonTaqeeni: formData.lessonTaqeeni,
+        lessonTanbeehi: formData.lessonTanbeehi,
+        lessonTajweedi: formData.lessonTajweedi,
+        lastFiveMemorized: formData.lastFiveMemorized,
+        lastFiveErrors: formData.lastFiveErrors,
+        lastFiveWarnings: formData.lastFiveWarnings,
+        lastFiveHasHesitation: formData.lastFiveHasHesitation,
+        lastFiveTaqeeni: formData.lastFiveTaqeeni,
+        lastFiveTanbeehi: formData.lastFiveTanbeehi,
+        lastFiveTajweedi: formData.lastFiveTajweedi,
+        reviewSurah: formData.reviewSurah,
+        reviewFrom: formData.reviewFrom,
+        reviewTo: formData.reviewTo,
+        reviewPagesCount: formData.reviewPagesCount,
+        reviewMemorized: formData.reviewErrors <= 3 && formData.reviewWarnings <= 6,
+        reviewErrors: formData.reviewErrors,
+        reviewWarnings: formData.reviewWarnings,
+        reviewTaqeeni: formData.reviewTaqeeni,
+        reviewTanbeehi: formData.reviewTanbeehi,
+        reviewTajweedi: formData.reviewTajweedi,
+        note: formData.note,
+        quranMarks: formData.quranMarks || [],
+      };
+      
+      channel.postMessage({
+        type: "SYNC_DRAFTS",
+        payload: {
+          drafts: { [formData.studentId]: mockDraft },
+          activeStudentId: formData.studentId,
+          activeSection: "LESSON",
+        }
+      });
+    };
+
+    channel.onmessage = (event) => {
+      const { type, payload } = event.data;
+      
+      if (type === "UPDATE_DRAFTS" || type === "SYNC_DRAFTS") {
+        if (payload.drafts && payload.drafts[formData.studentId]) {
+          const studentDraft = payload.drafts[formData.studentId];
+          setFormData((prev) => ({
+            ...prev,
+            lessonSurah: studentDraft.lessonSurah || prev.lessonSurah,
+            pageFrom: studentDraft.pageFrom || prev.pageFrom,
+            pageTo: studentDraft.pageTo || prev.pageTo,
+            pagesCount: studentDraft.pagesCount || prev.pagesCount,
+            lessonErrors: studentDraft.lessonErrors !== undefined ? studentDraft.lessonErrors : prev.lessonErrors,
+            lessonWarnings: studentDraft.lessonWarnings !== undefined ? studentDraft.lessonWarnings : prev.lessonWarnings,
+            lessonHasHesitation: studentDraft.lessonHasHesitation !== undefined ? studentDraft.lessonHasHesitation : prev.lessonHasHesitation,
+            lessonTaqeeni: studentDraft.lessonTaqeeni !== undefined ? studentDraft.lessonTaqeeni : prev.lessonTaqeeni,
+            lessonTanbeehi: studentDraft.lessonTanbeehi !== undefined ? studentDraft.lessonTanbeehi : prev.lessonTanbeehi,
+            lessonTajweedi: studentDraft.lessonTajweedi !== undefined ? studentDraft.lessonTajweedi : prev.lessonTajweedi,
+            lastFiveErrors: studentDraft.lastFiveErrors !== undefined ? studentDraft.lastFiveErrors : prev.lastFiveErrors,
+            lastFiveWarnings: studentDraft.lastFiveWarnings !== undefined ? studentDraft.lastFiveWarnings : prev.lastFiveWarnings,
+            lastFiveHasHesitation: studentDraft.lastFiveHasHesitation !== undefined ? studentDraft.lastFiveHasHesitation : prev.lastFiveHasHesitation,
+            lastFiveTaqeeni: studentDraft.lastFiveTaqeeni !== undefined ? studentDraft.lastFiveTaqeeni : prev.lastFiveTaqeeni,
+            lastFiveTanbeehi: studentDraft.lastFiveTanbeehi !== undefined ? studentDraft.lastFiveTanbeehi : prev.lastFiveTanbeehi,
+            lastFiveTajweedi: studentDraft.lastFiveTajweedi !== undefined ? studentDraft.lastFiveTajweedi : prev.lastFiveTajweedi,
+            reviewSurah: studentDraft.reviewSurah || prev.reviewSurah,
+            reviewFrom: studentDraft.reviewFrom || prev.reviewFrom,
+            reviewTo: studentDraft.reviewTo || prev.reviewTo,
+            reviewPagesCount: studentDraft.reviewPagesCount || prev.reviewPagesCount,
+            reviewErrors: studentDraft.reviewErrors !== undefined ? studentDraft.reviewErrors : prev.reviewErrors,
+            reviewWarnings: studentDraft.reviewWarnings !== undefined ? studentDraft.reviewWarnings : prev.reviewWarnings,
+            reviewTaqeeni: studentDraft.reviewTaqeeni !== undefined ? studentDraft.reviewTaqeeni : prev.reviewTaqeeni,
+            reviewTanbeehi: studentDraft.reviewTanbeehi !== undefined ? studentDraft.reviewTanbeehi : prev.reviewTanbeehi,
+            reviewTajweedi: studentDraft.reviewTajweedi !== undefined ? studentDraft.reviewTajweedi : prev.reviewTajweedi,
+            note: studentDraft.note || prev.note,
+            quranMarks: studentDraft.quranMarks || prev.quranMarks || [],
+          }));
+        }
+      }
+      
+      if (type === "REQUEST_SYNC") {
+        sendSyncData();
+      }
+    };
+
+    // Trigger sync once
+    sendSyncData();
+
+    return () => {
+      channel.close();
+    };
+  }, [
+    formData.studentId,
+    formData.isAbsent,
+    formData.lessonSurah,
+    formData.pageFrom,
+    formData.pageTo,
+    formData.pagesCount,
+    formData.lessonMemorized,
+    formData.lessonErrors,
+    formData.lessonWarnings,
+    formData.lessonHasHesitation,
+    formData.lessonTaqeeni,
+    formData.lessonTanbeehi,
+    formData.lessonTajweedi,
+    formData.lastFiveMemorized,
+    formData.lastFiveErrors,
+    formData.lastFiveWarnings,
+    formData.lastFiveHasHesitation,
+    formData.lastFiveTaqeeni,
+    formData.lastFiveTanbeehi,
+    formData.lastFiveTajweedi,
+    formData.reviewSurah,
+    formData.reviewFrom,
+    formData.reviewTo,
+    formData.reviewPagesCount,
+    formData.reviewErrors,
+    formData.reviewWarnings,
+    formData.reviewTaqeeni,
+    formData.reviewTanbeehi,
+    formData.reviewTajweedi,
+    formData.note,
+    formData.quranMarks
+  ]);
+
+  // Save active student form data to localStorage drafts
+  useEffect(() => {
+    if (!formData.studentId) return;
+
+    const saved = localStorage.getItem("alrahma-quran-drafts");
+    let currentDrafts: Record<string, any> = {};
+    if (saved) {
+      try {
+        currentDrafts = JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    const activeDraft = {
+      studentId: formData.studentId,
+      isAbsent: formData.isAbsent,
+      lessonSurah: formData.lessonSurah,
+      pageFrom: formData.pageFrom,
+      pageTo: formData.pageTo,
+      pagesCount: formData.pagesCount,
+      lessonMemorized: formData.lessonMemorized,
+      lessonErrors: formData.lessonErrors,
+      lessonWarnings: formData.lessonWarnings,
+      lessonHasHesitation: formData.lessonHasHesitation,
+      lessonTaqeeni: formData.lessonTaqeeni,
+      lessonTanbeehi: formData.lessonTanbeehi,
+      lessonTajweedi: formData.lessonTajweedi,
+      lastFiveMemorized: formData.lastFiveMemorized,
+      lastFiveErrors: formData.lastFiveErrors,
+      lastFiveWarnings: formData.lastFiveWarnings,
+      lastFiveHasHesitation: formData.lastFiveHasHesitation,
+      lastFiveTaqeeni: formData.lastFiveTaqeeni,
+      lastFiveTanbeehi: formData.lastFiveTanbeehi,
+      lastFiveTajweedi: formData.lastFiveTajweedi,
+      reviewSurah: formData.reviewSurah,
+      reviewFrom: formData.reviewFrom,
+      reviewTo: formData.reviewTo,
+      reviewPagesCount: formData.reviewPagesCount,
+      reviewMemorized: formData.reviewErrors <= 3 && formData.reviewWarnings <= 6,
+      reviewErrors: formData.reviewErrors,
+      reviewWarnings: formData.reviewWarnings,
+      reviewTaqeeni: formData.reviewTaqeeni,
+      reviewTanbeehi: formData.reviewTanbeehi,
+      reviewTajweedi: formData.reviewTajweedi,
+      note: formData.note,
+      quranMarks: formData.quranMarks || [],
+    };
+
+    currentDrafts[formData.studentId] = activeDraft;
+    localStorage.setItem("alrahma-quran-drafts", JSON.stringify(currentDrafts));
+  }, [
+    formData.studentId,
+    formData.isAbsent,
+    formData.lessonSurah,
+    formData.pageFrom,
+    formData.pageTo,
+    formData.pagesCount,
+    formData.lessonMemorized,
+    formData.lessonErrors,
+    formData.lessonWarnings,
+    formData.lessonHasHesitation,
+    formData.lessonTaqeeni,
+    formData.lessonTanbeehi,
+    formData.lessonTajweedi,
+    formData.lastFiveMemorized,
+    formData.lastFiveErrors,
+    formData.lastFiveWarnings,
+    formData.lastFiveHasHesitation,
+    formData.lastFiveTaqeeni,
+    formData.lastFiveTanbeehi,
+    formData.lastFiveTajweedi,
+    formData.reviewSurah,
+    formData.reviewFrom,
+    formData.reviewTo,
+    formData.reviewPagesCount,
+    formData.reviewErrors,
+    formData.reviewWarnings,
+    formData.reviewTaqeeni,
+    formData.reviewTanbeehi,
+    formData.reviewTajweedi,
+    formData.note,
+    formData.quranMarks
+  ]);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -510,35 +758,70 @@ function NewReportForm() {
             ? data.lastNextHomework
             : ""
         );
-        setFormData((prev) => ({
-          ...prev,
-          lessonSurah: lessonHomework.startSurah,
-          pageFrom: lessonHomework.from,
-          pageTo: lessonHomework.to,
-          pagesCount: lessonHomework.pagesCount,
-          reviewSurah: reviewHomework.startSurah,
-          reviewFrom: reviewHomework.from,
-          reviewTo: reviewHomework.to,
-          reviewPagesCount: reviewHomework.pagesCount,
-          nextLessonStartSurah: "",
-          nextLessonEndSurah: "",
-          nextLessonFrom: "",
-          nextLessonTo: "",
-          nextLessonPagesCount: "",
-          nextReviewStartSurah: "",
-          nextReviewEndSurah: "",
-          nextReviewFrom: "",
-          nextReviewTo: "",
-          nextReviewPagesCount: "",
-          lessonErrors: 0,
-          lessonWarnings: 0,
-          lessonHasHesitation: false,
-          lastFiveErrors: 0,
-          lastFiveWarnings: 0,
-          lastFiveHasHesitation: false,
-          reviewErrors: 0,
-          reviewWarnings: 0,
-        }));
+        // check if a local draft exists for this student
+        const savedDrafts = localStorage.getItem("alrahma-quran-drafts");
+        let draftToUse = null;
+        if (savedDrafts) {
+          try {
+            const parsed = JSON.parse(savedDrafts);
+            if (parsed[formData.studentId]) {
+              draftToUse = parsed[formData.studentId];
+            }
+          } catch (e) {
+            console.error("Error parsing saved drafts", e);
+          }
+        }
+
+        setFormData((prev) => {
+          const baseData = {
+            ...prev,
+            lessonSurah: lessonHomework.startSurah,
+            pageFrom: lessonHomework.from,
+            pageTo: lessonHomework.to,
+            pagesCount: lessonHomework.pagesCount,
+            reviewSurah: reviewHomework.startSurah,
+            reviewFrom: reviewHomework.from,
+            reviewTo: reviewHomework.to,
+            reviewPagesCount: reviewHomework.pagesCount,
+            nextLessonStartSurah: "",
+            nextLessonEndSurah: "",
+            nextLessonFrom: "",
+            nextLessonTo: "",
+            nextLessonPagesCount: "",
+            nextReviewStartSurah: "",
+            nextReviewEndSurah: "",
+            nextReviewFrom: "",
+            nextReviewTo: "",
+            nextReviewPagesCount: "",
+            lessonErrors: 0,
+            lessonWarnings: 0,
+            lessonHasHesitation: false,
+            lessonTaqeeni: 0,
+            lessonTanbeehi: 0,
+            lessonTajweedi: 0,
+            lastFiveErrors: 0,
+            lastFiveWarnings: 0,
+            lastFiveHasHesitation: false,
+            lastFiveTaqeeni: 0,
+            lastFiveTanbeehi: 0,
+            lastFiveTajweedi: 0,
+            reviewErrors: 0,
+            reviewWarnings: 0,
+            reviewTaqeeni: 0,
+            reviewTanbeehi: 0,
+            reviewTajweedi: 0,
+            note: "",
+            quranMarks: [],
+          };
+
+          if (draftToUse) {
+            return {
+              ...baseData,
+              ...draftToUse,
+            };
+          }
+          return baseData;
+        });
       } catch (error) {
         console.error("FETCH STUDENT HISTORY ERROR =>", error);
         setPreviousReport(null);
@@ -563,11 +846,49 @@ function NewReportForm() {
     [formData.studentId, students]
   );
 
-  const setField = (name: keyof typeof formData, value: string | boolean | number) => {
+  const setField = (name: keyof typeof formData, value: any) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const updateLessonCounter = (field: "lessonTaqeeni" | "lessonTanbeehi" | "lessonTajweedi", value: number) => {
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+      updated.lessonErrors = updated.lessonTaqeeni;
+      updated.lessonWarnings = updated.lessonTanbeehi + updated.lessonTajweedi;
+      updated.lessonHasHesitation = updated.lessonTanbeehi > 0;
+      return updated;
+    });
+  };
+
+  const updateLastFiveCounter = (field: "lastFiveTaqeeni" | "lastFiveTanbeehi" | "lastFiveTajweedi", value: number) => {
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+      updated.lastFiveErrors = updated.lastFiveTaqeeni;
+      updated.lastFiveWarnings = updated.lastFiveTanbeehi + updated.lastFiveTajweedi;
+      updated.lastFiveHasHesitation = updated.lastFiveTanbeehi > 0;
+      return updated;
+    });
+  };
+
+  const updateReviewCounter = (field: "reviewTaqeeni" | "reviewTanbeehi" | "reviewTajweedi", value: number) => {
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+      updated.reviewErrors = updated.reviewTaqeeni;
+      updated.reviewWarnings = updated.reviewTanbeehi + updated.reviewTajweedi;
+      return updated;
+    });
   };
 
   const toBooleanOrNull = (value: string) => {
@@ -689,13 +1010,13 @@ function NewReportForm() {
       pageTo: formData.pageTo,
       pagesCount: formData.pagesCount,
       lessonMemorized: toBooleanOrNull(formData.lessonMemorized),
-      lessonErrors: null,
-      lessonWarnings: null,
-      lessonHasHesitation: null,
+      lessonErrors: formData.lessonErrors,
+      lessonWarnings: formData.lessonWarnings,
+      lessonHasHesitation: formData.lessonHasHesitation,
       lastFiveMemorized: toBooleanOrNull(formData.lastFiveMemorized),
-      lastFiveErrors: null,
-      lastFiveWarnings: null,
-      lastFiveHasHesitation: null,
+      lastFiveErrors: formData.lastFiveErrors,
+      lastFiveWarnings: formData.lastFiveWarnings,
+      lastFiveHasHesitation: formData.lastFiveHasHesitation,
       review:
         formData.reviewSurah || formData.reviewFrom || formData.reviewTo
           ? `سورة ${formData.reviewSurah} من الآية ${formData.reviewFrom || "-"} إلى الآية ${formData.reviewTo || "-"}`
@@ -712,6 +1033,7 @@ function NewReportForm() {
       nextLessonHomework,
       nextReviewHomework,
       note: formData.note,
+      quranMarks: formData.quranMarks || [],
     };
 
     try {
@@ -732,6 +1054,27 @@ function NewReportForm() {
       }
 
       alert(formData.isAbsent ? "تم حفظ غياب الطالب" : "تم حفظ التقرير بنجاح");
+
+      // Clear draft from localStorage on successful submit
+      const saved = localStorage.getItem("alrahma-quran-drafts");
+      if (saved) {
+        try {
+          const drafts = JSON.parse(saved);
+          delete drafts[formData.studentId];
+          localStorage.setItem("alrahma-quran-drafts", JSON.stringify(drafts));
+          
+          // Also broadcast the clear
+          const channel = new BroadcastChannel("alrahma-quran-sync");
+          channel.postMessage({
+            type: "UPDATE_DRAFTS",
+            payload: { drafts }
+          });
+          channel.close();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       router.push(
         circleIdFromUrl
           ? `/remote/teacher/dashboard?circleId=${circleIdFromUrl}`
@@ -757,16 +1100,25 @@ function NewReportForm() {
               اختر الطالب، ثم إن كان غائبا احفظ الغياب مباشرة. وإن كان حاضرا أدخل الدرس والمراجعة وواجب الغد.
             </p>
           </div>
-          <Link
-            href={
-              circleIdFromUrl
-                ? `/remote/teacher/dashboard?circleId=${circleIdFromUrl}`
-                : "/remote/teacher/dashboard"
-            }
-            className="rounded-2xl bg-white/12 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white/20"
-          >
-            رجوع للوحة المعلم
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => window.open(circleIdFromUrl ? `/remote/teacher/quran?circleId=${circleIdFromUrl}` : "/remote/teacher/quran", "_blank")}
+              className="rounded-2xl bg-[#bd8f2d] hover:bg-[#a97d25] px-5 py-3 text-center text-sm font-black text-white transition shadow-md"
+            >
+              📖 فتح المصحف التفاعلي (شاشة مستقلة)
+            </button>
+            <Link
+              href={
+                circleIdFromUrl
+                  ? `/remote/teacher/dashboard?circleId=${circleIdFromUrl}`
+                  : "/remote/teacher/dashboard"
+              }
+              className="rounded-2xl bg-white/12 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white/20"
+            >
+              رجوع للوحة المعلم
+            </Link>
+          </div>
         </div>
 
         {formData.studentId ? (
@@ -1005,6 +1357,23 @@ function NewReportForm() {
                     💡 تنبيه: لا يُسمح بأي خطأ (تلقيني، تجويدي، أو تنبيه) لاجتياز الدرس الجديد.
                   </p>
                 </div>
+                <div className="mt-4 border-t border-[#d8bf83]/30 pt-4 flex flex-wrap gap-4 items-end">
+                  <CounterInput
+                    label="خطأ تلقيني"
+                    value={formData.lessonTaqeeni}
+                    onChange={(val) => updateLessonCounter("lessonTaqeeni", val)}
+                  />
+                  <CounterInput
+                    label="خطأ تنبيهي"
+                    value={formData.lessonTanbeehi}
+                    onChange={(val) => updateLessonCounter("lessonTanbeehi", val)}
+                  />
+                  <CounterInput
+                    label="خطأ تجويدي"
+                    value={formData.lessonTajweedi}
+                    onChange={(val) => updateLessonCounter("lessonTajweedi", val)}
+                  />
+                </div>
               </section>
 
               <section className={sectionClass}>
@@ -1018,6 +1387,23 @@ function NewReportForm() {
                   <p className="mt-2 text-xs font-bold text-[#8a661f] leading-5">
                     💡 تنبيه: لا يُسمح بأي خطأ، تنبيه، أو تردد لاجتياز آخر 5 صفحات.
                   </p>
+                </div>
+                <div className="mt-4 border-t border-[#d8bf83]/30 pt-4 flex flex-wrap gap-4 items-end">
+                  <CounterInput
+                    label="خطأ تلقيني"
+                    value={formData.lastFiveTaqeeni}
+                    onChange={(val) => updateLastFiveCounter("lastFiveTaqeeni", val)}
+                  />
+                  <CounterInput
+                    label="خطأ تنبيهي"
+                    value={formData.lastFiveTanbeehi}
+                    onChange={(val) => updateLastFiveCounter("lastFiveTanbeehi", val)}
+                  />
+                  <CounterInput
+                    label="خطأ تجويدي"
+                    value={formData.lastFiveTajweedi}
+                    onChange={(val) => updateLastFiveCounter("lastFiveTajweedi", val)}
+                  />
                 </div>
               </section>
 
@@ -1067,14 +1453,19 @@ function NewReportForm() {
                   <div className="flex flex-wrap items-end justify-between gap-4">
                     <div className="flex flex-wrap gap-4">
                       <CounterInput
-                        label="الأخطاء في المراجعة"
-                        value={formData.reviewErrors}
-                        onChange={(val) => setField("reviewErrors", val)}
+                        label="خطأ تلقيني"
+                        value={formData.reviewTaqeeni}
+                        onChange={(val) => updateReviewCounter("reviewTaqeeni", val)}
                       />
                       <CounterInput
-                        label="التنبيهات في المراجعة"
-                        value={formData.reviewWarnings}
-                        onChange={(val) => setField("reviewWarnings", val)}
+                        label="خطأ تنبيهي"
+                        value={formData.reviewTanbeehi}
+                        onChange={(val) => updateReviewCounter("reviewTanbeehi", val)}
+                      />
+                      <CounterInput
+                        label="خطأ تجويدي"
+                        value={formData.reviewTajweedi}
+                        onChange={(val) => updateReviewCounter("reviewTajweedi", val)}
                       />
                     </div>
 
@@ -1210,6 +1601,63 @@ function NewReportForm() {
                   </p>
                 </div>
               </section>
+
+              {formData.quranMarks && formData.quranMarks.length > 0 && (
+                <section className={sectionClass}>
+                  <h2 className="mb-4 text-xl font-black text-[#1c2d31] flex items-center gap-2">
+                    <span>📖</span>
+                    <span>العلامات المرصودة من المصحف التفاعلي</span>
+                  </h2>
+                  <div className="grid gap-2 sm:grid-cols-2 md:grid-cols-3">
+                    {formData.quranMarks.map((mark, mIdx) => {
+                      const typeLabels = {
+                        tajweed_error: "خطأ تجويدي",
+                        warning: "تنبيه تلقيني",
+                        hesitation: "تردد",
+                        stutter: "تلكؤ",
+                      };
+                      return (
+                        <div
+                          key={mIdx}
+                          className="flex items-center justify-between rounded-2xl bg-[#fffaf4] p-3 text-sm text-[#1c2d31] border border-[#d8bf83] shadow-sm"
+                        >
+                          <div>
+                            <span className="font-black text-[#0f5a35]">{mark.surah}</span>
+                            <span className="mx-1">آية {mark.ayah}</span>
+                            <span className="rounded bg-amber-50 px-1.5 py-0.5 text-xs text-amber-800 font-bold border border-amber-200">
+                              {typeLabels[mark.type]}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = formData.quranMarks.filter((_, i) => i !== mIdx);
+                              setField("quranMarks", updated);
+                              // Broadcast the updated drafts
+                              const channel = new BroadcastChannel("alrahma-quran-sync");
+                              channel.postMessage({
+                                type: "UPDATE_DRAFTS",
+                                payload: {
+                                  drafts: {
+                                    [formData.studentId]: {
+                                      studentId: formData.studentId,
+                                      quranMarks: updated,
+                                    }
+                                  }
+                                }
+                              });
+                              channel.close();
+                            }}
+                            className="font-black text-red-600 hover:text-red-800 text-xs px-2 py-1 bg-red-50 hover:bg-red-100 rounded-xl"
+                          >
+                            حذف
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </section>
+              )}
 
               <section className={sectionClass}>
                 <div>

@@ -233,6 +233,9 @@ model TeacherAttendance {
   dateKey   String
   status    TeacherAttendanceStatus
   note      String?
+  checkIn   DateTime?
+  checkOut  DateTime?
+  duration  Int?
   createdAt DateTime                @default(now())
   updatedAt DateTime                @updatedAt
   teacher   User                    @relation(fields: [teacherId], references: [id], onDelete: Cascade)
@@ -687,6 +690,7 @@ model Report {
   parentSentAt       DateTime?
   parentSentChannel  ParentSentChannel?
   parentSentError    String?
+  quranMarks         Json?
   student            Student            @relation(fields: [studentId], references: [id], onDelete: Cascade)
   teacher            User?              @relation(fields: [teacherId], references: [id])
 }
