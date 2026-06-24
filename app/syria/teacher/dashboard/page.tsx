@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
 import { cookies } from "next/headers";
 import LogoutButton from "@/components/auth/LogoutButton";
@@ -19,11 +19,14 @@ type TodayReport = {
   sentToParent: boolean;
   parentSentAt?: Date | null;
   parentSentError?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 type StudentWithTodayReports = {
   id: string;
   fullName: string;
+  studentCode: string | null;
   parentWhatsapp: string | null;
   parentEmail: string | null;
   isTemporary: boolean;
@@ -142,6 +145,8 @@ export default async function OnsiteTeacherDashboardPage({
                   sentToParent: true,
                   parentSentAt: true,
                   parentSentError: true,
+                  createdAt: true,
+                  updatedAt: true,
                 },
               },
             },
@@ -202,6 +207,8 @@ export default async function OnsiteTeacherDashboardPage({
               sentToParent: true,
               parentSentAt: true,
               parentSentError: true,
+              createdAt: true,
+              updatedAt: true,
             },
           },
           teacherProgressRecords: {
@@ -455,6 +462,11 @@ export default async function OnsiteTeacherDashboardPage({
                   const isAbsent = todayReport?.status === "ABSENT";
                   const hasNoParentPhone = !student.parentWhatsapp;
                   const hasProgressStart = student.teacherProgressRecords.length > 0;
+                  const isTestStudent = student.studentCode === "7500";
+                  const wasAlreadyEdited = todayReport
+                    ? new Date(todayReport.updatedAt).getTime() - new Date(todayReport.createdAt).getTime() > 2000
+                    : false;
+                  const canEditReport = isTestStudent || (todayReport && !todayReport.sentToParent && !wasAlreadyEdited);
                   const studentReportHref = activeCircle
                     ? `/syria/teacher/reports/new?circleId=${activeCircle.id}&studentId=${student.id}`
                     : `/syria/teacher/reports/new?studentId=${student.id}`;
@@ -545,12 +557,20 @@ export default async function OnsiteTeacherDashboardPage({
                               initialSent={todayReport.sentToParent}
                               parentWhatsapp={student.parentWhatsapp}
                             />
-                            <Link
-                              href={`${studentReportHref}&reportId=${todayReport.id}`}
-                              className="rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf4]"
-                            >
-                              تعديل التقرير
-                            </Link>
+                            {canEditReport ? (
+                              <Link
+                                href={`${studentReportHref}&reportId=${todayReport.id}`}
+                                className="rounded-xl border border-[#d8bf83] bg-white px-4 py-3 text-center text-sm font-black text-[#1c2d31] transition hover:bg-[#fffaf4]"
+                              >
+                                تعديل التقرير
+                              </Link>
+                            ) : (
+                              <div className="rounded-xl bg-slate-50 px-3 py-2.5 text-center text-xs font-bold text-slate-500 ring-1 ring-slate-200">
+                                {todayReport.sentToParent
+                                  ? "🔒 لا يمكن التعديل بعد الإرسال لولي الأمر"
+                                  : "🔒 تم استنفاد فرصة التعديل المتاحة"}
+                              </div>
+                            )}
                             {todayReport.parentSentError ? (
                               <p className="rounded-xl bg-amber-50 px-3 py-2 text-center text-xs font-bold text-amber-800">
                                 حدث خطأ أثناء إرسال التقرير عبر الواتساب

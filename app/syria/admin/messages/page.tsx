@@ -66,8 +66,8 @@ export default function SyriaAdminMessagesPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        alert(`تم إرسال رسالة تجريبية بنجاح إلى هاتفك: +963 930 181 269`);
-        setFeedback(`تم الإرسال بنجاح للرقم: +963 930 181 269`);
+        alert(`تم إرسال رسالة تجريبية بنجاح إلى الأرقام التجريبية`);
+        setFeedback(`تم الإرسال بنجاح للأرقام التجريبية`);
       } else {
         alert(`فشل الإرسال: ${data.error || "خطأ غير معروف"}`);
         setFeedback(`فشل إرسال التجربة: ${data.error || "خطأ غير معروف"}`);

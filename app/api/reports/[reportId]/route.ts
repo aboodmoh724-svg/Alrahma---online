@@ -94,11 +94,39 @@ export async function PATCH(request: Request, context: RouteContext) {
       select: {
         id: true,
         studentId: true,
+        sentToParent: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
     if (!report) {
       return NextResponse.json({ error: "التقرير غير موجود" }, { status: 404 });
+    }
+
+    // Check if test student (exempt from restrictions)
+    const student = await prisma.student.findUnique({
+      where: { id: report.studentId },
+      select: { studentCode: true },
+    });
+    const isTestStudent = student?.studentCode === "7500";
+
+    if (!isTestStudent) {
+      // Block edit if already sent to parent
+      if (report.sentToParent) {
+        return NextResponse.json(
+          { error: "لا يمكن تعديل التقرير بعد إرساله لولي الأمر" },
+          { status: 403 }
+        );
+      }
+      // Block edit if already edited once (updatedAt significantly differs from createdAt)
+      const timeDiff = new Date(report.updatedAt).getTime() - new Date(report.createdAt).getTime();
+      if (timeDiff > 2000) {
+        return NextResponse.json(
+          { error: "تم استنفاد فرصة التعديل المتاحة (مرة واحدة فقط)" },
+          { status: 403 }
+        );
+      }
     }
 
     const isAbsent = body.status === "ABSENT";

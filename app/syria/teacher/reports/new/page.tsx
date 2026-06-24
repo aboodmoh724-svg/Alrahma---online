@@ -1247,7 +1247,7 @@ function NewReportForm() {
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
-                  المراجعة
+                  المراجعة <span className="text-sm font-bold text-[#1c2d31]/40">(اختياري)</span>
                 </h2>
                 {isNoorAlBayanReport ? (
                   <div className="grid gap-4 md:grid-cols-2">
@@ -1332,7 +1332,7 @@ function NewReportForm() {
 
               <section className={sectionClass}>
                 <h2 className="mb-4 text-xl font-black text-[#1c2d31]">
-                  واجب غدا
+                  واجب اليوم التالي
                 </h2>
                 {isNoorAlBayanReport ? (
                   <div className="rounded-[1.5rem] bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">
@@ -1476,7 +1476,7 @@ function NewReportForm() {
                     <div className="rounded-[1.5rem] bg-[#f4fbf8] p-4 ring-1 ring-[#cfe3d9]">
                       <div className="mb-4">
                         <h3 className="text-base font-black text-[#1c2d31]">
-                          واجب المراجعة
+                          واجب المراجعة <span className="text-xs font-bold text-[#1c2d31]/40">(اختياري)</span>
                         </h3>
                         <p className="mt-1 text-xs font-bold leading-6 text-[#1c2d31]/60">
                           يصلح للمراجعة داخل سورة واحدة أو من نهاية سورة إلى بداية سورة أخرى.
@@ -1540,7 +1540,7 @@ function NewReportForm() {
                   <p className="mt-2 font-bold">
                     {(isNoorAlBayanReport
                       ? buildNoorNextHomework()
-                      : buildNextHomework()) || "لم يتم تحديد واجب الغد بعد"}
+                      : buildNextHomework()) || "لم يتم تحديد واجب اليوم التالي بعد"}
                   </p>
                 </div>
               </section>

@@ -94,6 +94,11 @@ function syriaDailyReportMessage(input: {
       .join("\n");
   }
 
+  const reviewLine =
+    input.review && input.review !== "-"
+      ? `*المراجعة:* ${input.review}\n`
+      : "";
+
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
     `تقرير الطالب اليومي\n\n` +
@@ -102,7 +107,7 @@ function syriaDailyReportMessage(input: {
     `*المعلم:* ${input.teacherName || "-"}\n` +
     `*التاريخ:* ${input.reportDate}\n\n` +
     `*الدرس:* ${input.lessonName}\n` +
-    `*المراجعة:* ${input.review}\n` +
+    reviewLine +
     `*الواجب:* \n${homeworkLines}\n\n` +
     `${input.evaluationSummary || "*نتيجة التقييم:* -"}\n\n` +
     `*الملاحظات:* ${input.note || "-"}\n\n` +

@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { sendWhatsAppText } from "@/lib/whatsapp";
 
-const TEST_PHONE = "963930181269";
+const TEST_PHONES = ["963930181269", "905550617622"];
 
 const dummyVariables = {
   studentName: "عبدالرحمن الصالح",
@@ -101,17 +101,19 @@ export async function POST(request: Request) {
       messageText = await renderMessageTemplate(templateKey, dummyVariables);
     }
 
-    // Send the WhatsApp message using ONSITE_SYRIA channel
-    await sendWhatsAppText({
-      to: TEST_PHONE,
-      body: messageText,
-      channel: "ONSITE_SYRIA",
-      source: "ADMIN_TEST_SEND",
-    });
+    // Send the WhatsApp message to all test phones using ONSITE_SYRIA channel
+    for (const phone of TEST_PHONES) {
+      await sendWhatsAppText({
+        to: phone,
+        body: messageText,
+        channel: "ONSITE_SYRIA",
+        source: "ADMIN_TEST_SEND",
+      });
+    }
 
     return NextResponse.json({
       success: true,
-      phone: TEST_PHONE,
+      phones: TEST_PHONES,
       message: messageText,
     });
   } catch (error) {
