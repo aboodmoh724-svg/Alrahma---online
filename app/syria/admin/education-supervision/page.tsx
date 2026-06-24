@@ -708,8 +708,8 @@ export default async function SyriaEducationSupervisionPage({
               {[
                 ["تقارير الشهر", enteredReports.length],
                 ["تقارير تسميع", recitationReports.length],
-                ["صفحات حفظ جديد", recitationReports.reduce((total, report) => total + (report.pagesCount || 0), 0)],
-                ["صفحات مراجعة", recitationReports.reduce((total, report) => total + (report.reviewPagesCount || 0), 0)],
+                ["آيات حفظ جديد", recitationReports.reduce((total, report) => total + (report.pagesCount || 0), 0)],
+                ["آيات مراجعة", recitationReports.reduce((total, report) => total + (report.reviewPagesCount || 0), 0)],
                 ["رسائل واتساب", sentReports],
               ].map(([label, value]) => (
                 <div key={label} className="rounded-2xl bg-[#fffaf4] p-4 ring-1 ring-[#e7d7b4]">

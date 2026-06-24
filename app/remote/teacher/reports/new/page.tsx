@@ -853,40 +853,15 @@ function NewReportForm() {
     }));
   };
 
-  const updateLessonCounter = (field: "lessonTaqeeni" | "lessonTanbeehi" | "lessonTajweedi", value: number) => {
-    setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [field]: value,
-      };
-      updated.lessonErrors = updated.lessonTaqeeni;
-      updated.lessonWarnings = updated.lessonTanbeehi + updated.lessonTajweedi;
-      updated.lessonHasHesitation = updated.lessonTanbeehi > 0;
-      return updated;
-    });
-  };
-
-  const updateLastFiveCounter = (field: "lastFiveTaqeeni" | "lastFiveTanbeehi" | "lastFiveTajweedi", value: number) => {
-    setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [field]: value,
-      };
-      updated.lastFiveErrors = updated.lastFiveTaqeeni;
-      updated.lastFiveWarnings = updated.lastFiveTanbeehi + updated.lastFiveTajweedi;
-      updated.lastFiveHasHesitation = updated.lastFiveTanbeehi > 0;
-      return updated;
-    });
-  };
-
-  const updateReviewCounter = (field: "reviewTaqeeni" | "reviewTanbeehi" | "reviewTajweedi", value: number) => {
+  const updateReviewCounter = (field: "reviewTaqeeni" | "reviewTanbeehi", value: number) => {
     setFormData((prev) => {
       const updated = {
         ...prev,
         [field]: value,
       };
       updated.reviewErrors = updated.reviewTaqeeni;
-      updated.reviewWarnings = updated.reviewTanbeehi + updated.reviewTajweedi;
+      updated.reviewWarnings = updated.reviewTanbeehi;
+      updated.reviewTajweedi = 0;
       return updated;
     });
   };
@@ -1357,23 +1332,6 @@ function NewReportForm() {
                     💡 تنبيه: لا يُسمح بأي خطأ (تلقيني، تجويدي، أو تنبيه) لاجتياز الدرس الجديد.
                   </p>
                 </div>
-                <div className="mt-4 border-t border-[#d8bf83]/30 pt-4 flex flex-wrap gap-4 items-end">
-                  <CounterInput
-                    label="خطأ تلقيني"
-                    value={formData.lessonTaqeeni}
-                    onChange={(val) => updateLessonCounter("lessonTaqeeni", val)}
-                  />
-                  <CounterInput
-                    label="خطأ تنبيهي"
-                    value={formData.lessonTanbeehi}
-                    onChange={(val) => updateLessonCounter("lessonTanbeehi", val)}
-                  />
-                  <CounterInput
-                    label="خطأ تجويدي"
-                    value={formData.lessonTajweedi}
-                    onChange={(val) => updateLessonCounter("lessonTajweedi", val)}
-                  />
-                </div>
               </section>
 
               <section className={sectionClass}>
@@ -1387,23 +1345,6 @@ function NewReportForm() {
                   <p className="mt-2 text-xs font-bold text-[#8a661f] leading-5">
                     💡 تنبيه: لا يُسمح بأي خطأ، تنبيه، أو تردد لاجتياز آخر 5 صفحات.
                   </p>
-                </div>
-                <div className="mt-4 border-t border-[#d8bf83]/30 pt-4 flex flex-wrap gap-4 items-end">
-                  <CounterInput
-                    label="خطأ تلقيني"
-                    value={formData.lastFiveTaqeeni}
-                    onChange={(val) => updateLastFiveCounter("lastFiveTaqeeni", val)}
-                  />
-                  <CounterInput
-                    label="خطأ تنبيهي"
-                    value={formData.lastFiveTanbeehi}
-                    onChange={(val) => updateLastFiveCounter("lastFiveTanbeehi", val)}
-                  />
-                  <CounterInput
-                    label="خطأ تجويدي"
-                    value={formData.lastFiveTajweedi}
-                    onChange={(val) => updateLastFiveCounter("lastFiveTajweedi", val)}
-                  />
                 </div>
               </section>
 
@@ -1461,11 +1402,6 @@ function NewReportForm() {
                         label="خطأ تنبيهي"
                         value={formData.reviewTanbeehi}
                         onChange={(val) => updateReviewCounter("reviewTanbeehi", val)}
-                      />
-                      <CounterInput
-                        label="خطأ تجويدي"
-                        value={formData.reviewTajweedi}
-                        onChange={(val) => updateReviewCounter("reviewTajweedi", val)}
                       />
                     </div>
 

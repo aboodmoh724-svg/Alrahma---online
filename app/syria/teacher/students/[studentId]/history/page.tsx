@@ -120,13 +120,6 @@ export default async function OnsiteStudentHistoryPage({ params }: PageProps) {
                 </div>
 
                 <div className="grid gap-3 text-sm text-[#1c2d31]/75 md:grid-cols-2">
-                  <p>
-                    <span className="font-black text-[#1c2d31]">الصفحات: </span>
-                    {report.pageFrom && report.pageTo
-                      ? `من ${report.pageFrom} إلى ${report.pageTo}`
-                      : "غير محددة"}
-                    {report.pagesCount ? ` - ${report.pagesCount} صفحات` : ""}
-                  </p>
 
                   <p>
                     <span className="font-black text-[#1c2d31]">المراجعة: </span>

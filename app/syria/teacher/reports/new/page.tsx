@@ -435,13 +435,14 @@ function NewReportForm() {
           cache: "no-store",
         });
         const data = await res.json();
+        const targetReport = data.lastPresentReport || data.previousReport;
         const previousLessonHomework =
-          res.ok && typeof data.previousReport?.nextLessonHomework === "string"
-            ? data.previousReport.nextLessonHomework
+          res.ok && typeof targetReport?.nextLessonHomework === "string"
+            ? targetReport.nextLessonHomework
             : "";
         const previousReviewHomework =
-          res.ok && typeof data.previousReport?.nextReviewHomework === "string"
-            ? data.previousReport.nextReviewHomework
+          res.ok && typeof targetReport?.nextReviewHomework === "string"
+            ? targetReport.nextReviewHomework
             : "";
         const previousHomework =
           res.ok && typeof data.lastNextHomework === "string"

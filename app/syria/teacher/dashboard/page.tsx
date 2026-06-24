@@ -21,6 +21,8 @@ type TodayReport = {
   parentSentError?: string | null;
   createdAt: Date;
   updatedAt: Date;
+  review?: string | null;
+  nextHomework?: string | null;
 };
 
 type StudentWithTodayReports = {
@@ -147,6 +149,8 @@ export default async function OnsiteTeacherDashboardPage({
                   parentSentError: true,
                   createdAt: true,
                   updatedAt: true,
+                  review: true,
+                  nextHomework: true,
                 },
               },
             },
@@ -209,6 +213,8 @@ export default async function OnsiteTeacherDashboardPage({
               parentSentError: true,
               createdAt: true,
               updatedAt: true,
+              review: true,
+              nextHomework: true,
             },
           },
           teacherProgressRecords: {
@@ -519,15 +525,10 @@ export default async function OnsiteTeacherDashboardPage({
                           {todayReport ? (
                             <div className="space-y-1 text-sm leading-7 text-[#1c2d31]/60">
                               <p>{todayReport.lessonName}</p>
-                              {!isAbsent ? (
-                                <p>
-                                  الصفحات:{" "}
-                                  {todayReport.pageFrom && todayReport.pageTo
-                                    ? `من ${todayReport.pageFrom} إلى ${todayReport.pageTo}`
-                                    : "غير محددة"}
-                                  {todayReport.pagesCount
-                                    ? ` - عدد الصفحات: ${todayReport.pagesCount}`
-                                    : ""}
+                              {todayReport.review ? <p>{todayReport.review}</p> : null}
+                              {todayReport.nextHomework ? (
+                                <p className="text-xs text-[#0f5a35] font-black">
+                                  الواجب: {todayReport.nextHomework}
                                 </p>
                               ) : null}
                             </div>

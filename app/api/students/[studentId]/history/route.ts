@@ -73,6 +73,7 @@ export async function GET(_request: Request, context: RouteContext) {
     }
 
     const previousReport = student.reports[0] || null;
+    const lastPresentReport = student.reports.find((r) => r.status === "PRESENT") || null;
     const lastNextHomework =
       student.reports.find((report) => report.nextHomework?.trim())
         ?.nextHomework || "";
@@ -82,6 +83,7 @@ export async function GET(_request: Request, context: RouteContext) {
       student,
       reports: student.reports,
       previousReport,
+      lastPresentReport,
       lastNextHomework,
     });
   } catch (error) {
