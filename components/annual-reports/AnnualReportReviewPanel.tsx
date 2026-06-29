@@ -19,6 +19,7 @@ type ReviewReport = {
   reviewStatus: "REVIEW" | "APPROVED" | "SENT";
   hasParentPhone: boolean;
   sendError: string | null;
+  reviewNotes: string | null;
 };
 
 type AnnualReportReviewPanelProps = {
@@ -197,7 +198,14 @@ export default function AnnualReportReviewPanel({
         <aside className="space-y-3 rounded-[1.75rem] bg-white p-4 text-[#1c2d31]">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
-              <h4 className="text-2xl font-black">{report.studentName}</h4>
+              <h4 className="text-2xl font-black flex flex-wrap items-center gap-2">
+                {report.studentName}
+                {report.reviewNotes === "AI_GENERATED" && (
+                  <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-black text-amber-600 ring-1 ring-amber-500/20">
+                    ✨ تم إكماله تلقائياً
+                  </span>
+                )}
+              </h4>
               <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
                 {report.teacherName || "لم يحدد المعلم"} -{" "}
                 {report.finalRating || "لا يوجد تقدير"}

@@ -169,6 +169,7 @@ export default async function OnsiteAnnualReportsPage({
       reviewStatus: report.reviewStatus,
       hasParentPhone: Boolean(parentPhone),
       sendError: report.sendError,
+      reviewNotes: report.reviewNotes,
     };
   });
 
@@ -375,18 +376,34 @@ export default async function OnsiteAnnualReportsPage({
                                 className="h-80 w-full object-contain"
                               />
                             </a>
-                            <a
-                              href={imageUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="mx-2 mb-2 block rounded-xl bg-[#0a3f2a] px-3 py-2 text-center text-xs font-black text-white transition hover:bg-[#0f5a35]"
-                            >
-                              فتح الصورة للتكبير
-                            </a>
+                            <div className="flex flex-col gap-1.5 p-2">
+                              <a
+                                href={imageUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="block rounded-xl bg-[#0a3f2a] py-2 text-center text-xs font-black text-white transition hover:bg-[#0f5a35]"
+                              >
+                                فتح الصورة للتكبير
+                              </a>
+                              <Link
+                                href={`/onsite/admin/annual-reports/${report.id}/card`}
+                                target="_blank"
+                                className="block rounded-xl bg-[#bd8f2d] py-2 text-center text-xs font-black text-white transition hover:bg-[#a67c25]"
+                              >
+                                معاينة البطاقة التفاعلية 🖼️
+                              </Link>
+                            </div>
                             </>
                           ) : (
-                            <div className="flex h-96 items-center justify-center p-6 text-center text-sm font-black text-[#1c2d31]/45">
-                              لا توجد صورة مرفوعة
+                            <div className="flex h-96 flex-col items-center justify-center p-6 text-center text-sm font-black text-[#1c2d31]/45 bg-[#f6eee7] rounded-[1.4rem]">
+                              <span>لا توجد صورة مرفوعة</span>
+                              <Link
+                                href={`/onsite/admin/annual-reports/${report.id}/card`}
+                                target="_blank"
+                                className="mt-4 rounded-xl bg-[#bd8f2d] px-4 py-2 text-xs font-black text-white transition hover:bg-[#a67c25]"
+                              >
+                                معاينة البطاقة التفاعلية 🖼️
+                              </Link>
                             </div>
                           )}
                         </div>
@@ -394,8 +411,13 @@ export default async function OnsiteAnnualReportsPage({
                         <div className="flex min-w-0 flex-col gap-3">
                           <div className="flex flex-wrap items-start justify-between gap-2">
                             <div>
-                              <h3 className="text-xl font-black text-[#1c2d31]">
+                              <h3 className="text-xl font-black text-[#1c2d31] flex flex-wrap items-center gap-2">
                                 {report.student?.fullName || report.studentName}
+                                {report.reviewNotes === "AI_GENERATED" && (
+                                  <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-black text-amber-600 ring-1 ring-amber-500/20">
+                                    ✨ تم إكماله تلقائياً
+                                  </span>
+                                )}
                               </h3>
                               <p className="mt-1 text-sm font-bold text-[#1c2d31]/55">
                                 {report.teacherName || "لم يحدد المعلم"} -{" "}
