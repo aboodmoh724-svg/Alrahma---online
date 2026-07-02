@@ -58,7 +58,7 @@ async function main() {
     }
 
     // 3. Audit Evaluations
-    if (!r.firstEvaluation || r.firstEvaluation === 0) {
+    if (!r.firstEvaluation || r.firstEvaluation === '0') {
       issues.push({
         reportId: r.id,
         studentName: sName,
@@ -68,7 +68,7 @@ async function main() {
         value: String(r.firstEvaluation),
       });
     }
-    if (!r.secondEvaluation || r.secondEvaluation === 0) {
+    if (!r.secondEvaluation || r.secondEvaluation === '0') {
       issues.push({
         reportId: r.id,
         studentName: sName,
