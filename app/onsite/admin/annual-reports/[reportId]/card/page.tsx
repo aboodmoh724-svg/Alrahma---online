@@ -27,7 +27,7 @@ const ICON_PATHS: Record<string, string> = {
   star: '<path d="m12 3.6 2.5 5.2 5.7.8-4.1 4 1 5.7L12 16.9 6.9 19.6l1-5.7-4.1-4 5.7-.8z"/>',
 };
 
-function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style }: { name: string; size?: number; stroke?: number; color?: string; style?: React.CSSProperties }) {
+function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style, className }: { name: string; size?: number; stroke?: number; color?: string; style?: React.CSSProperties; className?: string }) {
   return (
     <svg
       width={size}
@@ -39,6 +39,7 @@ function Icon({ name, size = 24, stroke = 1.6, color = 'currentColor', style }: 
       strokeLinecap="round"
       strokeLinejoin="round"
       style={style}
+      className={className}
       dangerouslySetInnerHTML={{ __html: ICON_PATHS[name] || '' }}
     />
   );
