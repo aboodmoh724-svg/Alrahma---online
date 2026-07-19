@@ -46,6 +46,7 @@ model User {
   sentAnnualReports AnnualReport[] @relation("AnnualReportSender")
   studentProgressRecords StudentTeacherProgress[]
   createdMeetingMinutes MeetingMinute[] @relation("MeetingMinuteCreator")
+  summerReports SummerReport[]
 }
 
 model Student {
@@ -76,6 +77,8 @@ model Student {
   teacherProgressRecords StudentTeacherProgress[]
   circle         Circle?   @relation(fields: [circleId], references: [id])
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  summerGroup    String?
+  summerReports  SummerReport[]
 }
 
 model StudentTeacherProgress {
@@ -715,6 +718,7 @@ enum StudyMode {
   REMOTE
   ONSITE
   ONSITE_SYRIA
+  ONSITE_SUMMER
 }
 
 enum ReportStatus {
@@ -836,4 +840,42 @@ enum AnnualReportReviewStatus {
   REVIEW
   APPROVED
   SENT
+}
+
+model SummerReport {
+  id                 String       @id @default(cuid())
+  studentId          String
+  teacherId          String
+  dateKey            String       // Format: YYYY-MM-DD
+  status             ReportStatus // PRESENT, ABSENT
+  
+  // Quran student fields
+  quranNew           String?      // حفظ الجديد
+  quranRevision      String?      // المراجعة
+  quranTaqeen        String?      // التلقين
+  
+  // Noor Al-Bayan student fields
+  noorLearned        String?      // ماذا تعلم اليوم
+  noorHomework       Boolean?     // تسليم الواجب (نعم/لا)
+  noorHomeworkGrade  Int?         // درجة الواجب
+  noorParticipation  Int?         // المشاركة (درجة)
+  
+  // Shared fields
+  behaviorGrade      Int?         // السلوك والانضباط (درجة)
+  behaviorNotes      String?      // ملاحظات السلوك (نص)
+  
+  // Sending status
+  dailySent          Boolean      @default(false)
+  dailySentAt        DateTime?
+  dailySentError     String?
+
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+
+  student            Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  teacher            User         @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, dateKey])
+  @@index([dateKey])
+  @@index([teacherId])
 }

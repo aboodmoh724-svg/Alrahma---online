@@ -1,6 +1,6 @@
 import type { StudyMode } from "@prisma/client";
 
-export const studyModes = ["REMOTE", "ONSITE", "ONSITE_SYRIA"] as const satisfies readonly StudyMode[];
+export const studyModes = ["REMOTE", "ONSITE", "ONSITE_SYRIA", "ONSITE_SUMMER"] as const satisfies readonly StudyMode[];
 
 export type AlrahmaStudyMode = (typeof studyModes)[number];
 
@@ -13,6 +13,7 @@ export function normalizeStudyMode(value: unknown): AlrahmaStudyMode | undefined
 export function getStudyModeLabel(studyMode: StudyMode | AlrahmaStudyMode) {
   if (studyMode === "REMOTE") return "Remote";
   if (studyMode === "ONSITE_SYRIA") return "Onsite - Syria";
+  if (studyMode === "ONSITE_SUMMER") return "Onsite - Summer";
   return "Onsite - Afyon";
 }
 
@@ -25,11 +26,13 @@ export function getTeacherLoginPath(studyMode: StudyMode | AlrahmaStudyMode) {
 export function getTeacherDashboardPath(studyMode: StudyMode | AlrahmaStudyMode) {
   if (studyMode === "REMOTE") return "/remote/teacher/dashboard";
   if (studyMode === "ONSITE_SYRIA") return "/syria/teacher/dashboard";
+  if (studyMode === "ONSITE_SUMMER") return "/onsite/summer/teacher";
   return "/onsite/teacher/dashboard";
 }
 
 export function getAdminDashboardPath(studyMode: StudyMode | AlrahmaStudyMode) {
   if (studyMode === "REMOTE") return "/remote/admin/dashboard";
   if (studyMode === "ONSITE_SYRIA") return "/syria/admin/dashboard";
+  if (studyMode === "ONSITE_SUMMER") return "/onsite/summer/admin";
   return "/onsite/admin/dashboard";
 }

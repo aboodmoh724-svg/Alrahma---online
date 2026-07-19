@@ -2,7 +2,7 @@ import { appUrl } from "@/lib/app-url";
 import { normalizeInternationalPhone } from "@/lib/phone-number";
 import type { Prisma } from "@prisma/client";
 
-export type WhatsAppChannel = "REMOTE" | "ONSITE" | "ONSITE_SYRIA";
+export type WhatsAppChannel = "REMOTE" | "ONSITE" | "ONSITE_SYRIA" | "ONSITE_SUMMER";
 
 type WhatsAppTextInput = {
   to: string;
@@ -183,7 +183,7 @@ function resolveWebJsApiUrl(channel?: WhatsAppChannel) {
     );
   }
 
-  if (channel === "ONSITE") {
+  if (channel === "ONSITE" || channel === "ONSITE_SUMMER") {
     return (
       process.env.WHATSAPP_WEBJS_API_URL_ONSITE ||
       process.env.WHATSAPP_WEBJS_API_URL ||
@@ -219,7 +219,7 @@ function resolveWebJsApiToken(channel?: WhatsAppChannel) {
     );
   }
 
-  if (channel === "ONSITE") {
+  if (channel === "ONSITE" || channel === "ONSITE_SUMMER") {
     return (
       process.env.WHATSAPP_WEBJS_API_TOKEN_ONSITE ||
       process.env.WHATSAPP_WEBJS_API_TOKEN ||

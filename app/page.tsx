@@ -40,6 +40,17 @@ const portals = [
       { href: "/syria/teacher/login", label: "دخول المعلم" },
     ],
   },
+  {
+    title: "الدورة الصيفية - أفيون",
+    description: "متابعة الحضور والتقارير اليومية والأسبوعية لطلاب القرآن ونور البيان في الدورة الصيفية.",
+    badge: "دورة صيف 2026",
+    image: "/images/afyon-awards-wide.jpeg",
+    accent: "from-[#6c4e09]/92 via-[#3a2d0d]/76 to-[#0f5a35]/40",
+    links: [
+      { href: "/onsite/summer/admin", label: "دخول الإدارة" },
+      { href: "/onsite/summer/teacher", label: "دخول المعلم" },
+    ],
+  },
 ];
 
 export default function HomePage() {
