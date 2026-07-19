@@ -117,16 +117,44 @@ export default async function OnsiteSummerTeacherDashboardPage({
   });
 
   if (!teacher) {
+    const isAdmin = await prisma.user.findFirst({
+      where: { id: teacherId, role: "ADMIN", isActive: true },
+      select: { id: true },
+    });
+
+    if (isAdmin) {
+      return (
+        <main className="rahma-shell min-h-screen p-6" dir="rtl">
+          <div className="mx-auto max-w-3xl rounded-[2rem] border border-blue-200 bg-blue-50/80 p-6 text-blue-800 backdrop-blur shadow-lg">
+            <p className="font-black text-lg">⚠️ أنت مسجل الدخول حالياً بحساب مدير (Admin).</p>
+            <p className="mt-2 text-sm">للوصول إلى لوحة المعلم الصيفية، يرجى تسجيل الخروج أولاً ثم تسجيل الدخول باستخدام حساب المعلم.</p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <LogoutButton className="rounded-2xl bg-blue-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-blue-800 shadow cursor-pointer" />
+              <Link
+                href="/onsite/summer/admin"
+                className="rounded-2xl bg-white border border-blue-200 px-5 py-3 text-sm font-bold text-blue-700 transition hover:bg-blue-50 shadow"
+              >
+                الذهاب للوحة إدارة الصيفية
+              </Link>
+            </div>
+          </div>
+        </main>
+      );
+    }
+
     return (
       <main className="rahma-shell min-h-screen p-6" dir="rtl">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-red-200 bg-red-50/80 p-6 text-red-700 backdrop-blur shadow-lg">
           <p className="font-black text-lg">لا يمكن العثور على حساب المعلم أو الحساب غير نشط.</p>
-          <Link
-            href="/onsite/teacher/login"
-            className="mt-4 inline-flex rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 shadow"
-          >
-            تسجيل الدخول كمعلم
-          </Link>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Link
+              href="/onsite/teacher/login"
+              className="inline-flex rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 shadow"
+            >
+              تسجيل الدخول كمعلم
+            </Link>
+            <LogoutButton className="rounded-2xl bg-slate-100 px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-200 shadow cursor-pointer" />
+          </div>
         </div>
       </main>
     );

@@ -471,9 +471,9 @@ export default function SummerAdminDashboard({
                                   </td>
                                   <td className="px-6 py-3.5">
                                     {isFilled ? (
-                                      report.dailySent ? (
+                                      report?.dailySent ? (
                                         <span className="text-green-700 text-xs font-bold block">
-                                          ✅ تم الإرسال {report.dailySentAt && `(${new Date(report.dailySentAt).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })})`}
+                                          ✅ تم الإرسال {report?.dailySentAt && `(${new Date(report.dailySentAt).toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })})`}
                                         </span>
                                       ) : (
                                         <span className="text-amber-600 text-xs font-bold block">⏳ بانتظار الإرسال</span>
@@ -487,14 +487,14 @@ export default function SummerAdminDashboard({
                                       className={`rounded-xl px-3 py-1.5 text-xs font-bold transition ${
                                         !isFilled
                                           ? "bg-slate-100 text-slate-400 cursor-not-allowed"
-                                          : report.dailySent
+                                          : report?.dailySent
                                           ? "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                           : "bg-[#bd8f2d] text-white hover:bg-[#a67c25]"
                                       }`}
                                     >
                                       {sendingId === student.id
                                         ? "⏳ إرسال..."
-                                        : report.dailySent
+                                        : report?.dailySent
                                         ? "🔄 إعادة إرسال"
                                         : "🚀 إرسال الآن"}
                                     </button>
