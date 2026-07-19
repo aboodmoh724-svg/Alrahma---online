@@ -9,7 +9,7 @@ async function checkAdmin() {
   const adminId = cookieStore.get("alrahma_user_id")?.value;
   if (!adminId) return false;
   const admin = await prisma.user.findFirst({
-    where: { id: adminId, role: "ADMIN", isActive: true },
+    where: { id: adminId, role: "ADMIN", studyMode: "ONSITE_SUMMER", isActive: true },
   });
   return !!admin;
 }

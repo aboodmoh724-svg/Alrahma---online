@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     const admin = await prisma.user.findFirst({
-      where: { id: adminId, role: "ADMIN", isActive: true },
+      where: { id: adminId, role: "ADMIN", studyMode: "ONSITE_SUMMER", isActive: true },
     });
 
     if (!admin) {

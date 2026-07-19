@@ -15,6 +15,7 @@ async function getCurrentOnsiteAdmin() {
     where: {
       id: userId,
       role: "ADMIN",
+      studyMode: "ONSITE_SUMMER",
       isActive: true,
     },
     select: {
