@@ -25,18 +25,18 @@ export default function Page() {
             <div className="w-full max-w-md">
               <div className="mb-7">
                 <p className="w-fit rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
-                  إدارة أفيون
+                  إدارة أفيون الحضورية
                 </p>
                 <h1 className="mt-4 text-3xl font-black leading-tight text-[#0a3f2a] sm:text-4xl">
-                  متابعة الحلقات الحضورية من مكان واحد
+                  متابعة الحلقات الحضورية العامة
                 </h1>
                 <p className="mt-3 text-sm leading-7 text-[#1c2d31]/65">
-                  إدارة الطلاب والمعلمين والحلقات والغياب اليومي في فرع أفيون.
+                  إدارة الطلاب والمعلمين والحلقات والغياب اليومي في فرع أفيون العام.
                 </p>
               </div>
               <LoginForm
-                title="دخول الإدارة"
-                subtitle="دخول الإدارة للتعليم الحضوري في أفيون."
+                title="دخول إدارة حضوري (أفيون)"
+                subtitle="دخول الإدارة للتعليم الحضوري العام في أفيون."
                 rememberKey="alrahma_onsite_admin_login"
               />
             </div>

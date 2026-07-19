@@ -54,7 +54,7 @@ export default async function OnsiteSummerTeacherDashboardPage({
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-amber-200 bg-amber-50/80 p-6 text-amber-800 backdrop-blur shadow-lg">
           <p className="font-black text-lg">الرجاء تسجيل الدخول أولاً للوصول إلى لوحة المعلم.</p>
           <Link
-            href="/onsite/teacher/login"
+            href="/onsite/summer/teacher/login"
             className="mt-4 inline-flex rounded-2xl bg-amber-700 px-5 py-3 text-sm font-bold text-white transition hover:bg-amber-800 shadow"
           >
             تسجيل الدخول
@@ -148,7 +148,7 @@ export default async function OnsiteSummerTeacherDashboardPage({
           <p className="font-black text-lg">لا يمكن العثور على حساب المعلم أو الحساب غير نشط.</p>
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
-              href="/onsite/teacher/login"
+              href="/onsite/summer/teacher/login"
               className="inline-flex rounded-2xl bg-red-600 px-5 py-3 text-sm font-bold text-white transition hover:bg-red-700 shadow"
             >
               تسجيل الدخول كمعلم

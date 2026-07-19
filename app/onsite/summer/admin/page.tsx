@@ -29,7 +29,7 @@ export default async function OnsiteSummerAdminPage() {
   const admin = await getCurrentOnsiteAdmin();
 
   if (!admin) {
-    redirect("/onsite/admin/login");
+    redirect("/onsite/summer/admin/login");
   }
 
   // Fetch all circles under ONSITE_SUMMER
@@ -122,20 +122,20 @@ export default async function OnsiteSummerAdminPage() {
   });
 
   return (
-    <main className="rahma-shell min-h-screen bg-gradient-to-br from-[#faf6ed] via-[#fff] to-[#f4eee0] p-4 sm:p-6" dir="rtl">
+    <main className="rahma-shell min-h-screen bg-gradient-to-br from-[#f0fdfa] via-[#f8fafc] to-[#fffbeb]/40 p-4 sm:p-6" dir="rtl">
       <div className="mx-auto max-w-7xl space-y-6">
         
         {/* Admin Header */}
-        <section className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl md:p-8">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(189,143,45,0.15),transparent_45%)]" />
+        <section className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-[#0f766e] via-[#0d9488] to-[#14b8a6] p-6 text-white shadow-xl md:p-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(217,119,6,0.22),transparent_45%)]" />
           <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-black text-[#d8bf83] backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-black text-amber-300 backdrop-blur-md border border-white/5">
                 <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
-                لوحة التحكم الإدارية
+                لوحة التحكم الإدارية الخاصة
               </div>
-              <h1 className="mt-4 text-3xl font-black sm:text-4xl">إدارة الدورة الصيفية</h1>
-              <p className="mt-2 text-sm text-white/70 leading-relaxed max-w-xl">
+              <h1 className="mt-4 text-3xl font-black sm:text-4xl">إدارة الدورة الصيفية (أفيون)</h1>
+              <p className="mt-2 text-sm text-teal-50/80 leading-relaxed max-w-xl">
                 متابعة تقارير المعلمين وحالات الغياب، والتحكم بالطلاب والحلقات الصيفية، وإرسال التقارير اليومية والأسبوعية لأهالي الطلاب.
               </p>
             </div>
@@ -143,7 +143,7 @@ export default async function OnsiteSummerAdminPage() {
             <div className="flex flex-wrap items-center gap-3">
               <Link
                 href="/onsite/admin/dashboard"
-                className="rounded-2xl bg-white/8 px-4 py-3 text-sm font-bold text-white border border-white/10 backdrop-blur transition hover:bg-white/16"
+                className="rounded-2xl bg-white/10 px-4 py-3 text-sm font-bold text-white border border-white/10 backdrop-blur transition hover:bg-white/20"
               >
                 اللوحة العامة لحضوري
               </Link>

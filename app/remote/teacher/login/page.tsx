@@ -1,4 +1,4 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import LoginForm from "@/components/login/LoginForm";
 
 export default function RemoteTeacherLoginPage() {
@@ -26,8 +26,8 @@ export default function RemoteTeacherLoginPage() {
                 <span className="rounded-full bg-[#fffaf4] px-4 py-2 text-xs font-bold text-[#8a661f] ring-1 ring-[#d8bf83]">المعلم</span>
               </div>
               <LoginForm
-                title="تسجيل دخول المعلم"
-                subtitle="أدخل بياناتك لإدارة طلابك وتقارير اليوم."
+                title="دخول المعلم (عن بعد)"
+                subtitle="أدخل بياناتك لإدارة طلابك وتقارير اليوم في حلقات التعليم عن بعد."
                 rememberKey="alrahma_remote_teacher_login"
               />
             </div>

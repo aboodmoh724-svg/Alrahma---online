@@ -25,18 +25,18 @@ export default function Page() {
             <div className="w-full max-w-md">
               <div className="mb-7">
                 <p className="w-fit rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
-                  معلمو أفيون
+                  معلمو أفيون (حضوري عام)
                 </p>
                 <h1 className="mt-4 text-3xl font-black leading-tight text-[#0a3f2a] sm:text-4xl">
-                  تقارير التسميع والغياب بوضوح
+                  تقارير التسميع والغياب الحضوري
                 </h1>
                 <p className="mt-3 text-sm leading-7 text-[#1c2d31]/65">
-                  مساحة المعلم لإدخال التقارير اليومية ومتابعة طلاب الحلقة.
+                  مساحة المعلم لإدخال التقارير اليومية ومتابعة حلقات التعليم الحضوري العام بأفيون.
                 </p>
               </div>
               <LoginForm
-                title="دخول المعلم"
-                subtitle="دخول المعلم للتعليم الحضوري في أفيون."
+                title="دخول معملي حضوري (أفيون)"
+                subtitle="دخول معلمي حلقات التعليم الحضوري العام في أفيون."
                 rememberKey="alrahma_onsite_teacher_login"
               />
             </div>

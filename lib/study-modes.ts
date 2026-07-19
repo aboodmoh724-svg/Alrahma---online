@@ -20,6 +20,7 @@ export function getStudyModeLabel(studyMode: StudyMode | AlrahmaStudyMode) {
 export function getTeacherLoginPath(studyMode: StudyMode | AlrahmaStudyMode) {
   if (studyMode === "REMOTE") return "/remote/teacher/login";
   if (studyMode === "ONSITE_SYRIA") return "/syria/teacher/login";
+  if (studyMode === "ONSITE_SUMMER") return "/onsite/summer/teacher/login";
   return "/onsite/teacher/login";
 }
 
