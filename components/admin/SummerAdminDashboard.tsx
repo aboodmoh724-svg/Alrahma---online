@@ -310,12 +310,12 @@ export default function SummerAdminDashboard({
       )}
 
       {/* Main Admin Tab Buttons */}
-      <nav className="flex flex-wrap gap-2 p-1.5 rounded-[2rem] bg-white/50 border border-[#9cc4c0]/15 backdrop-blur w-fit">
+      <nav className="flex flex-wrap gap-2 p-1.5 rounded-[2rem] bg-white/50 border border-[#d8bf83]/15 backdrop-blur w-fit">
         <button
           onClick={() => { setActiveTab("daily"); setActionMessage(null); }}
           className={`rounded-2xl px-6 py-3 text-sm font-black transition-all ${
             activeTab === "daily"
-              ? "bg-[#0d9488] text-white shadow-md"
+              ? "bg-[#0f5a35] text-white shadow-md"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -325,7 +325,7 @@ export default function SummerAdminDashboard({
           onClick={() => { setActiveTab("weekly"); setActionMessage(null); }}
           className={`rounded-2xl px-6 py-3 text-sm font-black transition-all ${
             activeTab === "weekly"
-              ? "bg-[#0d9488] text-white shadow-md"
+              ? "bg-[#0f5a35] text-white shadow-md"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -335,7 +335,7 @@ export default function SummerAdminDashboard({
           onClick={() => { setActiveTab("students"); setActionMessage(null); }}
           className={`rounded-2xl px-6 py-3 text-sm font-black transition-all ${
             activeTab === "students"
-              ? "bg-[#0d9488] text-white shadow-md"
+              ? "bg-[#0f5a35] text-white shadow-md"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -345,7 +345,7 @@ export default function SummerAdminDashboard({
           onClick={() => { setActiveTab("circles"); setActionMessage(null); }}
           className={`rounded-2xl px-6 py-3 text-sm font-black transition-all ${
             activeTab === "circles"
-              ? "bg-[#0d9488] text-white shadow-md"
+              ? "bg-[#0f5a35] text-white shadow-md"
               : "text-slate-600 hover:bg-slate-100"
           }`}
         >
@@ -357,14 +357,14 @@ export default function SummerAdminDashboard({
       {activeTab === "daily" && (
         <div className="space-y-6">
           {/* Controls bar */}
-          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <label className="text-sm font-bold text-slate-500">اختر تاريخ اليوم:</label>
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="rounded-xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-2 text-sm text-[#1c2d31] outline-none"
+                className="rounded-xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-2 text-sm text-[#1c2d31] outline-none"
               />
             </div>
             
@@ -372,7 +372,7 @@ export default function SummerAdminDashboard({
               <button
                 onClick={() => handleSendDaily({ all: true })}
                 disabled={sendingId === "all"}
-                className="rounded-2xl bg-[#0d9488] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0f766e] disabled:opacity-50"
+                className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0a3f2a] disabled:opacity-50"
               >
                 {sendingId === "all" ? "⏳ جاري إرسال الكل..." : "🚀 إرسال جميع تقارير اليوم لجميع الحلقات"}
               </button>
@@ -380,12 +380,12 @@ export default function SummerAdminDashboard({
           </div>
 
           {reportsLoading ? (
-            <div className="p-12 text-center text-slate-500 bg-white/60 border border-[#9cc4c0]/20 rounded-3xl">
+            <div className="p-12 text-center text-slate-500 bg-white/60 border border-[#d8bf83]/20 rounded-3xl">
               <span className="text-xl inline-block animate-spin mr-2">🔄</span>
               <p className="font-bold">جاري تحميل تقارير اليوم المحدد...</p>
             </div>
           ) : circles.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 bg-white/60 border border-[#9cc4c0]/20 rounded-3xl">
+            <div className="p-12 text-center text-slate-500 bg-white/60 border border-[#d8bf83]/20 rounded-3xl">
               <p className="font-bold">لا يوجد حلقات مضافة بالدورة الصيفية حالياً.</p>
             </div>
           ) : (
@@ -397,11 +397,11 @@ export default function SummerAdminDashboard({
                 return (
                   <div
                     key={circle.id}
-                    className="overflow-hidden rounded-3xl border border-[#9cc4c0]/20 bg-white/70 shadow-sm backdrop-blur"
+                    className="overflow-hidden rounded-3xl border border-[#d8bf83]/20 bg-white/70 shadow-sm backdrop-blur"
                   >
-                    <div className="border-b border-[#9cc4c0]/10 bg-[#fffaf0]/60 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="border-b border-[#d8bf83]/10 bg-[#fffaf0]/60 px-6 py-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <h3 className="text-lg font-black text-[#0f766e]">{circle.name}</h3>
+                        <h3 className="text-lg font-black text-[#0a3f2a]">{circle.name}</h3>
                         <p className="text-xs text-slate-500 mt-1">
                           المعلم: {circle.teacher?.fullName || "غير معين"} | رصد التقارير: {circleReportedCount} من {circleStudents.length}
                         </p>
@@ -410,7 +410,7 @@ export default function SummerAdminDashboard({
                         <button
                           onClick={() => handleSendDaily({ circleId: circle.id })}
                           disabled={sendingId === circle.id}
-                          className="rounded-xl border border-[#0d9488] bg-white text-[#0d9488] px-4 py-2.5 text-xs font-black transition hover:bg-[#0d9488]/5 disabled:opacity-50"
+                          className="rounded-xl border border-[#0f5a35] bg-white text-[#0f5a35] px-4 py-2.5 text-xs font-black transition hover:bg-[#0f5a35]/5 disabled:opacity-50"
                         >
                           {sendingId === circle.id ? "⏳ جاري إرسال التقرير..." : "🚀 إرسال تقارير الحلقة كاملة"}
                         </button>
@@ -425,7 +425,7 @@ export default function SummerAdminDashboard({
                       <div className="overflow-x-auto">
                         <table className="w-full text-right border-collapse">
                           <thead>
-                            <tr className="border-b border-[#9cc4c0]/10 bg-slate-50/50 text-xs font-bold text-slate-500">
+                            <tr className="border-b border-[#d8bf83]/10 bg-slate-50/50 text-xs font-bold text-slate-500">
                               <th className="px-6 py-3">الطالب</th>
                               <th className="px-6 py-3">مسار</th>
                               <th className="px-6 py-3">تقرير اليوم</th>
@@ -434,7 +434,7 @@ export default function SummerAdminDashboard({
                               <th className="px-6 py-3 text-left">إجراء فردي</th>
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#9cc4c0]/10 text-sm">
+                          <tbody className="divide-y divide-[#d8bf83]/10 text-sm">
                             {circleStudents.map((student) => {
                               const report = reports[student.id];
                               const isFilled = !!report;
@@ -517,26 +517,26 @@ export default function SummerAdminDashboard({
       {/* Tab 2: Weekly Reports Monitor */}
       {activeTab === "weekly" && (
         <div className="space-y-6">
-          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h3 className="text-base font-black text-[#0f766e]">التقارير الأسبوعية (كروت التلخيص)</h3>
+              <h3 className="text-base font-black text-[#0a3f2a]">التقارير الأسبوعية (كروت التلخيص)</h3>
               <p className="text-xs text-slate-500 mt-1">يتم توليد وإرسال البطاقات التلخيصية للأهالي بنهاية دوام الأحد من كل أسبوع.</p>
             </div>
             
             <button
               onClick={() => handleSendWeekly({ all: true })}
               disabled={sendingId === "all_weekly"}
-              className="rounded-2xl bg-[#0d9488] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0f766e] disabled:opacity-50"
+              className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0a3f2a] disabled:opacity-50"
             >
               {sendingId === "all_weekly" ? "⏳ جاري الإرسال الجماعي..." : "✉️ إرسال جميع الكروت الأسبوعية لكافة الطلاب"}
             </button>
           </div>
 
-          <div className="overflow-hidden rounded-3xl border border-[#9cc4c0]/20 bg-white/70 shadow-sm backdrop-blur">
+          <div className="overflow-hidden rounded-3xl border border-[#d8bf83]/20 bg-white/70 shadow-sm backdrop-blur">
             <div className="overflow-x-auto">
               <table className="w-full text-right border-collapse">
                 <thead>
-                  <tr className="border-b border-[#9cc4c0]/10 bg-[#fffaf0]/60 text-xs font-black text-slate-500">
+                  <tr className="border-b border-[#d8bf83]/10 bg-[#fffaf0]/60 text-xs font-black text-slate-500">
                     <th className="px-6 py-4">اسم الطالب</th>
                     <th className="px-6 py-4">الحلقة</th>
                     <th className="px-6 py-4">مسار الطالب</th>
@@ -545,7 +545,7 @@ export default function SummerAdminDashboard({
                     <th className="px-6 py-4 text-left">إجراء الإرسال</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#9cc4c0]/10 text-sm">
+                <tbody className="divide-y divide-[#d8bf83]/10 text-sm">
                   {students.map((student) => (
                     <tr key={student.id} className="transition hover:bg-slate-50/50">
                       <td className="px-6 py-4 font-bold text-slate-800">{student.fullName}</td>
@@ -586,18 +586,18 @@ export default function SummerAdminDashboard({
       {/* Tab 3: Student Management */}
       {activeTab === "students" && (
         <div className="space-y-6">
-          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <input
               type="text"
               placeholder="🔍 ابحث عن اسم الطالب..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-2.5 text-sm text-[#1c2d31] outline-none max-w-sm w-full"
+              className="rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-2.5 text-sm text-[#1c2d31] outline-none max-w-sm w-full"
             />
             
             <button
               onClick={() => { setShowAddStudent(true); setEditingStudent(null); }}
-              className="rounded-2xl bg-[#0d9488] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0f766e]"
+              className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0a3f2a]"
             >
               ➕ إضافة طالب جديد بالدورة
             </button>
@@ -606,7 +606,7 @@ export default function SummerAdminDashboard({
           {/* Add / Edit Form Modal (inline) */}
           {(showAddStudent || editingStudent) && (
             <div className="rounded-3xl border border-[#bd8f2d]/30 bg-[#fffcf5] p-6 shadow-md">
-              <h3 className="text-[#0f766e] font-black text-base border-b border-[#9cc4c0]/20 pb-3 mb-4">
+              <h3 className="text-[#0a3f2a] font-black text-base border-b border-[#d8bf83]/20 pb-3 mb-4">
                 {editingStudent ? `✏️ تعديل بيانات الطالب: ${editingStudent.fullName}` : "➕ إضافة طالب جديد بالدورة الصيفية"}
               </h3>
               
@@ -624,7 +624,7 @@ export default function SummerAdminDashboard({
                       }
                     }}
                     placeholder="مثال: يوسف أحمد سليم"
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                     required
                   />
                 </div>
@@ -641,7 +641,7 @@ export default function SummerAdminDashboard({
                       }
                     }}
                     placeholder="مثال: 905330000000"
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                     required
                   />
                 </div>
@@ -656,7 +656,7 @@ export default function SummerAdminDashboard({
                         setStudentForm({ ...studentForm, summerGroup: e.target.value });
                       }
                     }}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                   >
                     <option value="QURAN">📖 قرآن كريم</option>
                     <option value="NOOR_AL_BAYAN">✨ نور البيان</option>
@@ -673,7 +673,7 @@ export default function SummerAdminDashboard({
                         setStudentForm({ ...studentForm, circleId: e.target.value });
                       }
                     }}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                     required
                   >
                     <option value="">-- اختر الحلقة --</option>
@@ -695,7 +695,7 @@ export default function SummerAdminDashboard({
                         setStudentForm({ ...studentForm, teacherId: e.target.value });
                       }
                     }}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                     required
                   >
                     <option value="">-- اختر المعلم --</option>
@@ -709,7 +709,7 @@ export default function SummerAdminDashboard({
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="rounded-2xl bg-[#0d9488] text-white px-5 py-2.5 text-sm font-bold shadow hover:bg-[#0f766e] flex-1"
+                    className="rounded-2xl bg-[#0f5a35] text-white px-5 py-2.5 text-sm font-bold shadow hover:bg-[#0a3f2a] flex-1"
                   >
                     حفظ البيانات
                   </button>
@@ -726,11 +726,11 @@ export default function SummerAdminDashboard({
           )}
 
           {/* Students list table */}
-          <div className="overflow-hidden rounded-3xl border border-[#9cc4c0]/20 bg-white/70 shadow-sm backdrop-blur">
+          <div className="overflow-hidden rounded-3xl border border-[#d8bf83]/20 bg-white/70 shadow-sm backdrop-blur">
             <div className="overflow-x-auto">
               <table className="w-full text-right border-collapse">
                 <thead>
-                  <tr className="border-b border-[#9cc4c0]/10 bg-[#fffaf0]/60 text-xs font-black text-slate-500">
+                  <tr className="border-b border-[#d8bf83]/10 bg-[#fffaf0]/60 text-xs font-black text-slate-500">
                     <th className="px-6 py-4">اسم الطالب</th>
                     <th className="px-6 py-4">المجموعة</th>
                     <th className="px-6 py-4">الحلقة الحالية</th>
@@ -739,7 +739,7 @@ export default function SummerAdminDashboard({
                     <th className="px-6 py-4 text-left">إجراءات</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#9cc4c0]/10 text-sm">
+                <tbody className="divide-y divide-[#d8bf83]/10 text-sm">
                   {filteredStudents.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="p-12 text-center text-slate-500">
@@ -785,11 +785,11 @@ export default function SummerAdminDashboard({
       {/* Tab 4: Circle Management */}
       {activeTab === "circles" && (
         <div className="space-y-6">
-          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex justify-between items-center">
-            <h3 className="text-base font-black text-[#0f766e]">إدارة الحلقات بالدورة الصيفية</h3>
+          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur flex justify-between items-center">
+            <h3 className="text-base font-black text-[#0a3f2a]">إدارة الحلقات بالدورة الصيفية</h3>
             <button
               onClick={() => setShowAddCircle(true)}
-              className="rounded-2xl bg-[#0d9488] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0f766e]"
+              className="rounded-2xl bg-[#0f5a35] px-5 py-3 text-sm font-black text-white shadow-md transition hover:bg-[#0a3f2a]"
             >
               ➕ إنشاء حلقة صيفية جديدة
             </button>
@@ -798,7 +798,7 @@ export default function SummerAdminDashboard({
           {/* Add Circle Form Inline */}
           {showAddCircle && (
             <div className="rounded-3xl border border-[#bd8f2d]/30 bg-[#fffcf5] p-6 shadow-md max-w-xl">
-              <h3 className="text-[#0f766e] font-black text-base border-b border-[#9cc4c0]/20 pb-3 mb-4">
+              <h3 className="text-[#0a3f2a] font-black text-base border-b border-[#d8bf83]/20 pb-3 mb-4">
                 ➕ إنشاء حلقة جديدة بالدورة
               </h3>
               
@@ -810,7 +810,7 @@ export default function SummerAdminDashboard({
                     value={circleForm.name}
                     onChange={(e) => setCircleForm({ ...circleForm, name: e.target.value })}
                     placeholder="مثال: حلقة عثمان بن عفان"
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                     required
                   />
                 </div>
@@ -819,7 +819,7 @@ export default function SummerAdminDashboard({
                   <select
                     value={circleForm.teacherId}
                     onChange={(e) => setCircleForm({ ...circleForm, teacherId: e.target.value })}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-white px-4 py-2.5 text-sm text-[#1c2d31] outline-none"
                     required
                   >
                     <option value="">-- اختر المعلم --</option>
@@ -834,7 +834,7 @@ export default function SummerAdminDashboard({
                 <div className="flex gap-2">
                   <button
                     type="submit"
-                    className="rounded-2xl bg-[#0d9488] text-white px-5 py-2.5 text-sm font-bold shadow hover:bg-[#0f766e] flex-1"
+                    className="rounded-2xl bg-[#0f5a35] text-white px-5 py-2.5 text-sm font-bold shadow hover:bg-[#0a3f2a] flex-1"
                   >
                     حفظ الحلقة
                   </button>
@@ -858,13 +858,13 @@ export default function SummerAdminDashboard({
               return (
                 <div
                   key={circle.id}
-                  className="rounded-3xl border border-[#9cc4c0]/20 bg-white/70 p-6 shadow-sm backdrop-blur flex flex-col justify-between"
+                  className="rounded-3xl border border-[#d8bf83]/20 bg-white/70 p-6 shadow-sm backdrop-blur flex flex-col justify-between"
                 >
                   <div>
-                    <span className="inline-flex rounded-full bg-[#0d9488]/10 px-3 py-1 text-xs font-bold text-[#0d9488]">
+                    <span className="inline-flex rounded-full bg-[#0f5a35]/10 px-3 py-1 text-xs font-bold text-[#0f5a35]">
                       الدورة الصيفية
                     </span>
-                    <h4 className="mt-3 text-xl font-black text-[#0f766e]">{circle.name}</h4>
+                    <h4 className="mt-3 text-xl font-black text-[#0a3f2a]">{circle.name}</h4>
                     <p className="mt-2 text-sm text-slate-500">المعلم: {circle.teacher?.fullName || "غير معين"}</p>
                     <p className="mt-4 text-xs font-bold text-slate-400">عدد الطلاب المسجلين بالحلقة: {circleStudentsCount} طالب</p>
                   </div>
@@ -881,4 +881,3 @@ export default function SummerAdminDashboard({
     </div>
   );
 }
-

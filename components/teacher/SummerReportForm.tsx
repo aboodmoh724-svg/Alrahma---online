@@ -132,7 +132,7 @@ export default function SummerReportForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Attendance Status Toggle */}
-      <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-6 shadow-sm backdrop-blur">
+      <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-6 shadow-sm backdrop-blur">
         <h3 className="text-sm font-bold text-slate-500 mb-4">حالة حضور الطالب اليوم</h3>
         <div className="grid grid-cols-2 gap-4">
           <button
@@ -165,8 +165,8 @@ export default function SummerReportForm({
           {/* Group Specific Fields */}
           {isQuran ? (
             /* Quran Student Fields */
-            <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-6 shadow-sm backdrop-blur space-y-4">
-              <h3 className="text-[#0d9488] font-black border-b border-[#9cc4c0]/20 pb-3 mb-2">📚 تفاصيل مقرر القرآن الكريم</h3>
+            <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-6 shadow-sm backdrop-blur space-y-4">
+              <h3 className="text-[#0f5a35] font-black border-b border-[#d8bf83]/20 pb-3 mb-2">📚 تفاصيل مقرر القرآن الكريم</h3>
               
               <div className="grid gap-4 md:grid-cols-3">
                 <div>
@@ -176,7 +176,7 @@ export default function SummerReportForm({
                     onChange={(e) => setQuranNew(e.target.value)}
                     placeholder="مثال: سورة الكهف من آية 1 إلى 10"
                     rows={3}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0d9488] focus:bg-white resize-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white resize-none"
                     required
                   />
                 </div>
@@ -187,7 +187,7 @@ export default function SummerReportForm({
                     onChange={(e) => setQuranRevision(e.target.value)}
                     placeholder="مثال: سورة يس بالكامل"
                     rows={3}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0d9488] focus:bg-white resize-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white resize-none"
                     required
                   />
                 </div>
@@ -198,7 +198,7 @@ export default function SummerReportForm({
                     onChange={(e) => setQuranTaqeen(e.target.value)}
                     placeholder="مثال: سورة مريم من آية 1 إلى 15"
                     rows={3}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0d9488] focus:bg-white resize-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white resize-none"
                     required
                   />
                 </div>
@@ -206,8 +206,8 @@ export default function SummerReportForm({
             </div>
           ) : (
             /* Noor Al-Bayan Student Fields */
-            <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-6 shadow-sm backdrop-blur space-y-4">
-              <h3 className="text-[#0d9488] font-black border-b border-[#9cc4c0]/20 pb-3 mb-2">✨ تفاصيل مقرر نور البيان</h3>
+            <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-6 shadow-sm backdrop-blur space-y-4">
+              <h3 className="text-[#0f5a35] font-black border-b border-[#d8bf83]/20 pb-3 mb-2">✨ تفاصيل مقرر نور البيان</h3>
               
               <div className="space-y-4">
                 <div>
@@ -217,7 +217,7 @@ export default function SummerReportForm({
                     onChange={(e) => setNoorLearned(e.target.value)}
                     placeholder="مثال: تم أخذ درس المد الطبيعي بالواو وحل التمارين"
                     rows={2}
-                    className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0d9488] focus:bg-white resize-none"
+                    className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white resize-none"
                     required
                   />
                 </div>
@@ -257,7 +257,7 @@ export default function SummerReportForm({
                       <select
                         value={noorHomeworkGrade}
                         onChange={(e) => setNoorHomeworkGrade(Number(e.target.value))}
-                        className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none focus:border-[#0d9488] focus:bg-white"
+                        className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none focus:border-[#0f5a35] focus:bg-white"
                       >
                         {gradesOptions.map((grade) => (
                           <option key={grade} value={grade}>
@@ -273,7 +273,7 @@ export default function SummerReportForm({
                     <select
                       value={noorParticipation}
                       onChange={(e) => setNoorParticipation(Number(e.target.value))}
-                      className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none focus:border-[#0d9488] focus:bg-white"
+                      className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none focus:border-[#0f5a35] focus:bg-white"
                     >
                       {gradesOptions.map((grade) => (
                         <option key={grade} value={grade}>
@@ -288,8 +288,8 @@ export default function SummerReportForm({
           )}
 
           {/* Behavior & General Details */}
-          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-6 shadow-sm backdrop-blur space-y-4">
-            <h3 className="text-[#0d9488] font-black border-b border-[#9cc4c0]/20 pb-3 mb-2">⭐ التقييم السلوكي والانضباط</h3>
+          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-6 shadow-sm backdrop-blur space-y-4">
+            <h3 className="text-[#0f5a35] font-black border-b border-[#d8bf83]/20 pb-3 mb-2">⭐ التقييم السلوكي والانضباط</h3>
             
             <div className="grid gap-4 md:grid-cols-3">
               <div>
@@ -297,7 +297,7 @@ export default function SummerReportForm({
                 <select
                   value={behaviorGrade}
                   onChange={(e) => setBehaviorGrade(Number(e.target.value))}
-                  className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none focus:border-[#0d9488] focus:bg-white"
+                  className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none focus:border-[#0f5a35] focus:bg-white"
                 >
                   {gradesOptions.map((grade) => (
                     <option key={grade} value={grade}>
@@ -314,7 +314,7 @@ export default function SummerReportForm({
                   onChange={(e) => setBehaviorNotes(e.target.value)}
                   placeholder="اكتب أي ملاحظات إضافية حول أداء وسلوك الطالب اليوم (مثال: متميز جداً اليوم ومطيع)"
                   rows={2}
-                  className="w-full rounded-2xl border border-[#9cc4c0]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0d9488] focus:bg-white resize-none"
+                  className="w-full rounded-2xl border border-[#d8bf83]/40 bg-[#fffdfa] px-4 py-3 text-sm text-[#1c2d31] outline-none transition focus:border-[#0f5a35] focus:bg-white resize-none"
                 />
               </div>
             </div>
@@ -333,7 +333,7 @@ export default function SummerReportForm({
         <button
           type="submit"
           disabled={loading}
-          className="flex-1 rounded-2xl bg-[#0d9488] px-6 py-4 text-base font-black text-white shadow-lg shadow-[#0d9488]/20 transition hover:bg-[#0f766e] disabled:cursor-not-allowed disabled:opacity-75"
+          className="flex-1 rounded-2xl bg-[#0f5a35] px-6 py-4 text-base font-black text-white shadow-lg shadow-[#0f5a35]/20 transition hover:bg-[#0a3f2a] disabled:cursor-not-allowed disabled:opacity-75"
         >
           {loading ? "جاري الحفظ..." : "💾 حفظ التقرير اليومي"}
         </button>
@@ -347,4 +347,3 @@ export default function SummerReportForm({
     </form>
   );
 }
-
