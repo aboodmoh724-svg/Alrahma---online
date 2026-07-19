@@ -40,13 +40,13 @@ function Icon({ name, size = 24, stroke = 1.6, color = "currentColor", className
   );
 }
 
-function khatamBg(hex: string, opacity = 0.06) {
-  const col = encodeURIComponent(hex);
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'><g fill='none' stroke='${col}' stroke-width='1' opacity='${opacity}'><rect x='20' y='20' width='24' height='24'/><rect x='20' y='20' width='24' height='24' transform='rotate(45 32 32)'/></g></svg>`;
+// Custom modern background pattern instead of the traditional old motifs
+function summerGridPattern(hexColor: string, opacity = 0.04) {
+  const col = encodeURIComponent(hexColor);
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'><g fill='none' stroke='${col}' stroke-width='0.8' opacity='${opacity}'><circle cx='40' cy='40' r='18'/><path d='M0 40h80M40 0v80'/></g></svg>`;
   return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
 }
 
-// Function to calculate Tuesday-Sunday range for the current week
 function getSummerWeekRange(now = new Date()) {
   const day = now.getDay();
   let tuesdayOffset = 0;
@@ -95,7 +95,6 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
   // Calculate current week range
   const { tuesday, sunday } = getSummerWeekRange(new Date());
   
-  // Generate date list (Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday)
   const weekdaysArabic = [
     { label: "الثلاثاء", key: "" },
     { label: "الأربعاء", key: "" },
@@ -114,7 +113,7 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
     weekdaysArabic[i].key = key;
   }
 
-  // Fetch reports for these dates
+  // Fetch reports
   const reports = await prisma.summerReport.findMany({
     where: {
       studentId: student.id,
@@ -125,7 +124,6 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
   const reportsMap = new Map<string, typeof reports[0]>();
   reports.forEach((r) => reportsMap.set(r.dateKey, r));
 
-  // Compute stats
   const presentDays = reports.filter((r) => r.status === "PRESENT");
   const attendanceCount = presentDays.length;
 
@@ -159,7 +157,6 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
     }
   }
 
-  // Compile achievements text
   const isQuran = student.summerGroup === "QURAN";
   let achievementsList: string[] = [];
   let behaviorNotesList: string[] = [];
@@ -176,13 +173,11 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
     }
   });
 
-  // Unique elements for clean display
   achievementsList = Array.from(new Set(achievementsList)).slice(0, 5);
   const compiledBehaviorNotes = behaviorNotesList.length > 0 
     ? behaviorNotesList.join(" | ")
-    : "سلوك متميز والتزام تام بالآداب الصفية ولله الحمد.";
+    : "سلوك متميز وتفاعل نشط طوال الأسبوع الدراسي، بارك الله في حرصه.";
 
-  // Rating label based on behavior and achievements
   let finalRating = "ممتاز";
   const ratingScore = isQuran ? averageBehavior : (averageBehavior + averageParticipation + (totalHwAssigned > 0 ? (totalHwSubmitted / totalHwAssigned) * 10 : 10)) / 3;
   if (ratingScore >= 9) finalRating = "ممتاز";
@@ -190,128 +185,142 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
   else if (ratingScore >= 6.5) finalRating = "جيد";
   else finalRating = "مقبول";
 
-  const C = {
-    ink: "#1c2d31",
-    inkSoft: "#2f484f",
-    gold: "#bd8f2d",
-    goldHi: "#d8bf83",
-    cream: "#fffbf2",
-    paper: "#fffefb",
-    line: "#e6ddca",
-    mute: "#5a646e",
+  // Summer Breeze Colors (Teal / Amber Sunburst theme)
+  const Theme = {
+    bgGrad: "linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 50%, #fffbeb 100%)",
+    tealDark: "#0f766e",
+    tealLight: "#0d9488",
+    tealGlow: "#ccfbf1",
+    amberDark: "#b45309",
+    amberLight: "#d97706",
+    amberGlow: "#fef3c7",
+    cardBg: "rgba(255, 255, 255, 0.88)",
+    borderSoft: "rgba(13, 148, 136, 0.16)",
+    textDark: "#0f172a",
+    textSoft: "#334155",
+    textMute: "#64748b",
   };
 
   const studentFirstName = student.fullName.trim().split(/\s+/)[0];
 
   return (
-    <div className="min-h-screen bg-[#f3f0e6] py-10 px-4 flex flex-col items-center">
-      {/* Google fonts */}
+    <div className="min-h-screen bg-[#eaf4f4] py-10 px-4 flex flex-col items-center">
       <link
-        href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=El+Messiri:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=El+Messiri:wght@400;500;600;700&family=Outfit:wght@300;400;600;800&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap"
         rel="stylesheet"
       />
 
-      {/* Admin Action Bar */}
+      {/* Action Bar */}
       <div className="w-full max-w-[760px] mb-6 flex flex-wrap justify-between items-center gap-3 no-print">
         <Link
           href="/onsite/summer/admin"
-          className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition shadow-sm"
-          style={{ background: C.ink }}
+          className="rounded-2xl px-6 py-3 text-sm font-bold text-white transition-all shadow-md hover:-translate-y-0.5 hover:shadow-lg cursor-pointer"
+          style={{ background: Theme.tealDark }}
         >
-          ← العودة للوحة الدورة الصيفية
+          ← العودة للوحة الإدارة
         </Link>
         <PrintCardButton />
       </div>
 
-      {/* Certificate Weekly Card */}
+      {/* The Styled Card */}
       <div
-        className="w-full max-w-[760px] min-h-[1280px] relative overflow-hidden shadow-2xl p-[36px_40px_36px] flex flex-col justify-between print-card rounded-3xl"
+        className="w-full max-w-[760px] min-h-[1280px] relative overflow-hidden shadow-[0_24px_50px_-12px_rgba(15,118,110,0.15)] p-12 flex flex-col justify-between print-card rounded-[32px] border"
         style={{
-          background: C.cream,
-          backgroundImage: khatamBg(C.gold, 0.05),
-          backgroundSize: "60px 60px",
+          background: Theme.bgGrad,
+          backgroundImage: `${summerGridPattern(Theme.tealLight, 0.04)}, ${Theme.bgGrad}`,
+          borderColor: "rgba(13,148,136,0.12)",
           boxSizing: "border-box",
         }}
         dir="rtl"
       >
-        {/* Double gold borders */}
-        <div className="absolute inset-4 pointer-events-none rounded-2xl" style={{ border: `1px solid ${C.gold}`, opacity: 0.4 }} />
-        <div className="absolute inset-[20px] pointer-events-none rounded-2xl" style={{ border: `1px solid ${C.gold}`, opacity: 0.18 }} />
+        {/* Floating gradient light blobs */}
+        <div className="absolute -top-32 -left-32 w-80 h-80 rounded-full bg-teal-300 opacity-20 blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-32 -right-32 w-80 h-80 rounded-full bg-amber-200 opacity-35 blur-3xl pointer-events-none" />
 
-        {/* Content */}
-        <div className="relative flex flex-col flex-grow">
+        {/* Double stylish borders */}
+        <div className="absolute inset-5 pointer-events-none rounded-[24px]" style={{ border: `2px dashed ${Theme.tealLight}`, opacity: 0.15 }} />
+        <div className="absolute inset-7 pointer-events-none rounded-[20px]" style={{ border: `1px solid ${Theme.amberLight}`, opacity: 0.25 }} />
+
+        {/* Card Body */}
+        <div className="relative z-10 flex flex-col flex-grow">
           
-          {/* Logo Section */}
-          <div className="flex flex-col items-center gap-2 mt-2">
-            <img src="/logo.png" alt="شعار التحفيظ" className="w-[54px] h-[54px] object-contain" />
-            <div className="text-lg font-black tracking-wide" style={{ color: C.ink, fontFamily: '"El Messiri", serif' }}>
-              تحفيظ الرحمة للقرآن الكريم
+          {/* Header Branding */}
+          <div className="flex justify-between items-center mt-2 pb-4" style={{ borderBottom: `1px solid rgba(13, 148, 136, 0.1)` }}>
+            <div className="flex items-center gap-3">
+              <div className="w-[50px] h-[50px] rounded-2xl bg-white shadow-sm flex items-center justify-center border border-teal-50">
+                <img src="/logo.png" alt="Logo" className="w-[36px] h-[36px] object-contain" />
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-black tracking-wide" style={{ color: Theme.tealDark, fontFamily: '"El Messiri", serif' }}>
+                  تحفيظ الرحمة للقرآن الكريم
+                </div>
+                <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: Theme.amberDark, fontFamily: '"Outfit", sans-serif' }}>
+                  Summer Quran Course
+                </div>
+              </div>
+            </div>
+            
+            <div className="rounded-full px-4 py-1.5 text-[10px] font-black tracking-wider shadow-sm border uppercase"
+                 style={{ background: Theme.tealGlow, color: Theme.tealDark, borderColor: "rgba(13, 148, 136, 0.15)", fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
+              {isQuran ? "مسار تحفيظ القرآن" : "مسار نور البيان"}
             </div>
           </div>
 
-          {/* Card Header Title */}
-          <div className="text-center mt-4">
-            <div className="flex items-center gap-2.5 justify-center mb-3">
-              <span className="w-6 h-px opacity-60" style={{ background: C.gold }} />
-              <Icon name="star" size={12} color={C.gold} stroke={1.4} />
-              <span className="text-xs font-bold tracking-widest uppercase" style={{ color: C.gold, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
-                البطاقة التلخيصية الأسبوعية
-              </span>
-              <Icon name="star" size={12} color={C.gold} stroke={1.4} />
-              <span className="w-6 h-px opacity-60" style={{ background: C.gold }} />
-            </div>
-
-            <h1 className="text-3xl font-black leading-tight" style={{ color: C.ink, fontFamily: '"El Messiri", serif' }}>
+          {/* Title Area */}
+          <div className="text-center mt-8">
+            <h1 className="text-4xl font-black tracking-tight leading-tight" style={{ color: Theme.textDark, fontFamily: '"El Messiri", serif' }}>
               {student.fullName}
             </h1>
             
-            <div className="flex justify-center gap-4 mt-3 text-xs flex-wrap font-bold" style={{ color: C.inkSoft, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
-              <span><span style={{ color: C.mute }}>المعلم: </span>{student.teacher?.fullName || "غير معين"}</span>
-              <span style={{ color: C.line }}>|</span>
-              <span><span style={{ color: C.mute }}>الحلقة: </span>{student.circle?.name || "بدون حلقة"}</span>
-              <span style={{ color: C.line }}>|</span>
-              <span>
-                <span style={{ color: C.mute }}>الفترة: </span>
-                {tuesday.toLocaleDateString("ar-EG", { month: "numeric", day: "numeric" })} - {sunday.toLocaleDateString("ar-EG", { month: "numeric", day: "numeric", year: "numeric" })}
-              </span>
+            <div className="inline-flex items-center gap-2 mt-4 px-5 py-2 rounded-2xl border" 
+                 style={{ background: "rgba(255,255,255,0.6)", borderColor: "rgba(13, 148, 136, 0.08)" }}>
+              <span className="text-xs font-bold text-slate-500">حلقة: <span style={{ color: Theme.tealDark }}>{student.circle?.name || "عام"}</span></span>
+              <span className="text-slate-300 font-normal">|</span>
+              <span className="text-xs font-bold text-slate-500">المعلم: <span style={{ color: Theme.tealDark }}>{student.teacher?.fullName || "غير محدد"}</span></span>
             </div>
           </div>
 
-          {/* Ribbon Award Badge */}
-          <div className="flex justify-center mt-5 mb-2 relative">
-            <div className="absolute top-12 flex gap-5 z-0">
-              <span className="w-3.5 h-8 transform -rotate-6" style={{ background: C.gold, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%)' }} />
-              <span className="w-3.5 h-8 transform rotate-6" style={{ background: C.goldHi, clipPath: 'polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%)' }} />
-            </div>
-            <div
-              className="relative z-10 w-[84px] h-[84px] rounded-full flex items-center justify-center shadow-md"
-              style={{
-                background: `conic-gradient(${C.goldHi}, ${C.gold}, ${C.goldHi}, ${C.gold}, ${C.goldHi})`,
-              }}
-            >
+          {/* Ribbon Award section - Redesigned as dynamic summer sunburst badge */}
+          <div className="flex flex-col items-center mt-8 mb-6">
+            <div className="relative flex items-center justify-center">
+              {/* Spinning star glowing background */}
+              <div className="absolute w-[110px] h-[110px] rounded-full animate-pulse blur-md" style={{ background: `radial-gradient(circle, ${Theme.amberGlow} 30%, transparent 70%)` }} />
+              
               <div
-                className="w-[70px] h-[70px] rounded-full flex flex-col items-center justify-center gap-0.5"
-                style={{ background: C.ink, border: `2px solid ${C.goldHi}` }}
+                className="relative z-10 w-[94px] h-[94px] rounded-full flex items-center justify-center shadow-lg border-2"
+                style={{
+                  background: `linear-gradient(135deg, ${Theme.amberLight}, ${Theme.amberDark})`,
+                  borderColor: '#fff',
+                }}
               >
-                <Icon name="star" size={12} color={C.goldHi} stroke={1.4} />
-                <span className="font-bold text-white text-base leading-none" style={{ fontFamily: '"El Messiri", serif' }}>
-                  {finalRating}
-                </span>
-                <span className="text-[8px] tracking-wider" style={{ color: C.goldHi }}>تقدير الأسبوع</span>
+                <div
+                  className="w-[82px] h-[82px] rounded-full flex flex-col items-center justify-center gap-0.5"
+                  style={{ background: Theme.cardBg }}
+                >
+                  <Icon name="medal" size={20} color={Theme.amberLight} stroke={1.8} />
+                  <span className="font-black text-lg leading-none" style={{ color: Theme.tealDark, fontFamily: '"El Messiri", serif' }}>
+                    {finalRating}
+                  </span>
+                  <span className="text-[8px] font-bold tracking-widest uppercase" style={{ color: Theme.textMute }}>تقدير الأسبوع</span>
+                </div>
               </div>
+            </div>
+            
+            <div className="text-[11px] font-bold mt-3 text-slate-400" style={{ fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
+              التقرير الأسبوعي للفترة: {tuesday.toLocaleDateString("ar-EG", { month: "short", day: "numeric" })} - {sunday.toLocaleDateString("ar-EG", { month: "short", day: "numeric", year: "numeric" })}
             </div>
           </div>
 
           {/* Weekly Attendance Grid */}
-          <div className="mt-4">
-            <div className="flex items-center gap-2 pb-2.5 mb-3.5" style={{ borderBottom: `1px solid ${C.line}` }}>
-              <Icon name="check" size={16} color={C.gold} stroke={1.6} />
-              <span className="text-sm font-bold" style={{ color: C.ink, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
-                جدول رصد حضور وغياب الأسبوع
+          <div className="mt-6">
+            <div className="flex items-center gap-2 pb-2.5 mb-4" style={{ borderBottom: `1px solid rgba(13, 148, 136, 0.08)` }}>
+              <Icon name="check" size={18} color={Theme.tealLight} stroke={1.8} />
+              <span className="text-sm font-black" style={{ color: Theme.tealDark, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
+                رصد حضور وانضباط الطالب اليومي
               </span>
             </div>
             
-            <div className="grid grid-cols-6 gap-2">
+            <div className="grid grid-cols-6 gap-3">
               {weekdaysArabic.map((day) => {
                 const report = reportsMap.get(day.key);
                 const isReported = !!report;
@@ -320,135 +329,170 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
                 return (
                   <div
                     key={day.label}
-                    className="rounded-xl py-3 text-center border flex flex-col justify-between h-20"
+                    className="rounded-2xl py-3 text-center border-2 flex flex-col justify-between h-22 transition-all shadow-sm"
                     style={{
-                      background: C.paper,
-                      borderColor: isReported ? (isPresent ? "#a7f3d0" : "#fca5a5") : C.line,
+                      background: Theme.cardBg,
+                      borderColor: isReported ? (isPresent ? "rgba(16,185,129,0.3)" : "rgba(239,68,68,0.3)") : "rgba(13, 148, 136, 0.06)",
                     }}
                   >
-                    <span className="text-xs font-bold text-slate-500">{day.label}</span>
-                    <span
-                      className={`text-sm font-black mt-1.5 ${
-                        isReported ? (isPresent ? "text-green-700" : "text-red-700") : "text-slate-400"
-                      }`}
-                    >
-                      {isReported ? (isPresent ? "🟢 حضور" : "🔴 غياب") : "—"}
-                    </span>
+                    <span className="text-[11px] font-black text-slate-500">{day.label}</span>
+                    {isReported ? (
+                      isPresent ? (
+                        <div className="flex flex-col items-center">
+                          <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-[10px] font-black mb-1">✓</span>
+                          <span className="text-[10px] font-black text-emerald-700">حاضر</span>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center">
+                          <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center text-[10px] font-black mb-1">✗</span>
+                          <span className="text-[10px] font-black text-rose-700">غائب</span>
+                        </div>
+                      )
+                    ) : (
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-black text-slate-300 mb-1">—</span>
+                        <span className="text-[9px] font-bold text-slate-400">لا يوجد حلقة</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Weekly Stats Block */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <div className="rounded-2xl p-3.5 text-center border" style={{ background: C.paper, borderColor: C.line }}>
-              <span className="text-3xl font-black" style={{ color: C.ink }}>{attendanceCount}</span>
-              <p className="text-[11px] font-bold mt-1 text-slate-400">أيام الحضور</p>
+          {/* Statistics Section */}
+          <div className="grid grid-cols-3 gap-4 mt-6">
+            <div className="rounded-3xl p-4 text-center border shadow-sm transition-all hover:scale-[1.02]" style={{ background: Theme.cardBg, borderColor: Theme.borderSoft }}>
+              <div className="w-9 h-9 rounded-2xl mx-auto flex items-center justify-center mb-1.5" style={{ background: Theme.tealGlow }}>
+                <Icon name="check" size={16} color={Theme.tealLight} />
+              </div>
+              <span className="text-3xl font-black block" style={{ color: Theme.textDark, fontFamily: '"Outfit", sans-serif' }}>{attendanceCount}</span>
+              <p className="text-[10px] font-black text-slate-400 mt-1">أيام حضور الحلقة</p>
             </div>
-            <div className="rounded-2xl p-3.5 text-center border" style={{ background: C.paper, borderColor: C.line }}>
-              <span className="text-3xl font-black" style={{ color: C.ink }}>{averageBehavior}</span>
-              <p className="text-[11px] font-bold mt-1 text-slate-400">تقييم السلوك والأدب</p>
+            
+            <div className="rounded-3xl p-4 text-center border shadow-sm transition-all hover:scale-[1.02]" style={{ background: Theme.cardBg, borderColor: Theme.borderSoft }}>
+              <div className="w-9 h-9 rounded-2xl mx-auto flex items-center justify-center mb-1.5" style={{ background: Theme.amberGlow }}>
+                <Icon name="heart" size={16} color={Theme.amberLight} />
+              </div>
+              <span className="text-3xl font-black block" style={{ color: Theme.textDark, fontFamily: '"Outfit", sans-serif' }}>{averageBehavior}</span>
+              <p className="text-[10px] font-black text-slate-400 mt-1">متوسط درجة السلوك</p>
             </div>
-            <div className="rounded-2xl p-3.5 text-center border" style={{ background: C.paper, borderColor: C.line }}>
+            
+            <div className="rounded-3xl p-4 text-center border shadow-sm transition-all hover:scale-[1.02]" style={{ background: Theme.cardBg, borderColor: Theme.borderSoft }}>
+              <div className="w-9 h-9 rounded-2xl mx-auto flex items-center justify-center mb-1.5" style={{ background: Theme.tealGlow }}>
+                <Icon name="book" size={16} color={Theme.tealLight} />
+              </div>
               {isQuran ? (
                 <>
-                  <span className="text-3xl font-black" style={{ color: C.ink }}>{presentDays.filter(r => r.quranNew?.trim()).length}</span>
-                  <p className="text-[11px] font-bold mt-1 text-slate-400">مقررات الحفظ المنجزة</p>
+                  <span className="text-3xl font-black block" style={{ color: Theme.textDark, fontFamily: '"Outfit", sans-serif' }}>
+                    {presentDays.filter(r => r.quranNew?.trim()).length}
+                  </span>
+                  <p className="text-[10px] font-black text-slate-400 mt-1">مواضع حفظ جديدة</p>
                 </>
               ) : (
                 <>
-                  <span className="text-3xl font-black" style={{ color: C.ink }}>{totalHwAssigned > 0 ? `${totalHwSubmitted}/${totalHwAssigned}` : "—"}</span>
-                  <p className="text-[11px] font-bold mt-1 text-slate-400">تسليم الواجبات</p>
+                  <span className="text-3xl font-black block" style={{ color: Theme.textDark, fontFamily: '"Outfit", sans-serif' }}>
+                    {totalHwAssigned > 0 ? `${totalHwSubmitted}/${totalHwAssigned}` : "—"}
+                  </span>
+                  <p className="text-[10px] font-black text-slate-400 mt-1">تسليم الواجبات</p>
                 </>
               )}
             </div>
           </div>
 
-          {/* Academic Achievements (حصاد الأسبوع الدراسي) */}
-          <div className="mt-5">
-            <div className="flex items-center gap-2 pb-2.5 mb-3" style={{ borderBottom: `1px solid ${C.line}` }}>
-              <Icon name="book" size={16} color={C.gold} stroke={1.6} />
-              <span className="text-sm font-bold" style={{ color: C.ink, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
-                حصاد التحصيل العلمي هذا الأسبوع
+          {/* Academic Achievements (حصاد الأسبوع) */}
+          <div className="mt-6">
+            <div className="flex items-center gap-2 pb-2.5 mb-3.5" style={{ borderBottom: `1px solid rgba(13, 148, 136, 0.08)` }}>
+              <Icon name="book" size={18} color={Theme.tealLight} stroke={1.8} />
+              <span className="text-sm font-black" style={{ color: Theme.tealDark, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
+                ما أنجزه الطالب من تحصيل دراسي هذا الأسبوع
               </span>
             </div>
 
             {achievementsList.length === 0 ? (
-              <div className="rounded-2xl bg-white p-6 text-center text-slate-400 border border-dashed border-[#e6ddca] text-xs">
-                لم يتم تسجيل إنجازات دراسية هذا الأسبوع لعدم رصد الحضور.
+              <div className="rounded-3xl p-6 text-center text-slate-400 border border-dashed text-xs" style={{ background: Theme.cardBg, borderColor: Theme.tealLight }}>
+                لم يسجل المعلم إنجازات حفظ خلال الأسبوع الحالي لغياب رصد الحضور.
               </div>
             ) : (
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2">
                 {achievementsList.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-2.5 rounded-xl p-3 border bg-[#fffdfa]"
-                    style={{ borderColor: C.line }}
+                    className="flex items-center gap-3 rounded-2xl p-3.5 border transition-all hover:bg-white"
+                    style={{ background: Theme.cardBg, borderColor: Theme.borderSoft }}
                   >
-                    <Icon name="star" size={14} color={C.gold} stroke={1.5} className="shrink-0 mt-0.5" />
-                    <span className="text-xs font-bold leading-normal text-slate-700">{item}</span>
+                    <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0" style={{ background: Theme.tealGlow }}>
+                      <span className="text-[10px] font-black" style={{ color: Theme.tealDark }}>{idx + 1}</span>
+                    </div>
+                    <span className="text-xs font-bold leading-normal" style={{ color: Theme.textSoft }}>{item}</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Behavior Notes & Remarks */}
-          <div className="mt-5">
-            <div className="flex items-center gap-2 pb-2.5 mb-3" style={{ borderBottom: `1px solid ${C.line}` }}>
-              <Icon name="heart" size={16} color={C.gold} stroke={1.6} />
-              <span className="text-sm font-bold" style={{ color: C.ink, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
-                التوجيه والملاحظات السلوكية
+          {/* Remarks Section */}
+          <div className="mt-6">
+            <div className="flex items-center gap-2 pb-2.5 mb-3.5" style={{ borderBottom: `1px solid rgba(13, 148, 136, 0.08)` }}>
+              <Icon name="heart" size={18} color={Theme.tealLight} stroke={1.8} />
+              <span className="text-sm font-black" style={{ color: Theme.tealDark, fontFamily: '"IBM Plex Sans Arabic", sans-serif' }}>
+                الملاحظات السلوكية والتوجيهية
               </span>
             </div>
             <div
-              className="rounded-2xl p-4 border border-dashed"
-              style={{ borderColor: C.gold, background: "rgba(189,143,45, 0.03)" }}
+              className="rounded-3xl p-4 border border-dashed flex items-start gap-3"
+              style={{ borderColor: Theme.amberLight, background: "rgba(217, 119, 6, 0.02)" }}
             >
-              <p className="text-xs leading-relaxed text-slate-600 font-bold">
+              <div className="w-7 h-7 rounded-xl bg-amber-50 flex items-center justify-center shrink-0 mt-0.5">
+                <Icon name="star" size={14} color={Theme.amberLight} />
+              </div>
+              <p className="text-xs leading-relaxed font-bold" style={{ color: Theme.textSoft }}>
                 {compiledBehaviorNotes}
               </p>
             </div>
           </div>
 
-          {/* Closing Message / Message to parents */}
-          <div className="mt-5 relative rounded-2xl p-5 text-white" style={{ background: C.ink }}>
-            <div className="absolute top-4 left-4 opacity-15">
-              <Icon name="quote" size={24} color={C.goldHi} />
+          {/* Teacher Message Banner */}
+          <div className="mt-6 relative rounded-3xl p-5 text-white shadow-md overflow-hidden" 
+               style={{ background: `linear-gradient(135deg, ${Theme.tealDark}, ${Theme.tealLight})` }}>
+            <div className="absolute top-2 left-3 opacity-10">
+              <Icon name="quote" size={48} color="#fff" />
             </div>
-            <span className="text-xs font-black mb-1.5 block" style={{ color: C.goldHi }}>
-              رسالة معلم الحلقة
-            </span>
-            <p className="text-xs leading-relaxed" style={{ color: "#f3eee3" }}>
-              نثمن شراكتكم وجهودكم في متابعة الطالب *{studentFirstName}* معنا، ومراجعة الدروس اليومية معه بالمنزل مما يثمر في تسريع خطاه التعليمية وتميزه، بارك الله فيكم وفي جهوده.
-            </p>
+            <div className="relative z-10">
+              <span className="text-[10px] font-black tracking-widest uppercase block mb-1" style={{ color: Theme.amberGlow }}>
+                رسالة معلم الحلقة الأسبوعية
+              </span>
+              <p className="text-xs leading-relaxed" style={{ color: "#eefcf9" }}>
+                نثمّن عالياً شراكتكم الكريمة ومتابعتكم المستمرة لأداء الطالب المتميز *{studentFirstName}* بالمنزل، مما يساهم بشكل فعال في ترسيخ المعاني وتحفيز التحصيل لديه. بارك الله في خطاكم.
+              </p>
+            </div>
           </div>
 
         </div>
 
-        {/* Space wrapper */}
-        <div className="flex-grow min-h-[16px]" />
+        {/* Space Spacer */}
+        <div className="flex-grow min-h-[20px]" />
 
-        {/* Footer Verse & Blessing */}
+        {/* Footer calligraphic frame & blessing */}
         <div
-          className="text-center rounded-2xl p-4 border"
-          style={{ background: "rgba(189,143,45,.03)", border: `1px solid ${C.line}` }}
+          className="text-center rounded-3xl p-5 border shadow-sm relative overflow-hidden"
+          style={{ background: Theme.cardBg, borderColor: Theme.borderSoft }}
         >
-          <div className="flex items-center justify-center gap-2.5 mb-2">
-            <span className="w-10 h-px" style={{ background: `linear-gradient(90deg, transparent, ${C.gold})` }} />
-            <span className="relative w-2 h-2 transform rotate-45 shrink-0" style={{ border: `1px solid ${C.gold}` }} />
-            <span className="w-10 h-px" style={{ background: `linear-gradient(270deg, transparent, ${C.gold})` }} />
+          {/* Centering gold ornament */}
+          <div className="flex items-center justify-center gap-3 mb-2.5">
+            <span className="w-12 h-[1px]" style={{ background: `linear-gradient(90deg, transparent, ${Theme.amberLight})` }} />
+            <Icon name="star" size={12} color={Theme.amberLight} />
+            <span className="w-12 h-[1px]" style={{ background: `linear-gradient(270deg, transparent, ${Theme.amberLight})` }} />
           </div>
 
-          {/* Poem Verse */}
-          <div className="my-2.5 flex justify-center items-baseline gap-8 flex-wrap text-lg font-black leading-normal" style={{ color: C.gold, fontFamily: '"Amiri", serif' }}>
+          {/* Poem Line */}
+          <div className="my-2 flex justify-center items-baseline gap-6 flex-wrap text-xl font-black leading-normal" style={{ color: Theme.tealDark, fontFamily: '"Amiri", serif' }}>
             <span>هَنِيئًا مَرِيئًا وَالِدَاكَ عَلَيْهِمَا</span>
             <span>مَلَابِسُ أَنْوَارٍ مِنَ التَّاجِ وَالْحُلَلِ</span>
           </div>
 
-          <p className="max-w-[560px] mx-auto text-xs leading-relaxed font-bold mt-2" style={{ color: C.ink }}>
-            حفظ الله الطالب الكريم *{studentFirstName}* وجعله من أهل القرآن العاملين به وجعله قرة عين لوالديه.
+          <p className="max-w-[560px] mx-auto text-xs leading-relaxed font-bold mt-2" style={{ color: Theme.textSoft }}>
+            حفظ الله الطالب العزيز *{studentFirstName}* ورزقه التوفيق وعمل القرآن الكريم وجعله قرة عين لوالديه وذخراً للأمة.
           </p>
         </div>
 
@@ -469,8 +513,9 @@ export default async function SummerWeeklyCardPage({ params }: CardPageProps) {
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 20px !important;
+            padding: 24px !important;
             border-radius: 0 !important;
+            background: white !important;
           }
         }
       `}</style>

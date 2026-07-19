@@ -147,11 +147,11 @@ export default async function OnsiteSummerTeacherDashboardPage({
       <div className="mx-auto max-w-7xl space-y-6">
         
         {/* Header Section */}
-        <header className="relative overflow-hidden rounded-[2.5rem] bg-[#0a3f2a] p-6 text-white shadow-xl sm:p-8">
+        <header className="relative overflow-hidden rounded-[2.5rem] bg-[#0f766e] p-6 text-white shadow-xl sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(189,143,45,0.15),transparent_45%)]" />
           <div className="relative flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-black text-[#d8bf83] backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-black text-[#9cc4c0] backdrop-blur-md">
                 <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
                 الدورة الصيفية لقرآن أفيون
               </div>
@@ -175,18 +175,18 @@ export default async function OnsiteSummerTeacherDashboardPage({
 
         {/* Statistics Grid */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:shadow-md">
+          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:shadow-md">
             <p className="text-xs font-bold text-slate-500">حلقاتك النشطة</p>
-            <p className="mt-2 text-3xl font-black text-[#0a3f2a]">{circles.length}</p>
+            <p className="mt-2 text-3xl font-black text-[#0f766e]">{circles.length}</p>
           </div>
-          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:shadow-md">
+          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:shadow-md">
             <p className="text-xs font-bold text-slate-500">إجمالي طلاب الحلقة الحالية</p>
-            <p className="mt-2 text-3xl font-black text-[#0a3f2a]">{studentsCount} طلاب</p>
+            <p className="mt-2 text-3xl font-black text-[#0f766e]">{studentsCount} طلاب</p>
           </div>
-          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:shadow-md">
+          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-5 shadow-sm backdrop-blur transition hover:shadow-md">
             <p className="text-xs font-bold text-slate-500">تقارير مكتملة اليوم</p>
             <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-3xl font-black text-[#0a3f2a]">{completedTodayCount}</span>
+              <span className="text-3xl font-black text-[#0f766e]">{completedTodayCount}</span>
               <span className="text-sm text-slate-400">من {studentsCount}</span>
               {studentsCount > 0 && completedTodayCount === studentsCount && (
                 <span className="inline-flex rounded-full bg-green-50 px-2 py-1 text-xs font-black text-green-700 border border-green-200">مكتمل 🎉</span>
@@ -197,14 +197,14 @@ export default async function OnsiteSummerTeacherDashboardPage({
 
         {/* Circles Tabs */}
         {circles.length > 0 && (
-          <nav className="flex flex-wrap gap-2 p-1.5 rounded-3xl bg-white/50 border border-[#d8bf83]/10 backdrop-blur w-fit">
+          <nav className="flex flex-wrap gap-2 p-1.5 rounded-3xl bg-white/50 border border-[#9cc4c0]/10 backdrop-blur w-fit">
             {circles.map((c) => (
               <Link
                 key={c.id}
                 href={`/onsite/summer/teacher?circleId=${c.id}`}
                 className={`rounded-2xl px-5 py-3 text-sm font-black transition-all duration-300 ${
                   activeCircle?.id === c.id
-                    ? "bg-[#0f5a35] text-white shadow-md shadow-[#0f5a35]/20"
+                    ? "bg-[#0d9488] text-white shadow-md shadow-[#0d9488]/20"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-800"
                 }`}
               >
@@ -216,10 +216,10 @@ export default async function OnsiteSummerTeacherDashboardPage({
 
         {/* Students Table Section */}
         {activeCircle ? (
-          <div className="overflow-hidden rounded-3xl border border-[#d8bf83]/20 bg-white/70 shadow-sm backdrop-blur">
-            <div className="border-b border-[#d8bf83]/10 bg-gradient-to-r from-[#0a3f2a]/5 to-[#bd8f2d]/5 px-6 py-4 flex items-center justify-between">
+          <div className="overflow-hidden rounded-3xl border border-[#9cc4c0]/20 bg-white/70 shadow-sm backdrop-blur">
+            <div className="border-b border-[#9cc4c0]/10 bg-gradient-to-r from-[#0f766e]/5 to-[#bd8f2d]/5 px-6 py-4 flex items-center justify-between">
               <div>
-                <h2 className="text-lg font-black text-[#0a3f2a]">{activeCircle.name}</h2>
+                <h2 className="text-lg font-black text-[#0f766e]">{activeCircle.name}</h2>
                 <p className="text-xs text-slate-500 mt-1">كشف أسماء الطلاب المسجلين بالدورة ورصد حالتهم اليومية ({todayKey})</p>
               </div>
             </div>
@@ -234,7 +234,7 @@ export default async function OnsiteSummerTeacherDashboardPage({
               <div className="overflow-x-auto">
                 <table className="w-full text-right border-collapse">
                   <thead>
-                    <tr className="border-b border-[#d8bf83]/10 bg-[#fffaf0]/60 text-xs font-black text-slate-500">
+                    <tr className="border-b border-[#9cc4c0]/10 bg-[#fffaf0]/60 text-xs font-black text-slate-500">
                       <th className="px-6 py-4">اسم الطالب</th>
                       <th className="px-6 py-4">مسار الطالب</th>
                       <th className="px-6 py-4">تقرير اليوم</th>
@@ -242,7 +242,7 @@ export default async function OnsiteSummerTeacherDashboardPage({
                       <th className="px-6 py-4 text-left">الإجراء</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#d8bf83]/10 text-sm">
+                  <tbody className="divide-y divide-[#9cc4c0]/10 text-sm">
                     {students.map((student) => {
                       const report = student.summerReports[0];
                       const isFilled = !!report;
@@ -313,7 +313,7 @@ export default async function OnsiteSummerTeacherDashboardPage({
             )}
           </div>
         ) : (
-          <div className="rounded-3xl border border-[#d8bf83]/20 bg-white/60 p-8 text-center text-slate-500 backdrop-blur shadow-sm">
+          <div className="rounded-3xl border border-[#9cc4c0]/20 bg-white/60 p-8 text-center text-slate-500 backdrop-blur shadow-sm">
             <span className="text-4xl block mb-2">🏫</span>
             <p className="font-bold">لا توجد حلقات مسجلة للدورة الصيفية على هذا الحساب حالياً.</p>
           </div>
@@ -322,3 +322,4 @@ export default async function OnsiteSummerTeacherDashboardPage({
     </main>
   );
 }
+
