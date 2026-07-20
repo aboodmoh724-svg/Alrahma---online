@@ -45,7 +45,7 @@ const portals = [
     description: "متابعة الحضور والتقارير اليومية والأسبوعية لطلاب القرآن ونور البيان في الدورة الصيفية.",
     badge: "دورة صيف 2026",
     image: "/images/afyon-awards-wide.jpeg",
-    accent: "from-[#0f766e]/94 via-[#0d9488]/76 to-[#14b8a6]/40",
+    accent: "from-[#6c4e09]/92 via-[#3a2d0d]/76 to-[#0f5a35]/40",
     links: [
       { href: "/onsite/summer/admin/login", label: "دخول الإدارة" },
       { href: "/onsite/summer/teacher/login", label: "دخول المعلم" },
