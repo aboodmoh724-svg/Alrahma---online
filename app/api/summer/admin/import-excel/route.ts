@@ -58,8 +58,18 @@ export async function POST(request: Request) {
 
     const teacherMap = new Map();
     const circleMap = new Map();
-    let codeCounter = 7001;
 
+    // Find highest numerical studentCode in database
+    const allStudents = await prisma.student.findMany({ select: { studentCode: true } });
+    let maxCode = 7100;
+    allStudents.forEach((st) => {
+      const num = parseInt(st.studentCode || "", 10);
+      if (!isNaN(num) && num > maxCode && num < 9000) {
+        maxCode = num;
+      }
+    });
+
+    let codeCounter = maxCode + 1;
     const importedStudents = [];
 
     for (const row of dataRows) {
@@ -118,12 +128,12 @@ export async function POST(request: Request) {
       const summerGroup = circleName.includes("نور البيان") ? "NOOR_AL_BAYAN" : "QURAN";
 
       // 4. Upsert Student
-      const studentCode = String(codeCounter++);
       const existingStudent = await prisma.student.findFirst({
         where: { fullName: studentName, studyMode: "ONSITE_SUMMER" },
       });
 
       if (!existingStudent) {
+        const studentCode = String(codeCounter++);
         const newSt = await prisma.student.create({
           data: {
             fullName: studentName,
@@ -152,7 +162,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `تم استيراد ${dataRows.length} طالباً و ${teacherMap.size} معلمين وحساباتهم بنجاح!`,
+      message: `تم استيراد ${importedStudents.length} طالباً و ${teacherMap.size} معلمين وحساباتهم بنجاح!`,
       teachersCount: teacherMap.size,
       circlesCount: circleMap.size,
       studentsCount: importedStudents.length,
