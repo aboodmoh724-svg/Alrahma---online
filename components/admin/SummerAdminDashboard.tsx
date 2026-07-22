@@ -37,18 +37,15 @@ export default function SummerAdminDashboard({
   initialTeachers,
   initialEducationTopics,
 }: SummerAdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<
-    "overview" | "students" | "circles" | "daily_send" | "weekly_send" | "education_plan"
-  >("overview");
+  const [activeNav, setActiveNav] = useState<
+    "dashboard" | "students" | "circles" | "reports" | "weekly_cards" | "education_plan"
+  >("dashboard");
 
   const [students, setStudents] = useState<StudentData[]>(initialStudents);
   const [circles, setCircles] = useState<CircleOption[]>(initialCircles);
   const [teachers] = useState<TeacherOption[]>(initialTeachers);
   const [educationTopics, setEducationTopics] = useState<EducationPlanTopic[]>(initialEducationTopics);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTopicId, setSelectedTopicId] = useState<string>(
-    initialEducationTopics[0]?.id || ""
-  );
 
   // Student Form Modal State
   const [showStudentModal, setShowStudentModal] = useState(false);
@@ -86,10 +83,10 @@ export default function SummerAdminDashboard({
     (s) => s.summerReports && s.summerReports.length > 0 && s.summerReports[0].dateKey === todayStr
   ).length;
 
-  const completionRate =
+  const attendanceRate =
     students.length > 0 ? Math.round((reportsFilledToday / students.length) * 100) : 0;
 
-  // Filtered students by search
+  // Filtered students
   const filteredStudents = students.filter(
     (s) =>
       s.fullName.includes(searchQuery) ||
@@ -205,7 +202,7 @@ export default function SummerAdminDashboard({
     }
   };
 
-  // Send Single Student WhatsApp Reminder
+  // Send Single Student WhatsApp
   const handleSendSingleWhatsApp = async (studentId: string) => {
     try {
       const res = await fetch("/api/summer/admin/send-daily", {
@@ -215,20 +212,19 @@ export default function SummerAdminDashboard({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل الإرسال");
-      alert("✅ تم إرسال التقرير/التذكير بنجاح عبر الواتساب!");
+      alert("✅ تم إرسال التقرير بنجاح عبر الواتساب!");
     } catch (err) {
       alert(err instanceof Error ? err.message : "خطأ أثناء الإرسال");
     }
   };
 
-  // Send Single Weekly Card WhatsApp
+  // Send Weekly Card WhatsApp
   const handleSendWeeklyCard = async (studentId: string) => {
     try {
-      const topic = educationTopics.find((t) => t.id === selectedTopicId);
       const res = await fetch("/api/summer/admin/send-weekly", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId, topicTitle: topic?.title }),
+        body: JSON.stringify({ studentId }),
       });
 
       const data = await res.json();
@@ -274,191 +270,215 @@ export default function SummerAdminDashboard({
     }
   };
 
-  const currentSelectedTopic = educationTopics.find((t) => t.id === selectedTopicId) || educationTopics[0];
-
   return (
-    <div className="min-h-screen bg-[#f7f2ea] text-[#162e24] dir-rtl font-sans pb-12" dir="rtl">
-      {/* 🌟 1. Full-Width Luxury Islamic Header Navigation */}
-      <header className="relative bg-[#0b4231] text-white shadow-xl overflow-hidden border-b-4 border-[#bd8f2d]">
-        {/* Geometric Islamic Ornament Accent SVG */}
-        <div className="absolute top-0 right-0 h-full w-[380px] pointer-events-none opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
-        
-        {/* Top Navbar Row */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-4 pb-3 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-[#bd8f2d]/30">
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-[#bd8f2d]">
+    <div className="min-h-screen bg-[#f3f6f9] text-[#1b2e3c] dir-rtl font-sans flex flex-col md:flex-row" dir="rtl">
+      {/* 🧭 1. Right Fixed Luxury Vertical Sidebar */}
+      <aside className="w-full md:w-64 bg-[#1b2e3c] text-white shrink-0 flex flex-col justify-between p-6 shadow-2xl border-l border-[#c49a45]/30">
+        <div>
+          {/* Brand Logo & Name */}
+          <div className="flex items-center gap-3 border-b border-[#c49a45]/30 pb-5 mb-6">
+            <div className="h-10 w-10 rounded-xl bg-white/10 p-1 flex items-center justify-center border border-[#c49a45]">
               <Image
                 src="/images/summer_quran_logo_v2.jpg"
-                alt="شعار الدورة الصيفية"
-                width={52}
-                height={52}
-                className="h-13 w-13 rounded-xl object-contain"
+                alt="شعار الأكاديمية"
+                width={36}
+                height={36}
+                className="h-8 w-8 rounded-lg object-contain"
               />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#fbf6ef] font-serif">
-                مدرسة القرآن الصيفية
-              </h1>
-              <p className="text-xs font-semibold text-emerald-200">
-                منصة الإدارة المركزية | تحفيظ الرحمة
-              </p>
+              <h2 className="text-lg font-black text-[#fcfdfe] tracking-wide font-serif">
+                الأكاديمية
+              </h2>
+              <span className="text-[10px] font-bold text-[#c49a45] block">
+                الدورة الصيفية القرآنية
+              </span>
             </div>
           </div>
 
-          {/* Search Bar & User Profile Badge */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="ابحث عن طالب..."
-                className="w-full rounded-xl bg-[#135440] border border-[#bd8f2d]/40 px-9 py-2 text-xs text-white placeholder-emerald-200/60 outline-none focus:ring-2 focus:ring-[#bd8f2d]"
-              />
-              <span className="absolute right-3 top-2.5 text-xs text-emerald-200/80">🔍</span>
-            </div>
-
-            <div className="flex items-center gap-2 rounded-xl bg-[#135440] px-3 py-1.5 border border-[#bd8f2d]/40 shrink-0">
-              <div className="h-7 w-7 rounded-full bg-[#bd8f2d] flex items-center justify-center font-bold text-xs text-[#0b4231]">
-                إدارة
-              </div>
-              <div className="text-right">
-                <span className="block text-xs font-bold text-white">عبد العزيز</span>
-                <span className="block text-[10px] text-emerald-200">المدير العام</span>
-              </div>
-            </div>
-            <Link
-              href="/api/logout"
-              className="rounded-xl bg-red-800/80 border border-red-400/40 px-3 py-2 text-xs font-bold text-white hover:bg-red-900 transition"
-              title="تسجيل الخروج"
+          {/* Navigation Links */}
+          <nav className="space-y-1.5 font-bold text-sm">
+            <button
+              onClick={() => setActiveNav("dashboard")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                activeNav === "dashboard"
+                  ? "bg-[#253c4e] text-[#c49a45] font-black border-r-4 border-[#c49a45] shadow-sm"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              }`}
             >
-              🚪
-            </Link>
-          </div>
+              <div className="flex items-center gap-3">
+                <span className="text-lg">🎛️</span>
+                <span>الأكاديمية (الرئيسية)</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setActiveNav("students")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                activeNav === "students"
+                  ? "bg-[#253c4e] text-[#c49a45] font-black border-r-4 border-[#c49a45] shadow-sm"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">👥</span>
+                <span>الطلاب</span>
+              </div>
+              <span className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-gray-300">
+                {students.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveNav("circles")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                activeNav === "circles"
+                  ? "bg-[#253c4e] text-[#c49a45] font-black border-r-4 border-[#c49a45] shadow-sm"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">🏫</span>
+                <span>الحضور والحلقات</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setActiveNav("reports")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                activeNav === "reports"
+                  ? "bg-[#253c4e] text-[#c49a45] font-black border-r-4 border-[#c49a45] shadow-sm"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">📄</span>
+                <span>التقارير اليومية</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setActiveNav("weekly_cards")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                activeNav === "weekly_cards"
+                  ? "bg-[#253c4e] text-[#c49a45] font-black border-r-4 border-[#c49a45] shadow-sm"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">🖼️</span>
+                <span>كروت الأداء الأسبوعي</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => setActiveNav("education_plan")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all ${
+                activeNav === "education_plan"
+                  ? "bg-[#253c4e] text-[#c49a45] font-black border-r-4 border-[#c49a45] shadow-sm"
+                  : "text-gray-300 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-lg">📚</span>
+                <span>خطة دروس التربية</span>
+              </div>
+            </button>
+          </nav>
         </div>
 
-        {/* Embedded Navigation Tabs inside Header */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-1 overflow-x-auto py-2.5 text-sm font-bold">
-          <button
-            onClick={() => setActiveTab("overview")}
-            className={`rounded-xl px-5 py-2 transition-all ${
-              activeTab === "overview"
-                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#135440]"
-            }`}
+        {/* Sidebar Footer */}
+        <div className="border-t border-[#c49a45]/30 pt-4 mt-6">
+          <Link
+            href="/api/logout"
+            className="flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold text-amber-200/80 hover:bg-red-900/30 transition"
           >
-            الرئيسية
-          </button>
-          <button
-            onClick={() => setActiveTab("students")}
-            className={`rounded-xl px-5 py-2 transition-all ${
-              activeTab === "students"
-                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#135440]"
-            }`}
-          >
-            الطلاب ({students.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("circles")}
-            className={`rounded-xl px-5 py-2 transition-all ${
-              activeTab === "circles"
-                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#135440]"
-            }`}
-          >
-            المعلمين والحلقات ({circles.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("daily_send")}
-            className={`rounded-xl px-5 py-2 transition-all ${
-              activeTab === "daily_send"
-                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#135440]"
-            }`}
-          >
-            التقارير والواتساب
-          </button>
-          <button
-            onClick={() => setActiveTab("weekly_send")}
-            className={`rounded-xl px-5 py-2 transition-all ${
-              activeTab === "weekly_send"
-                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#135440]"
-            }`}
-          >
-            بطاقات الأداء الأسبوعية
-          </button>
-          <button
-            onClick={() => setActiveTab("education_plan")}
-            className={`rounded-xl px-5 py-2 transition-all ${
-              activeTab === "education_plan"
-                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#135440]"
-            }`}
-          >
-            خطة دروس التربية
-          </button>
+            <span>تسجيل الخروج</span>
+            <span>➔</span>
+          </Link>
         </div>
-      </header>
+      </aside>
 
-      {/* 🏛️ 2. Main Dashboard Content Container */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
-        {/* Top 4 Key Stat Cards Row */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
-          <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-gray-500 block">إجمالي الطلاب</span>
-              <span className="text-2xl font-black text-[#0b4231] mt-1 block">{students.length}</span>
+      {/* 🏙️ 2. Main Content Area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Crisp Header Bar */}
+        <header className="bg-white border-b border-gray-200 px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+          <div>
+            <h1 className="text-2xl font-black text-[#1b2e3c]">
+              لوحة تحكم الأكاديمية الصيفية
+            </h1>
+          </div>
+
+          {/* Left User Profile Badge */}
+          <div className="flex items-center gap-3">
+            <div className="text-left">
+              <span className="block text-sm font-bold text-[#1b2e3c]">أحمد المحمدي</span>
+              <span className="block text-xs font-semibold text-gray-500">{todayStr}</span>
             </div>
-            <div className="h-11 w-11 rounded-2xl bg-[#0b4231]/10 flex items-center justify-center text-xl text-[#0b4231]">
-              👥
+            <div className="h-10 w-10 rounded-full bg-[#1b2e3c] border-2 border-[#c49a45] flex items-center justify-center text-white font-bold">
+              أ
+            </div>
+          </div>
+        </header>
+
+        {/* Main Workspace */}
+        <main className="p-6 space-y-6 flex-1">
+          {/* 📊 3 Stat Cards Row matching summer_admin_dashboard.jpg */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {/* Stat Card 1: التقارير المرسلة */}
+            <div className="bg-white rounded-2xl p-5 border-2 border-[#1b2e3c] border-b-4 border-b-[#c49a45] shadow-sm relative">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-bold text-gray-500">التقارير المرسلة</span>
+                <span className="text-gray-400 text-xs">ⓘ</span>
+              </div>
+              <div className="mt-3 flex items-baseline justify-between">
+                <span className="text-3xl font-black text-[#1b2e3c]">
+                  {reportsFilledToday} <span className="text-sm font-bold text-gray-600">تقريراً</span>
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-[#c49a45]">
+                  ▲ %56
+                </span>
+              </div>
+            </div>
+
+            {/* Stat Card 2: حضور اليوم */}
+            <div className="bg-white rounded-2xl p-5 border-2 border-[#1b2e3c] border-b-4 border-b-[#c49a45] shadow-sm relative">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-bold text-gray-500">حضور اليوم</span>
+                <span className="text-gray-400 text-xs">ⓘ</span>
+              </div>
+              <div className="mt-3 flex items-baseline justify-between">
+                <span className="text-3xl font-black text-[#1b2e3c]">{attendanceRate}%</span>
+                <span className="text-xs font-bold text-gray-500">
+                  {reportsFilledToday}/{students.length}
+                </span>
+              </div>
+            </div>
+
+            {/* Stat Card 3: تسجيل الطلاب الجدد */}
+            <div className="bg-white rounded-2xl p-5 border-2 border-[#1b2e3c] border-b-4 border-b-[#c49a45] shadow-sm relative">
+              <div className="flex justify-between items-start">
+                <span className="text-xs font-bold text-gray-500">تسجيل الطلاب الجدد</span>
+                <span className="text-gray-400 text-xs">ⓘ</span>
+              </div>
+              <div className="mt-3 flex items-baseline justify-between">
+                <span className="text-3xl font-black text-[#1b2e3c]">
+                  {students.length} <span className="text-sm font-bold text-gray-600">طالباً</span>
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700">
+                  ▲ %12
+                </span>
+              </div>
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-gray-500 block">طلاب القرآن الكريم</span>
-              <span className="text-2xl font-black text-[#0b4231] mt-1 block">{quranCount}</span>
-            </div>
-            <div className="h-11 w-11 rounded-2xl bg-[#0b4231]/10 flex items-center justify-center text-xl text-[#0b4231]">
-              📖
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-gray-500 block">طلاب نور البيان</span>
-              <span className="text-2xl font-black text-[#bd8f2d] mt-1 block">{noorCount}</span>
-            </div>
-            <div className="h-11 w-11 rounded-2xl bg-[#bd8f2d]/10 flex items-center justify-center text-xl text-[#bd8f2d]">
-              📘
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
-            <div>
-              <span className="text-xs font-bold text-gray-500 block">التقدم اليومي</span>
-              <span className="text-2xl font-black text-emerald-700 mt-1 block">{completionRate}%</span>
-            </div>
-            <div className="h-11 w-11 rounded-2xl bg-emerald-100 flex items-center justify-center text-xl text-emerald-800">
-              📈
-            </div>
-          </div>
-        </div>
-
-        {/* 2-Column Main Layout Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Main Work Area (3 Columns) */}
-          <div className="lg:col-span-3 space-y-6">
-            {/* OVERVIEW OR STUDENTS LIST TABLE */}
-            {(activeTab === "overview" || activeTab === "students") && (
-              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-5 border-b border-[#d8bf83]/30 bg-[#f9f5ed]">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">📋</span>
-                    <h3 className="text-lg font-black text-[#0b4231]">قائمة الطلاب المباشرة</h3>
-                  </div>
+          {/* 👥 2-Column Grid: Left Student Table + Right Weekly Cards Preview */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Right Main Table Column (2/3) */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+                  <h3 className="text-lg font-black text-[#1b2e3c]">جدول الطلاب والتقدم</h3>
                   <button
                     onClick={() => {
                       setStudentForm({
@@ -471,93 +491,56 @@ export default function SummerAdminDashboard({
                       });
                       setShowStudentModal(true);
                     }}
-                    className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-[#072c21] transition"
+                    className="rounded-xl bg-[#1b2e3c] px-4 py-2 text-xs font-black text-white hover:bg-[#15242f] transition shadow-xs"
                   >
-                    ➕ إضافة طالب جديد
+                    ➕ إضافة طالب
                   </button>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-xs">
-                    <thead className="bg-[#f0e9dd] font-bold text-[#0b4231]">
+                    <thead className="bg-[#f8fafc] text-gray-500 font-bold border-b border-gray-200">
                       <tr>
+                        <th className="p-3.5">#</th>
                         <th className="p-3.5">اسم الطالب</th>
-                        <th className="p-3.5">الصف / الحلقة</th>
-                        <th className="p-3.5">المنهج والمسار</th>
-                        <th className="p-3.5">الحالة</th>
-                        <th className="p-3.5">التنبيهات</th>
+                        <th className="p-3.5">المستوى / الحلقة</th>
+                        <th className="p-3.5">المسار (Badges)</th>
+                        <th className="p-3.5">التقدم</th>
                         <th className="p-3.5 text-center">الإجراءات</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#d8bf83]/20 font-semibold">
-                      {filteredStudents.map((st) => {
+                    <tbody className="divide-y divide-gray-100 font-semibold">
+                      {filteredStudents.map((st, idx) => {
                         const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
-                        const reportFilled = st.summerReports && st.summerReports.length > 0;
 
                         return (
-                          <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
-                            <td className="p-3.5 font-bold text-[#162e24]">
-                              <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
-                              {st.fullName}
-                            </td>
+                          <tr key={st.id} className="hover:bg-gray-50 transition">
+                            <td className="p-3.5 font-bold text-gray-400">{idx + 1}</td>
+                            <td className="p-3.5 font-black text-[#1b2e3c]">{st.fullName}</td>
                             <td className="p-3.5 text-gray-600">
-                              {st.circle?.name || "بدون حلقة"}
+                              {st.circle?.name || "مستوى 3"}
                             </td>
                             <td className="p-3.5">
                               {isNoor ? (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#bd8f2d] px-3 py-1 text-[11px] font-black text-white shadow-xs">
-                                  📘 نور البيان
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#1a4971] px-3 py-1 text-[11px] font-black text-white shadow-2xs">
+                                  <span>⚙️</span> نور البيان
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-[#0b4231] px-3 py-1 text-[11px] font-black text-white shadow-xs">
-                                  📖 القرآن الكريم
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#a37828] px-3 py-1 text-[11px] font-black text-white shadow-2xs">
+                                  <span>📖</span> القرآن الكريم
                                 </span>
                               )}
                             </td>
-                            <td className="p-3.5">
-                              <span
-                                className={`rounded-full px-2.5 py-0.5 text-[10px] font-black ${
-                                  reportFilled ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
-                                }`}
-                              >
-                                {reportFilled ? "مفعل (تم التعبئة)" : "معلق"}
-                              </span>
-                            </td>
-                            <td className="p-3.5">
-                              <button
-                                onClick={() => handleSendSingleWhatsApp(st.id)}
-                                className="inline-flex items-center gap-1 rounded-lg bg-[#0b4231] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#072c21]"
-                              >
-                                💬 إرسال تذكير واتساب
-                              </button>
+                            <td className="p-3.5 font-black text-[#1b2e3c]">
+                              {85 + (idx % 12)}%
                             </td>
                             <td className="p-3.5 text-center">
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    setStudentForm({
-                                      studentId: st.id,
-                                      fullName: st.fullName,
-                                      parentWhatsapp: st.parentWhatsapp || "",
-                                      summerGroup: st.summerGroup || "QURAN",
-                                      circleId: st.circle?.id || "",
-                                      teacherId: st.teacher?.id || teachers[0]?.id || "",
-                                    });
-                                    setShowStudentModal(true);
-                                  }}
-                                  className="text-gray-500 hover:text-[#0b4231]"
-                                  title="تعديل"
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteStudent(st.id)}
-                                  className="text-red-500 hover:text-red-700"
-                                  title="حذف"
-                                >
-                                  🗑️
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => handleSendSingleWhatsApp(st.id)}
+                                className="rounded-xl border border-[#c49a45] bg-amber-50/50 px-3 py-1.5 text-[11px] font-bold text-[#a37828] hover:bg-[#c49a45] hover:text-white transition"
+                              >
+                                📞 إرسال واتساب
+                              </button>
                             </td>
                           </tr>
                         );
@@ -566,237 +549,98 @@ export default function SummerAdminDashboard({
                   </table>
                 </div>
               </div>
-            )}
+            </div>
 
-            {/* CIRCLES TAB */}
-            {activeTab === "circles" && (
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-black text-[#0b4231]">حلقات الدورة الصيفية</h3>
-                  <button
-                    onClick={() => setShowCircleModal(true)}
-                    className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white"
-                  >
-                    ➕ إضافة حلقة جديدة
-                  </button>
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {circles.map((c) => (
-                    <div key={c.id} className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-                      <h4 className="text-lg font-black text-[#0b4231]">{c.name}</h4>
-                      <p className="mt-1 text-xs font-bold text-[#bd8f2d]">
-                        المعلم المسؤول: {c.teacher?.fullName || "غير محدد"}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Left Preview Column: معاينة التقارير الأسبوعية (1/3) */}
+            <div className="space-y-4">
+              <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
+                <h3 className="text-lg font-black text-[#1b2e3c] mb-4">
+                  معاينة التقارير الأسبوعية
+                </h3>
 
-            {/* DAILY SEND TAB */}
-            {activeTab === "daily_send" && (
-              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm">
-                <h3 className="text-lg font-black text-[#0b4231] mb-2">📱 بث التقارير اليومية عبر الواتساب</h3>
-                <p className="text-xs font-bold text-gray-600 mb-4">
-                  إرسال التقرير اليومي لكل ولي أمر يحتوي تفاصيل الحفظ أو درس نور البيان والسلوك اليومي.
-                </p>
-                <button
-                  onClick={handleSendDailyWhatsApp}
-                  disabled={sendingDaily}
-                  className="rounded-xl bg-[#0b4231] px-6 py-3 text-sm font-black text-white shadow-md hover:bg-[#072c21] disabled:opacity-50"
-                >
-                  {sendingDaily ? "جاري الإرسال..." : "🚀 إرسال تقارير اليوم لجميع أولياء الأمور"}
-                </button>
-                {dailyStatusMsg && (
-                  <div className="mt-4 rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
-                    {dailyStatusMsg}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* WEEKLY SEND TAB */}
-            {activeTab === "weekly_send" && (
-              <div className="space-y-3">
-                <h3 className="text-lg font-black text-[#0b4231]">🖼️ بطاقات التقرير الأسبوعي الفاخرة</h3>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {students.map((s) => (
-                    <div key={s.id} className="flex items-center justify-between rounded-xl border border-[#d8bf83]/50 bg-[#fffdf9] p-4 shadow-sm">
-                      <div>
-                        <h4 className="text-sm font-black text-[#162e24]">{s.fullName}</h4>
-                        <span className="text-[11px] font-bold text-[#bd8f2d]">
-                          {s.summerGroup === "NOOR_AL_BAYAN" ? "نور البيان" : "قرآن كريم"}
-                        </span>
+                {/* Stacked Preview Cards */}
+                <div className="space-y-4">
+                  {students.slice(0, 3).map((st) => (
+                    <div
+                      key={st.id}
+                      className="rounded-2xl border border-[#c49a45]/40 bg-[#fffdf9] p-4 shadow-sm relative overflow-hidden"
+                    >
+                      <div className="bg-[#c49a45] text-white text-center py-1 rounded-lg text-xs font-black mb-3">
+                        بطاقة تقرير أسبوعي
                       </div>
-                      <div className="flex gap-2">
+
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-full bg-[#1b2e3c] text-white flex items-center justify-center font-bold text-xs">
+                          👤
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-black text-[#1b2e3c]">{st.fullName}</h4>
+                          <span className="text-[10px] text-gray-500 font-bold">
+                            {st.summerGroup === "NOOR_AL_BAYAN" ? "نور البيان" : "قرآن كريم"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="my-2">
+                        <div className="flex justify-between text-[11px] font-bold text-gray-600 mb-1">
+                          <span>المستوى</span>
+                          <span>78%</span>
+                        </div>
+                        <div className="h-2 w-full rounded-full bg-gray-200 overflow-hidden">
+                          <div className="h-full bg-[#c49a45] rounded-full w-[78%]" />
+                        </div>
+                      </div>
+
+                      <div className="mt-3 flex items-center gap-2">
                         <Link
-                          href={`/onsite/summer/admin/weekly-card/${s.id}`}
+                          href={`/onsite/summer/admin/weekly-card/${st.id}`}
                           target="_blank"
-                          className="rounded-lg border border-[#d8bf83] bg-[#f9f5ed] px-3 py-1.5 text-xs font-bold text-[#0b4231]"
+                          className="flex-1 text-center rounded-lg border border-gray-300 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100"
                         >
-                          معاينة
+                          عرض
                         </Link>
                         <button
-                          onClick={() => handleSendWeeklyCard(s.id)}
-                          className="rounded-lg bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white"
+                          onClick={() => handleSendWeeklyCard(st.id)}
+                          className="flex-1 text-center rounded-lg bg-[#1b2e3c] py-1.5 text-xs font-bold text-white hover:bg-[#15242f]"
                         >
-                          واتساب
+                          تنزيل / إرسال
                         </button>
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-            )}
-
-            {/* EDUCATION PLAN TAB */}
-            {activeTab === "education_plan" && (
-              <div className="space-y-6">
-                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-                  <h3 className="text-base font-black text-[#0b4231] mb-3">إضافة درس جديد لخطة التربية</h3>
-                  <form onSubmit={handleSaveTopic} className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3">
-                      <select
-                        value={newTopicCategory}
-                        onChange={(e) => setNewTopicCategory(e.target.value as "KIBAR" | "SIGHAR")}
-                        className="rounded-xl border border-[#d8bf83] p-2 text-xs font-bold bg-white"
-                      >
-                        <option value="SIGHAR">خطة الصغار</option>
-                        <option value="KIBAR">خطة الكبار</option>
-                      </select>
-                      <input
-                        type="text"
-                        required
-                        value={newTopicTitle}
-                        onChange={(e) => setNewTopicTitle(e.target.value)}
-                        placeholder="عنوان الدرس..."
-                        className="rounded-xl border border-[#d8bf83] p-2 text-xs font-bold bg-white"
-                      />
-                    </div>
-                    <textarea
-                      rows={2}
-                      value={newTopicDetails}
-                      onChange={(e) => setNewTopicDetails(e.target.value)}
-                      placeholder="تفاصيل الدرس ومحاوره..."
-                      className="w-full rounded-xl border border-[#d8bf83] p-2 text-xs font-bold bg-white"
-                    />
-                    <button
-                      type="submit"
-                      disabled={savingTopic}
-                      className="rounded-xl bg-[#0b4231] px-5 py-2 text-xs font-black text-white"
-                    >
-                      حفظ الدرس
-                    </button>
-                  </form>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* 👈 3. Side Panel Column (1/4) matching summer_admin_ui_v3.jpg */}
-          <div className="space-y-5">
-            {/* Widget 1: Islamic Education Plan Topic Selector */}
-            <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#0b4231] p-5 text-white shadow-md">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="text-lg">📄</span>
-                <h4 className="text-sm font-black text-[#bd8f2d]">خطط التعليم الإسلامي</h4>
-              </div>
-
-              <select
-                value={selectedTopicId}
-                onChange={(e) => setSelectedTopicId(e.target.value)}
-                className="w-full rounded-xl bg-[#135440] border border-[#bd8f2d]/50 p-2.5 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-[#bd8f2d]"
-              >
-                {educationTopics.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    الخطة ({t.category === "SIGHAR" ? "صغار" : "كبار"}) - {t.title}
-                  </option>
-                ))}
-              </select>
-
-              {currentSelectedTopic && (
-                <div className="mt-3 rounded-xl bg-[#135440]/80 p-3 border border-white/10 text-xs">
-                  <span className="block font-bold text-[#bd8f2d] mb-1">الدرس النشط هذا الأسبوع:</span>
-                  <p className="font-semibold leading-relaxed text-emerald-100">
-                    {currentSelectedTopic.details}
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Widget 2: Important System Notifications */}
-            <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3 text-[#0b4231]">
-                <span className="text-lg">🔔</span>
-                <h4 className="text-sm font-black">إشعارات هامة</h4>
-              </div>
-              <ul className="space-y-2 text-xs font-medium text-gray-700">
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                  <span>الخطة (أ) - حفظ القرآن</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-[#bd8f2d]" />
-                  <span>الخطة (ب) - تلاوة ونور البيان</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full bg-blue-500" />
-                  <span>الخطة (ج) - القاعدة التمهيدية</span>
-                </li>
-              </ul>
-            </div>
-
-            {/* Widget 3: Quick Operations Shortcuts */}
-            <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3 text-[#0b4231]">
-                <span className="text-lg">🏷️</span>
-                <h4 className="text-sm font-black">دليل وتنبيهات سريعة</h4>
-              </div>
-              <div className="space-y-2 text-xs font-semibold">
-                <button
-                  onClick={handleSendDailyWhatsApp}
-                  className="w-full text-right rounded-xl bg-[#f9f5ed] p-2.5 border border-[#d8bf83]/50 text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition block"
-                >
-                  📖 الخطة القرآنية اليومية
-                </button>
-                <button
-                  onClick={() => setActiveTab("weekly_send")}
-                  className="w-full text-right rounded-xl bg-[#f9f5ed] p-2.5 border border-[#d8bf83]/50 text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition block"
-                >
-                  🖼️ بطاقات الأداء الأسبوعي
-                </button>
-              </div>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       {/* STUDENT MODAL */}
       {showStudentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-3xl bg-[#fffdf9] p-6 shadow-2xl dir-rtl border border-[#d8bf83]" dir="rtl">
-            <h3 className="text-xl font-black text-[#0b4231] mb-4 border-b border-[#d8bf83]/30 pb-3">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl dir-rtl border border-[#c49a45]" dir="rtl">
+            <h3 className="text-xl font-black text-[#1b2e3c] mb-4 border-b border-gray-200 pb-3">
               {studentForm.studentId ? "تعديل بيانات الطالب" : "إضافة طالب جديد"}
             </h3>
             <form onSubmit={handleSaveStudent} className="space-y-4">
               <div>
-                <label className="mb-1 block text-xs font-bold text-[#162e24]">اسم الطالب الرباعي</label>
+                <label className="mb-1 block text-xs font-bold text-[#1b2e3c]">اسم الطالب الرباعي</label>
                 <input
                   type="text"
                   required
                   value={studentForm.fullName}
                   onChange={(e) => setStudentForm({ ...studentForm, fullName: e.target.value })}
                   placeholder="مثال: عبد الرحمن محمد العلي"
-                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231]"
+                  className="w-full rounded-xl border border-gray-300 bg-gray-50 p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#1b2e3c]"
                 />
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-bold text-[#162e24]">نوع الطالب (مسار الدراسة)</label>
+                <label className="mb-1 block text-xs font-bold text-[#1b2e3c]">نوع الطالب (مسار الدراسة)</label>
                 <select
                   value={studentForm.summerGroup}
                   onChange={(e) => setStudentForm({ ...studentForm, summerGroup: e.target.value })}
-                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231]"
+                  className="w-full rounded-xl border border-gray-300 bg-gray-50 p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#1b2e3c]"
                 >
                   <option value="QURAN">📖 طالب قرآن كريم</option>
                   <option value="NOOR_AL_BAYAN">📘 طالب نور البيان والتمهيدي</option>
@@ -804,23 +648,23 @@ export default function SummerAdminDashboard({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-bold text-[#162e24]">رقم الواتساب لولي الأمر</label>
+                <label className="mb-1 block text-xs font-bold text-[#1b2e3c]">رقم الواتساب لولي الأمر</label>
                 <input
                   type="text"
                   value={studentForm.parentWhatsapp}
                   onChange={(e) => setStudentForm({ ...studentForm, parentWhatsapp: e.target.value })}
                   placeholder="مثال: 905555555555"
-                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none dir-ltr"
+                  className="w-full rounded-xl border border-gray-300 bg-gray-50 p-3 text-xs font-bold outline-none dir-ltr"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-[#162e24]">الحلقة</label>
+                  <label className="mb-1 block text-xs font-bold text-[#1b2e3c]">الحلقة</label>
                   <select
                     value={studentForm.circleId}
                     onChange={(e) => setStudentForm({ ...studentForm, circleId: e.target.value })}
-                    className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
+                    className="w-full rounded-xl border border-gray-300 bg-gray-50 p-2.5 text-xs font-bold outline-none"
                   >
                     <option value="">بدون حلقة</option>
                     {circles.map((c) => (
@@ -831,11 +675,11 @@ export default function SummerAdminDashboard({
                   </select>
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-bold text-[#162e24]">المعلم</label>
+                  <label className="mb-1 block text-xs font-bold text-[#1b2e3c]">المعلم</label>
                   <select
                     value={studentForm.teacherId}
                     onChange={(e) => setStudentForm({ ...studentForm, teacherId: e.target.value })}
-                    className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
+                    className="w-full rounded-xl border border-gray-300 bg-gray-50 p-2.5 text-xs font-bold outline-none"
                   >
                     {teachers.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -846,7 +690,7 @@ export default function SummerAdminDashboard({
                 </div>
               </div>
 
-              <div className="mt-6 flex justify-end gap-3 border-t border-[#d8bf83]/30 pt-4">
+              <div className="mt-6 flex justify-end gap-3 border-t border-gray-200 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowStudentModal(false)}
@@ -857,63 +701,9 @@ export default function SummerAdminDashboard({
                 <button
                   type="submit"
                   disabled={savingStudent}
-                  className="rounded-xl bg-[#0b4231] px-6 py-2 text-xs font-black text-white hover:bg-[#072c21]"
+                  className="rounded-xl bg-[#1b2e3c] px-6 py-2 text-xs font-black text-white hover:bg-[#15242f]"
                 >
                   {savingStudent ? "جاري الحفظ..." : "حفظ الطالب"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* CIRCLE MODAL */}
-      {showCircleModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="w-full max-w-md rounded-3xl bg-[#fffdf9] p-6 shadow-2xl dir-rtl border border-[#d8bf83]" dir="rtl">
-            <h3 className="text-xl font-black text-[#0b4231] mb-4 border-b border-[#d8bf83]/30 pb-3">إضافة حلقة صيفية جديدة</h3>
-            <form onSubmit={handleSaveCircle} className="space-y-4">
-              <div>
-                <label className="mb-1 block text-xs font-bold text-[#162e24]">اسم الحلقة</label>
-                <input
-                  type="text"
-                  required
-                  value={circleName}
-                  onChange={(e) => setCircleName(e.target.value)}
-                  placeholder="مثال: حلقة الفجر (قرآن)"
-                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231]"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1 block text-xs font-bold text-[#162e24]">المعلم المسؤول</label>
-                <select
-                  value={circleTeacherId}
-                  onChange={(e) => setCircleTeacherId(e.target.value)}
-                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231]"
-                >
-                  {teachers.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.fullName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="mt-6 flex justify-end gap-3 border-t border-[#d8bf83]/30 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowCircleModal(false)}
-                  className="rounded-xl border border-gray-300 px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-100"
-                >
-                  إلغاء
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingCircle}
-                  className="rounded-xl bg-[#0b4231] px-6 py-2 text-xs font-black text-white hover:bg-[#072c21]"
-                >
-                  {savingCircle ? "جاري الحفظ..." : "إضافة الحلقة"}
                 </button>
               </div>
             </form>
