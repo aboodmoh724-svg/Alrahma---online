@@ -297,7 +297,7 @@ export default function SummerAdminDashboard({
             </div>
             <div>
               <h1 className="text-3xl font-bold tracking-tight text-[#fbf6ef] font-serif leading-tight">
-                مدرسة القرآن الصيفية
+                الدورة الصيفية الأولى
               </h1>
               <p className="text-xs font-semibold text-emerald-200">
                 منصة الإدارة المركزية والتقارير الصيفية | تحفيظ الرحمة
@@ -320,10 +320,10 @@ export default function SummerAdminDashboard({
 
             <div className="flex items-center gap-2 rounded-xl bg-[#135440] px-3.5 py-2 border border-[#bd8f2d]/40 shrink-0">
               <div className="h-8 w-8 rounded-full bg-[#bd8f2d] flex items-center justify-center font-bold text-xs text-[#0b4231]">
-                أ
+                م
               </div>
               <div className="text-right">
-                <span className="block text-xs font-bold text-white font-serif">عبد العزيز</span>
+                <span className="block text-xs font-bold text-white font-serif">أستاذ محمد سيف الدين</span>
                 <span className="block text-[10px] text-emerald-200">المدير العام</span>
               </div>
             </div>

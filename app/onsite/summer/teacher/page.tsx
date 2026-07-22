@@ -52,81 +52,108 @@ export default async function OnsiteSummerTeacherDashboard() {
   });
 
   const filledCount = students.filter((s) => s.summerReports.length > 0).length;
+  const completionPercentage =
+    students.length > 0 ? Math.round((filledCount / students.length) * 100) : 0;
 
   return (
-    <main
-      className="min-h-screen bg-[#f6eee7] text-[#18322a] p-4 sm:p-6"
-      dir="rtl"
-      style={{
-        background:
-          "radial-gradient(circle at 12% 12%, rgba(189,143,45,0.14), transparent 26%), linear-gradient(135deg, #fbf6ef 0%, #f6eee7 48%, #eef6ef 100%)",
-      }}
-    >
-      <div className="mx-auto max-w-5xl space-y-6">
-        {/* Header */}
-        <header className="flex flex-col gap-4 rounded-3xl border border-[#d8bf83]/50 bg-[#fffaf4] p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-h-screen bg-[#f7f2ea] text-[#162e24] dir-rtl font-sans pb-12" dir="rtl">
+      {/* 🕌 1. Full-Width Dark Emerald Islamic Calligraphy Header for Teacher */}
+      <header className="relative bg-[#0b4231] text-white shadow-xl overflow-hidden border-b-4 border-[#bd8f2d]">
+        {/* Geometric Islamic Mandala Accent SVG */}
+        <div className="absolute top-0 right-0 h-full w-[420px] pointer-events-none opacity-25 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-5 pb-5 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Image
-              src="/images/summer_quran_logo_v2.jpg"
-              alt="شعار الدورة الصيفية"
-              width={64}
-              height={64}
-              className="h-16 w-16 rounded-2xl object-contain border border-[#d8bf83]/60 shadow-sm"
-            />
+            <div className="rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-[#bd8f2d]">
+              <Image
+                src="/images/summer_quran_logo_v2.jpg"
+                alt="شعار الدورة الصيفية"
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-xl object-contain"
+              />
+            </div>
             <div>
-              <p className="text-xs font-black text-[#bd8f2d]">لوحة المعلم الصيفي</p>
-              <h1 className="text-xl font-black text-[#0f5a35] sm:text-2xl">
-                أستاذ/ـة: {teacher.fullName}
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-3 py-0.5 text-xs font-bold text-emerald-100">
+                🌟 بوابة المعلم الصيفي
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#fbf6ef] font-serif leading-tight mt-1">
+                الدورة الصيفية الأولى
               </h1>
-              <p className="text-xs font-bold text-[#18322a]/60">
-                تاريخ اليوم: <span className="font-mono text-[#0f5a35]">{todayStr}</span>
+              <p className="text-xs font-semibold text-emerald-200">
+                لوحة متابعة رصد التقارير اليومية | تحفيظ الرحمة
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="rounded-2xl bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
-              إنجاز اليوم: {filledCount} من {students.length}
-            </span>
-          </div>
-        </header>
 
-        {/* Progress Bar */}
-        <div className="rounded-2xl border border-[#d8bf83]/40 bg-[#fffaf4] p-4 shadow-sm">
-          <div className="mb-2 flex items-center justify-between text-sm font-black">
-            <span className="text-[#0f5a35]">نسبة اكتمال تقارير الحلقة اليوم</span>
-            <span className="text-[#bd8f2d]">
-              {students.length > 0
-                ? Math.round((filledCount / students.length) * 100)
-                : 0}
-              %
-            </span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-xl bg-[#135440] px-4 py-2 border border-[#bd8f2d]/40 shrink-0">
+              <div className="h-8 w-8 rounded-full bg-[#bd8f2d] flex items-center justify-center font-bold text-xs text-[#0b4231]">
+                أ
+              </div>
+              <div className="text-right">
+                <span className="block text-xs font-bold text-white font-serif">
+                  أستاذ/ـة: {teacher.fullName}
+                </span>
+                <span className="block text-[10px] text-emerald-200">
+                  تاريخ اليوم: {todayStr}
+                </span>
+              </div>
+            </div>
+
+            <Link
+              href="/api/logout"
+              className="rounded-xl bg-red-900/80 border border-red-400/40 px-3.5 py-2 text-xs font-bold text-white hover:bg-red-900 transition"
+              title="تسجيل الخروج"
+            >
+              🚪
+            </Link>
           </div>
-          <div className="h-3.5 w-full rounded-full bg-gray-200 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-[#0f5a35] transition-all duration-500"
-              style={{
-                width: `${
-                  students.length > 0
-                    ? (filledCount / students.length) * 100
-                    : 0
-                }%`,
-              }}
-            />
+        </div>
+      </header>
+
+      {/* 🏛️ 2. Main Workspace Content Container */}
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 space-y-6">
+        {/* Top Progress & Completion Summary Banner */}
+        <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-[#0b4231] font-serif">
+              نسبة إنجاز تقارير الحلقة اليوم
+            </h2>
+            <p className="text-xs font-semibold text-gray-500 mt-1">
+              تم رصد <b className="text-[#0b4231] font-serif text-sm">{filledCount}</b> من إجمالي{" "}
+              <b className="text-[#bd8f2d] font-serif text-sm">{students.length}</b> طالباً بحلقتك
+            </p>
+          </div>
+
+          <div className="w-full sm:w-64 space-y-2">
+            <div className="flex justify-between items-center text-xs font-bold">
+              <span className="text-gray-600">التقدم الفعلي</span>
+              <span className="text-[#0b4231] font-serif text-base">{completionPercentage}%</span>
+            </div>
+            <div className="h-3.5 w-full rounded-full bg-gray-200 overflow-hidden border border-gray-300/40">
+              <div
+                className="h-full rounded-full bg-[#0b4231] transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
           </div>
         </div>
 
-        {/* Students List */}
-        <div className="space-y-3">
-          <h2 className="text-lg font-black text-[#0f5a35] px-1">
-            قائمة طلاب الحلقة ({students.length} طالباً)
-          </h2>
+        {/* 📋 Students List Cards Grid */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-[#0b4231] font-serif">
+              قائمة طلابك في الحلقة ({students.length} طالباً)
+            </h3>
+          </div>
 
           {students.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-[#d8bf83] bg-white p-8 text-center text-sm font-bold text-[#18322a]/60">
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffdf9] p-10 text-center text-sm font-bold text-gray-500">
               لا يوجد طلاب مسجلين في حلقتك حتى الآن.
             </div>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               {students.map((student) => {
                 const reportToday = student.summerReports[0] as SummerReportToday | undefined;
                 const isDone = Boolean(reportToday);
@@ -135,57 +162,60 @@ export default async function OnsiteSummerTeacherDashboard() {
                 return (
                   <div
                     key={student.id}
-                    className={`flex flex-col justify-between rounded-3xl border p-4 transition shadow-sm ${
+                    className={`flex flex-col justify-between rounded-2xl border p-5 transition shadow-sm ${
                       isDone
-                        ? "border-emerald-300 bg-emerald-50/50"
-                        : "border-[#d8bf83]/60 bg-white"
+                        ? "border-emerald-400/60 bg-emerald-50/40"
+                        : "border-[#d8bf83]/60 bg-[#fffdf9]"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span
-                            className={`rounded-full px-2.5 py-0.5 text-[11px] font-black ${
-                              isNoor
-                                ? "bg-blue-100 text-blue-800"
-                                : "bg-[#0f5a35]/15 text-[#0f5a35]"
-                            }`}
-                          >
-                            {isNoor ? "نور البيان" : "قرآن كريم"}
-                          </span>
+                          {isNoor ? (
+                            <span className="rounded-full bg-[#bd8f2d] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
+                              📘 طالب نور البيان
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-[#0b4231] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
+                              📖 طالب قرآن كريم
+                            </span>
+                          )}
+
                           {student.studentCode === "7500" && (
                             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">
                               تجريبي
                             </span>
                           )}
                         </div>
-                        <h3 className="mt-1.5 text-lg font-black text-[#18322a]">
+
+                        <h4 className="mt-2 text-xl font-bold text-[#162e24] font-serif">
                           {student.fullName}
-                        </h3>
+                        </h4>
+
                         {student.circle?.name && (
-                          <p className="text-xs font-bold text-[#bd8f2d]">
-                            {student.circle.name}
+                          <p className="text-xs font-bold text-[#bd8f2d] mt-0.5">
+                            حلقة: {student.circle.name}
                           </p>
                         )}
                       </div>
 
                       <span
-                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-black ${
+                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-black font-serif ${
                           isDone
-                            ? "bg-emerald-600 text-white"
-                            : "bg-amber-100 text-amber-900"
+                            ? "bg-emerald-700 text-white shadow-2xs"
+                            : "bg-amber-100 text-amber-900 border border-amber-300/60"
                         }`}
                       >
                         {isDone
                           ? reportToday?.status === "ABSENT"
                             ? "غائب ❌"
-                            : "تم التعبئة ✅"
+                            : "تم الرصد ✅"
                           : "بانتظار التعبئة ⏳"}
                       </span>
                     </div>
 
-                    <div className="mt-4 flex items-center justify-between border-t border-[#d8bf83]/25 pt-3">
-                      <span className="text-xs font-bold text-[#18322a]/60">
+                    <div className="mt-5 flex items-center justify-between border-t border-[#d8bf83]/30 pt-3">
+                      <span className="text-xs font-semibold text-gray-600">
                         {isDone
                           ? isNoor
                             ? `الدرس: ${reportToday?.noorLearned || "حاضر"}`
@@ -195,10 +225,10 @@ export default async function OnsiteSummerTeacherDashboard() {
 
                       <Link
                         href={`/onsite/summer/teacher/reports/${student.id}`}
-                        className={`rounded-xl px-4 py-2 text-xs font-black transition shadow-sm ${
+                        className={`rounded-xl px-4 py-2 text-xs font-bold transition shadow-2xs font-serif ${
                           isDone
-                            ? "bg-white text-[#0f5a35] border border-[#0f5a35] hover:bg-emerald-50"
-                            : "bg-[#0f5a35] text-white hover:bg-[#0a3f2a]"
+                            ? "bg-white text-[#0b4231] border border-[#0b4231] hover:bg-emerald-50"
+                            : "bg-[#0b4231] text-white hover:bg-[#072c21]"
                         }`}
                       >
                         {isDone ? "تعديل التقرير" : "تعبئة التقرير 📝"}
@@ -210,7 +240,7 @@ export default async function OnsiteSummerTeacherDashboard() {
             </div>
           )}
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
