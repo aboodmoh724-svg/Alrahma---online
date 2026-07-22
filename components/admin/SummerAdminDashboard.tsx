@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { EducationPlanTopic } from "@/lib/summer-education-plan";
 
-type TeacherOption = { id: string; fullName: string };
+type TeacherOption = { id: string; fullName: string; email?: string | null };
 type CircleOption = { id: string; name: string; teacher?: TeacherOption | null };
 
 type StudentData = {
@@ -43,12 +43,16 @@ export default function SummerAdminDashboard({
 
   const [students, setStudents] = useState<StudentData[]>(initialStudents);
   const [circles, setCircles] = useState<CircleOption[]>(initialCircles);
-  const [teachers] = useState<TeacherOption[]>(initialTeachers);
+  const [teachers, setTeachers] = useState<TeacherOption[]>(initialTeachers);
   const [educationTopics, setEducationTopics] = useState<EducationPlanTopic[]>(initialEducationTopics);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTopicId, setSelectedTopicId] = useState<string>(
     initialEducationTopics[0]?.id || ""
   );
+
+  // Excel File Import State
+  const [importingExcel, setImportingExcel] = useState(false);
+  const [importStatusMsg, setImportStatusMsg] = useState("");
 
   // Modal for Viewing Full Education Topic Details
   const [viewingTopic, setViewingTopic] = useState<EducationPlanTopic | null>(null);
@@ -119,6 +123,46 @@ export default function SummerAdminDashboard({
       s.fullName.includes(searchQuery) ||
       (s.studentCode && s.studentCode.includes(searchQuery))
   );
+
+  // Trigger Excel File Import
+  const handleImportExcel = async (e?: React.ChangeEvent<HTMLInputElement>) => {
+    setImportingExcel(true);
+    setImportStatusMsg("جاري استيراد ملف الطلاب والحلقات وقواعد البيانات...");
+
+    try {
+      const formData = new FormData();
+      if (e?.target?.files?.[0]) {
+        formData.append("file", e.target.files[0]);
+      }
+
+      const res = await fetch("/api/summer/admin/import-excel", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل استيراد الملف");
+
+      setImportStatusMsg(`✅ ${data.message}`);
+
+      // Refresh student & circle data from backend
+      const refRes = await fetch("/api/summer/admin/students");
+      const refData = await refRes.json();
+      if (refData.success) {
+        setStudents(refData.students);
+      }
+
+      const cRes = await fetch("/api/summer/admin/circles");
+      const cData = await cRes.json();
+      if (cData.success) {
+        setCircles(cData.circles);
+      }
+    } catch (err) {
+      setImportStatusMsg(`❌ خطأ: ${err instanceof Error ? err.message : "فشل الاستيراد"}`);
+    } finally {
+      setImportingExcel(false);
+    }
+  };
 
   // Save Student
   const handleSaveStudent = async (e: React.FormEvent) => {
@@ -434,7 +478,38 @@ export default function SummerAdminDashboard({
 
       {/* 🏛️ 2. Main Dashboard Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
-        {/* Top Stat Cards Row (Includes Circles Compliance Summary) */}
+        {/* Excel Import Status & Action Bar */}
+        <div className="mb-6 rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-[#0b4231] font-serif">📥 استيراد بيانات الطلاب والحلقات والقرآن</h3>
+            <p className="text-xs font-semibold text-gray-500">
+              استيراد تلقائي لكافة الطلاب المعلمين والحسابات من ملف Excel (كلمة مرور المعلمين: <b className="text-[#bd8f2d]">12345</b>)
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => handleImportExcel()}
+              disabled={importingExcel}
+              className="rounded-xl bg-[#0b4231] px-5 py-2 text-xs font-black text-white hover:bg-[#072c21] disabled:opacity-50 font-serif shadow-xs"
+            >
+              {importingExcel ? "جاري الاستيراد..." : "⚡ تشغيل استيراد Excel التلقائي"}
+            </button>
+
+            <label className="cursor-pointer rounded-xl border border-[#d8bf83] bg-[#f9f5ed] px-4 py-2 text-xs font-bold text-[#0b4231] hover:bg-[#d8bf83]">
+              📁 رفع ملف جديد
+              <input type="file" accept=".xls,.xlsx" onChange={handleImportExcel} className="hidden" />
+            </label>
+          </div>
+        </div>
+
+        {importStatusMsg && (
+          <div className="mb-6 rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
+            {importStatusMsg}
+          </div>
+        )}
+
+        {/* Top Stat Cards Row */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
@@ -487,7 +562,7 @@ export default function SummerAdminDashboard({
             {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
               <div className="space-y-6">
-                {/* 1. Circle Compliance Progress Tracker (متابعة إدخال تقارير الحلقات اليومية للمدير) */}
+                {/* Circle Compliance Progress Tracker */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
                   <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30 mb-4">
                     <div className="flex items-center gap-2">
@@ -497,7 +572,7 @@ export default function SummerAdminDashboard({
                           حالة إدخال تقارير الحلقات لليوم ({todayStr})
                         </h3>
                         <p className="text-xs text-gray-500 font-semibold">
-                          معرفة المعلمين والحلقات التي أنجزت إدخال التقارير وتحديد المتأخرين للمتابعة
+                          متابعة المعلمين والتأكد من إنجاز تقارير الحلقات
                         </p>
                       </div>
                     </div>
@@ -558,12 +633,12 @@ export default function SummerAdminDashboard({
                   </div>
                 </div>
 
-                {/* 2. Students Progress Table */}
+                {/* Students Progress Table */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden">
                   <div className="flex items-center justify-between p-5 border-b border-[#d8bf83]/30 bg-[#f9f5ed]">
                     <div className="flex items-center gap-3">
                       <span className="text-xl">📋</span>
-                      <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل الطلاب والتقارير اليومية</h3>
+                      <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل الطلاب والتقارير اليومية ({students.length})</h3>
                     </div>
                     <button
                       onClick={() => {
@@ -679,7 +754,7 @@ export default function SummerAdminDashboard({
             {activeTab === "students" && (
               <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل جميع الطلاب</h3>
+                  <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل جميع الطلاب ({students.length})</h3>
                   <button
                     onClick={() => {
                       setStudentForm({
@@ -730,11 +805,11 @@ export default function SummerAdminDashboard({
               </div>
             )}
 
-            {/* CIRCLES TAB */}
+            {/* CIRCLES AND TEACHERS TAB */}
             {activeTab === "circles" && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-[#0b4231] font-serif">حلقات الدورة الصيفية</h3>
+                  <h3 className="text-xl font-bold text-[#0b4231] font-serif">إدارة المعلمين والحسابات والحلقات</h3>
                   <button
                     onClick={() => setShowCircleModal(true)}
                     className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white font-serif"
@@ -742,6 +817,31 @@ export default function SummerAdminDashboard({
                     ➕ إضافة حلقة جديدة
                   </button>
                 </div>
+
+                {/* Teachers Credentials Cards */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm space-y-4">
+                  <h4 className="text-base font-bold text-[#0b4231] font-serif border-b border-[#d8bf83]/30 pb-2">
+                    🔑 حسابات المعلمين المسجلة (اسم المستخدم وكلمة المرور 12345)
+                  </h4>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {teachers.map((t) => (
+                      <div key={t.id} className="rounded-xl border border-[#d8bf83]/60 bg-white p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <h5 className="font-bold text-[#0b4231] text-sm font-serif">{t.fullName}</h5>
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                            معلم صيفي
+                          </span>
+                        </div>
+                        <div className="text-xs space-y-1 text-gray-700 font-semibold">
+                          <div>📧 اسم المستخدم: <b className="font-mono text-[#bd8f2d]">{t.email || "غير محدد"}</b></div>
+                          <div>🔑 كلمة المرور: <b className="font-mono text-gray-900">12345</b></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Circles Cards */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   {circles.map((c) => (
                     <div key={c.id} className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
