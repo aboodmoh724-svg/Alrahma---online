@@ -879,3 +879,4 @@ model SummerReport {
   @@index([dateKey])
   @@index([teacherId])
 }
+

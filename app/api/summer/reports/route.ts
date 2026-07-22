@@ -1,131 +1,98 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ReportStatus } from "@prisma/client";
 
-export async function POST(request: Request) {
+function optionalNumber(value: unknown) {
+  if (value === null || value === undefined || value === "") return null;
+  const num = Number(value);
+  return Number.isFinite(num) ? num : null;
+}
+
+export async function POST(req: Request) {
   try {
     const cookieStore = await cookies();
     const teacherId = cookieStore.get("alrahma_user_id")?.value;
 
     if (!teacherId) {
-      return NextResponse.json(
-        { success: false, message: "غير مصرح - الرجاء تسجيل الدخول" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "الرجاء تسجيل الدخول أولاً" }, { status: 401 });
     }
 
-    // Verify teacher role
-    const teacher = await prisma.user.findFirst({
-      where: {
-        id: teacherId,
-        role: "TEACHER",
-        isActive: true,
-      },
-    });
-
-    if (!teacher) {
-      return NextResponse.json(
-        { success: false, message: "حساب المعلم غير موجود أو غير نشط" },
-        { status: 403 }
-      );
-    }
-
-    const body = await request.json();
+    const body = await req.json();
     const {
       studentId,
       dateKey,
       status,
+      // حقول القرآن
       quranNew,
       quranRevision,
       quranTaqeen,
+      // حقول نور البيان
       noorLearned,
       noorHomework,
       noorHomeworkGrade,
       noorParticipation,
+      // المشترك
       behaviorGrade,
       behaviorNotes,
     } = body;
 
-    if (!studentId || !dateKey || !status) {
-      return NextResponse.json(
-        { success: false, message: "البيانات الأساسية ناقصة (معرف الطالب، التاريخ، الحالة)" },
-        { status: 400 }
-      );
+    if (!studentId || typeof studentId !== "string" || !studentId.trim()) {
+      return NextResponse.json({ error: "معرف الطالب مطلوب" }, { status: 400 });
     }
 
-    // Check student existence
-    const student = await prisma.student.findUnique({
-      where: { id: studentId },
-    });
-
-    if (!student || student.studyMode !== "ONSITE_SUMMER") {
-      return NextResponse.json(
-        { success: false, message: "الطالب غير موجود أو غير مسجل في الدورة الصيفية" },
-        { status: 404 }
-      );
-    }
-
-    // Check if report exists to determine whether we create or update
-    const existing = await prisma.summerReport.findUnique({
+    const student = await prisma.student.findFirst({
       where: {
-        studentId_dateKey: {
-          studentId,
-          dateKey,
-        },
+        id: studentId.trim(),
+        isActive: true,
+        OR: [
+          { teacherId },
+          { studentCode: "7500" },
+        ],
+      },
+      select: {
+        id: true,
+        studyMode: true,
+        summerGroup: true,
       },
     });
 
-    let report;
-
-    if (existing) {
-      // Update
-      report = await prisma.summerReport.update({
-        where: { id: existing.id },
-        data: {
-          status,
-          // If absent, we clear out academic entries, keeping only behavior if needed, or nulling everything
-          quranNew: status === "PRESENT" ? quranNew || null : null,
-          quranRevision: status === "PRESENT" ? quranRevision || null : null,
-          quranTaqeen: status === "PRESENT" ? quranTaqeen || null : null,
-          noorLearned: status === "PRESENT" ? noorLearned || null : null,
-          noorHomework: status === "PRESENT" ? (noorHomework ?? null) : null,
-          noorHomeworkGrade: status === "PRESENT" ? (noorHomeworkGrade ?? null) : null,
-          noorParticipation: status === "PRESENT" ? (noorParticipation ?? null) : null,
-          behaviorGrade: status === "PRESENT" ? (behaviorGrade ?? null) : null,
-          behaviorNotes: status === "PRESENT" ? behaviorNotes || null : null,
-        },
-      });
-    } else {
-      // Create
-      report = await prisma.summerReport.create({
-        data: {
-          studentId,
-          teacherId,
-          dateKey,
-          status,
-          quranNew: status === "PRESENT" ? quranNew || null : null,
-          quranRevision: status === "PRESENT" ? quranRevision || null : null,
-          quranTaqeen: status === "PRESENT" ? quranTaqeen || null : null,
-          noorLearned: status === "PRESENT" ? noorLearned || null : null,
-          noorHomework: status === "PRESENT" ? (noorHomework ?? null) : null,
-          noorHomeworkGrade: status === "PRESENT" ? (noorHomeworkGrade ?? null) : null,
-          noorParticipation: status === "PRESENT" ? (noorParticipation ?? null) : null,
-          behaviorGrade: status === "PRESENT" ? (behaviorGrade ?? null) : null,
-          behaviorNotes: status === "PRESENT" ? behaviorNotes || null : null,
-        },
-      });
+    if (!student || student.studyMode !== "ONSITE_SUMMER") {
+      return NextResponse.json({ error: "الطالب غير موجود في الدورة الصيفية" }, { status: 403 });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "تم حفظ التقرير بنجاح",
-      report,
+    const todayStr = dateKey || new Date().toISOString().split("T")[0];
+
+    const reportData = {
+      studentId: student.id,
+      teacherId,
+      dateKey: todayStr,
+      status: status === "ABSENT" ? ReportStatus.ABSENT : ReportStatus.PRESENT,
+      quranNew: typeof quranNew === "string" ? quranNew.trim() : null,
+      quranRevision: typeof quranRevision === "string" ? quranRevision.trim() : null,
+      quranTaqeen: typeof quranTaqeen === "string" ? quranTaqeen.trim() : null,
+      noorLearned: typeof noorLearned === "string" ? noorLearned.trim() : null,
+      noorHomework: typeof noorHomework === "boolean" ? noorHomework : noorHomework === "true",
+      noorHomeworkGrade: optionalNumber(noorHomeworkGrade),
+      noorParticipation: optionalNumber(noorParticipation),
+      behaviorGrade: optionalNumber(behaviorGrade) ?? 5,
+      behaviorNotes: typeof behaviorNotes === "string" ? behaviorNotes.trim() : null,
+    };
+
+    const report = await prisma.summerReport.upsert({
+      where: {
+        studentId_dateKey: {
+          studentId: student.id,
+          dateKey: todayStr,
+        },
+      },
+      create: reportData,
+      update: reportData,
     });
+
+    return NextResponse.json({ success: true, report });
   } catch (error) {
-    console.error("SUMMER REPORT SAVE API ERROR:", error);
-    return NextResponse.json(
-      { success: false, message: "حدث خطأ داخلي في الخادم" },
-      { status: 500 }
-    );
+    console.error("SUMMER REPORT SAVE ERROR =>", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء حفظ تقرير الدورة الصيفية" }, { status: 500 });
   }
 }

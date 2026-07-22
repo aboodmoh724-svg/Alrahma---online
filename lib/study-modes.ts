@@ -37,3 +37,5 @@ export function getAdminDashboardPath(studyMode: StudyMode | AlrahmaStudyMode) {
   if (studyMode === "ONSITE_SUMMER") return "/onsite/summer/admin";
   return "/onsite/admin/dashboard";
 }
+
+

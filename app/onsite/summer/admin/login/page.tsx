@@ -1,49 +1,111 @@
-import Link from "next/link";
-import LoginForm from "@/components/login/LoginForm";
+"use client";
 
-export default function Page() {
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+
+export default function OnsiteSummerAdminLoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, expectedRole: "ADMIN", expectedMode: "ONSITE_SUMMER" }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "خطأ في بيانات الدخول");
+      }
+
+      router.push("/onsite/summer/admin");
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "حدث خطأ أثناء تسجيل الدخول");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6" dir="rtl">
-      <div className="mx-auto max-w-7xl">
-        <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:min-h-[calc(100vh-3rem)] lg:grid-cols-[1.05fr_0.95fr]">
-          {/* Right/Top Side: Hero with green/gold theme */}
-          <div className="relative min-h-[320px] overflow-hidden bg-[#0a3f2a] lg:min-h-full">
-            <img
-              src="/images/afyon-awards-wide.jpeg"
-              alt="الدورة الصيفية"
-              className="absolute inset-0 h-full w-full object-cover object-center opacity-45 blur-[1px]"
+    <main
+      className="min-h-screen bg-[#f6eee7] flex items-center justify-center p-4"
+      dir="rtl"
+      style={{
+        background:
+          "radial-gradient(circle at 12% 12%, rgba(189,143,45,0.14), transparent 26%), linear-gradient(135deg, #fbf6ef 0%, #f6eee7 48%, #eef6ef 100%)",
+      }}
+    >
+      <div className="w-full max-w-md rounded-3xl border border-[#d8bf83]/60 bg-[#fffaf4] p-8 shadow-xl">
+        <div className="text-center mb-6">
+          <Image
+            src="/images/summer_quran_logo_v2.jpg"
+            alt="شعار الدورة الصيفية"
+            width={90}
+            height={90}
+            className="mx-auto h-24 w-24 rounded-2xl object-contain shadow-sm border border-[#d8bf83]"
+          />
+          <h1 className="mt-3 text-2xl font-black text-[#0f5a35]">
+            لوحة إدارة الدورة الصيفية
+          </h1>
+          <p className="mt-1 text-sm font-bold text-[#bd8f2d]">
+            تحفيظ الرحمة للقرآن الكريم ونور البيان
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-4 rounded-2xl bg-red-50 p-3.5 text-sm font-bold text-red-700 border border-red-200 text-center">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#18322a]">
+              البريد الإلكتروني للإدارة
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@alrahma.com"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
             />
-            <div className="absolute inset-0 bg-[#0a3f2a]/34" />
-            <Link
-              href="/onsite"
-              className="absolute right-5 top-5 rounded-full bg-white/16 px-4 py-2 text-sm font-bold text-white backdrop-blur transition hover:bg-white/24 sm:right-8 sm:top-8"
-            >
-              رجوع
-            </Link>
           </div>
 
-          {/* Left/Bottom Side: LoginForm */}
-          <div className="flex items-center justify-center p-5 sm:p-8 md:p-14">
-            <div className="w-full max-w-md">
-              <div className="mb-7">
-                <p className="w-fit rounded-full bg-[#0f5a35]/10 px-4 py-2 text-sm font-black text-[#0f5a35]">
-                  إدارة الدورة الصيفية
-                </p>
-                <h1 className="mt-4 text-3xl font-black leading-tight text-[#0a3f2a] sm:text-4xl">
-                  متابعة حلقات الدورة الصيفية
-                </h1>
-                <p className="mt-3 text-sm leading-7 text-[#1c2d31]/65">
-                  إدارة الطلاب والمعلمين والحلقات وإرسال التقارير اليومية والأسبوعية للدورة الصيفية بأفيون.
-                </p>
-              </div>
-              <LoginForm
-                title="دخول إدارة الدورة الصيفية"
-                subtitle="أدخل بريدك الإلكتروني وكلمة المرور للوصول إلى لوحة إدارة الدورة الصيفية."
-                rememberKey="alrahma_summer_admin_login"
-              />
-            </div>
+          <div>
+            <label className="mb-1 block text-sm font-bold text-[#18322a]">
+              كلمة المرور
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
+            />
           </div>
-        </section>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-2xl bg-[#0f5a35] py-4 text-base font-black text-white shadow-md transition hover:bg-[#0a3f2a] disabled:opacity-50"
+          >
+            {loading ? "جاري الدخول..." : "دخول الإدارة"}
+          </button>
+        </form>
       </div>
     </main>
   );

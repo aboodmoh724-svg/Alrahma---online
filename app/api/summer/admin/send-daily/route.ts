@@ -1,131 +1,181 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendWhatsAppText } from "@/lib/whatsapp";
+import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
-async function checkAdmin() {
+async function verifyAdmin() {
   const cookieStore = await cookies();
-  const adminId = cookieStore.get("alrahma_user_id")?.value;
-  if (!adminId) return false;
-  const admin = await prisma.user.findFirst({
-    where: { id: adminId, role: "ADMIN", studyMode: "ONSITE_SUMMER", isActive: true },
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: { id: userId, role: "ADMIN", isActive: true },
+    select: { id: true },
   });
-  return !!admin;
 }
 
-export async function POST(request: Request) {
+function buildQuranDailyMessage(input: {
+  studentName: string;
+  circleName?: string | null;
+  teacherName?: string | null;
+  reportDate: string;
+  quranNew?: string | null;
+  quranRevision?: string | null;
+  quranTaqeen?: string | null;
+  behaviorGrade?: number | null;
+  behaviorNotes?: string | null;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
+    `تقرير الطالب اليومي - الدورة الصيفية 🌟\n` +
+    `*الطالب:* ${input.studentName}\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n` +
+    `*التاريخ:* ${input.reportDate}\n\n` +
+    `📖 *الحفظ الجديد:* ${input.quranNew || "-"}\n` +
+    `🔄 *المراجعة:* ${input.quranRevision || "-"}\n` +
+    `🗣️ *التلقين:* ${input.quranTaqeen || "-"}\n\n` +
+    `⭐ *السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
+    `📝 *ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
+    `جزاكم الله خيراً على حسن المتابعة.\n` +
+    `إدارة الدورة الصيفية - تحفيظ الرحمة`
+  );
+}
+
+function buildNoorDailyMessage(input: {
+  studentName: string;
+  circleName?: string | null;
+  teacherName?: string | null;
+  reportDate: string;
+  noorLearned?: string | null;
+  noorHomework?: boolean | null;
+  noorHomeworkGrade?: number | null;
+  noorParticipation?: number | null;
+  behaviorGrade?: number | null;
+  behaviorNotes?: string | null;
+}) {
+  const hwStatus = input.noorHomework ? "تم التسليم ✅" : "لم يتم التسليم ❌";
+  const hwGradeStr = input.noorHomeworkGrade !== null ? ` (الدرجة: ${input.noorHomeworkGrade}/5)` : "";
+
+  return (
+    `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
+    `تقرير الطالب اليومي - الدورة الصيفية 🌟\n` +
+    `*الطالب:* ${input.studentName}\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n` +
+    `*التاريخ:* ${input.reportDate}\n\n` +
+    `📚 *ماذا تعلم اليوم:* ${input.noorLearned || "-"}\n` +
+    `📝 *الواجب اليومي:* ${hwStatus}${hwGradeStr}\n` +
+    `🖐️ *المشاركة والتفاعل:* ${input.noorParticipation ?? 5} من 5\n\n` +
+    `⭐ *السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
+    `📝 *ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
+    `جزاكم الله خيراً على حسن المتابعة.\n` +
+    `إدارة الدورة الصيفية - تحفيظ الرحمة`
+  );
+}
+
+function buildAbsenceMessage(input: {
+  studentName: string;
+  reportDate: string;
+}) {
+  return (
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `نفيدكم بأن ابنكم الكريم / *${input.studentName}*\n` +
+    `قد غاب عن الدورة الصيفية اليوم بتاريخ ${input.reportDate}.\n\n` +
+    `نرجو الحرص على انتظام الحضور لما له من أثر على مستوى الطالب.\n` +
+    `نشكر لكم حسن التعاون.\n\n` +
+    `إدارة الدورة الصيفية - تحفيظ الرحمة`
+  );
+}
+
+export async function POST(req: Request) {
   try {
-    if (!(await checkAdmin())) {
-      return NextResponse.json({ success: false, message: "غير مصرح" }, { status: 401 });
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { dateKey, studentId, circleId, all } = body;
+    const body = await req.json();
+    const { reportIds, dateKey } = body;
 
-    if (!dateKey) {
-      return NextResponse.json({ success: false, message: "التاريخ مطلوب" }, { status: 400 });
-    }
+    const targetDate = dateKey || new Date().toISOString().split("T")[0];
 
-    // Build the query to find unsent reports
-    const whereClause: any = {
-      dateKey,
-      dailySent: false,
-    };
-
-    if (studentId) {
-      whereClause.studentId = studentId;
-    } else if (circleId) {
-      whereClause.student = {
-        circleId,
-      };
-    } else if (!all) {
-      return NextResponse.json({ success: false, message: "يجب تحديد هدف الإرسال" }, { status: 400 });
-    }
-
-    // Find the reports to send
     const reports = await prisma.summerReport.findMany({
-      where: whereClause,
+      where: reportIds && Array.isArray(reportIds) && reportIds.length > 0
+        ? { id: { in: reportIds } }
+        : { dateKey: targetDate },
       include: {
-        student: true,
+        student: {
+          select: {
+            fullName: true,
+            parentWhatsapp: true,
+            summerGroup: true,
+            circle: { select: { name: true } },
+          },
+        },
+        teacher: { select: { fullName: true } },
       },
     });
 
-    if (reports.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: "لا توجد تقارير غير مرسلة للمحدد",
-        sentCount: 0,
-      });
-    }
-
     let sentCount = 0;
+    let failCount = 0;
 
     for (const report of reports) {
-      const student = report.student;
-      if (!student.parentWhatsapp) {
-        // Skip or log error
+      const phone = report.student.parentWhatsapp
+        ? normalizeWhatsAppNumber(report.student.parentWhatsapp, "90")
+        : null;
+
+      if (!phone) {
         await prisma.summerReport.update({
           where: { id: report.id },
-          data: { dailySentError: "لا يوجد رقم واتساب لولي الأمر" },
+          data: { dailySentError: "لا يوجد رقم واتساب مسجل لولي الأمر" },
         });
+        failCount += 1;
         continue;
       }
 
-      // Format message based on status and group
       let messageText = "";
 
       if (report.status === "ABSENT") {
-        messageText =
-          `السلام عليكم ورحمة الله وبركاته\n\n` +
-          `نفيدك بأن ابنك الكريم / *${student.fullName}*\n` +
-          `غائب عن الدورة الصيفية اليوم بتاريخ *${dateKey}* بدون عذر.\n\n` +
-          `نرجو منكم الاهتمام بحضور ابنكم الكريم لضمان استمراريته وتقدمه.\n\n` +
-          `نشكر لكم حسن تعاونكم واهتمامكم.\n\n` +
-          `إدارة منصة الرحمة لتعليم القرآن الكريم`;
+        messageText = buildAbsenceMessage({
+          studentName: report.student.fullName,
+          reportDate: report.dateKey,
+        });
+      } else if (report.student.summerGroup === "NOOR_AL_BAYAN") {
+        messageText = buildNoorDailyMessage({
+          studentName: report.student.fullName,
+          circleName: report.student.circle?.name,
+          teacherName: report.teacher?.fullName,
+          reportDate: report.dateKey,
+          noorLearned: report.noorLearned,
+          noorHomework: report.noorHomework,
+          noorHomeworkGrade: report.noorHomeworkGrade,
+          noorParticipation: report.noorParticipation,
+          behaviorGrade: report.behaviorGrade,
+          behaviorNotes: report.behaviorNotes,
+        });
       } else {
-        const isQuran = student.summerGroup === "QURAN";
-        if (isQuran) {
-          messageText =
-            `السلام عليكم ورحمة الله وبركاته\n\n` +
-            `تقرير اليوم لولي أمر الطالب الكريم: *${student.fullName}*\n` +
-            `في الدورة الصيفية - تحفيظ الرحمة\n` +
-            `التاريخ: *${dateKey}*\n\n` +
-            `- *الحالة:* حاضر\n` +
-            `- *الحفظ الجديد:* ${report.quranNew || "لا يوجد"}\n` +
-            `- *المراجعة:* ${report.quranRevision || "لا يوجد"}\n` +
-            `- *التلقين:* ${report.quranTaqeen || "لا يوجد"}\n` +
-            `- *درجة السلوك والانضباط:* ${report.behaviorGrade || 10}/10\n` +
-            (report.behaviorNotes ? `- *ملاحظات السلوك:* ${report.behaviorNotes}\n` : "") +
-            `\nنسأل الله له التوفيق والقبول، ونشكر لكم متابعتكم.\n\n` +
-            `إدارة منصة الرحمة لتعليم القرآن الكريم`;
-        } else {
-          // Noor Al-Bayan
-          const hwLabel = report.noorHomework ? `تم التسليم (الدرجة: ${report.noorHomeworkGrade || 10}/10)` : "لم يتم تسليم الواجب";
-          messageText =
-            `السلام عليكم ورحمة الله وبركاته\n\n` +
-            `تقرير اليوم لولي أمر الطالب الكريم: *${student.fullName}*\n` +
-            `في الدورة الصيفية - تحفيظ الرحمة (نور البيان)\n` +
-            `التاريخ: *${dateKey}*\n\n` +
-            `- *الحالة:* حاضر\n` +
-            `- *ماذا تعلم اليوم:* ${report.noorLearned || "لا يوجد"}\n` +
-            `- *تسليم الواجب:* ${hwLabel}\n` +
-            `- *درجة المشاركة والتفاعل:* ${report.noorParticipation || 10}/10\n` +
-            `- *درجة السلوك والانضباط:* ${report.behaviorGrade || 10}/10\n` +
-            (report.behaviorNotes ? `- *ملاحظات السلوك:* ${report.behaviorNotes}\n` : "") +
-            `\nنسأل الله له التوفيق والقبول، ونشكر لكم متابعتكم.\n\n` +
-            `إدارة منصة الرحمة لتعليم القرآن الكريم`;
-        }
+        messageText = buildQuranDailyMessage({
+          studentName: report.student.fullName,
+          circleName: report.student.circle?.name,
+          teacherName: report.teacher?.fullName,
+          reportDate: report.dateKey,
+          quranNew: report.quranNew,
+          quranRevision: report.quranRevision,
+          quranTaqeen: report.quranTaqeen,
+          behaviorGrade: report.behaviorGrade,
+          behaviorNotes: report.behaviorNotes,
+        });
       }
 
       try {
         await sendWhatsAppText({
-          to: student.parentWhatsapp,
+          to: phone,
           body: messageText,
-          channel: "ONSITE", // Uses Afyon's WhatsApp server configuration
+          channel: "ONSITE_SUMMER",
           source: "SUMMER_DAILY_REPORT",
         });
 
-        // Update database status
         await prisma.summerReport.update({
           where: { id: report.id },
           data: {
@@ -135,25 +185,25 @@ export async function POST(request: Request) {
           },
         });
 
-        sentCount++;
-      } catch (err: any) {
-        console.error(`FAILED TO SEND WHATSAPP TO ${student.parentWhatsapp}:`, err);
+        sentCount += 1;
+      } catch (err) {
+        const errorMsg = err instanceof Error ? err.message : "فشل الإرسال عبر الواتساب";
         await prisma.summerReport.update({
           where: { id: report.id },
-          data: {
-            dailySentError: err.message || "فشل إرسال واتساب",
-          },
+          data: { dailySentError: errorMsg },
         });
+        failCount += 1;
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `تم إرسال ${sentCount} من أصل ${reports.length} تقارير بنجاح.`,
       sentCount,
+      failCount,
+      total: reports.length,
     });
   } catch (error) {
-    console.error("SEND DAILY API ERROR:", error);
-    return NextResponse.json({ success: false, message: "حدث خطأ داخلي أثناء الإرسال" }, { status: 500 });
+    console.error("SEND SUMMER DAILY REPORTS ERROR =>", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء إرسال التقارير اليومية" }, { status: 500 });
   }
 }

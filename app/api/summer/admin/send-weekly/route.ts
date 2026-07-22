@@ -1,104 +1,74 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+import { appUrl } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
-import { captureWeeklyCard } from "@/lib/summer-screenshot";
-import { sendWhatsAppDocument, normalizeWhatsAppNumber } from "@/lib/whatsapp";
+import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
 
-async function checkAdmin() {
+async function verifyAdmin() {
   const cookieStore = await cookies();
-  const adminId = cookieStore.get("alrahma_user_id")?.value;
-  if (!adminId) return false;
-  const admin = await prisma.user.findFirst({
-    where: { id: adminId, role: "ADMIN", studyMode: "ONSITE_SUMMER", isActive: true },
+  const userId = cookieStore.get("alrahma_user_id")?.value;
+  if (!userId) return null;
+
+  return prisma.user.findFirst({
+    where: { id: userId, role: "ADMIN", isActive: true },
+    select: { id: true },
   });
-  return !!admin;
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    if (!(await checkAdmin())) {
-      return NextResponse.json({ success: false, message: "غير مصرح" }, { status: 401 });
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
     }
 
-    const body = await request.json();
-    const { studentId, circleId, all } = body;
+    const body = await req.json();
+    const { studentId, topicTitle } = body;
 
-    // Build the student query
-    const whereClause: any = {
-      studyMode: "ONSITE_SUMMER",
-      isActive: true,
-    };
-
-    if (studentId) {
-      whereClause.id = studentId;
-    } else if (circleId) {
-      whereClause.circleId = circleId;
-    } else if (!all) {
-      return NextResponse.json({ success: false, message: "يعب تحديد هدف الإرسال" }, { status: 400 });
+    if (!studentId) {
+      return NextResponse.json({ error: "معرف الطالب مطلوب" }, { status: 400 });
     }
 
-    const students = await prisma.student.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        fullName: true,
-        parentWhatsapp: true,
-      },
+    const student = await prisma.student.findUnique({
+      where: { id: studentId },
+      include: { circle: { select: { name: true } } },
     });
 
-    if (students.length === 0) {
-      return NextResponse.json({
-        success: true,
-        message: "لا يوجد طلاب لإرسال الكروت الأسبوعية لهم",
-        sentCount: 0,
-      });
+    if (!student || student.studyMode !== "ONSITE_SUMMER") {
+      return NextResponse.json({ error: "الطالب غير موجود في الدورة الصيفية" }, { status: 404 });
     }
 
-    // Resolve base URL from request headers
-    const protocol = request.headers.get("x-forwarded-proto") || "http";
-    const host = request.headers.get("host") || "localhost:3000";
-    const baseUrl = `${protocol}://${host}`;
+    const phone = student.parentWhatsapp
+      ? normalizeWhatsAppNumber(student.parentWhatsapp, "90")
+      : null;
 
-    let sentCount = 0;
-
-    for (const student of students) {
-      const phone = normalizeWhatsAppNumber(student.parentWhatsapp || "", "90");
-      if (!phone) continue;
-
-      try {
-        // Generate the screenshot
-        const { relativePath, filename } = await captureWeeklyCard(student.id, baseUrl);
-        const documentUrl = `${baseUrl}/${relativePath}`;
-
-        // Format Caption
-        const caption =
-          `السلام عليكم ورحمة الله وبركاته\n\n` +
-          `نضع بين أيديكم التقرير الأسبوعي التلخيصي للطالب / *${student.fullName}* في الدورة الصيفية لتحفيظ الرحمة بأفيون.\n\n` +
-          `نسأل الله أن يبارك فيه وينفع به ويجعله من أهل القرآن الكريم.\n\n` +
-          `إدارة تحفيظ الرحمة للقرآن الكريم`;
-
-        // Send as Document attachment
-        await sendWhatsAppDocument({
-          to: phone,
-          channel: "ONSITE",
-          documentUrl,
-          fileName: `weekly-report-${student.fullName}.png`,
-          caption,
-        });
-
-        sentCount++;
-      } catch (err) {
-        console.error(`FAILED TO GENERATE/SEND WEEKLY CARD FOR STUDENT ${student.id}:`, err);
-      }
+    if (!phone) {
+      return NextResponse.json({ error: "لا يوجد رقم واتساب مسجل لولي الأمر" }, { status: 400 });
     }
 
-    return NextResponse.json({
-      success: true,
-      message: `تم إرسال ${sentCount} من أصل ${students.length} كروت أسبوعية بنجاح.`,
-      sentCount,
+    const cardUrl = appUrl(`/onsite/summer/admin/weekly-card/${student.id}`);
+    const educationTopicStr = topicTitle ? `\n📚 *درس التربية لهذا الأسبوع:* ${topicTitle}\n` : "";
+
+    const messageText =
+      `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
+      `نرفق لكم *بطاقة التقرير الأسبوعي* للطالب/ـة: *${student.fullName}*\n` +
+      `الحلقة: ${student.circle?.name || "-"}\n` +
+      educationTopicStr +
+      `\nيمكنكم الاطلاع على بطاقة التقرير الأسبوعي التفاعلية عبر الرابط التالي:\n` +
+      `${cardUrl}\n\n` +
+      `نشكر لكم حسن تعاونكم ومتابعتكم القيمة.\n\n` +
+      `إدارة الدورة الصيفية - تحفيظ الرحمة`;
+
+    await sendWhatsAppText({
+      to: phone,
+      body: messageText,
+      channel: "ONSITE_SUMMER",
+      source: "SUMMER_WEEKLY_REPORT",
     });
+
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("SEND WEEKLY CARD API ERROR:", error);
-    return NextResponse.json({ success: false, message: "حدث خطأ داخلي أثناء إرسال الكروت الأسبوعية" }, { status: 500 });
+    console.error("SEND SUMMER WEEKLY REPORT ERROR =>", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء إرسال التقرير الأسبوعي" }, { status: 500 });
   }
 }
