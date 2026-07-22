@@ -50,6 +50,9 @@ export default function SummerAdminDashboard({
     initialEducationTopics[0]?.id || ""
   );
 
+  // Modal for Viewing Full Education Topic Details
+  const [viewingTopic, setViewingTopic] = useState<EducationPlanTopic | null>(null);
+
   // Student Form Modal State
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [studentForm, setStudentForm] = useState({
@@ -70,12 +73,15 @@ export default function SummerAdminDashboard({
 
   // WhatsApp Batch Sending State
   const [sendingDaily, setSendingDaily] = useState(false);
+  const [selectedCircleSendId, setSelectedCircleSendId] = useState<string>("ALL");
   const [dailyStatusMsg, setDailyStatusMsg] = useState("");
 
   // Education Plan Form State
   const [newTopicTitle, setNewTopicTitle] = useState("");
   const [newTopicCategory, setNewTopicCategory] = useState<"KIBAR" | "SIGHAR">("SIGHAR");
   const [newTopicDetails, setNewTopicDetails] = useState("");
+  const [newTopicGuidelines, setNewTopicGuidelines] = useState("");
+  const [newTopicHomework, setNewTopicHomework] = useState("");
   const [savingTopic, setSavingTopic] = useState(false);
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -89,6 +95,24 @@ export default function SummerAdminDashboard({
   const completionRate =
     students.length > 0 ? Math.round((reportsFilledToday / students.length) * 100) : 0;
 
+  // Circle Compliance Analysis for Today
+  const circleStats = circles.map((circle) => {
+    const circleStudents = students.filter((s) => s.circle?.id === circle.id);
+    const filledStudents = circleStudents.filter(
+      (s) => s.summerReports && s.summerReports.length > 0 && s.summerReports[0].dateKey === todayStr
+    );
+    return {
+      circle,
+      totalStudents: circleStudents.length,
+      filledStudents: filledStudents.length,
+      isComplete: circleStudents.length > 0 && filledStudents.length === circleStudents.length,
+      isPending: filledStudents.length === 0,
+    };
+  });
+
+  const completedCirclesCount = circleStats.filter((c) => c.isComplete).length;
+  const pendingCirclesCount = circleStats.filter((c) => c.isPending).length;
+
   // Filtered students by search
   const filteredStudents = students.filter(
     (s) =>
@@ -96,7 +120,7 @@ export default function SummerAdminDashboard({
       (s.studentCode && s.studentCode.includes(searchQuery))
   );
 
-  // Add / Edit Student Handler
+  // Save Student
   const handleSaveStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingStudent(true);
@@ -137,7 +161,7 @@ export default function SummerAdminDashboard({
     }
   };
 
-  // Delete Student Handler
+  // Delete Student
   const handleDeleteStudent = async (id: string) => {
     if (!confirm("هل أنت تأكد من إغلاق سجل هذا الطالب؟")) return;
 
@@ -153,7 +177,7 @@ export default function SummerAdminDashboard({
     }
   };
 
-  // Add Circle Handler
+  // Add Circle
   const handleSaveCircle = async (e: React.FormEvent) => {
     e.preventDefault();
     setSavingCircle(true);
@@ -178,18 +202,23 @@ export default function SummerAdminDashboard({
     }
   };
 
-  // Send Daily WhatsApp Batch
-  const handleSendDailyWhatsApp = async () => {
-    if (!confirm("هل ترغب في إرسال تقارير اليوم لجميع أولياء الأمور عبر الواتساب الآن؟")) return;
+  // Send Daily WhatsApp Batch (By Circle or All)
+  const handleSendDailyWhatsApp = async (circleId: string = selectedCircleSendId) => {
+    const isAll = circleId === "ALL";
+    const targetName = isAll
+      ? "جميع أولياء الأمور لكافة الحلقات"
+      : `أولياء أمور ${circles.find((c) => c.id === circleId)?.name || "الحلقة المحنذة"}`;
+
+    if (!confirm(`هل ترغب في إرسال تقارير اليوم إلى ${targetName} عبر الواتساب الآن؟`)) return;
 
     setSendingDaily(true);
-    setDailyStatusMsg("جاري الإرسال عبر الواتساب...");
+    setDailyStatusMsg(`جاري إرسال التقارير لـ ${targetName}...`);
 
     try {
       const res = await fetch("/api/summer/admin/send-daily", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dateKey: todayStr }),
+        body: JSON.stringify({ dateKey: todayStr, circleId: isAll ? undefined : circleId }),
       });
 
       const data = await res.json();
@@ -253,6 +282,8 @@ export default function SummerAdminDashboard({
         weekNumber: educationTopics.length + 1,
         title: newTopicTitle.trim(),
         details: newTopicDetails.trim(),
+        guidelines: newTopicGuidelines.trim(),
+        homeworkRequirement: newTopicHomework.trim(),
       };
 
       const updated = [...educationTopics, newTopic];
@@ -267,6 +298,8 @@ export default function SummerAdminDashboard({
       setEducationTopics(updated);
       setNewTopicTitle("");
       setNewTopicDetails("");
+      setNewTopicGuidelines("");
+      setNewTopicHomework("");
     } catch (err) {
       alert(err instanceof Error ? err.message : "خطأ أثناء حفظ الدروس");
     } finally {
@@ -278,12 +311,10 @@ export default function SummerAdminDashboard({
 
   return (
     <div className="min-h-screen bg-[#f7f2ea] text-[#162e24] dir-rtl font-sans pb-12" dir="rtl">
-      {/* 🕌 1. Full-Width Dark Emerald Islamic Calligraphy Header (summer_admin_ui_v3.jpg layout) */}
+      {/* 🕌 1. Full-Width Dark Emerald Islamic Calligraphy Header */}
       <header className="relative bg-[#0b4231] text-white shadow-xl overflow-hidden border-b-4 border-[#bd8f2d]">
-        {/* Geometric Islamic Mandala Accent SVG */}
         <div className="absolute top-0 right-0 h-full w-[420px] pointer-events-none opacity-25 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
         
-        {/* Top Header Row: Logo, Calligraphy Title, Search, Profile */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-5 pb-4 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-[#bd8f2d]/30">
           <div className="flex items-center gap-4">
             <div className="rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-[#bd8f2d]">
@@ -305,7 +336,6 @@ export default function SummerAdminDashboard({
             </div>
           </div>
 
-          {/* Search Bar & User Profile Badge */}
           <div className="flex items-center gap-3 w-full md:w-auto">
             <div className="relative flex-1 md:w-64">
               <input
@@ -404,7 +434,7 @@ export default function SummerAdminDashboard({
 
       {/* 🏛️ 2. Main Dashboard Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
-        {/* Top 4 Key Stat Cards Row */}
+        {/* Top Stat Cards Row (Includes Circles Compliance Summary) */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 mb-6">
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
@@ -418,11 +448,14 @@ export default function SummerAdminDashboard({
 
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-gray-500 block">طلاب القرآن الكريم</span>
-              <span className="text-3xl font-black text-[#0b4231] mt-1 block font-serif">{quranCount}</span>
+              <span className="text-xs font-bold text-gray-500 block">الحلقات المكتملة اليوم</span>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className="text-3xl font-black text-emerald-700 font-serif">{completedCirclesCount}</span>
+                <span className="text-xs font-bold text-gray-500">من {circles.length} حلقة</span>
+              </div>
             </div>
-            <div className="h-12 w-12 rounded-2xl bg-[#0b4231]/10 flex items-center justify-center text-2xl text-[#0b4231]">
-              📖
+            <div className="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl text-emerald-800">
+              🏫
             </div>
           </div>
 
@@ -438,7 +471,7 @@ export default function SummerAdminDashboard({
 
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-gray-500 block">التقدم اليومي</span>
+              <span className="text-xs font-bold text-gray-500 block">التقدم اليومي العام</span>
               <span className="text-3xl font-black text-emerald-700 mt-1 block font-serif">{completionRate}%</span>
             </div>
             <div className="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl text-emerald-800">
@@ -447,18 +480,206 @@ export default function SummerAdminDashboard({
           </div>
         </div>
 
-        {/* 2-Column Main Layout Grid (summer_admin_ui_v3.jpg) */}
+        {/* 2-Column Main Layout Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Work Area (3 Columns - 3/4) */}
           <div className="lg:col-span-3 space-y-6">
-            {/* OVERVIEW OR STUDENTS LIST TABLE */}
-            {(activeTab === "overview" || activeTab === "students") && (
-              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden">
-                <div className="flex items-center justify-between p-5 border-b border-[#d8bf83]/30 bg-[#f9f5ed]">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">📋</span>
-                    <h3 className="text-xl font-bold text-[#0b4231] font-serif">قائمة الطلاب المباشرة</h3>
+            {/* OVERVIEW TAB */}
+            {activeTab === "overview" && (
+              <div className="space-y-6">
+                {/* 1. Circle Compliance Progress Tracker (متابعة إدخال تقارير الحلقات اليومية للمدير) */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30 mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📊</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0b4231] font-serif">
+                          حالة إدخال تقارير الحلقات لليوم ({todayStr})
+                        </h3>
+                        <p className="text-xs text-gray-500 font-semibold">
+                          معرفة المعلمين والحلقات التي أنجزت إدخال التقارير وتحديد المتأخرين للمتابعة
+                        </p>
+                      </div>
+                    </div>
+                    <span className="rounded-xl bg-[#0b4231] px-3 py-1 text-xs font-bold text-white font-serif">
+                      مكتملة: {completedCirclesCount} | معلقة: {pendingCirclesCount}
+                    </span>
                   </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {circleStats.map(({ circle, totalStudents, filledStudents, isComplete, isPending }) => (
+                      <div
+                        key={circle.id}
+                        className={`rounded-xl border p-4 transition ${
+                          isComplete
+                            ? "bg-emerald-50/50 border-emerald-300"
+                            : isPending
+                            ? "bg-amber-50/50 border-amber-300"
+                            : "bg-white border-[#d8bf83]/50"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="text-base font-bold text-[#0b4231] font-serif">{circle.name}</h4>
+                            <p className="text-xs font-bold text-[#bd8f2d]">
+                              المعلم: {circle.teacher?.fullName || "غير محدد"}
+                            </p>
+                          </div>
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                              isComplete
+                                ? "bg-emerald-700 text-white"
+                                : isPending
+                                ? "bg-amber-800 text-white"
+                                : "bg-blue-700 text-white"
+                            }`}
+                          >
+                            {isComplete
+                              ? "مكتملة ✅"
+                              : isPending
+                              ? "لم تبدأ ❌"
+                              : `جاري الإدخال (${filledStudents}/${totalStudents}) ⏳`}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between text-xs font-bold border-t border-gray-200/60 pt-2">
+                          <span className="text-gray-600">
+                            تم رصد {filledStudents} من {totalStudents} طالباً
+                          </span>
+                          <button
+                            onClick={() => handleSendDailyWhatsApp(circle.id)}
+                            className="rounded-lg bg-[#0b4231] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#072c21]"
+                          >
+                            📱 إرسال تقارير الحلقة
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 2. Students Progress Table */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between p-5 border-b border-[#d8bf83]/30 bg-[#f9f5ed]">
+                    <div className="flex items-center gap-3">
+                      <span className="text-xl">📋</span>
+                      <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل الطلاب والتقارير اليومية</h3>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setStudentForm({
+                          studentId: "",
+                          fullName: "",
+                          parentWhatsapp: "",
+                          summerGroup: "QURAN",
+                          circleId: circles[0]?.id || "",
+                          teacherId: teachers[0]?.id || "",
+                        });
+                        setShowStudentModal(true);
+                      }}
+                      className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-[#072c21] transition font-serif"
+                    >
+                      ➕ إضافة طالب جديد
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-right text-xs">
+                      <thead className="bg-[#f0e9dd] font-bold text-[#0b4231] font-serif text-sm">
+                        <tr>
+                          <th className="p-3.5">اسم الطالب</th>
+                          <th className="p-3.5">الصف / الحلقة</th>
+                          <th className="p-3.5">المنهج والمسار</th>
+                          <th className="p-3.5">تقرير اليوم</th>
+                          <th className="p-3.5">التنبيهات</th>
+                          <th className="p-3.5 text-center">الإجراءات</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#d8bf83]/20 font-semibold">
+                        {filteredStudents.map((st) => {
+                          const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
+                          const reportFilled = st.summerReports && st.summerReports.length > 0;
+
+                          return (
+                            <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
+                              <td className="p-3.5 font-bold text-[#162e24] text-sm font-serif">
+                                <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
+                                {st.fullName}
+                              </td>
+                              <td className="p-3.5 text-gray-600">
+                                {st.circle?.name || "بدون حلقة"}
+                              </td>
+                              <td className="p-3.5">
+                                {isNoor ? (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
+                                    📘 نور البيان
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b4231] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
+                                    📖 القرآن الكريم
+                                  </span>
+                                )}
+                              </td>
+                              <td className="p-3.5">
+                                <span
+                                  className={`rounded-full px-3 py-1 text-[11px] font-black ${
+                                    reportFilled ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
+                                  }`}
+                                >
+                                  {reportFilled ? "تم الرصد ✅" : "بانتظار التعبئة ⏳"}
+                                </span>
+                              </td>
+                              <td className="p-3.5">
+                                <button
+                                  onClick={() => handleSendSingleWhatsApp(st.id)}
+                                  className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#072c21] shadow-2xs"
+                                >
+                                  💬 إرسال واتساب
+                                </button>
+                              </td>
+                              <td className="p-3.5 text-center">
+                                <div className="flex items-center justify-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      setStudentForm({
+                                        studentId: st.id,
+                                        fullName: st.fullName,
+                                        parentWhatsapp: st.parentWhatsapp || "",
+                                        summerGroup: st.summerGroup || "QURAN",
+                                        circleId: st.circle?.id || "",
+                                        teacherId: st.teacher?.id || teachers[0]?.id || "",
+                                      });
+                                      setShowStudentModal(true);
+                                    }}
+                                    className="text-gray-500 hover:text-[#0b4231]"
+                                    title="تعديل"
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteStudent(st.id)}
+                                    className="text-red-500 hover:text-red-700"
+                                    title="حذف"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* STUDENTS TAB */}
+            {activeTab === "students" && (
+              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل جميع الطلاب</h3>
                   <button
                     onClick={() => {
                       setStudentForm({
@@ -471,99 +692,40 @@ export default function SummerAdminDashboard({
                       });
                       setShowStudentModal(true);
                     }}
-                    className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-[#072c21] transition font-serif"
+                    className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white font-serif"
                   >
                     ➕ إضافة طالب جديد
                   </button>
                 </div>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
-                    <thead className="bg-[#f0e9dd] font-bold text-[#0b4231] font-serif text-sm">
-                      <tr>
-                        <th className="p-3.5">اسم الطالب</th>
-                        <th className="p-3.5">الصف / الحلقة</th>
-                        <th className="p-3.5">المنهج والمسار</th>
-                        <th className="p-3.5">الحالة</th>
-                        <th className="p-3.5">التنبيهات</th>
-                        <th className="p-3.5 text-center">الإجراءات</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#d8bf83]/20 font-semibold">
-                      {filteredStudents.map((st) => {
-                        const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
-                        const reportFilled = st.summerReports && st.summerReports.length > 0;
-
-                        return (
-                          <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
-                            <td className="p-3.5 font-bold text-[#162e24] text-sm font-serif">
-                              <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
-                              {st.fullName}
-                            </td>
-                            <td className="p-3.5 text-gray-600">
-                              {st.circle?.name || "بدون حلقة"}
-                            </td>
-                            <td className="p-3.5">
-                              {isNoor ? (
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
-                                  📘 نور البيان
-                                </span>
-                              ) : (
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b4231] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
-                                  📖 القرآن الكريم
-                                </span>
-                              )}
-                            </td>
-                            <td className="p-3.5">
-                              <span
-                                className={`rounded-full px-3 py-1 text-[11px] font-black ${
-                                  reportFilled ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
-                                }`}
-                              >
-                                {reportFilled ? "مفعل" : "معلق"}
-                              </span>
-                            </td>
-                            <td className="p-3.5">
-                              <button
-                                onClick={() => handleSendSingleWhatsApp(st.id)}
-                                className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#072c21] shadow-2xs"
-                              >
-                                💬 إرسال تذكير واتساب
-                              </button>
-                            </td>
-                            <td className="p-3.5 text-center">
-                              <div className="flex items-center justify-center gap-2">
-                                <button
-                                  onClick={() => {
-                                    setStudentForm({
-                                      studentId: st.id,
-                                      fullName: st.fullName,
-                                      parentWhatsapp: st.parentWhatsapp || "",
-                                      summerGroup: st.summerGroup || "QURAN",
-                                      circleId: st.circle?.id || "",
-                                      teacherId: st.teacher?.id || teachers[0]?.id || "",
-                                    });
-                                    setShowStudentModal(true);
-                                  }}
-                                  className="text-gray-500 hover:text-[#0b4231]"
-                                  title="تعديل"
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteStudent(st.id)}
-                                  className="text-red-500 hover:text-red-700"
-                                  title="حذف"
-                                >
-                                  🗑️
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {filteredStudents.map((st) => (
+                    <div key={st.id} className="rounded-xl border border-[#d8bf83]/50 p-4 bg-white flex justify-between items-center">
+                      <div>
+                        <h4 className="font-bold text-[#162e24] font-serif">{st.fullName}</h4>
+                        <span className="text-xs text-gray-500 font-bold">
+                          {st.circle?.name || "بدون حلقة"} | {st.summerGroup === "NOOR_AL_BAYAN" ? "نور البيان" : "قرآن"}
+                        </span>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => {
+                            setStudentForm({
+                              studentId: st.id,
+                              fullName: st.fullName,
+                              parentWhatsapp: st.parentWhatsapp || "",
+                              summerGroup: st.summerGroup || "QURAN",
+                              circleId: st.circle?.id || "",
+                              teacherId: st.teacher?.id || teachers[0]?.id || "",
+                            });
+                            setShowStudentModal(true);
+                          }}
+                          className="text-gray-600 hover:text-[#0b4231]"
+                        >
+                          ✏️
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -595,20 +757,37 @@ export default function SummerAdminDashboard({
 
             {/* DAILY SEND TAB */}
             {activeTab === "daily_send" && (
-              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm">
-                <h3 className="text-xl font-bold text-[#0b4231] font-serif mb-2">📱 بث التقارير اليومية عبر الواتساب</h3>
-                <p className="text-xs font-bold text-gray-600 mb-4">
-                  إرسال التقرير اليومي لكل ولي أمر يحتوي تفاصيل الحفظ أو درس نور البيان والسلوك اليومي.
+              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm space-y-4">
+                <h3 className="text-xl font-bold text-[#0b4231] font-serif">📱 بث التقارير اليومية عبر الواتساب</h3>
+                <p className="text-xs font-bold text-gray-600">
+                  اختر حلقة محددة للإرسال أو قم بإرسال التقارير لجميع الحلقات بضغطة زر.
                 </p>
-                <button
-                  onClick={handleSendDailyWhatsApp}
-                  disabled={sendingDaily}
-                  className="rounded-xl bg-[#0b4231] px-6 py-3 text-sm font-black text-white shadow-md hover:bg-[#072c21] disabled:opacity-50 font-serif"
-                >
-                  {sendingDaily ? "جاري الإرسال..." : "🚀 إرسال تقارير اليوم لجميع أولياء الأمور"}
-                </button>
+
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <select
+                    value={selectedCircleSendId}
+                    onChange={(e) => setSelectedCircleSendId(e.target.value)}
+                    className="w-full sm:w-64 rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none"
+                  >
+                    <option value="ALL">🌐 جميع الحلقات (إرسال كلي)</option>
+                    {circles.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        🏫 {c.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <button
+                    onClick={() => handleSendDailyWhatsApp(selectedCircleSendId)}
+                    disabled={sendingDaily}
+                    className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-6 py-3 text-xs font-black text-white shadow-md hover:bg-[#072c21] disabled:opacity-50 font-serif"
+                  >
+                    {sendingDaily ? "جاري الإرسال..." : "🚀 إرسال تقارير اليوم الآن"}
+                  </button>
+                </div>
+
                 {dailyStatusMsg && (
-                  <div className="mt-4 rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
+                  <div className="rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
                     {dailyStatusMsg}
                   </div>
                 )}
@@ -652,8 +831,34 @@ export default function SummerAdminDashboard({
             {/* EDUCATION PLAN TAB */}
             {activeTab === "education_plan" && (
               <div className="space-y-6">
+                {/* List of Curriculum Topics */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-                  <h3 className="text-lg font-bold text-[#0b4231] font-serif mb-3">إضافة درس جديد لخطة التربية</h3>
+                  <h3 className="text-xl font-bold text-[#0b4231] font-serif mb-4">
+                    📚 خطة دروس التربية الإسلامية المعتمدة ({educationTopics.length} درساً)
+                  </h3>
+                  <div className="grid gap-3 sm:grid-cols-2 max-h-[400px] overflow-y-auto pl-2">
+                    {educationTopics.map((t) => (
+                      <div
+                        key={t.id}
+                        onClick={() => setViewingTopic(t)}
+                        className="rounded-xl border border-[#d8bf83]/60 p-3.5 bg-[#fcf9f2] hover:border-[#0b4231] transition cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[10px] font-bold rounded-full bg-[#bd8f2d] px-2 py-0.5 text-white">
+                            الدرس #{t.weekNumber} | {t.category === "SIGHAR" ? "صغار" : "كبار"}
+                          </span>
+                          <span className="text-xs font-bold text-[#0b4231]">عرض التفاصيل 👁️</span>
+                        </div>
+                        <h4 className="font-bold text-sm text-[#0b4231] font-serif">{t.title}</h4>
+                        <p className="text-xs text-gray-600 line-clamp-2 mt-1">{t.details}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Add Topic Form */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
+                  <h3 className="text-lg font-bold text-[#0b4231] font-serif mb-3">إضافة درس جديد للخطة</h3>
                   <form onSubmit={handleSaveTopic} className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <select
@@ -680,6 +885,22 @@ export default function SummerAdminDashboard({
                       placeholder="تفاصيل الدرس ومحاوره..."
                       className="w-full rounded-xl border border-[#d8bf83] p-2 text-xs font-bold bg-white"
                     />
+                    <div className="grid grid-cols-2 gap-3">
+                      <input
+                        type="text"
+                        value={newTopicGuidelines}
+                        onChange={(e) => setNewTopicGuidelines(e.target.value)}
+                        placeholder="الضوابط والمنهجية..."
+                        className="rounded-xl border border-[#d8bf83] p-2 text-xs font-bold bg-white"
+                      />
+                      <input
+                        type="text"
+                        value={newTopicHomework}
+                        onChange={(e) => setNewTopicHomework(e.target.value)}
+                        placeholder="الواجب المطلوب..."
+                        className="rounded-xl border border-[#d8bf83] p-2 text-xs font-bold bg-white"
+                      />
+                    </div>
                     <button
                       type="submit"
                       disabled={savingTopic}
@@ -693,7 +914,7 @@ export default function SummerAdminDashboard({
             )}
           </div>
 
-          {/* 👈 3. Side Panel Column (1/4 - Right Sidebar) matching summer_admin_ui_v3.jpg */}
+          {/* 👈 3. Side Panel Column (1/4 - Right Sidebar) */}
           <div className="space-y-5">
             {/* Widget 1: Islamic Education Plan Topic Selector */}
             <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#0b4231] p-5 text-white shadow-md">
@@ -709,22 +930,56 @@ export default function SummerAdminDashboard({
               >
                 {educationTopics.map((t) => (
                   <option key={t.id} value={t.id}>
-                    الخطة ({t.category === "SIGHAR" ? "صغار" : "كبار"}) - {t.title}
+                    الدرس ({t.category === "SIGHAR" ? "صغار" : "كبار"}) - {t.title}
                   </option>
                 ))}
               </select>
 
               {currentSelectedTopic && (
                 <div className="mt-3 rounded-xl bg-[#135440]/80 p-3 border border-white/10 text-xs">
-                  <span className="block font-bold text-[#bd8f2d] mb-1 font-serif">الدرس النشط هذا الأسبوع:</span>
-                  <p className="font-semibold leading-relaxed text-emerald-100">
+                  <span className="block font-bold text-[#bd8f2d] mb-1 font-serif">الدرس النشط الآن:</span>
+                  <p className="font-semibold leading-relaxed text-emerald-100 mb-2">
                     {currentSelectedTopic.details}
                   </p>
+                  <button
+                    onClick={() => setViewingTopic(currentSelectedTopic)}
+                    className="w-full rounded-lg bg-[#bd8f2d] py-1.5 text-center text-xs font-bold text-[#0b4231] hover:bg-[#d8bf83]"
+                  >
+                    عرض التفاصيل والمنهجية 📖
+                  </button>
                 </div>
               )}
             </div>
 
-            {/* Widget 2: Important System Notifications */}
+            {/* Widget 2: Quick Guide & Education Plans Drawer Popups */}
+            <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 text-[#0b4231]">
+                <span className="text-lg">🏷️</span>
+                <h4 className="text-base font-bold font-serif">دليل وخطة التربية السريعة</h4>
+              </div>
+
+              <button
+                onClick={() => {
+                  const sigharFirst = educationTopics.find((t) => t.category === "SIGHAR") || educationTopics[0];
+                  setViewingTopic(sigharFirst);
+                }}
+                className="w-full text-right rounded-xl bg-[#f9f5ed] p-3 border border-[#d8bf83]/50 text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition block font-serif text-xs font-bold"
+              >
+                📘 استعراض خطة الصغار (23 درساً)
+              </button>
+
+              <button
+                onClick={() => {
+                  const kibarFirst = educationTopics.find((t) => t.category === "KIBAR") || educationTopics[0];
+                  setViewingTopic(kibarFirst);
+                }}
+                className="w-full text-right rounded-xl bg-[#f9f5ed] p-3 border border-[#d8bf83]/50 text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition block font-serif text-xs font-bold"
+              >
+                🎓 استعراض خطة الكبار (24 درساً)
+              </button>
+            </div>
+
+            {/* Widget 3: Important System Notifications */}
             <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
               <div className="flex items-center gap-2 mb-3 text-[#0b4231]">
                 <span className="text-lg">🔔</span>
@@ -745,31 +1000,61 @@ export default function SummerAdminDashboard({
                 </li>
               </ul>
             </div>
-
-            {/* Widget 3: Quick Operations Shortcuts */}
-            <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-              <div className="flex items-center gap-2 mb-3 text-[#0b4231]">
-                <span className="text-lg">🏷️</span>
-                <h4 className="text-base font-bold font-serif">دليل وتنبيهات سريعة</h4>
-              </div>
-              <div className="space-y-2 text-xs font-semibold">
-                <button
-                  onClick={handleSendDailyWhatsApp}
-                  className="w-full text-right rounded-xl bg-[#f9f5ed] p-2.5 border border-[#d8bf83]/50 text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition block font-serif text-sm"
-                >
-                  📖 الخطة القرآنية اليومية
-                </button>
-                <button
-                  onClick={() => setActiveTab("weekly_send")}
-                  className="w-full text-right rounded-xl bg-[#f9f5ed] p-2.5 border border-[#d8bf83]/50 text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition block font-serif text-sm"
-                >
-                  🖼️ بطاقات الأداء الأسبوعي
-                </button>
-              </div>
-            </div>
           </div>
         </div>
       </main>
+
+      {/* 📖 EDUCATION TOPIC FULL DETAILS POPUP MODAL */}
+      {viewingTopic && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-2xl rounded-3xl bg-[#fffdf9] p-6 shadow-2xl dir-rtl border border-[#d8bf83] space-y-4 max-h-[90vh] overflow-y-auto" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#d8bf83]/40 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-[#bd8f2d] px-3 py-0.5 text-xs font-bold text-white">
+                  الدرس #{viewingTopic.weekNumber} | {viewingTopic.category === "SIGHAR" ? "خطة الصغار" : "خطة الكبار"}
+                </span>
+                <h3 className="text-xl font-bold text-[#0b4231] font-serif">{viewingTopic.title}</h3>
+              </div>
+              <button
+                onClick={() => setViewingTopic(null)}
+                className="text-gray-500 hover:text-red-700 text-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="rounded-2xl bg-[#f9f5ed] p-4 border border-[#d8bf83]/50">
+                <h4 className="font-bold text-sm text-[#0b4231] font-serif mb-1">تفاصيل المحتوى والموضوع:</h4>
+                <p className="text-gray-800 leading-relaxed font-semibold">{viewingTopic.details}</p>
+              </div>
+
+              {viewingTopic.guidelines && (
+                <div className="rounded-2xl bg-emerald-50/60 p-4 border border-emerald-300/60">
+                  <h4 className="font-bold text-sm text-emerald-900 font-serif mb-1">💡 الضوابط والمنهجية المطلوبة:</h4>
+                  <p className="text-emerald-950 leading-relaxed font-semibold">{viewingTopic.guidelines}</p>
+                </div>
+              )}
+
+              {viewingTopic.homeworkRequirement && (
+                <div className="rounded-2xl bg-amber-50/60 p-4 border border-amber-300/60">
+                  <h4 className="font-bold text-sm text-amber-900 font-serif mb-1">📝 الواجب المطلوب والتطبيق العملي:</h4>
+                  <p className="text-amber-950 leading-relaxed font-semibold">{viewingTopic.homeworkRequirement}</p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-[#d8bf83]/40">
+              <button
+                onClick={() => setViewingTopic(null)}
+                className="rounded-xl bg-[#0b4231] px-6 py-2 text-xs font-bold text-white hover:bg-[#072c21] font-serif"
+              >
+                إغلاق
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* STUDENT MODAL */}
       {showStudentModal && (
