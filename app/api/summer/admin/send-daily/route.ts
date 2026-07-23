@@ -267,6 +267,11 @@ export async function POST(req: Request) {
         });
         failCount += 1;
       }
+
+      // Add 2-second delay between messages to avoid WhatsApp rate limiting/ban
+      if (reports.indexOf(report) < reports.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
     }
 
     return NextResponse.json({

@@ -98,6 +98,23 @@ export default function SummerAdminDashboard({
   const [selectedCircleSendId, setSelectedCircleSendId] = useState<string>("ALL");
   const [dailyStatusMsg, setDailyStatusMsg] = useState("");
 
+  // Weekly Bulk Sending State
+  const [sendingWeekly, setSendingWeekly] = useState(false);
+  const [weeklyStatusMsg, setWeeklyStatusMsg] = useState("");
+  const [showWeeklyConfirm, setShowWeeklyConfirm] = useState(false);
+  const [weeklyInspection, setWeeklyInspection] = useState<{
+    totalStudents: number; readyCount: number; missingPhoneCount: number;
+    readyStudents: string[]; missingPhoneStudents: string[];
+  } | null>(null);
+  const [loadingWeeklyInspection, setLoadingWeeklyInspection] = useState(false);
+
+  // Daily Confirmation Modal State
+  const [showDailyConfirm, setShowDailyConfirm] = useState(false);
+  const [dailyInspection, setDailyInspection] = useState<{
+    totalReports: number; readyCount: number; alreadySentCount: number; missingPhoneCount: number;
+  } | null>(null);
+  const [loadingDailyInspection, setLoadingDailyInspection] = useState(false);
+
   // WhatsApp Channel Health & QR State
   const [waChannels, setWaChannels] = useState<any>(null);
   const [loadingWaStatus, setLoadingWaStatus] = useState(false);
@@ -541,14 +558,29 @@ function normalizeSearchText(text: string): string {
     }
   };
 
-  // Send Daily WhatsApp Batch (By Circle or All)
+  // Inspect Daily Reports before bulk sending
+  const handleInspectDaily = async () => {
+    setLoadingDailyInspection(true);
+    try {
+      const res = await fetch(`/api/summer/admin/send-daily?dateKey=${todayStr}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل الفحص");
+      setDailyInspection(data);
+      setShowDailyConfirm(true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "خطأ أثناء فحص البيانات");
+    } finally {
+      setLoadingDailyInspection(false);
+    }
+  };
+
+  // Send Daily WhatsApp Batch (By Circle or All) — called after confirmation
   const handleSendDailyWhatsApp = async (circleId: string = selectedCircleSendId) => {
+    setShowDailyConfirm(false);
     const isAll = circleId === "ALL";
     const targetName = isAll
       ? "جميع أولياء الأمور لكافة الحلقات"
       : `أولياء أمور ${circles.find((c) => c.id === circleId)?.name || "الحلقة المحنذة"}`;
-
-    if (!confirm(`هل ترغب في إرسال تقارير اليوم إلى ${targetName} عبر الواتساب الآن؟`)) return;
 
     setSendingDaily(true);
     setDailyStatusMsg(`جاري إرسال التقارير لـ ${targetName}...`);
@@ -573,8 +605,11 @@ function normalizeSearchText(text: string): string {
     }
   };
 
-  // Send Single Student WhatsApp Reminder
+  // Send Single Student WhatsApp Reminder (with confirmation)
   const handleSendSingleWhatsApp = async (studentId: string) => {
+    const student = students.find((s) => s.id === studentId);
+    const studentName = student?.fullName || "الطالب";
+    if (!confirm(`⚠️ هل أنت متأكد من إرسال تقرير الطالب "${studentName}" عبر الواتساب إلى ولي الأمر؟`)) return;
     try {
       const res = await fetch("/api/summer/admin/send-daily", {
         method: "POST",
@@ -589,22 +624,50 @@ function normalizeSearchText(text: string): string {
     }
   };
 
-  // Send Single Weekly Card WhatsApp
-  const handleSendWeeklyCard = async (studentId: string) => {
+  // Inspect Weekly Cards before sending
+  const handleInspectWeekly = async () => {
+    setLoadingWeeklyInspection(true);
     try {
+      const res = await fetch("/api/summer/admin/send-weekly");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل الفحص");
+      setWeeklyInspection(data);
+      setShowWeeklyConfirm(true);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "خطأ أثناء فحص البيانات");
+    } finally {
+      setLoadingWeeklyInspection(false);
+    }
+  };
+
+  // Send ALL Weekly Cards (Bulk) with 2s delay between messages
+  const handleSendAllWeeklyCards = async () => {
+    setShowWeeklyConfirm(false);
+    setSendingWeekly(true);
+    setWeeklyStatusMsg("⏳ جاري إرسال البطاقات الأسبوعية... يُرجى الانتظار وعدم إغلاق الصفحة.");
+    try {
+      const readyStudentIds = filteredStudents
+        .filter((s) => s.parentWhatsapp)
+        .map((s) => s.id);
+
       const topic = educationTopics.find((t) => t.id === selectedTopicId);
       const res = await fetch("/api/summer/admin/send-weekly", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId, topicTitle: topic?.title }),
+        body: JSON.stringify({ studentIds: readyStudentIds, topicTitle: topic?.title }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "فشل الإرسال");
 
-      alert("✅ تم إرسال بطاقة التقرير الأسبوعي عبر الواتساب بنجاح!");
+      setWeeklyStatusMsg(
+        `✅ تم الإرسال بنجاح! أُرسل: ${data.sentCount} بطاقة (فشل: ${data.failCount})` +
+        (data.failedStudents?.length ? `\n❌ فشل الإرسال لـ: ${data.failedStudents.map((f: any) => f.name).join("، ")}` : "")
+      );
     } catch (err) {
-      alert(err instanceof Error ? err.message : "حدث خطأ في الإرسال");
+      setWeeklyStatusMsg(`❌ خطأ: ${err instanceof Error ? err.message : "فشل الإرسال"}`);
+    } finally {
+      setSendingWeekly(false);
     }
   };
 
@@ -1675,10 +1738,12 @@ function normalizeSearchText(text: string): string {
                 </div>
 
                 {/* 2. Bulk Daily Reports Sending Box */}
-                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm space-y-4">
+                <div className="rounded-2xl border-2 border-[#d8bf83]/80 bg-gradient-to-br from-[#fffdf9] to-[#f9f0dc] p-6 shadow-md space-y-4">
                   <h3 className="text-xl font-bold text-[#0b4231] font-serif">🚀 بث التقارير اليومية الجماعي</h3>
-                  <p className="text-xs font-bold text-gray-600">
-                    اختر حلقة محددة للإرسال أو قم بإرسال التقارير لجميع الحلقات بضغطة زر.
+                  <p className="text-xs text-gray-600">
+                    اختر حلقة محددة للإرسال أو قم بإرسال التقارير لجميع الحلقات.
+                    <br />
+                    <strong className="text-amber-700">⏱️ يتم الإرسال بفاصل ثانيتين بين كل رسالة لتجنب الحظر.</strong>
                   </p>
 
                   <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -1696,27 +1761,87 @@ function normalizeSearchText(text: string): string {
                     </select>
 
                     <button
-                      onClick={() => handleSendDailyWhatsApp(selectedCircleSendId)}
-                      disabled={sendingDaily}
-                      className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-6 py-3 text-xs font-black text-white shadow-md hover:bg-[#072c21] disabled:opacity-50 font-serif"
+                      onClick={handleInspectDaily}
+                      disabled={sendingDaily || loadingDailyInspection}
+                      className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-6 py-3 text-sm font-black text-white shadow-lg hover:bg-[#072c21] disabled:opacity-50 transition-all font-serif"
                     >
-                      {sendingDaily ? "جاري الإرسال..." : "🚀 إرسال تقارير اليوم الآن"}
+                      {loadingDailyInspection ? "⏳ جاري الفحص..." : sendingDaily ? "⏳ جاري الإرسال..." : "🚀 بث التقارير اليومية"}
                     </button>
                   </div>
 
                   {dailyStatusMsg && (
-                    <div className="rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
+                    <div className={`rounded-xl p-4 text-sm font-bold whitespace-pre-line border ${
+                      dailyStatusMsg.startsWith("✅")
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                        : dailyStatusMsg.startsWith("❌")
+                        ? "bg-red-50 text-red-800 border-red-300"
+                        : "bg-amber-50 text-amber-800 border-amber-300"
+                    }`}>
                       {dailyStatusMsg}
                     </div>
                   )}
                 </div>
+
+                {/* Daily Confirmation Modal */}
+                {showDailyConfirm && dailyInspection && (
+                  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+                      <h3 className="text-xl font-black text-[#0b4231] text-center font-serif">⚠️ تأكيد بث التقارير اليومية</h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        يُرجى مراجعة الإحصائيات التالية قبل إرسال تقارير اليوم:
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-xl bg-blue-50 p-4 text-center border border-blue-200">
+                          <div className="text-2xl font-black text-blue-700">{dailyInspection.totalReports}</div>
+                          <div className="text-xs font-bold text-blue-600">إجمالي التقارير</div>
+                        </div>
+                        <div className="rounded-xl bg-emerald-50 p-4 text-center border border-emerald-200">
+                          <div className="text-2xl font-black text-emerald-700">{dailyInspection.readyCount}</div>
+                          <div className="text-xs font-bold text-emerald-600">🟢 جاهز للإرسال</div>
+                        </div>
+                        <div className="rounded-xl bg-amber-50 p-4 text-center border border-amber-200">
+                          <div className="text-2xl font-black text-amber-700">{dailyInspection.alreadySentCount}</div>
+                          <div className="text-xs font-bold text-amber-600">🟡 تم إرساله سابقاً (تخطي)</div>
+                        </div>
+                        <div className="rounded-xl bg-red-50 p-4 text-center border border-red-200">
+                          <div className="text-2xl font-black text-red-700">{dailyInspection.missingPhoneCount}</div>
+                          <div className="text-xs font-bold text-red-600">🔴 بدون رقم واتساب</div>
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl bg-amber-50 p-3 border border-amber-200">
+                        <p className="text-xs font-bold text-amber-800">
+                          ⏱️ الوقت المقدَّر: حوالي {Math.ceil(dailyInspection.readyCount * 2 / 60)} دقيقة ({dailyInspection.readyCount * 2} ثانية)
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          onClick={() => setShowDailyConfirm(false)}
+                          className="flex-1 rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                        >
+                          ❌ إلغاء
+                        </button>
+                        <button
+                          onClick={() => handleSendDailyWhatsApp(selectedCircleSendId)}
+                          className="flex-1 rounded-xl bg-[#0b4231] px-4 py-3 text-sm font-black text-white hover:bg-[#072c21] shadow-lg"
+                        >
+                          ✅ تأكيد الإرسال ({dailyInspection.readyCount} تقرير)
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
             {/* WEEKLY SEND TAB */}
             {activeTab === "weekly_send" && (
-              <div className="space-y-3">
+              <div className="space-y-5">
                 <h3 className="text-xl font-bold text-[#0b4231] font-serif">🖼️ بطاقات التقرير الأسبوعي الفاخرة</h3>
+
+                {/* Student preview cards — preview only, no individual send */}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {filteredStudents.map((s) => (
                     <div key={s.id} className="flex items-center justify-between rounded-xl border border-[#d8bf83]/50 bg-[#fffdf9] p-4 shadow-sm">
@@ -1725,25 +1850,111 @@ function normalizeSearchText(text: string): string {
                         <span className="text-[11px] font-bold text-[#bd8f2d]">
                           {s.summerGroup === "NOOR_AL_BAYAN" ? "نور البيان" : "قرآن كريم"}
                         </span>
+                        {!s.parentWhatsapp && (
+                          <span className="mr-2 text-[10px] font-bold text-red-500">⚠️ لا يوجد رقم</span>
+                        )}
                       </div>
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/onsite/summer/admin/weekly-card/${s.id}`}
-                          target="_blank"
-                          className="rounded-lg border border-[#d8bf83] bg-[#f9f5ed] px-3 py-1.5 text-xs font-bold text-[#0b4231]"
-                        >
-                          معاينة
-                        </Link>
-                        <button
-                          onClick={() => handleSendWeeklyCard(s.id)}
-                          className="rounded-lg bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white"
-                        >
-                          واتساب
-                        </button>
-                      </div>
+                      <Link
+                        href={`/onsite/summer/admin/weekly-card/${s.id}`}
+                        target="_blank"
+                        className="rounded-lg border border-[#d8bf83] bg-[#f9f5ed] px-3 py-1.5 text-xs font-bold text-[#0b4231] hover:bg-[#f0eadb]"
+                      >
+                        👁️ معاينة البطاقة
+                      </Link>
                     </div>
                   ))}
                 </div>
+
+                {/* Unified Bulk Send Button */}
+                <div className="rounded-2xl border-2 border-[#d8bf83]/80 bg-gradient-to-br from-[#fffdf9] to-[#f9f0dc] p-6 shadow-md">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-lg font-black text-[#0b4231] font-serif">📨 إرسال جماعي لجميع البطاقات</h4>
+                      <p className="text-xs text-gray-600 mt-1">
+                        سيتم إرسال بطاقات التقرير الأسبوعي لجميع الطلاب الذين يمتلكون أرقام واتساب.
+                        <br />
+                        <strong className="text-amber-700">⏱️ يتم الإرسال بفاصل ثانيتين بين كل رسالة لتجنب الحظر.</strong>
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleInspectWeekly}
+                      disabled={sendingWeekly || loadingWeeklyInspection}
+                      className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-8 py-3.5 text-sm font-black text-white shadow-lg hover:bg-[#072c21] disabled:opacity-50 transition-all font-serif"
+                    >
+                      {loadingWeeklyInspection ? "⏳ جاري الفحص..." : sendingWeekly ? "⏳ جاري الإرسال..." : "🚀 بدء إرسال البطاقات الأسبوعية"}
+                    </button>
+                  </div>
+
+                  {weeklyStatusMsg && (
+                    <div className={`mt-4 rounded-xl p-4 text-sm font-bold whitespace-pre-line border ${
+                      weeklyStatusMsg.startsWith("✅")
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                        : weeklyStatusMsg.startsWith("❌")
+                        ? "bg-red-50 text-red-800 border-red-300"
+                        : "bg-amber-50 text-amber-800 border-amber-300"
+                    }`}>
+                      {weeklyStatusMsg}
+                    </div>
+                  )}
+                </div>
+
+                {/* Confirmation Modal for Weekly Send */}
+                {showWeeklyConfirm && weeklyInspection && (
+                  <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-4 max-h-[80vh] overflow-y-auto">
+                      <h3 className="text-xl font-black text-[#0b4231] text-center font-serif">⚠️ تأكيد الإرسال الجماعي</h3>
+                      <p className="text-sm text-gray-600 text-center">
+                        أنت على وشك إرسال البطاقات الأسبوعية لجميع الطلاب عبر الواتساب.
+                        <br />يُرجى مراجعة الإحصائيات التالية قبل المتابعة:
+                      </p>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-xl bg-blue-50 p-4 text-center border border-blue-200">
+                          <div className="text-2xl font-black text-blue-700">{weeklyInspection.totalStudents}</div>
+                          <div className="text-xs font-bold text-blue-600">إجمالي الطلاب</div>
+                        </div>
+                        <div className="rounded-xl bg-emerald-50 p-4 text-center border border-emerald-200">
+                          <div className="text-2xl font-black text-emerald-700">{weeklyInspection.readyCount}</div>
+                          <div className="text-xs font-bold text-emerald-600">🟢 جاهز للإرسال</div>
+                        </div>
+                        <div className="rounded-xl bg-red-50 p-4 text-center border border-red-200 col-span-2">
+                          <div className="text-2xl font-black text-red-700">{weeklyInspection.missingPhoneCount}</div>
+                          <div className="text-xs font-bold text-red-600">🔴 بدون رقم واتساب (سيتم تخطيهم)</div>
+                        </div>
+                      </div>
+
+                      {weeklyInspection.missingPhoneStudents.length > 0 && (
+                        <div className="rounded-xl bg-red-50 p-3 border border-red-200">
+                          <p className="text-xs font-bold text-red-700 mb-1">الطلاب بدون أرقام:</p>
+                          <p className="text-xs text-red-600">
+                            {weeklyInspection.missingPhoneStudents.join("، ")}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="rounded-xl bg-amber-50 p-3 border border-amber-200">
+                        <p className="text-xs font-bold text-amber-800">
+                          ⏱️ الوقت المقدَّر: حوالي {Math.ceil(weeklyInspection.readyCount * 2 / 60)} دقيقة ({weeklyInspection.readyCount * 2} ثانية)
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          onClick={() => setShowWeeklyConfirm(false)}
+                          className="flex-1 rounded-xl border-2 border-gray-300 bg-white px-4 py-3 text-sm font-bold text-gray-700 hover:bg-gray-50"
+                        >
+                          ❌ إلغاء
+                        </button>
+                        <button
+                          onClick={handleSendAllWeeklyCards}
+                          className="flex-1 rounded-xl bg-[#0b4231] px-4 py-3 text-sm font-black text-white hover:bg-[#072c21] shadow-lg"
+                        >
+                          ✅ تأكيد الإرسال
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
