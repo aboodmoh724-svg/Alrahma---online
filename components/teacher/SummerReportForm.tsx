@@ -58,6 +58,7 @@ export default function SummerReportForm({
   // 1. New Memorization (Defaults to last present report's Taqeen if available)
   const [newSurahId, setNewSurahId] = useState<number>(78);
   const [newFromAyah, setNewFromAyah] = useState<number>(1);
+  const [newEndSurahId, setNewEndSurahId] = useState<number>(78);
   const [newToAyah, setNewToAyah] = useState<number>(10);
   const [quranNew, setQuranNew] = useState(
     existingReport?.quranNew || lastPresentReport?.quranTaqeen || ""
@@ -66,36 +67,52 @@ export default function SummerReportForm({
   // 2. Revision
   const [revSurahId, setRevSurahId] = useState<number>(78);
   const [revFromAyah, setRevFromAyah] = useState<number>(1);
+  const [revEndSurahId, setRevEndSurahId] = useState<number>(78);
   const [revToAyah, setRevToAyah] = useState<number>(40);
   const [quranRevision, setQuranRevision] = useState(existingReport?.quranRevision || "");
 
   // 3. Talqeen / Preparation
   const [taqeenSurahId, setTaqeenSurahId] = useState<number>(78);
   const [taqeenFromAyah, setTaqeenFromAyah] = useState<number>(1);
+  const [taqeenEndSurahId, setTaqeenEndSurahId] = useState<number>(78);
   const [taqeenToAyah, setTaqeenToAyah] = useState<number>(10);
   const [quranTaqeen, setQuranTaqeen] = useState(existingReport?.quranTaqeen || "");
 
   // Selected Surah Helpers
   const selectedNewSurah = QURAN_SURAHS.find((s) => s.id === newSurahId) || QURAN_SURAHS[77];
+  const selectedNewEndSurah = QURAN_SURAHS.find((s) => s.id === newEndSurahId) || QURAN_SURAHS[77];
   const selectedRevSurah = QURAN_SURAHS.find((s) => s.id === revSurahId) || QURAN_SURAHS[77];
+  const selectedRevEndSurah = QURAN_SURAHS.find((s) => s.id === revEndSurahId) || QURAN_SURAHS[77];
   const selectedTaqeenSurah = QURAN_SURAHS.find((s) => s.id === taqeenSurahId) || QURAN_SURAHS[77];
+  const selectedTaqeenEndSurah = QURAN_SURAHS.find((s) => s.id === taqeenEndSurahId) || QURAN_SURAHS[77];
   const selectedStartSurah = QURAN_SURAHS.find((s) => s.id === startSurahId) || QURAN_SURAHS[77];
+
+  // Helper: generate range text that supports cross-surah ranges
+  const rangeText = (startSurah: SurahMetadata, fromAyah: number, endSurah: SurahMetadata, toAyah: number) => {
+    if (startSurah.id === endSurah.id) {
+      return `سورة ${startSurah.name} من آية ${fromAyah} إلى ${toAyah}`;
+    }
+    return `من سورة ${startSurah.name} آية ${fromAyah} إلى سورة ${endSurah.name} آية ${toAyah}`;
+  };
 
   // Auto-generate text whenever dropdown selections change
   useEffect(() => {
-    const surah = QURAN_SURAHS.find((s) => s.id === newSurahId) || QURAN_SURAHS[77];
-    setQuranNew(`سورة ${surah.name} من آية ${newFromAyah} إلى ${newToAyah}`);
-  }, [newSurahId, newFromAyah, newToAyah]);
+    const startS = QURAN_SURAHS.find((s) => s.id === newSurahId) || QURAN_SURAHS[77];
+    const endS = QURAN_SURAHS.find((s) => s.id === newEndSurahId) || QURAN_SURAHS[77];
+    setQuranNew(rangeText(startS, newFromAyah, endS, newToAyah));
+  }, [newSurahId, newFromAyah, newEndSurahId, newToAyah]);
 
   useEffect(() => {
-    const surah = QURAN_SURAHS.find((s) => s.id === revSurahId) || QURAN_SURAHS[77];
-    setQuranRevision(`سورة ${surah.name} من آية ${revFromAyah} إلى ${revToAyah}`);
-  }, [revSurahId, revFromAyah, revToAyah]);
+    const startS = QURAN_SURAHS.find((s) => s.id === revSurahId) || QURAN_SURAHS[77];
+    const endS = QURAN_SURAHS.find((s) => s.id === revEndSurahId) || QURAN_SURAHS[77];
+    setQuranRevision(rangeText(startS, revFromAyah, endS, revToAyah));
+  }, [revSurahId, revFromAyah, revEndSurahId, revToAyah]);
 
   useEffect(() => {
-    const surah = QURAN_SURAHS.find((s) => s.id === taqeenSurahId) || QURAN_SURAHS[77];
-    setQuranTaqeen(`سورة ${surah.name} من آية ${taqeenFromAyah} إلى ${taqeenToAyah}`);
-  }, [taqeenSurahId, taqeenFromAyah, taqeenToAyah]);
+    const startS = QURAN_SURAHS.find((s) => s.id === taqeenSurahId) || QURAN_SURAHS[77];
+    const endS = QURAN_SURAHS.find((s) => s.id === taqeenEndSurahId) || QURAN_SURAHS[77];
+    setQuranTaqeen(rangeText(startS, taqeenFromAyah, endS, taqeenToAyah));
+  }, [taqeenSurahId, taqeenFromAyah, taqeenEndSurahId, taqeenToAyah]);
 
   // Noor Al-Bayan fields
   const [noorLearned, setNoorLearned] = useState(existingReport?.noorLearned || "");
@@ -489,30 +506,34 @@ export default function SummerReportForm({
               {/* 1. الحفظ الجديد */}
               <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
                 <label className="block text-xs font-black text-[#0f5a35] font-serif">
-                  ✨ الحفظ الجديد (اختيار السورة والآيات من وإلى):
+                  ✨ الحفظ الجديد (من سورة/آية — إلى سورة/آية):
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">السورة:</span>
+                    <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">سورة البداية:</span>
                     <select
                       value={newSurahId}
                       onChange={(e) => {
-                        setNewSurahId(Number(e.target.value));
+                        const val = Number(e.target.value);
+                        setNewSurahId(val);
                         setNewFromAyah(1);
-                        setNewToAyah(10);
+                        if (val > newEndSurahId) {
+                          setNewEndSurahId(val);
+                          setNewToAyah(1);
+                        }
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.id}. سورة {s.name}
+                          {s.id}. {s.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">من الآية:</span>
+                    <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">من الآية:</span>
                     <select
                       value={newFromAyah}
                       onChange={(e) => setNewFromAyah(Number(e.target.value))}
@@ -527,13 +548,33 @@ export default function SummerReportForm({
                   </div>
 
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">إلى الآية:</span>
+                    <span className="text-[11px] font-bold text-amber-700 block mb-0.5">سورة النهاية:</span>
+                    <select
+                      value={newEndSurahId}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setNewEndSurahId(val);
+                        const endSurah = QURAN_SURAHS.find((s) => s.id === val);
+                        if (endSurah) setNewToAyah(Math.min(newToAyah, endSurah.versesCount));
+                      }}
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
+                    >
+                      {QURAN_SURAHS.filter((s) => s.id >= newSurahId).map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.id}. {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] font-bold text-amber-700 block mb-0.5">إلى الآية:</span>
                     <select
                       value={newToAyah}
                       onChange={(e) => setNewToAyah(Number(e.target.value))}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
-                      {Array.from({ length: selectedNewSurah.versesCount }, (_, i) => i + 1).map((a) => (
+                      {Array.from({ length: selectedNewEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
                           الآية {a}
                         </option>
@@ -544,7 +585,7 @@ export default function SummerReportForm({
 
                 <div className="space-y-1 pt-1">
                   <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
-                    📝 نص التقرير (يُولَّد تلقائياً من القوائم ويمكنك تعديله يدوياً إن أردت):
+                    📝 نص التقرير (يُولَّد تلقائياً ويمكنك تعديله يدوياً):
                   </span>
                   <input
                     type="text"
@@ -559,30 +600,35 @@ export default function SummerReportForm({
               {/* 2. المراجعة اليومية */}
               <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
                 <label className="block text-xs font-black text-[#0f5a35] font-serif">
-                  🔄 المراجعة اليومية:
+                  🔄 المراجعة اليومية (من سورة/آية — إلى سورة/آية):
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">السورة:</span>
+                    <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">سورة البداية:</span>
                     <select
                       value={revSurahId}
                       onChange={(e) => {
-                        setRevSurahId(Number(e.target.value));
+                        const val = Number(e.target.value);
+                        setRevSurahId(val);
                         setRevFromAyah(1);
-                        setRevToAyah(selectedRevSurah.versesCount);
+                        if (val > revEndSurahId) {
+                          setRevEndSurahId(val);
+                          const endS = QURAN_SURAHS.find((s) => s.id === val);
+                          setRevToAyah(endS?.versesCount || 1);
+                        }
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.id}. سورة {s.name}
+                          {s.id}. {s.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">من الآية:</span>
+                    <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">من الآية:</span>
                     <select
                       value={revFromAyah}
                       onChange={(e) => setRevFromAyah(Number(e.target.value))}
@@ -597,13 +643,33 @@ export default function SummerReportForm({
                   </div>
 
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">إلى الآية:</span>
+                    <span className="text-[11px] font-bold text-amber-700 block mb-0.5">سورة النهاية:</span>
+                    <select
+                      value={revEndSurahId}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setRevEndSurahId(val);
+                        const endSurah = QURAN_SURAHS.find((s) => s.id === val);
+                        if (endSurah) setRevToAyah(Math.min(revToAyah, endSurah.versesCount));
+                      }}
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
+                    >
+                      {QURAN_SURAHS.filter((s) => s.id >= revSurahId).map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.id}. {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] font-bold text-amber-700 block mb-0.5">إلى الآية:</span>
                     <select
                       value={revToAyah}
                       onChange={(e) => setRevToAyah(Number(e.target.value))}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
-                      {Array.from({ length: selectedRevSurah.versesCount }, (_, i) => i + 1).map((a) => (
+                      {Array.from({ length: selectedRevEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
                           الآية {a}
                         </option>
@@ -614,7 +680,7 @@ export default function SummerReportForm({
 
                 <div className="space-y-1 pt-1">
                   <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
-                    📝 نص التقرير (يُولَّد تلقائياً من القوائم ويمكنك تعديله يدوياً إن أردت):
+                    📝 نص التقرير (يُولَّد تلقائياً ويمكنك تعديله يدوياً):
                   </span>
                   <input
                     type="text"
@@ -629,30 +695,34 @@ export default function SummerReportForm({
               {/* 3. التلقين والتحضير */}
               <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
                 <label className="block text-xs font-black text-[#0f5a35] font-serif">
-                  🗣️ التلقين والتحضير:
+                  🗣️ التلقين والتحضير (من سورة/آية — إلى سورة/آية):
                 </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">السورة:</span>
+                    <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">سورة البداية:</span>
                     <select
                       value={taqeenSurahId}
                       onChange={(e) => {
-                        setTaqeenSurahId(Number(e.target.value));
+                        const val = Number(e.target.value);
+                        setTaqeenSurahId(val);
                         setTaqeenFromAyah(1);
-                        setTaqeenToAyah(10);
+                        if (val > taqeenEndSurahId) {
+                          setTaqeenEndSurahId(val);
+                          setTaqeenToAyah(1);
+                        }
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
-                          {s.id}. سورة {s.name}
+                          {s.id}. {s.name}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">من الآية:</span>
+                    <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">من الآية:</span>
                     <select
                       value={taqeenFromAyah}
                       onChange={(e) => setTaqeenFromAyah(Number(e.target.value))}
@@ -667,13 +737,33 @@ export default function SummerReportForm({
                   </div>
 
                   <div>
-                    <span className="text-[11px] font-bold text-gray-500 block mb-0.5">إلى الآية:</span>
+                    <span className="text-[11px] font-bold text-amber-700 block mb-0.5">سورة النهاية:</span>
+                    <select
+                      value={taqeenEndSurahId}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setTaqeenEndSurahId(val);
+                        const endSurah = QURAN_SURAHS.find((s) => s.id === val);
+                        if (endSurah) setTaqeenToAyah(Math.min(taqeenToAyah, endSurah.versesCount));
+                      }}
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
+                    >
+                      {QURAN_SURAHS.filter((s) => s.id >= taqeenSurahId).map((s) => (
+                        <option key={s.id} value={s.id}>
+                          {s.id}. {s.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <span className="text-[11px] font-bold text-amber-700 block mb-0.5">إلى الآية:</span>
                     <select
                       value={taqeenToAyah}
                       onChange={(e) => setTaqeenToAyah(Number(e.target.value))}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
-                      {Array.from({ length: selectedTaqeenSurah.versesCount }, (_, i) => i + 1).map((a) => (
+                      {Array.from({ length: selectedTaqeenEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
                           الآية {a}
                         </option>
@@ -684,7 +774,7 @@ export default function SummerReportForm({
 
                 <div className="space-y-1 pt-1">
                   <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
-                    📝 نص التقرير (يُولَّد تلقائياً من القوائم ويمكنك تعديله يدوياً إن أردت):
+                    📝 نص التقرير (يُولَّد تلقائياً ويمكنك تعديله يدوياً):
                   </span>
                   <input
                     type="text"
