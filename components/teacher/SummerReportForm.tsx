@@ -71,23 +71,27 @@ export default function SummerReportForm({
   const [taqeenToAyah, setTaqeenToAyah] = useState<number>(10);
   const [quranTaqeen, setQuranTaqeen] = useState(existingReport?.quranTaqeen || "");
 
-  // Update text representations when dropdowns change (only if not pre-existing)
+  // Selected Surah Helpers
   const selectedNewSurah = QURAN_SURAHS.find((s) => s.id === newSurahId) || QURAN_SURAHS[77];
   const selectedRevSurah = QURAN_SURAHS.find((s) => s.id === revSurahId) || QURAN_SURAHS[77];
   const selectedTaqeenSurah = QURAN_SURAHS.find((s) => s.id === taqeenSurahId) || QURAN_SURAHS[77];
   const selectedStartSurah = QURAN_SURAHS.find((s) => s.id === startSurahId) || QURAN_SURAHS[77];
 
-  const applyNewMemorizationFormat = () => {
-    setQuranNew(`سورة ${selectedNewSurah.name} من آية ${newFromAyah} إلى ${newToAyah}`);
-  };
+  // Auto-generate text whenever dropdown selections change
+  useEffect(() => {
+    const surah = QURAN_SURAHS.find((s) => s.id === newSurahId) || QURAN_SURAHS[77];
+    setQuranNew(`سورة ${surah.name} من آية ${newFromAyah} إلى ${newToAyah}`);
+  }, [newSurahId, newFromAyah, newToAyah]);
 
-  const applyRevisionFormat = () => {
-    setQuranRevision(`سورة ${selectedRevSurah.name} من آية ${revFromAyah} إلى ${revToAyah}`);
-  };
+  useEffect(() => {
+    const surah = QURAN_SURAHS.find((s) => s.id === revSurahId) || QURAN_SURAHS[77];
+    setQuranRevision(`سورة ${surah.name} من آية ${revFromAyah} إلى ${revToAyah}`);
+  }, [revSurahId, revFromAyah, revToAyah]);
 
-  const applyTaqeenFormat = () => {
-    setQuranTaqeen(`سورة ${selectedTaqeenSurah.name} من آية ${taqeenFromAyah} إلى ${taqeenToAyah}`);
-  };
+  useEffect(() => {
+    const surah = QURAN_SURAHS.find((s) => s.id === taqeenSurahId) || QURAN_SURAHS[77];
+    setQuranTaqeen(`سورة ${surah.name} من آية ${taqeenFromAyah} إلى ${taqeenToAyah}`);
+  }, [taqeenSurahId, taqeenFromAyah, taqeenToAyah]);
 
   // Noor Al-Bayan fields
   const [noorLearned, setNoorLearned] = useState(existingReport?.noorLearned || "");
@@ -449,20 +453,16 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={applyNewMemorizationFormat}
-                    className="rounded-lg bg-[#0f5a35] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#0a3f2a]"
-                  >
-                    ⚡ اعتماد صيغة القوائم
-                  </button>
+                <div className="space-y-1 pt-1">
+                  <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
+                    📝 نص التقرير (يُولَّد تلقائياً من القوائم ويمكنك تعديله يدوياً إن أردت):
+                  </span>
                   <input
                     type="text"
                     value={quranNew}
                     onChange={(e) => setQuranNew(e.target.value)}
-                    placeholder="نص الحفظ الجديد الذي سيظهر في التقرير..."
-                    className="flex-1 rounded-xl border border-[#d8bf83] bg-white px-3 py-1.5 text-xs font-bold outline-none"
+                    placeholder="نص الحفظ الجديد الذي سيظهر بالرسالة..."
+                    className="w-full rounded-xl border border-[#d8bf83] bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
                   />
                 </div>
               </div>
@@ -523,20 +523,16 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={applyRevisionFormat}
-                    className="rounded-lg bg-[#0f5a35] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#0a3f2a]"
-                  >
-                    ⚡ اعتماد صيغة القوائم
-                  </button>
+                <div className="space-y-1 pt-1">
+                  <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
+                    📝 نص التقرير (يُولَّد تلقائياً من القوائم ويمكنك تعديله يدوياً إن أردت):
+                  </span>
                   <input
                     type="text"
                     value={quranRevision}
                     onChange={(e) => setQuranRevision(e.target.value)}
-                    placeholder="نص المراجعة اليومية الذي سيظهر في التقرير..."
-                    className="flex-1 rounded-xl border border-[#d8bf83] bg-white px-3 py-1.5 text-xs font-bold outline-none"
+                    placeholder="نص المراجعة اليومية الذي سيظهر بالرسالة..."
+                    className="w-full rounded-xl border border-[#d8bf83] bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
                   />
                 </div>
               </div>
@@ -597,20 +593,16 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    type="button"
-                    onClick={applyTaqeenFormat}
-                    className="rounded-lg bg-[#0f5a35] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#0a3f2a]"
-                  >
-                    ⚡ اعتماد صيغة القوائم
-                  </button>
+                <div className="space-y-1 pt-1">
+                  <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
+                    📝 نص التقرير (يُولَّد تلقائياً من القوائم ويمكنك تعديله يدوياً إن أردت):
+                  </span>
                   <input
                     type="text"
                     value={quranTaqeen}
                     onChange={(e) => setQuranTaqeen(e.target.value)}
-                    placeholder="نص التلقين والتحضير الذي سيظهر في التقرير..."
-                    className="flex-1 rounded-xl border border-[#d8bf83] bg-white px-3 py-1.5 text-xs font-bold outline-none"
+                    placeholder="نص التلقين والتحضير الذي سيظهر بالرسالة..."
+                    className="w-full rounded-xl border border-[#d8bf83] bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
                   />
                 </div>
               </div>
