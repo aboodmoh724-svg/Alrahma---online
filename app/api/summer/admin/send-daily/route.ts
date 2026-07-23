@@ -27,7 +27,7 @@ function buildQuranDailyMessage(input: {
 }) {
   return (
     `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
-    `📋 *تقرير الطالب اليومي - الدورة الصيفية الأولى* 🌟\n\n` +
+    `📋 *تقرير الطالب اليومي* 🌟\n\n` +
     `👤 *اسم الطالب:* ${input.studentName}\n` +
     `🏫 *الحلقة:* ${input.circleName || "-"}\n` +
     `👳‍♂️ *المعلم:* ${input.teacherName || "-"}\n` +
@@ -61,7 +61,7 @@ function buildNoorDailyMessage(input: {
 
   return (
     `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
-    `📋 *تقرير الطالب اليومي - الدورة الصيفية الأولى* 🌟\n\n` +
+    `📋 *تقرير الطالب اليومي* 🌟\n\n` +
     `👤 *اسم الطالب:* ${input.studentName}\n` +
     `🏫 *الحلقة:* ${input.circleName || "-"}\n` +
     `👳‍♂️ *المعلم:* ${input.teacherName || "-"}\n` +

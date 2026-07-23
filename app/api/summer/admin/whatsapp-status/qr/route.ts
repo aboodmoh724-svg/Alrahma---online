@@ -22,11 +22,6 @@ const SERVICE_PORTS: Record<string, string> = {
 
 export async function GET(req: Request) {
   try {
-    const admin = await verifyAdmin();
-    if (!admin) {
-      return new Response("غير مصرح", { status: 401 });
-    }
-
     const { searchParams } = new URL(req.url);
     const channel = searchParams.get("channel") || "ONSITE_SUMMER";
 
