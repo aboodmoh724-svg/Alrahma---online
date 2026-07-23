@@ -12,6 +12,8 @@ type SummerReportToday = {
   noorLearned?: string | null;
 };
 
+import LogoutButton from "@/components/LogoutButton";
+
 export default async function OnsiteSummerTeacherDashboard() {
   const cookieStore = await cookies();
   const userId = cookieStore.get("alrahma_user_id")?.value;
@@ -106,13 +108,7 @@ export default async function OnsiteSummerTeacherDashboard() {
               </div>
             </div>
 
-            <Link
-              href="/api/logout?redirect=/onsite/summer/teacher/login"
-              className="rounded-xl bg-red-900/80 border border-red-400/40 px-3.5 py-2 text-xs font-bold text-white hover:bg-red-900 transition flex items-center gap-1 font-serif"
-              title="تسجيل الخروج"
-            >
-              🚪 خروج
-            </Link>
+            <LogoutButton redirectUrl="/onsite/summer/teacher/login" />
           </div>
         </div>
       </header>

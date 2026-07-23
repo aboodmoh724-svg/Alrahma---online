@@ -71,6 +71,14 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  return handleUpdateProgress(request, context);
+}
+
+export async function POST(request: Request, context: RouteContext) {
+  return handleUpdateProgress(request, context);
+}
+
+async function handleUpdateProgress(request: Request, context: RouteContext) {
   try {
     const teacherId = await getTeacherId();
     const { studentId } = await context.params;
@@ -86,11 +94,17 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ error: "لا يمكن الوصول إلى هذا الطالب" }, { status: 403 });
     }
 
-    const startSurah =
+    let startSurah =
       typeof body.startSurah === "string" ? body.startSurah.trim() : "";
+    const startPage = optionalNumber(body.startPage);
+    const startAyah = optionalNumber(body.startAyah);
+
+    if (!startSurah && startPage) {
+      startSurah = "نور البيان";
+    }
 
     if (!startSurah) {
-      return NextResponse.json({ error: "اسم سورة البداية مطلوب" }, { status: 400 });
+      return NextResponse.json({ error: "اسم السورة أو رقم صفحة البداية مطلوب" }, { status: 400 });
     }
 
     const progress = await prisma.studentTeacherProgress.upsert({
@@ -105,15 +119,15 @@ export async function PATCH(request: Request, context: RouteContext) {
         teacherId,
         circleId: student.circleId,
         startSurah,
-        startAyah: optionalNumber(body.startAyah),
-        startPage: optionalNumber(body.startPage),
+        startAyah,
+        startPage,
         note: typeof body.note === "string" ? body.note.trim() : null,
       },
       update: {
         circleId: student.circleId,
         startSurah,
-        startAyah: optionalNumber(body.startAyah),
-        startPage: optionalNumber(body.startPage),
+        startAyah,
+        startPage,
         note: typeof body.note === "string" ? body.note.trim() : null,
       },
     });
