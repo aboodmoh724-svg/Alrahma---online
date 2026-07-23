@@ -768,7 +768,7 @@ function normalizeSearchText(text: string): string {
                 <span className="block text-[10px] text-emerald-200">المدير العام</span>
               </div>
             </div>
-            <LogoutButton redirectUrl="/onsite/summer/admin/login" />
+            <LogoutButton redirectUrl="/onsite/summer" />
           </div>
         </div>
 

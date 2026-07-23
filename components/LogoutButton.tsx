@@ -8,7 +8,7 @@ type LogoutButtonProps = {
 };
 
 export default function LogoutButton({
-  redirectUrl = "/onsite/summer/teacher/login",
+  redirectUrl = "/onsite/summer",
   className,
 }: LogoutButtonProps) {
   const [loading, setLoading] = useState(false);

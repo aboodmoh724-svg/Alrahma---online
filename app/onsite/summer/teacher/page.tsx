@@ -108,7 +108,7 @@ export default async function OnsiteSummerTeacherDashboard() {
               </div>
             </div>
 
-            <LogoutButton redirectUrl="/onsite/summer/teacher/login" />
+            <LogoutButton redirectUrl="/onsite/summer" />
           </div>
         </div>
       </header>
