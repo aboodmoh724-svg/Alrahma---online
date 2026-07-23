@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/passwords";
+import { normalizeWhatsAppNumber } from "@/lib/whatsapp";
 import * as XLSX from "xlsx";
 import * as fs from "fs";
 
@@ -45,11 +46,18 @@ export async function POST(request: Request) {
       }
     }
 
-    // Fallback to local PC path if no file uploaded
+    // Fallback to local PC path or VPS /tmp path
     if (!fileBuffer) {
-      const filePath = "C:\\Users\\amohm\\Downloads\\بيانات الطلاب والحلقات.xls";
-      if (fs.existsSync(filePath)) {
-        fileBuffer = fs.readFileSync(filePath);
+      const paths = [
+        "/tmp/summer_school.xls",
+        "C:\\Users\\amohm\\OneDrive\\Desktop\\الرحمة\\بيانات الطلاب - افيون\\بيانات الطلاب والح لقات للمدرسة الصيفية.xls",
+        "C:\\Users\\amohm\\Downloads\\بيانات الطلاب والحلقات.xls",
+      ];
+      for (const p of paths) {
+        if (fs.existsSync(p)) {
+          fileBuffer = fs.readFileSync(p);
+          break;
+        }
       }
     }
 
@@ -64,7 +72,7 @@ export async function POST(request: Request) {
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
-    const dataRows = rows.slice(1).filter((r) => r && r[0] && r[1] && r[2]);
+    const dataRows = rows.slice(1).filter((r) => r && r[0] && (r[1] || r[2]));
 
     const passwordHash = hashPassword("12345");
 
@@ -99,8 +107,24 @@ export async function POST(request: Request) {
 
     for (const row of dataRows) {
       const studentName = String(row[0]).trim();
-      const rawCircleName = String(row[1]).trim();
-      const teacherName = String(row[2]).trim();
+      let phoneFromExcel: string | null = null;
+      let rawCircleName = "";
+      let teacherName = "";
+
+      // Column layout detection:
+      // If row[1] contains digits (phone number e.g. 0534... or 00963...), then 4-column format:
+      // row[0] = name, row[1] = phone, row[2] = circle, row[3] = teacher
+      const r1Str = String(row[1] || "").trim();
+      if (/[\d\+\-]{6,}/.test(r1Str)) {
+        phoneFromExcel = r1Str;
+        rawCircleName = String(row[2] || "").trim();
+        teacherName = String(row[3] || "").trim();
+      } else {
+        rawCircleName = r1Str;
+        teacherName = String(row[2] || "").trim();
+      }
+
+      if (!teacherName) continue;
 
       const circleName = formatCircleName(rawCircleName, teacherName);
 
@@ -160,72 +184,83 @@ export async function POST(request: Request) {
       // 3. Determine Group
       const summerGroup = rawCircleName.includes("نور البيان") ? "NOOR_AL_BAYAN" : "QURAN";
 
-      // 4. Try matching parentWhatsapp from Afyon/Other students
+      // 4. Phone Number Priority: Excel Column > Afyon Fuzzy Search
       let parentWhatsapp: string | null = null;
-      const cleanStudentName = studentName.replace(/\s+/g, " ");
-      const match = otherStudents.find((os) => {
-        const cleanOtherName = os.fullName.trim().replace(/\s+/g, " ");
-        if (cleanOtherName === cleanStudentName) return true;
-        const sWords = cleanStudentName.split(" ");
-        const oWords = cleanOtherName.split(" ");
-        if (sWords.length >= 2 && oWords.length >= 2 && sWords[0] === oWords[0] && sWords[1] === oWords[1]) {
-          return true;
-        }
-        return false;
-      });
 
-      if (match && match.parentWhatsapp) {
-        parentWhatsapp = match.parentWhatsapp;
-        matchedPhonesCount++;
+      if (phoneFromExcel) {
+        parentWhatsapp = normalizeWhatsAppNumber(phoneFromExcel, "90");
+        if (parentWhatsapp) matchedPhonesCount++;
       }
 
-      // 5. Upsert Student
+      if (!parentWhatsapp) {
+        const cleanStudentName = studentName.replace(/\s+/g, " ");
+        const match = otherStudents.find((os) => {
+          const cleanOtherName = os.fullName.trim().replace(/\s+/g, " ");
+          if (cleanOtherName === cleanStudentName) return true;
+          const sWords = cleanStudentName.split(" ");
+          const oWords = cleanOtherName.split(" ");
+          if (sWords.length >= 2 && oWords.length >= 2 && sWords[0] === oWords[0] && sWords[1] === oWords[1]) {
+            return true;
+          }
+          return false;
+        });
+
+        if (match && match.parentWhatsapp) {
+          parentWhatsapp = match.parentWhatsapp;
+          matchedPhonesCount++;
+        }
+      }
+
+      // 5. Upsert Student in ONSITE_SUMMER
       const existingStudent = await prisma.student.findFirst({
-        where: { fullName: studentName, studyMode: "ONSITE_SUMMER" },
+        where: {
+          fullName: studentName,
+          studyMode: "ONSITE_SUMMER",
+        },
       });
 
-      if (!existingStudent) {
-        const studentCode = String(codeCounter++);
-        const newSt = await prisma.student.create({
-          data: {
-            fullName: studentName,
-            studentCode,
-            studyMode: "ONSITE_SUMMER",
-            summerGroup,
-            circleId: circle.id,
-            teacherId: teacher.id,
-            parentWhatsapp,
-            isActive: true,
-          },
-        });
-        importedStudents.push(newSt);
-      } else {
-        const updatedSt = await prisma.student.update({
+      if (existingStudent) {
+        const updated = await prisma.student.update({
           where: { id: existingStudent.id },
           data: {
-            summerGroup,
-            circleId: circle.id,
             teacherId: teacher.id,
+            circleId: circle.id,
+            summerGroup,
             ...(parentWhatsapp ? { parentWhatsapp } : {}),
             isActive: true,
           },
         });
-        importedStudents.push(updatedSt);
+        importedStudents.push(updated);
+      } else {
+        const studentCode = String(codeCounter++);
+        const created = await prisma.student.create({
+          data: {
+            fullName: studentName,
+            studentCode,
+            teacherId: teacher.id,
+            circleId: circle.id,
+            summerGroup,
+            parentWhatsapp,
+            studyMode: "ONSITE_SUMMER",
+            isActive: true,
+          },
+        });
+        importedStudents.push(created);
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: `تم استيراد وتنظيم ${importedStudents.length} طالباً و ${teacherMap.size} معلمين وحلقاتهم وتحديث أرقام الهاتف بنجاح!`,
+      message: `تم استيراد ${importedStudents.length} طالباً وتأمين ${matchedPhonesCount} رقم واتساب لأولياء الأمور بنجاح ✅`,
       teachersCount: teacherMap.size,
       circlesCount: circleMap.size,
       studentsCount: importedStudents.length,
       matchedPhonesCount,
     });
   } catch (error) {
-    console.error("IMPORT ERROR =>", error);
+    console.error("IMPORT EXCEL ERROR =>", error);
     return NextResponse.json(
-      { success: false, error: error instanceof Error ? error.message : "فشل الاستيراد" },
+      { success: false, error: error instanceof Error ? error.message : "فشل استيراد الملف" },
       { status: 500 }
     );
   }
