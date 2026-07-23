@@ -79,7 +79,7 @@ export default function OnsiteSummerAdminLoginPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@alrahma.com"
+              placeholder="admin@test.com"
               className="w-full rounded-2xl border border-[#d8bf83] bg-white px-4 py-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
             />
           </div>
