@@ -21,7 +21,10 @@ export async function GET() {
     const withPhoneStudents = await prisma.student.findMany({
       where: {
         studyMode: "ONSITE_SUMMER",
-        parentWhatsapp: { not: null, not: "" },
+        AND: [
+          { parentWhatsapp: { not: null } },
+          { parentWhatsapp: { not: "" } },
+        ],
       },
       select: {
         id: true,
