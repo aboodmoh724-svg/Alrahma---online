@@ -22,11 +22,16 @@ export default async function OnsiteSummerTeacherDashboard() {
 
   const teacher = await prisma.user.findFirst({
     where: { id: userId, isActive: true },
-    select: { id: true, fullName: true },
+    select: { id: true, fullName: true, role: true },
   });
 
   if (!teacher) {
     redirect("/onsite/summer/teacher/login");
+  }
+
+  // Admin Guard: Redirect admin users to admin dashboard
+  if (teacher.role === "ADMIN") {
+    redirect("/onsite/summer/admin");
   }
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -93,7 +98,7 @@ export default async function OnsiteSummerTeacherDashboard() {
               </div>
               <div className="text-right">
                 <span className="block text-xs font-bold text-white font-serif">
-                  أستاذ/ـة: {teacher.fullName}
+                  أستاذ: {teacher.fullName}
                 </span>
                 <span className="block text-[10px] text-emerald-200">
                   تاريخ اليوم: {todayStr}
@@ -102,11 +107,11 @@ export default async function OnsiteSummerTeacherDashboard() {
             </div>
 
             <Link
-              href="/api/logout"
-              className="rounded-xl bg-red-900/80 border border-red-400/40 px-3.5 py-2 text-xs font-bold text-white hover:bg-red-900 transition"
+              href="/api/logout?redirect=/onsite/summer/teacher/login"
+              className="rounded-xl bg-red-900/80 border border-red-400/40 px-3.5 py-2 text-xs font-bold text-white hover:bg-red-900 transition flex items-center gap-1 font-serif"
               title="تسجيل الخروج"
             >
-              🚪
+              🚪 خروج
             </Link>
           </div>
         </div>

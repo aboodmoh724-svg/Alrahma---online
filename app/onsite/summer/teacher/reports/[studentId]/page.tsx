@@ -39,6 +39,10 @@ export default async function OnsiteSummerTeacherReportPage({
         where: { dateKey: todayStr },
         take: 1,
       },
+      teacherProgressRecords: {
+        where: { teacherId: userId },
+        take: 1,
+      },
     },
   });
 
@@ -47,6 +51,7 @@ export default async function OnsiteSummerTeacherReportPage({
   }
 
   const existingReport = student.summerReports[0] || null;
+  const initialStartProgress = student.teacherProgressRecords[0] || null;
 
   return (
     <main
@@ -78,6 +83,7 @@ export default async function OnsiteSummerTeacherReportPage({
             circleName: student.circle?.name,
           }}
           existingReport={existingReport}
+          initialStartProgress={initialStartProgress}
           dateKey={todayStr}
         />
       </div>

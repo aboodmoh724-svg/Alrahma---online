@@ -24,7 +24,6 @@ async function findTeacherStudent(studentId: string, teacherId: string) {
     where: {
       id: studentId,
       isActive: true,
-      studyMode: "ONSITE_SYRIA",
       OR: [
         { teacherId },
         { studentCode: "7500" },

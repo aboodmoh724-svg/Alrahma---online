@@ -542,11 +542,11 @@ export default function SummerAdminDashboard({
               </div>
             </div>
             <Link
-              href="/api/logout"
-              className="rounded-xl bg-red-900/80 border border-red-400/40 px-3.5 py-2 text-xs font-bold text-white hover:bg-red-900 transition"
+              href="/api/logout?redirect=/onsite/summer/admin/login"
+              className="rounded-xl bg-red-900/80 border border-red-400/40 px-3.5 py-2 text-xs font-bold text-white hover:bg-red-900 transition flex items-center gap-1 font-serif"
               title="تسجيل الخروج"
             >
-              🚪
+              🚪 خروج
             </Link>
           </div>
         </div>
