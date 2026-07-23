@@ -65,7 +65,7 @@ export default async function SummerPortalPage() {
             
             <div className="space-y-4 relative z-10">
               <div className="w-16 h-16 rounded-2xl bg-[#bd8f2d]/20 border border-[#bd8f2d]/50 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform">
-                👑
+                🏛️
               </div>
               <div>
                 <h2 className="text-2xl font-black text-[#f2d18a] font-serif group-hover:text-white transition-colors">
