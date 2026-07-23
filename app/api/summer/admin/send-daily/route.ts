@@ -27,18 +27,20 @@ function buildQuranDailyMessage(input: {
 }) {
   return (
     `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
-    `تقرير الطالب اليومي - الدورة الصيفية 🌟\n` +
-    `*الطالب:* ${input.studentName}\n` +
-    `*الحلقة:* ${input.circleName || "-"}\n` +
-    `*المعلم:* ${input.teacherName || "-"}\n` +
-    `*التاريخ:* ${input.reportDate}\n\n` +
-    `📖 *الحفظ الجديد:* ${input.quranNew || "-"}\n` +
-    `🔄 *المراجعة:* ${input.quranRevision || "-"}\n` +
-    `🗣️ *التلقين:* ${input.quranTaqeen || "-"}\n\n` +
+    `📋 *تقرير الطالب اليومي - الدورة الصيفية الأولى* 🌟\n\n` +
+    `👤 *اسم الطالب:* ${input.studentName}\n` +
+    `🏫 *الحلقة:* ${input.circleName || "-"}\n` +
+    `👳‍♂️ *المعلم:* ${input.teacherName || "-"}\n` +
+    `📅 *التاريخ:* ${input.reportDate}\n\n` +
+    `----------------------------------------\n` +
+    `📖 *الحفظ الجديد:*\n${input.quranNew || "-"}\n\n` +
+    `🔄 *المراجعة:*\n${input.quranRevision || "-"}\n\n` +
+    `🗣️ *التلقين:*\n${input.quranTaqeen || "-"}\n\n` +
+    `----------------------------------------\n` +
     `⭐ *السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
     `📝 *ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
     `جزاكم الله خيراً على حسن المتابعة.\n` +
-    `إدارة الدورة الصيفية - تحفيظ الرحمة`
+    `إدارة الدورة الصيفية الأولى - تحفيظ الرحمة`
   );
 }
 
@@ -59,18 +61,20 @@ function buildNoorDailyMessage(input: {
 
   return (
     `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
-    `تقرير الطالب اليومي - الدورة الصيفية 🌟\n` +
-    `*الطالب:* ${input.studentName}\n` +
-    `*الحلقة:* ${input.circleName || "-"}\n` +
-    `*المعلم:* ${input.teacherName || "-"}\n` +
-    `*التاريخ:* ${input.reportDate}\n\n` +
-    `📚 *ماذا تعلم اليوم:* ${input.noorLearned || "-"}\n` +
+    `📋 *تقرير الطالب اليومي - الدورة الصيفية الأولى* 🌟\n\n` +
+    `👤 *اسم الطالب:* ${input.studentName}\n` +
+    `🏫 *الحلقة:* ${input.circleName || "-"}\n` +
+    `👳‍♂️ *المعلم:* ${input.teacherName || "-"}\n` +
+    `📅 *التاريخ:* ${input.reportDate}\n\n` +
+    `----------------------------------------\n` +
+    `📚 *ماذا تعلم اليوم:*\n${input.noorLearned || "-"}\n\n` +
     `📝 *الواجب اليومي:* ${hwStatus}${hwGradeStr}\n` +
     `🖐️ *المشاركة والتفاعل:* ${input.noorParticipation ?? 5} من 5\n\n` +
+    `----------------------------------------\n` +
     `⭐ *السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
     `📝 *ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
     `جزاكم الله خيراً على حسن المتابعة.\n` +
-    `إدارة الدورة الصيفية - تحفيظ الرحمة`
+    `إدارة الدورة الصيفية الأولى - تحفيظ الرحمة`
   );
 }
 

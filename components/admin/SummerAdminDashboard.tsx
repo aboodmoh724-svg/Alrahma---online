@@ -122,6 +122,10 @@ export default function SummerAdminDashboard({
 
   useEffect(() => {
     checkWaStatus();
+    const timer = setInterval(() => {
+      checkWaStatus();
+    }, 4000);
+    return () => clearInterval(timer);
   }, []);
 
   const handleTestSend = async () => {
