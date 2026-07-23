@@ -266,6 +266,19 @@ export default function SummerReportForm({
       className="rounded-3xl border border-[#d8bf83]/50 bg-[#fffaf4] p-6 shadow-md dir-rtl"
       dir="rtl"
     >
+      {/* 🌟 Islamic Motivational Calligraphy Banner */}
+      <div className="mb-6 rounded-2xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0b4231] via-[#135440] to-[#0b4231] p-4 sm:p-5 shadow-md text-white text-center space-y-1 relative overflow-hidden dir-rtl" dir="rtl">
+        <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
+        <div className="relative z-10 space-y-1">
+          <p className="text-lg sm:text-xl font-bold text-[#bd8f2d] font-ruqaa leading-relaxed">
+            ✨ قَالَ رَسُولُ اللَّهِ ﷺ: «خَيْرُكُمْ مَنْ تَعَلَّمَ القُرْآنَ وَعَلَّمَهُ» ✨
+          </p>
+          <p className="text-xs sm:text-sm font-bold text-emerald-100 font-serif leading-relaxed">
+            🌿 "طُوبَى لِمَنْ جَعَلَ القُرْآنَ رَبِيعَ قَلْبِهِ وَنُورَ دَرْبِهِ، هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ يَا حَمَلَةَ كِتَابِ اللَّهِ." 🌿
+          </p>
+        </div>
+      </div>
+
       {/* Header Info */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#d8bf83]/30 pb-4">
         <div>

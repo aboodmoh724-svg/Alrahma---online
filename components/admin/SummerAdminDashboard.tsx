@@ -776,6 +776,18 @@ function normalizeSearchText(text: string): string {
 
       {/* 🏛️ 2. Main Dashboard Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
+        {/* 🌟 Islamic Motivational Calligraphy Banner for Admin */}
+        <div className="rounded-2xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0b4231] via-[#135440] to-[#0b4231] p-5 shadow-lg text-white text-center space-y-2 relative overflow-hidden dir-rtl mb-6" dir="rtl">
+          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
+          <div className="relative z-10 space-y-1">
+            <p className="text-xl sm:text-2xl font-bold text-[#bd8f2d] font-ruqaa leading-relaxed">
+              ✨ «إِنَّ اللَّهَ يُحِبُّ إِذَا عَمِلَ أَحَدُكُمْ عَمَلًا أَنْ يُتْقِنَهُ» ✨
+            </p>
+            <p className="text-sm sm:text-base font-bold text-emerald-100 font-serif leading-relaxed">
+              🌿 "مَرْحَبَاً بِكُمْ فِي المَنَصَّةِ المَرْكَزِيَّةِ لِإِدَارَةِ التَّقَارِيرِ وَالرَّسَائِلِ — نَسْأَلُ اللَّهَ أَنْ يَجْعَلَ هَذَا العَمَلَ خَالِصَاً لِوَجْهِهِ الكَرِيمِ وَمُبَارَكاً." 🌿
+            </p>
+          </div>
+        </div>
         {/* Excel Import Status & Action Bar */}
         <div className="mb-6 rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
