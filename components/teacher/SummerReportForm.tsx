@@ -168,6 +168,34 @@ export default function SummerReportForm({
     }
   };
 
+  const [isLocked, setIsLocked] = useState<boolean>(Boolean(existingReport?.id));
+  const [requestingEdit, setRequestingEdit] = useState<boolean>(false);
+  const [requestEditMsg, setRequestEditMsg] = useState<string>("");
+
+  const handleRequestEdit = async () => {
+    setRequestingEdit(true);
+    setRequestEditMsg("");
+    try {
+      const res = await fetch("/api/summer/teacher/request-edit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          studentId: student.id,
+          dateKey,
+          reason: "طلب إذن تعديل التقرير اليومي من الإدارة",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل إرسال طلب التعديل");
+
+      setRequestEditMsg("✅ تم تقديم طلب التعديل للإدارة بنجاح! ستظهر لك صلاحية التعديل فور موافقة المدير.");
+    } catch (err) {
+      setRequestEditMsg(err instanceof Error ? err.message : "حدث خطأ أثناء طلب التعديل");
+    } finally {
+      setRequestingEdit(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -342,6 +370,33 @@ export default function SummerReportForm({
             </button>
           </div>
           {startError && <div className="text-xs font-bold text-red-600">{startError}</div>}
+        </div>
+      )}
+
+      {isLocked && (
+        <div className="mb-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🔒</span>
+              <div>
+                <h4 className="font-bold text-amber-900 text-sm font-serif">تم حفظ التقرير اليومي مسبقاً</h4>
+                <p className="text-xs text-amber-800 font-semibold">التعديل المباشر مغلق مالم تحصل على إذن موافقة من الإدارة.</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleRequestEdit}
+              disabled={requestingEdit}
+              className="rounded-xl bg-[#0b4231] px-4 py-2.5 text-xs font-black text-white hover:bg-[#bd8f2d] hover:text-[#0b4231] transition font-serif disabled:opacity-50 shrink-0"
+            >
+              {requestingEdit ? "جاري إرسال الطلب..." : "📝 طلب إذن تعديل التقرير من الإدارة"}
+            </button>
+          </div>
+          {requestEditMsg && (
+            <div className="text-xs font-bold text-emerald-900 bg-emerald-100 p-2.5 rounded-xl border border-emerald-300">
+              {requestEditMsg}
+            </div>
+          )}
         </div>
       )}
 

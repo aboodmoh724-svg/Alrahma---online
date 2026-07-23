@@ -113,6 +113,130 @@ export default function SummerAdminDashboard({
   const [testStatusMsg, setTestStatusMsg] = useState("");
   const [broadcastHistory, setBroadcastHistory] = useState<any[]>([]);
 
+  // Teacher Edit Requests State
+  const [editRequests, setEditRequests] = useState<any[]>([]);
+  const [loadingRequests, setLoadingRequests] = useState(false);
+
+  // Historical Dates Accordion State
+  const [expandedDates, setExpandedDates] = useState<string[]>([new Date().toISOString().split("T")[0]]);
+
+  // Direct Admin Edit Student Report Modal State
+  const [adminEditReport, setAdminEditReport] = useState<any | null>(null);
+  const [savingAdminReport, setSavingAdminReport] = useState(false);
+  const [adminReportMsg, setAdminReportMsg] = useState("");
+
+  // Pre-Broadcast Confirmation Modal State
+  const [showPreSendModal, setShowPreSendModal] = useState(false);
+  const [preSendSummary, setPreSendSummary] = useState<any>(null);
+  const [loadingPreSend, setLoadingPreSend] = useState(false);
+
+  const fetchEditRequests = async () => {
+    setLoadingRequests(true);
+    try {
+      const res = await fetch("/api/summer/admin/edit-requests");
+      const data = await res.json();
+      if (data.success) {
+        setEditRequests(data.requests || []);
+      }
+    } catch (e) {
+      console.error("Fetch edit requests error =>", e);
+    } finally {
+      setLoadingRequests(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEditRequests();
+  }, []);
+
+  const handleReviewRequest = async (requestId: string, status: "APPROVED" | "REJECTED") => {
+    try {
+      const res = await fetch("/api/summer/admin/edit-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "REVIEW_REQUEST",
+          requestId,
+          status,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchEditRequests();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleOpenPreSendModal = async () => {
+    setLoadingPreSend(true);
+    try {
+      const targetDate = new Date().toISOString().split("T")[0];
+      const res = await fetch(`/api/summer/admin/send-daily?dateKey=${targetDate}`);
+      const data = await res.json();
+      if (data.success) {
+        setPreSendSummary(data);
+        setShowPreSendModal(true);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingPreSend(false);
+    }
+  };
+
+  const handleSaveAdminReport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!adminEditReport) return;
+    setSavingAdminReport(true);
+    setAdminReportMsg("");
+
+    try {
+      const res = await fetch("/api/summer/admin/edit-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ADMIN_UPDATE_REPORT",
+          reportId: adminEditReport.id,
+          studentId: adminEditReport.studentId,
+          dateKey: adminEditReport.dateKey,
+          status: adminEditReport.status,
+          quranNew: adminEditReport.quranNew,
+          quranRevision: adminEditReport.quranRevision,
+          quranTaqeen: adminEditReport.quranTaqeen,
+          noorLearned: adminEditReport.noorLearned,
+          noorHomework: adminEditReport.noorHomework,
+          noorHomeworkGrade: adminEditReport.noorHomeworkGrade,
+          noorParticipation: adminEditReport.noorParticipation,
+          behaviorGrade: adminEditReport.behaviorGrade,
+          behaviorNotes: adminEditReport.behaviorNotes,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل تعديل التقرير");
+
+      setAdminReportMsg("✅ تم تعديل التقرير بنجاح!");
+
+      // Refresh student data from backend
+      const refRes = await fetch("/api/summer/admin/students");
+      const refData = await refRes.json();
+      if (refData.success) {
+        setStudents(refData.students);
+      }
+
+      setTimeout(() => {
+        setAdminEditReport(null);
+        setAdminReportMsg("");
+      }, 1000);
+    } catch (err) {
+      setAdminReportMsg(err instanceof Error ? err.message : "خطأ تعديل التقرير");
+    } finally {
+      setSavingAdminReport(false);
+    }
+  };
+
   const checkWaStatus = async () => {
     setLoadingWaStatus(true);
     try {
@@ -733,9 +857,94 @@ function normalizeSearchText(text: string): string {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Main Work Area (3 Columns - 3/4) */}
           <div className="lg:col-span-3 space-y-6">
-            {/* OVERVIEW TAB */}
             {activeTab === "overview" && (
               <div className="space-y-6">
+                {/* 🔔 1. Top Important Admin Notifications & Edit Requests Bar */}
+                <div className="rounded-2xl border-2 border-[#bd8f2d]/50 bg-[#fffdf9] p-5 shadow-sm space-y-4 dir-rtl" dir="rtl">
+                  <div className="flex items-center justify-between border-b border-[#d8bf83]/40 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">📢</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0b4231] font-serif">إشعارات وتنبيهات الإدارة الهامة</h3>
+                        <p className="text-xs text-gray-500 font-semibold">متابعة سير الحلقات وطلبات التعديل من المعلمين وتنبيهات التأخير</p>
+                      </div>
+                    </div>
+                    <span className="rounded-xl bg-[#bd8f2d] px-3 py-1 text-xs font-black text-[#0b4231] font-serif">
+                      البرنامج الصيفي الرسمي
+                    </span>
+                  </div>
+
+                  {/* Program Schedule Notice */}
+                  <div className="rounded-xl bg-[#f9f5ed] border border-[#d8bf83] p-3 text-xs font-bold text-[#0b4231] flex items-center gap-2">
+                    <span className="text-lg">🗓️</span>
+                    <span>
+                      <b>جدول الدورة الصيفية الرسمي:</b> العمل أسبوعياً من <b>الثلاثاء إلى الأحد</b> (يوم <b>الإثنين إجازة</b> كاملة). بداية الأسبوع: الثلاثاء | نهاية الأسبوع: الأحد.
+                    </span>
+                  </div>
+
+                  {/* Pending Teacher Edit Requests */}
+                  {editRequests.filter((r) => r.status === "NEW").length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-bold text-amber-900 font-serif">
+                        📝 طلبات إذن تعديل التقارير اليومية المعلقة ({editRequests.filter((r) => r.status === "NEW").length}):
+                      </h4>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {editRequests
+                          .filter((r) => r.status === "NEW")
+                          .map((reqItem) => (
+                            <div key={reqItem.id} className="rounded-xl border border-amber-300 bg-amber-50 p-3 flex flex-col justify-between space-y-2">
+                              <div>
+                                <div className="flex justify-between items-center text-xs font-bold text-amber-900">
+                                  <span>👤 {reqItem.student?.fullName || "طالب"}</span>
+                                  <span className="text-[10px] text-amber-700">المعلم: {reqItem.teacher?.fullName}</span>
+                                </div>
+                                <p className="text-[11px] text-amber-800 font-semibold mt-1">{reqItem.details}</p>
+                              </div>
+                              <div className="flex gap-2 justify-end pt-1">
+                                <button
+                                  onClick={() => handleReviewRequest(reqItem.id, "REJECTED")}
+                                  className="rounded-lg border border-red-300 bg-white px-2.5 py-1 text-[11px] font-bold text-red-700 hover:bg-red-50"
+                                >
+                                  ❌ رفض
+                                </button>
+                                <button
+                                  onClick={() => handleReviewRequest(reqItem.id, "APPROVED")}
+                                  className="rounded-lg bg-[#0b4231] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#bd8f2d] hover:text-[#0b4231]"
+                                >
+                                  ✅ قَبُول التعديل
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Completed / Delayed Circles Alerts Today */}
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {circleStats.map(({ circle, filledStudents, totalStudents, isComplete }) => {
+                      const teacherName = circle.teacher?.fullName || "غير محدد";
+                      if (isComplete) {
+                        return (
+                          <div key={circle.id} className="rounded-xl bg-emerald-50 border border-emerald-300 p-2.5 text-xs font-bold text-emerald-900 flex items-center justify-between">
+                            <span>🟢 تم إكتمال تقرير {circle.name} ({teacherName})</span>
+                            <span className="text-[10px] bg-emerald-200 px-2 py-0.5 rounded-full">{filledStudents}/{totalStudents}</span>
+                          </div>
+                        );
+                      }
+                      if (filledStudents === 0) {
+                        return (
+                          <div key={circle.id} className="rounded-xl bg-amber-50 border border-amber-300 p-2.5 text-xs font-bold text-amber-900 flex items-center justify-between">
+                            <span>⚠️ المعلم ({teacherName}) لم يقم بتعبئة تقرير {circle.name} لليوم بعد!</span>
+                            <span className="text-[10px] bg-amber-200 px-2 py-0.5 rounded-full">0/{totalStudents}</span>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })}
+                  </div>
+                </div>
+
                 {/* Circle Compliance Progress Tracker */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
                   <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30 mb-4">
@@ -914,6 +1123,116 @@ function normalizeSearchText(text: string): string {
                       </tbody>
                     </table>
                   </div>
+                </div>
+
+                {/* 📅 Historical Date Accumulation Accordion */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5 space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">📅</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0b4231] font-serif">سجل التقارير اليومية التاريخي وتراكم الأيام</h3>
+                        <p className="text-xs text-gray-500 font-semibold">استعراض تقارير الأيام الماضية وإمكانية تعديلها مباشرة من الإدارة</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Group reports by dateKey */}
+                  {(() => {
+                    const reportsByDateMap = new Map<string, Array<{ student: StudentData; report: any }>>();
+                    students.forEach((st) => {
+                      (st.summerReports || []).forEach((rep: any) => {
+                        if (!rep.dateKey) return;
+                        if (!reportsByDateMap.has(rep.dateKey)) {
+                          reportsByDateMap.set(rep.dateKey, []);
+                        }
+                        reportsByDateMap.get(rep.dateKey)!.push({ student: st, report: rep });
+                      });
+                    });
+
+                    const sortedDateKeys = Array.from(reportsByDateMap.keys()).sort((a, b) => b.localeCompare(a));
+
+                    if (sortedDateKeys.length === 0) {
+                      return <div className="text-xs font-bold text-gray-400 p-4 text-center">لا توجد تقارير سابقة مسجلة بعد</div>;
+                    }
+
+                    return (
+                      <div className="space-y-3">
+                        {sortedDateKeys.map((dKey) => {
+                          const dateItems = reportsByDateMap.get(dKey) || [];
+                          const presentCount = dateItems.filter((i) => i.report.status === "PRESENT").length;
+                          const absentCount = dateItems.filter((i) => i.report.status === "ABSENT").length;
+                          const isExpanded = expandedDates.includes(dKey);
+
+                          return (
+                            <div key={dKey} className="rounded-xl border border-[#d8bf83]/60 bg-[#fffdf9] overflow-hidden">
+                              <button
+                                onClick={() => {
+                                  if (isExpanded) {
+                                    setExpandedDates(expandedDates.filter((d) => d !== dKey));
+                                  } else {
+                                    setExpandedDates([...expandedDates, dKey]);
+                                  }
+                                }}
+                                className="w-full p-4 bg-[#f9f5ed] flex items-center justify-between hover:bg-[#f0e9dd] transition text-right"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[#0b4231] font-bold text-sm font-serif">📅 تقارير يوم: {dKey}</span>
+                                  <span className="rounded-full bg-[#0b4231] px-2.5 py-0.5 text-[11px] font-bold text-white font-serif">
+                                    حاضر: {presentCount} | غائب: {absentCount}
+                                  </span>
+                                </div>
+                                <span className="text-xs font-bold text-[#0b4231]">{isExpanded ? "▲ طي التقارير" : "▼ استعراض التقارير"}</span>
+                              </button>
+
+                              {isExpanded && (
+                                <div className="p-4 grid gap-3 sm:grid-cols-2 bg-white">
+                                  {dateItems.map(({ student: st, report: rep }) => (
+                                    <div key={rep.id || st.id} className="rounded-xl border border-[#d8bf83]/40 p-3 bg-[#fffdf9] space-y-2">
+                                      <div className="flex justify-between items-start">
+                                        <div>
+                                          <h5 className="font-bold text-[#0b4231] text-xs font-serif">{st.fullName}</h5>
+                                          <span className="text-[10px] text-gray-500 font-bold">{st.circle?.name || "بدون حلقة"}</span>
+                                        </div>
+                                        <div className="flex gap-2 items-center">
+                                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${rep.status === "ABSENT" ? "bg-red-100 text-red-700" : "bg-emerald-100 text-emerald-800"}`}>
+                                            {rep.status === "ABSENT" ? "غائب ❌" : "حاضر ✅"}
+                                          </span>
+                                          <button
+                                            onClick={() => setAdminEditReport({ ...rep, studentId: st.id, studentName: st.fullName })}
+                                            className="text-[11px] font-bold text-[#bd8f2d] hover:underline"
+                                          >
+                                            ✏️ تعديل الإدارة
+                                          </button>
+                                        </div>
+                                      </div>
+
+                                      {rep.status === "PRESENT" && (
+                                        <div className="text-[11px] space-y-0.5 text-gray-700 font-semibold bg-gray-50 p-2 rounded-lg border border-gray-200">
+                                          {st.summerGroup === "NOOR_AL_BAYAN" ? (
+                                            <>
+                                              <div><b>تعلم:</b> {rep.noorLearned || "-"}</div>
+                                              <div><b>الواجب:</b> {rep.noorHomework ? "تم التسليم ✅" : "لم يسلم ❌"}</div>
+                                            </>
+                                          ) : (
+                                            <>
+                                              <div><b>الجديد:</b> {rep.quranNew || "-"}</div>
+                                              <div><b>المراجعة:</b> {rep.quranRevision || "-"}</div>
+                                            </>
+                                          )}
+                                          <div><b>السلوك:</b> {rep.behaviorGrade ?? 5}/5 {rep.behaviorNotes ? `(${rep.behaviorNotes})` : ""}</div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -1854,6 +2173,161 @@ function normalizeSearchText(text: string): string {
                   className="rounded-xl bg-[#0b4231] px-6 py-2 text-xs font-black text-white hover:bg-[#072c21] font-serif"
                 >
                   {savingTeacher ? "جاري الحفظ..." : teacherForm.teacherId ? "تحديث بيانات الحساب" : "إنشاء الحساب"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* PRE-BROADCAST CONFIRMATION MODAL */}
+      {showPreSendModal && preSendSummary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-3xl bg-[#fffdf9] p-6 shadow-2xl dir-rtl border border-[#d8bf83] space-y-4" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-3">
+              <h3 className="text-xl font-bold text-[#0b4231] font-serif">📊 ملخص فحص الجاهزية قبل بث التقارير</h3>
+              <button onClick={() => setShowPreSendModal(false)} className="text-gray-400 hover:text-gray-700 font-bold">✖</button>
+            </div>
+
+            <div className="space-y-2.5 text-xs font-bold">
+              <div className="rounded-xl bg-emerald-50 border border-emerald-300 p-3.5 text-emerald-900 flex justify-between items-center">
+                <span>🟢 سيتم الإرسال لـ:</span>
+                <span className="text-sm text-emerald-700 font-black">{preSendSummary.readyCount} طلاب (تقارير مكتملة)</span>
+              </div>
+
+              <div className="rounded-xl bg-amber-50 border border-amber-300 p-3.5 text-amber-900 flex justify-between items-center">
+                <span>🟡 تم الإرسال سابقاً اليوم (سيتم تخطيهم):</span>
+                <span className="text-sm text-amber-700 font-black">{preSendSummary.alreadySentCount} طلاب</span>
+              </div>
+
+              <div className="rounded-xl bg-red-50 border border-red-300 p-3.5 text-red-900 flex justify-between items-center">
+                <span>🔴 تقارير غير مكتملة / بدون رقم:</span>
+                <span className="text-sm text-red-700 font-black">{preSendSummary.missingPhoneCount} طلاب</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+              * ملاحظة: لن يتم إعادة إرسال الرسائل لنفس الطالب أكثر من مرة في نفس اليوم لتجنب التكرار والازدواجية.
+            </p>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#d8bf83]/30">
+              <button
+                onClick={() => setShowPreSendModal(false)}
+                className="rounded-xl border border-gray-300 px-4 py-2.5 text-xs font-bold text-gray-700 hover:bg-gray-100"
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={() => {
+                  setShowPreSendModal(false);
+                  handleSendDailyWhatsApp("ALL");
+                }}
+                className="rounded-xl bg-[#0b4231] px-6 py-2.5 text-xs font-black text-white hover:bg-[#bd8f2d] hover:text-[#0b4231] font-serif shadow-sm"
+              >
+                🚀 تأكيد وبدء البث الآن
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DIRECT ADMIN REPORT EDIT MODAL */}
+      {adminEditReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-lg rounded-3xl bg-[#fffdf9] p-6 shadow-2xl dir-rtl border border-[#d8bf83] space-y-4 max-h-[90vh] overflow-y-auto" dir="rtl">
+            <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-3">
+              <h3 className="text-lg font-bold text-[#0b4231] font-serif">
+                ✏️ تعديل تقرير الطالب (من الإدارة): {adminEditReport.studentName}
+              </h3>
+              <button onClick={() => setAdminEditReport(null)} className="text-gray-400 hover:text-gray-700 font-bold">✖</button>
+            </div>
+
+            <form onSubmit={handleSaveAdminReport} className="space-y-3 text-xs font-bold text-[#162e24]">
+              <div>
+                <label className="block mb-1">حالة التقرير:</label>
+                <select
+                  value={adminEditReport.status || "PRESENT"}
+                  onChange={(e) => setAdminEditReport({ ...adminEditReport, status: e.target.value })}
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold"
+                >
+                  <option value="PRESENT">حاضر ✅</option>
+                  <option value="ABSENT">غائب ❌</option>
+                </select>
+              </div>
+
+              {adminEditReport.status !== "ABSENT" && (
+                <>
+                  <div>
+                    <label className="block mb-1">الحفظ الجديد (قرآن):</label>
+                    <textarea
+                      rows={2}
+                      value={adminEditReport.quranNew || ""}
+                      onChange={(e) => setAdminEditReport({ ...adminEditReport, quranNew: e.target.value })}
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1">المراجعة (قرآن):</label>
+                    <textarea
+                      rows={2}
+                      value={adminEditReport.quranRevision || ""}
+                      onChange={(e) => setAdminEditReport({ ...adminEditReport, quranRevision: e.target.value })}
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block mb-1">تعلم اليوم (نور البيان):</label>
+                    <input
+                      type="text"
+                      value={adminEditReport.noorLearned || ""}
+                      onChange={(e) => setAdminEditReport({ ...adminEditReport, noorLearned: e.target.value })}
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block mb-1">السلوك والانضباط (من 5):</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={5}
+                        value={adminEditReport.behaviorGrade ?? 5}
+                        onChange={(e) => setAdminEditReport({ ...adminEditReport, behaviorGrade: Number(e.target.value) })}
+                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1">ملاحظات السلوك:</label>
+                      <input
+                        type="text"
+                        value={adminEditReport.behaviorNotes || ""}
+                        onChange={(e) => setAdminEditReport({ ...adminEditReport, behaviorNotes: e.target.value })}
+                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {adminReportMsg && <div className="text-xs font-bold text-emerald-800 bg-emerald-100 p-2.5 rounded-xl border border-emerald-300">{adminReportMsg}</div>}
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#d8bf83]/30">
+                <button
+                  type="button"
+                  onClick={() => setAdminEditReport(null)}
+                  className="rounded-xl border border-gray-300 px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-100"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingAdminReport}
+                  className="rounded-xl bg-[#0b4231] px-5 py-2 text-xs font-black text-white hover:bg-[#072c21] font-serif"
+                >
+                  {savingAdminReport ? "جاري الحفظ..." : "حفظ التغييرات"}
                 </button>
               </div>
             </form>

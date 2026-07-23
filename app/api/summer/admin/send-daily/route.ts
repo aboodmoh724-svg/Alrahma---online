@@ -87,6 +87,56 @@ function buildAbsenceMessage(input: {
   );
 }
 
+// GET: Pre-broadcast inspection breakdown for Admin before sending
+export async function GET(req: Request) {
+  try {
+    const admin = await verifyAdmin();
+    if (!admin) return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+
+    const { searchParams } = new URL(req.url);
+    const targetDate = searchParams.get("dateKey") || new Date().toISOString().split("T")[0];
+
+    const reports = await prisma.summerReport.findMany({
+      where: { dateKey: targetDate },
+      include: {
+        student: { select: { fullName: true, parentWhatsapp: true } },
+      },
+    });
+
+    let readyCount = 0;
+    let alreadySentCount = 0;
+    let missingPhoneCount = 0;
+
+    for (const r of reports) {
+      if (r.dailySent) {
+        alreadySentCount++;
+      } else {
+        const phone = r.student.parentWhatsapp
+          ? normalizeWhatsAppNumber(r.student.parentWhatsapp, "90")
+          : null;
+        if (phone) {
+          readyCount++;
+        } else {
+          missingPhoneCount++;
+        }
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      targetDate,
+      totalReports: reports.length,
+      readyCount,
+      alreadySentCount,
+      missingPhoneCount,
+    });
+  } catch (error) {
+    console.error("PREVIEW DAILY BROADCAST ERROR =>", error);
+    return NextResponse.json({ error: "خطأ فحص الجاهزية" }, { status: 500 });
+  }
+}
+
+// POST: Execute bulk send with strict duplicate prevention
 export async function POST(req: Request) {
   try {
     const admin = await verifyAdmin();
@@ -99,13 +149,19 @@ export async function POST(req: Request) {
 
     const targetDate = dateKey || new Date().toISOString().split("T")[0];
 
-    const reports = await prisma.summerReport.findMany({
-      where: reportIds && Array.isArray(reportIds) && reportIds.length > 0
+    // Duplicate Prevention Rule: If specific reportIds are passed, send those.
+    // Otherwise, ONLY send reports on targetDate where dailySent is false!
+    const whereClause =
+      reportIds && Array.isArray(reportIds) && reportIds.length > 0
         ? { id: { in: reportIds } }
-        : { dateKey: targetDate },
+        : { dateKey: targetDate, dailySent: false };
+
+    const reports = await prisma.summerReport.findMany({
+      where: whereClause,
       include: {
         student: {
           select: {
+            id: true,
             fullName: true,
             parentWhatsapp: true,
             summerGroup: true,
@@ -118,8 +174,14 @@ export async function POST(req: Request) {
 
     let sentCount = 0;
     let failCount = 0;
+    let skippedAlreadySent = 0;
 
     for (const report of reports) {
+      if (report.dailySent && (!reportIds || reportIds.length === 0)) {
+        skippedAlreadySent++;
+        continue;
+      }
+
       const phone = report.student.parentWhatsapp
         ? normalizeWhatsAppNumber(report.student.parentWhatsapp, "90")
         : null;
@@ -184,6 +246,18 @@ export async function POST(req: Request) {
           },
         });
 
+        // Log outgoing message in database
+        await prisma.whatsAppOutgoingMessage.create({
+          data: {
+            channel: "ONSITE_SUMMER",
+            toNumber: phone,
+            body: messageText,
+            source: "SUMMER_DAILY_REPORT",
+            category: "GENERAL",
+            studentId: report.student.id,
+          },
+        });
+
         sentCount += 1;
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : "فشل الإرسال عبر الواتساب";
@@ -199,10 +273,12 @@ export async function POST(req: Request) {
       success: true,
       sentCount,
       failCount,
-      total: reports.length,
+      skippedAlreadySent,
+      totalProcessed: reports.length,
+      message: `تم إرسال ${sentCount} تقريراً بنجاح ✅ (تم تخطي ${skippedAlreadySent} تقريراً مرسلاً سابقاً لمنع التكرار)`,
     });
   } catch (error) {
-    console.error("SEND SUMMER DAILY REPORTS ERROR =>", error);
-    return NextResponse.json({ error: "حدث خطأ أثناء إرسال التقارير اليومية" }, { status: 500 });
+    console.error("SEND DAILY REPORTS ERROR =>", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء بث التقارير اليومية" }, { status: 500 });
   }
 }
