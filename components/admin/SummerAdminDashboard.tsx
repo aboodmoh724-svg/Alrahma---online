@@ -257,7 +257,11 @@ export default function SummerAdminDashboard({
   };
 
   const handleDeleteReport = async (studentId: string, dateKey: string) => {
-    if (!window.confirm("⚠️ هل أنت متأكد من رغبتك في حذف هذا التقرير اليومي بالكامل؟")) {
+    const confirmation = window.prompt(
+      "⚠️ تنبيه: هل أنت متأكد من رغبتك في حذف هذا التقرير اليومي بالكامل؟\nلتأكيد الحذف النهائي، يرجى كتابة كلمة (حذف) في الخانة أدناه:"
+    );
+    if (confirmation !== "حذف") {
+      alert("❌ تم إلغاء عملية الحذف.");
       return;
     }
 
@@ -513,7 +517,13 @@ function normalizeSearchText(text: string): string {
 
   // Delete Student
   const handleDeleteStudent = async (id: string) => {
-    if (!confirm("هل أنت تأكد من إغلاق سجل هذا الطالب؟")) return;
+    const confirmation = window.prompt(
+      "⚠️ تنبيه: هل أنت متأكد من رغبتك في حذف سجل هذا الطالب بالكامل؟\nهذا الإجراء سيحذف الطالب وتقاريره بشكل نهائي ولا يمكن التراجع عنه.\nلتأكيد الحذف النهائي، يرجى كتابة كلمة (حذف) في الخانة أدناه:"
+    );
+    if (confirmation !== "حذف") {
+      alert("❌ تم إلغاء عملية الحذف.");
+      return;
+    }
 
     try {
       const res = await fetch(`/api/summer/admin/students?id=${id}`, {
