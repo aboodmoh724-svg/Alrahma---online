@@ -6,7 +6,13 @@ import Link from "next/link";
 import type { EducationPlanTopic } from "@/lib/summer-education-plan";
 
 type TeacherOption = { id: string; fullName: string; email?: string | null };
-type CircleOption = { id: string; name: string; teacher?: TeacherOption | null };
+type CircleOption = {
+  id: string;
+  name: string;
+  teacherId?: string | null;
+  teacher?: TeacherOption | null;
+  students?: Array<{ id: string; fullName: string; summerGroup?: string | null }>;
+};
 
 type StudentData = {
   id: string;
@@ -570,7 +576,7 @@ export default function SummerAdminDashboard({
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-gray-500 block">إجمالي الطلاب</span>
-              <span className="text-3xl font-black text-[#0b4231] mt-1 block font-serif">{students.length}</span>
+              <span className="text-3xl font-black text-[#0b4231] mt-1 block font-serif">{students.length} طالباً</span>
             </div>
             <div className="h-12 w-12 rounded-2xl bg-[#0b4231]/10 flex items-center justify-center text-2xl text-[#0b4231]">
               👥
@@ -579,21 +585,18 @@ export default function SummerAdminDashboard({
 
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-gray-500 block">الحلقات المكتملة اليوم</span>
-              <div className="mt-1 flex items-baseline gap-1">
-                <span className="text-3xl font-black text-emerald-700 font-serif">{completedCirclesCount}</span>
-                <span className="text-xs font-bold text-gray-500">من {circles.length} حلقة</span>
-              </div>
+              <span className="text-xs font-bold text-gray-500 block">طلاب القرآن الكريم</span>
+              <span className="text-3xl font-black text-emerald-800 mt-1 block font-serif">{quranCount} طالباً</span>
             </div>
             <div className="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl text-emerald-800">
-              🏫
+              📖
             </div>
           </div>
 
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-gray-500 block">طلاب نور البيان</span>
-              <span className="text-3xl font-black text-[#bd8f2d] mt-1 block font-serif">{noorCount}</span>
+              <span className="text-3xl font-black text-[#bd8f2d] mt-1 block font-serif">{noorCount} طالباً</span>
             </div>
             <div className="h-12 w-12 rounded-2xl bg-[#bd8f2d]/10 flex items-center justify-center text-2xl text-[#bd8f2d]">
               📘
@@ -602,10 +605,13 @@ export default function SummerAdminDashboard({
 
           <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-gray-500 block">التقدم اليومي العام</span>
-              <span className="text-3xl font-black text-emerald-700 mt-1 block font-serif">{completionRate}%</span>
+              <span className="text-xs font-bold text-gray-500 block">إنجاز تقارير الحلقات</span>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className="text-3xl font-black text-emerald-700 font-serif">{completedCirclesCount}/{circles.length}</span>
+                <span className="text-xs font-bold text-[#bd8f2d]">({completionRate}%)</span>
+              </div>
             </div>
-            <div className="h-12 w-12 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl text-emerald-800">
+            <div className="h-12 w-12 rounded-2xl bg-amber-100 flex items-center justify-center text-2xl text-amber-800">
               📈
             </div>
           </div>
@@ -696,22 +702,9 @@ export default function SummerAdminDashboard({
                       <span className="text-xl">📋</span>
                       <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل الطلاب والتقارير اليومية ({students.length})</h3>
                     </div>
-                    <button
-                      onClick={() => {
-                        setStudentForm({
-                          studentId: "",
-                          fullName: "",
-                          parentWhatsapp: "",
-                          summerGroup: "QURAN",
-                          circleId: circles[0]?.id || "",
-                          teacherId: teachers[0]?.id || "",
-                        });
-                        setShowStudentModal(true);
-                      }}
-                      className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-[#072c21] transition font-serif"
-                    >
-                      ➕ إضافة طالب جديد
-                    </button>
+                    <span className="text-xs font-bold text-[#bd8f2d] bg-[#bd8f2d]/10 px-3 py-1.5 rounded-xl border border-[#bd8f2d]/30">
+                      تاريخ التقرير: {todayStr}
+                    </span>
                   </div>
 
                   <div className="overflow-x-auto">
@@ -722,14 +715,15 @@ export default function SummerAdminDashboard({
                           <th className="p-3.5">الصف / الحلقة</th>
                           <th className="p-3.5">المنهج والمسار</th>
                           <th className="p-3.5">تقرير اليوم</th>
-                          <th className="p-3.5">التنبيهات</th>
+                          <th className="p-3.5">حالة الإرسال / الواتساب</th>
                           <th className="p-3.5 text-center">الإجراءات</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#d8bf83]/20 font-semibold">
                         {filteredStudents.map((st) => {
                           const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
-                          const reportFilled = st.summerReports && st.summerReports.length > 0;
+                          const reportFilled = Boolean(st.summerReports && st.summerReports.length > 0);
+                          const dailySent = Boolean(reportFilled && st.summerReports && st.summerReports[0]?.dailySent);
 
                           return (
                             <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
@@ -737,7 +731,7 @@ export default function SummerAdminDashboard({
                                 <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
                                 {st.fullName}
                               </td>
-                              <td className="p-3.5 text-gray-600">
+                              <td className="p-3.5 text-gray-600 font-bold">
                                 {st.circle?.name || "بدون حلقة"}
                               </td>
                               <td className="p-3.5">
@@ -754,19 +748,25 @@ export default function SummerAdminDashboard({
                               <td className="p-3.5">
                                 <span
                                   className={`rounded-full px-3 py-1 text-[11px] font-black ${
-                                    reportFilled ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900"
+                                    reportFilled ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-900 border border-amber-300"
                                   }`}
                                 >
                                   {reportFilled ? "تم الرصد ✅" : "بانتظار التعبئة ⏳"}
                                 </span>
                               </td>
                               <td className="p-3.5">
-                                <button
-                                  onClick={() => handleSendSingleWhatsApp(st.id)}
-                                  className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#072c21] shadow-2xs"
-                                >
-                                  💬 إرسال واتساب
-                                </button>
+                                {dailySent ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-black text-emerald-800 border border-emerald-300 shadow-2xs">
+                                    تم الإرسال ✅
+                                  </span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleSendSingleWhatsApp(st.id)}
+                                    className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#072c21] shadow-2xs"
+                                  >
+                                    💬 إرسال واتساب
+                                  </button>
+                                )}
                               </td>
                               <td className="p-3.5 text-center">
                                 <div className="flex items-center justify-center gap-2">
@@ -922,16 +922,60 @@ export default function SummerAdminDashboard({
                   </div>
                 </div>
 
-                {/* Circles Cards */}
+                {/* Circles Reference Cards */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  {circles.map((c) => (
-                    <div key={c.id} className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm">
-                      <h4 className="text-lg font-bold text-[#0b4231] font-serif">{c.name}</h4>
-                      <p className="mt-1 text-xs font-bold text-[#bd8f2d]">
-                        المعلم المسؤول: {c.teacher?.fullName || "غير محدد"}
-                      </p>
-                    </div>
-                  ))}
+                  {circles.map((c) => {
+                    const circleStudents = (c.students && c.students.length > 0)
+                      ? c.students
+                      : students.filter((s) => s.circle?.id === c.id);
+
+                    const teacherName = c.teacher?.fullName || teachers.find((t) => t.id === c.teacherId)?.fullName || "غير محدد";
+                    const isNoor = c.name.includes("نور البيان");
+
+                    return (
+                      <div key={c.id} className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm space-y-3">
+                        <div className="flex items-start justify-between border-b border-[#d8bf83]/30 pb-3">
+                          <div>
+                            <span className={`inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white mb-1 ${isNoor ? "bg-[#bd8f2d]" : "bg-[#0b4231]"}`}>
+                              {isNoor ? "📘 منهج نور البيان والتمهيدي" : "📖 منهج القرآن الكريم"}
+                            </span>
+                            <h4 className="text-lg font-bold text-[#0b4231] font-serif">{c.name}</h4>
+                          </div>
+                          <span className="rounded-xl bg-[#0b4231]/10 px-3 py-1 text-xs font-black text-[#0b4231] font-serif">
+                            👥 {circleStudents.length} طلاب
+                          </span>
+                        </div>
+
+                        <div className="text-xs space-y-1 font-semibold text-gray-700">
+                          <div className="flex items-center justify-between">
+                            <span>👳‍♂️ المعلم المسؤول:</span>
+                            <b className="font-bold text-[#0b4231] font-serif text-sm">{teacherName}</b>
+                          </div>
+                        </div>
+
+                        {/* List of Student Names inside this circle */}
+                        <div className="rounded-xl bg-[#fcf9f2] p-3 border border-[#d8bf83]/40 space-y-2">
+                          <span className="block text-[11px] font-bold text-[#bd8f2d] font-serif">
+                            📋 قائمة الطلاب المسجلين بالحلقة ({circleStudents.length}):
+                          </span>
+                          {circleStudents.length > 0 ? (
+                            <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pl-1">
+                              {circleStudents.map((st: { id: string; fullName: string }, idx: number) => (
+                                <span
+                                  key={st.id}
+                                  className="rounded-lg bg-white border border-[#d8bf83]/50 px-2.5 py-1 text-[11px] font-bold text-[#162e24] shadow-2xs"
+                                >
+                                  {idx + 1}. {st.fullName}
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-gray-400 font-bold block">لا يوجد طلاب مضافون لهذه الحلقة بعد</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}

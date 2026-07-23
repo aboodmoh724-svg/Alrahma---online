@@ -36,7 +36,13 @@ export default async function OnsiteSummerAdminPage() {
     }),
     prisma.circle.findMany({
       where: { studyMode: "ONSITE_SUMMER" },
-      select: { id: true, name: true, teacherId: true },
+      include: {
+        teacher: { select: { id: true, fullName: true, email: true } },
+        students: {
+          where: { isActive: true },
+          select: { id: true, fullName: true, summerGroup: true },
+        },
+      },
       orderBy: { name: "asc" },
     }),
     prisma.user.findMany({
