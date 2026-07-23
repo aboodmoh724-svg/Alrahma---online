@@ -514,13 +514,8 @@ export default function SummerReportForm({
                     <select
                       value={newSurahId}
                       onChange={(e) => {
-                        const val = Number(e.target.value);
-                        setNewSurahId(val);
+                        setNewSurahId(Number(e.target.value));
                         setNewFromAyah(1);
-                        if (val > newEndSurahId) {
-                          setNewEndSurahId(val);
-                          setNewToAyah(1);
-                        }
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
@@ -559,7 +554,7 @@ export default function SummerReportForm({
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
-                      {QURAN_SURAHS.filter((s) => s.id >= newSurahId).map((s) => (
+                      {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.id}. {s.name}
                         </option>
@@ -583,17 +578,9 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-1">
-                  <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
-                    📝 نص التقرير (يُولَّد تلقائياً ويمكنك تعديله يدوياً):
-                  </span>
-                  <input
-                    type="text"
-                    value={quranNew}
-                    onChange={(e) => setQuranNew(e.target.value)}
-                    placeholder="نص الحفظ الجديد الذي سيظهر بالرسالة..."
-                    className="w-full rounded-xl border border-[#d8bf83] bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
-                  />
+                <div className="rounded-lg bg-[#0f5a35]/5 border border-[#0f5a35]/20 px-3.5 py-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#0f5a35]/60">📝 نص التقرير:</span>
+                  <p className="text-xs font-bold text-[#0f5a35]">{quranNew || "—"}</p>
                 </div>
               </div>
 
@@ -608,14 +595,8 @@ export default function SummerReportForm({
                     <select
                       value={revSurahId}
                       onChange={(e) => {
-                        const val = Number(e.target.value);
-                        setRevSurahId(val);
+                        setRevSurahId(Number(e.target.value));
                         setRevFromAyah(1);
-                        if (val > revEndSurahId) {
-                          setRevEndSurahId(val);
-                          const endS = QURAN_SURAHS.find((s) => s.id === val);
-                          setRevToAyah(endS?.versesCount || 1);
-                        }
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
@@ -654,7 +635,7 @@ export default function SummerReportForm({
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
-                      {QURAN_SURAHS.filter((s) => s.id >= revSurahId).map((s) => (
+                      {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.id}. {s.name}
                         </option>
@@ -678,17 +659,9 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-1">
-                  <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
-                    📝 نص التقرير (يُولَّد تلقائياً ويمكنك تعديله يدوياً):
-                  </span>
-                  <input
-                    type="text"
-                    value={quranRevision}
-                    onChange={(e) => setQuranRevision(e.target.value)}
-                    placeholder="نص المراجعة اليومية الذي سيظهر بالرسالة..."
-                    className="w-full rounded-xl border border-[#d8bf83] bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
-                  />
+                <div className="rounded-lg bg-[#0f5a35]/5 border border-[#0f5a35]/20 px-3.5 py-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#0f5a35]/60">📝 نص التقرير:</span>
+                  <p className="text-xs font-bold text-[#0f5a35]">{quranRevision || "—"}</p>
                 </div>
               </div>
 
@@ -703,13 +676,8 @@ export default function SummerReportForm({
                     <select
                       value={taqeenSurahId}
                       onChange={(e) => {
-                        const val = Number(e.target.value);
-                        setTaqeenSurahId(val);
+                        setTaqeenSurahId(Number(e.target.value));
                         setTaqeenFromAyah(1);
-                        if (val > taqeenEndSurahId) {
-                          setTaqeenEndSurahId(val);
-                          setTaqeenToAyah(1);
-                        }
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
@@ -748,7 +716,7 @@ export default function SummerReportForm({
                       }}
                       className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
-                      {QURAN_SURAHS.filter((s) => s.id >= taqeenSurahId).map((s) => (
+                      {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
                           {s.id}. {s.name}
                         </option>
@@ -772,17 +740,9 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="space-y-1 pt-1">
-                  <span className="text-[11px] font-bold text-[#0f5a35] block font-serif">
-                    📝 نص التقرير (يُولَّد تلقائياً ويمكنك تعديله يدوياً):
-                  </span>
-                  <input
-                    type="text"
-                    value={quranTaqeen}
-                    onChange={(e) => setQuranTaqeen(e.target.value)}
-                    placeholder="نص التلقين والتحضير الذي سيظهر بالرسالة..."
-                    className="w-full rounded-xl border border-[#d8bf83] bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
-                  />
+                <div className="rounded-lg bg-[#0f5a35]/5 border border-[#0f5a35]/20 px-3.5 py-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#0f5a35]/60">📝 نص التقرير:</span>
+                  <p className="text-xs font-bold text-[#0f5a35]">{quranTaqeen || "—"}</p>
                 </div>
               </div>
             </div>
