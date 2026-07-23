@@ -100,10 +100,16 @@ export default function SummerAdminDashboard({
   const [waChannels, setWaChannels] = useState<any>(null);
   const [loadingWaStatus, setLoadingWaStatus] = useState(false);
   const [qrKey, setQrKey] = useState(0);
+  const [broadcastTargetType, setBroadcastTargetType] = useState<
+    "CUSTOM_PHONE" | "ALL_PARENTS" | "ALL_TEACHERS" | "CIRCLE_PARENTS" | "SELECTED_STUDENTS"
+  >("CUSTOM_PHONE");
+  const [targetCircleId, setTargetCircleId] = useState<string>("");
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [testPhone, setTestPhone] = useState("");
   const [testMsg, setTestMsg] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
   const [testStatusMsg, setTestStatusMsg] = useState("");
+  const [broadcastHistory, setBroadcastHistory] = useState<any[]>([]);
 
   const checkWaStatus = async () => {
     setLoadingWaStatus(true);
@@ -112,6 +118,9 @@ export default function SummerAdminDashboard({
       const data = await res.json();
       if (data.success) {
         setWaChannels(data.channels);
+        if (data.recentLogs) {
+          setBroadcastHistory(data.recentLogs);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -128,28 +137,35 @@ export default function SummerAdminDashboard({
     return () => clearInterval(timer);
   }, []);
 
-  const handleTestSend = async () => {
-    if (!testPhone.trim()) {
-      setTestStatusMsg("❌ يرجى إدخال رقم الهاتف للتجربة");
+  const handleBroadcastSend = async () => {
+    if (broadcastTargetType === "CUSTOM_PHONE" && !testPhone.trim()) {
+      setTestStatusMsg("❌ يرجى إدخال رقم الهاتف المباشر");
+      return;
+    }
+    if (!testMsg.trim()) {
+      setTestStatusMsg("❌ يرجى إدخال نص الرسالة المراد إرسالها");
       return;
     }
     setSendingTest(true);
-    setTestStatusMsg("جاري إرسال الرسالة التجريبية...");
+    setTestStatusMsg("جاري بث الرسائل عبر الواتساب...");
     try {
       const res = await fetch("/api/summer/admin/whatsapp-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          targetType: broadcastTargetType,
           testPhone,
-          testMessage: testMsg || "تجربة إرسال رسالة من منصة الدورة الصيفية - تحفيظ الرحمة 🌟",
-          channel: "ONSITE_SUMMER",
+          testMessage: testMsg,
+          circleId: targetCircleId,
+          studentIds: selectedStudentIds,
         }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (res.ok) {
         setTestStatusMsg(`✅ ${data.message}`);
+        checkWaStatus();
       } else {
-        setTestStatusMsg(`❌ ${data.error || "فشل إرسال التجربة"}`);
+        setTestStatusMsg(`❌ ${data.error || "فشل الإرسال"}`);
       }
     } catch (e) {
       setTestStatusMsg("❌ حدث خطأ أثناء الاتصال بالخادم");
@@ -1101,34 +1117,194 @@ export default function SummerAdminDashboard({
                     </div>
                   )}
 
-                  {/* Test Send Input Box */}
-                  <div className="rounded-xl bg-[#f9f5ed] p-4 border border-[#d8bf83]/50 space-y-3">
-                    <h4 className="text-sm font-bold text-[#0b4231] font-serif">🧪 تجربة إرسال رسالة واتساب حية برقم محدد:</h4>
-                    <div className="flex flex-col sm:flex-row items-center gap-3">
-                      <input
-                        type="text"
-                        placeholder="رقم الواتساب (مثال: 05349122796 أو 90534...)"
-                        value={testPhone}
-                        onChange={(e) => setTestPhone(e.target.value)}
-                        className="w-full sm:w-64 rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold font-mono outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="نص التجربة (اختياري)"
+                  {/* 💬 Broadcast & Custom Messaging Center */}
+                  <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 space-y-4 shadow-xs">
+                    <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-3">
+                      <div>
+                        <h4 className="text-base font-bold text-[#0b4231] font-serif">📣 مركز بث الرسائل والواتساب المخصص</h4>
+                        <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                          إرسال رسائل مخصصة طولية ومتعددة الأسطر إلى فئات محددة أو أرقام معينة
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Target Recipient Selector */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-xs font-bold text-[#0b4231] block mb-1.5 font-serif">
+                          🎯 وجهة الإرسال (إلى من تريد الإرسال؟):
+                        </label>
+                        <select
+                          value={broadcastTargetType}
+                          onChange={(e) => setBroadcastTargetType(e.target.value as any)}
+                          className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none text-[#0b4231]"
+                        >
+                          <option value="CUSTOM_PHONE">📱 رقم محدد فقط</option>
+                          <option value="ALL_PARENTS">👥 جميع أولياء الأمور ({students.length} ولي أمر)</option>
+                          <option value="ALL_TEACHERS">👳‍♂️ جميع المعلمين ({teachers.length} معلمين)</option>
+                          <option value="CIRCLE_PARENTS">🏫 أولياء أمور حلقة محددة</option>
+                          <option value="SELECTED_STUDENTS">🎓 أولياء أمور طلاب محددين (اختيار فردي)</option>
+                        </select>
+                      </div>
+
+                      {/* Dynamic Target Inputs */}
+                      {broadcastTargetType === "CUSTOM_PHONE" && (
+                        <div>
+                          <label className="text-xs font-bold text-[#0b4231] block mb-1.5 font-serif">
+                            📱 رقم الواتساب المباشر:
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="مثال: 05349122796 أو 905349122796"
+                            value={testPhone}
+                            onChange={(e) => setTestPhone(e.target.value)}
+                            className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold font-mono outline-none"
+                          />
+                        </div>
+                      )}
+
+                      {broadcastTargetType === "CIRCLE_PARENTS" && (
+                        <div>
+                          <label className="text-xs font-bold text-[#0b4231] block mb-1.5 font-serif">
+                            🏫 اختر الحلقة:
+                          </label>
+                          <select
+                            value={targetCircleId}
+                            onChange={(e) => setTargetCircleId(e.target.value)}
+                            className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none text-[#0b4231]"
+                          >
+                            <option value="">-- اختر الحلقة المراد الإرسال لها --</option>
+                            {circles.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                🏫 {c.name} ({students.filter((s) => s.circle?.id === c.id).length} طلاب)
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Student Selection Grid if SELECTED_STUDENTS */}
+                    {broadcastTargetType === "SELECTED_STUDENTS" && (
+                      <div className="rounded-xl border border-[#d8bf83]/50 bg-white p-3 space-y-2">
+                        <div className="flex items-center justify-between text-xs font-bold text-[#0b4231]">
+                          <span>اختر الطلاب المراد إرسال الرسالة لأولياء أمورهم:</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (selectedStudentIds.length === students.length) {
+                                setSelectedStudentIds([]);
+                              } else {
+                                setSelectedStudentIds(students.map((s) => s.id));
+                              }
+                            }}
+                            className="text-[#bd8f2d] underline hover:text-[#0b4231]"
+                          >
+                            {selectedStudentIds.length === students.length ? "إلغاء تحديد الكل" : "تحديد جميع الطلاب"}
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                          {students.map((st) => {
+                            const isChecked = selectedStudentIds.includes(st.id);
+                            return (
+                              <label
+                                key={st.id}
+                                className={`flex items-center gap-2 rounded-lg border p-2 text-xs font-bold cursor-pointer transition ${
+                                  isChecked
+                                    ? "bg-emerald-50 border-[#0b4231] text-[#0b4231]"
+                                    : "bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100"
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedStudentIds((prev) => [...prev, st.id]);
+                                    } else {
+                                      setSelectedStudentIds((prev) => prev.filter((id) => id !== st.id));
+                                    }
+                                  }}
+                                  className="h-3.5 w-3.5 rounded border-gray-300 text-[#0b4231] focus:ring-0"
+                                />
+                                <span className="truncate">{st.fullName}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Multiline Textarea Message Content Input */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-xs font-bold text-[#0b4231] font-serif">
+                          📝 نص الرسالة (يدعم السطور المتعددة والرموز تحت بعضها البعض):
+                        </label>
+                        <span className="text-[11px] font-bold text-gray-400">
+                          {testMsg.length} حرفاً | {testMsg.split("\n").length} سطور
+                        </span>
+                      </div>
+                      <textarea
+                        rows={5}
+                        placeholder={`اكتب نص الرسالة هنا...\nمثال:\nالسلام عليكم ورحمة الله وبركاته\nنود إعلامكم بأن...`}
                         value={testMsg}
                         onChange={(e) => setTestMsg(e.target.value)}
-                        className="w-full sm:flex-1 rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
+                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-3.5 text-xs font-bold leading-relaxed text-[#162e24] outline-none font-serif shadow-2xs"
                       />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1">
+                      {testStatusMsg ? (
+                        <div className="text-xs font-bold text-[#0b4231]">{testStatusMsg}</div>
+                      ) : (
+                        <div></div>
+                      )}
                       <button
-                        onClick={handleTestSend}
+                        onClick={handleBroadcastSend}
                         disabled={sendingTest}
-                        className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-5 py-2.5 text-xs font-black text-white hover:bg-[#072c21] disabled:opacity-50 font-serif"
+                        className="rounded-xl bg-[#0b4231] px-7 py-3 text-xs font-black text-white hover:bg-[#072c21] disabled:opacity-50 font-serif shadow-md"
                       >
-                        {sendingTest ? "جاري التجربة..." : "📲 تجربة الإرسال الآن"}
+                        {sendingTest ? "جاري البث والإنشاء..." : "🚀 بث الرسالة الآن عبر الواتساب"}
                       </button>
                     </div>
-                    {testStatusMsg && (
-                      <div className="text-xs font-bold text-[#0b4231] pt-1">{testStatusMsg}</div>
+
+                    {/* Sent Messages History Table */}
+                    {broadcastHistory && broadcastHistory.length > 0 && (
+                      <div className="pt-4 border-t border-[#d8bf83]/40 space-y-3">
+                        <h5 className="text-xs font-bold text-[#0b4231] font-serif">📜 سجل الرسائل المرسلة مؤخراً:</h5>
+                        <div className="overflow-x-auto rounded-xl border border-[#d8bf83]/50 bg-white">
+                          <table className="w-full text-right text-xs">
+                            <thead className="bg-[#f9f5ed] text-[#0b4231] font-serif border-b border-[#d8bf83]/40">
+                              <tr>
+                                <th className="p-2.5">الوقت والتاريخ</th>
+                                <th className="p-2.5">الرقم المرسل إليه</th>
+                                <th className="p-2.5">معاينة النص</th>
+                                <th className="p-2.5">المصدر</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100 font-bold text-gray-700">
+                              {broadcastHistory.slice(0, 10).map((log: any) => (
+                                <tr key={log.id} className="hover:bg-gray-50">
+                                  <td className="p-2.5 text-[11px] font-mono text-gray-500">
+                                    {new Date(log.createdAt).toLocaleString("ar-SA")}
+                                  </td>
+                                  <td className="p-2.5 font-mono text-[#0b4231]">{log.toNumber}</td>
+                                  <td className="p-2.5 max-w-xs truncate text-[#162e24]" title={log.body}>
+                                    {log.body}
+                                  </td>
+                                  <td className="p-2.5">
+                                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] text-emerald-800 font-bold">
+                                      {log.source || "SYSTEM"}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     )}
                   </div>
                 </div>
