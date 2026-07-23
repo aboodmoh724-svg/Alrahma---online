@@ -116,14 +116,17 @@ export default async function OnsiteSummerTeacherDashboard() {
       {/* 🏛️ 2. Main Workspace Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 space-y-6">
         {/* 🌟 Islamic Motivational Calligraphy Banner for Teachers */}
-        <div className="rounded-2xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0b4231] via-[#135440] to-[#0b4231] p-5 shadow-lg text-white text-center space-y-2 relative overflow-hidden dir-rtl" dir="rtl">
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
-          <div className="relative z-10 space-y-1">
-            <p className="text-xl sm:text-2xl font-bold text-[#bd8f2d] font-ruqaa leading-relaxed">
-              ✨ قَالَ رَسُولُ اللَّهِ ﷺ: «خَيْرُكُمْ مَنْ تَعَلَّمَ القُرْآنَ وَعَلَّمَهُ» ✨
-            </p>
-            <p className="text-sm sm:text-base font-bold text-emerald-100 font-serif leading-relaxed">
-              🌿 "طُوبَى لِمَنْ جَعَلَ القُرْآنَ رَبِيعَ قَلْبِهِ وَنُورَ دَرْبِهِ، هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ يَا حَمَلَةَ كِتَابِ اللَّهِ." 🌿
+        <div className="rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0b4231] via-[#135440] to-[#0b4231] p-6 shadow-xl text-white text-center space-y-3 relative overflow-hidden dir-rtl" dir="rtl">
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+          <div className="relative z-10 space-y-2">
+            <span className="inline-block rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-4 py-1 text-xs sm:text-sm font-bold text-[#fbf6ef] font-serif">
+              ✨ بشارة لحَفَظَةِ كِتَابِ اللَّهِ ✨
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#bd8f2d] font-ruqaa leading-snug tracking-wide">
+              «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ ... وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي»
+            </h2>
+            <p className="text-xs sm:text-sm font-bold text-emerald-100 font-serif max-w-2xl mx-auto">
+              هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ وَهَذَا الشَّرَفَ العَظِيمَ فِي خِدْمَةِ كِتَابِ اللَّهِ تَعَالَى
             </p>
           </div>
         </div>
