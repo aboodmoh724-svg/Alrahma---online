@@ -28,6 +28,7 @@ type SummerReportData = {
 type SummerReportFormProps = {
   student: StudentInfo;
   existingReport?: SummerReportData | null;
+  lastPresentReport?: { quranTaqeen?: string | null; quranRevision?: string | null; noorLearned?: string | null } | null;
   initialStartProgress?: { startSurah: string; startAyah?: number | null; startPage?: number | null } | null;
   dateKey: string;
 };
@@ -35,6 +36,7 @@ type SummerReportFormProps = {
 export default function SummerReportForm({
   student,
   existingReport,
+  lastPresentReport,
   initialStartProgress,
   dateKey,
 }: SummerReportFormProps) {
@@ -53,11 +55,13 @@ export default function SummerReportForm({
   const [startError, setStartError] = useState<string>("");
 
   // Quran Dropdowns States
-  // 1. New Memorization
+  // 1. New Memorization (Defaults to last present report's Taqeen if available)
   const [newSurahId, setNewSurahId] = useState<number>(78);
   const [newFromAyah, setNewFromAyah] = useState<number>(1);
   const [newToAyah, setNewToAyah] = useState<number>(10);
-  const [quranNew, setQuranNew] = useState(existingReport?.quranNew || "");
+  const [quranNew, setQuranNew] = useState(
+    existingReport?.quranNew || lastPresentReport?.quranTaqeen || ""
+  );
 
   // 2. Revision
   const [revSurahId, setRevSurahId] = useState<number>(78);
@@ -201,6 +205,23 @@ export default function SummerReportForm({
     setLoading(true);
     setError("");
     setSuccess(false);
+
+    // Validation: When status is PRESENT, required report fields MUST be filled
+    if (status === "PRESENT") {
+      if (isNoor) {
+        if (!noorLearned || !noorLearned.trim()) {
+          setError("⚠️ عند اختيار حالة (حاضر)، يجب تعبئة خانة (ماذا تعلم اليوم) لطلاب نور البيان قبل الحفظ.");
+          setLoading(false);
+          return;
+        }
+      } else {
+        if (!quranNew || !quranNew.trim()) {
+          setError("⚠️ عند اختيار حالة (حاضر)، يجب تعبئة خانة (الحفظ الجديد) لطلاب القرآن الكريم قبل الحفظ.");
+          setLoading(false);
+          return;
+        }
+      }
+    }
 
     try {
       const res = await fetch("/api/summer/reports", {

@@ -50,6 +50,21 @@ export default async function OnsiteSummerTeacherReportPage({
     notFound();
   }
 
+  // Fetch the last actual PRESENT report for pre-filling default quranNew from last quranTaqeen
+  const lastPresentReport = await prisma.summerReport.findFirst({
+    where: {
+      studentId: student.id,
+      status: "PRESENT",
+      dateKey: { lt: todayStr },
+    },
+    orderBy: { dateKey: "desc" },
+    select: {
+      quranTaqeen: true,
+      quranRevision: true,
+      noorLearned: true,
+    },
+  });
+
   const existingReport = student.summerReports[0] || null;
   const initialStartProgress = student.teacherProgressRecords[0] || null;
 
@@ -83,6 +98,7 @@ export default async function OnsiteSummerTeacherReportPage({
             circleName: student.circle?.name,
           }}
           existingReport={existingReport}
+          lastPresentReport={lastPresentReport}
           initialStartProgress={initialStartProgress}
           dateKey={todayStr}
         />
