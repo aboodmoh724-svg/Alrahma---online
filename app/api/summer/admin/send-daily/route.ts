@@ -26,21 +26,19 @@ function buildQuranDailyMessage(input: {
   behaviorNotes?: string | null;
 }) {
   return (
-    `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
-    `📋 *تقرير الطالب اليومي* 🌟\n\n` +
-    `👤 *اسم الطالب:* ${input.studentName}\n` +
-    `🏫 *الحلقة:* ${input.circleName || "-"}\n` +
-    `👳‍♂️ *المعلم:* ${input.teacherName || "-"}\n` +
-    `📅 *التاريخ:* ${input.reportDate}\n\n` +
-    `----------------------------------------\n` +
-    `📖 *الحفظ الجديد:*\n${input.quranNew || "-"}\n\n` +
-    `🔄 *المراجعة:*\n${input.quranRevision || "-"}\n\n` +
-    `🗣️ *التلقين:*\n${input.quranTaqeen || "-"}\n\n` +
-    `----------------------------------------\n` +
-    `⭐ *السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
-    `📝 *ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
-    `جزاكم الله خيراً على حسن المتابعة.\n` +
-    `إدارة الدورة الصيفية الأولى - تحفيظ الرحمة`
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `*تقرير الطالب اليومي*\n\n` +
+    `*اسم الطالب:* ${input.studentName}\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n` +
+    `*التاريخ:* ${input.reportDate}\n\n` +
+    `*الحفظ الجديد:*\n${input.quranNew || "-"}\n\n` +
+    `*المراجعة:*\n${input.quranRevision || "-"}\n\n` +
+    `*التلقين:*\n${input.quranTaqeen || "-"}\n\n` +
+    `*السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
+    `*ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
+    `جزاكم الله خيراً.\n` +
+    `إدارة الدورة الصيفية - تحفيظ الرحمة`
   );
 }
 
@@ -60,21 +58,19 @@ function buildNoorDailyMessage(input: {
   const hwGradeStr = input.noorHomeworkGrade !== null ? ` (الدرجة: ${input.noorHomeworkGrade}/5)` : "";
 
   return (
-    `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
-    `📋 *تقرير الطالب اليومي* 🌟\n\n` +
-    `👤 *اسم الطالب:* ${input.studentName}\n` +
-    `🏫 *الحلقة:* ${input.circleName || "-"}\n` +
-    `👳‍♂️ *المعلم:* ${input.teacherName || "-"}\n` +
-    `📅 *التاريخ:* ${input.reportDate}\n\n` +
-    `----------------------------------------\n` +
-    `📚 *ماذا تعلم اليوم:*\n${input.noorLearned || "-"}\n\n` +
-    `📝 *الواجب اليومي:* ${hwStatus}${hwGradeStr}\n` +
-    `🖐️ *المشاركة والتفاعل:* ${input.noorParticipation ?? 5} من 5\n\n` +
-    `----------------------------------------\n` +
-    `⭐ *السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
-    `📝 *ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
-    `جزاكم الله خيراً على حسن المتابعة.\n` +
-    `إدارة الدورة الصيفية الأولى - تحفيظ الرحمة`
+    `السلام عليكم ورحمة الله وبركاته\n\n` +
+    `*تقرير الطالب اليومي*\n\n` +
+    `*اسم الطالب:* ${input.studentName}\n` +
+    `*الحلقة:* ${input.circleName || "-"}\n` +
+    `*المعلم:* ${input.teacherName || "-"}\n` +
+    `*التاريخ:* ${input.reportDate}\n\n` +
+    `*ماذا تعلم اليوم:*\n${input.noorLearned || "-"}\n\n` +
+    `*الواجب اليومي:* ${hwStatus}${hwGradeStr}\n` +
+    `*المشاركة والتفاعل:* ${input.noorParticipation ?? 5} من 5\n\n` +
+    `*السلوك والانضباط:* ${input.behaviorGrade ?? 5} من 5\n` +
+    `*ملاحظات المعلم:* ${input.behaviorNotes || "-"}\n\n` +
+    `جزاكم الله خيراً.\n` +
+    `إدارة الدورة الصيفية - تحفيظ الرحمة`
   );
 }
 
@@ -84,10 +80,9 @@ function buildAbsenceMessage(input: {
 }) {
   return (
     `السلام عليكم ورحمة الله وبركاته\n\n` +
-    `نفيدكم بأن ابنكم الكريم / *${input.studentName}*\n` +
-    `قد غاب عن الدورة الصيفية اليوم بتاريخ ${input.reportDate}.\n\n` +
-    `نرجو الحرص على انتظام الحضور لما له من أثر على مستوى الطالب.\n` +
-    `نشكر لكم حسن التعاون.\n\n` +
+    `*تنبيه غياب طالب*\n\n` +
+    `نفيدكم بأن ابنكم الكريم / *${input.studentName}* قد غاب اليوم بتاريخ ${input.reportDate} عن الحلقات المقامة في الدورة الصيفية.\n\n` +
+    `نرجو الحرص على انتظام الحضور، ودمتم بخير.\n\n` +
     `إدارة الدورة الصيفية - تحفيظ الرحمة`
   );
 }
