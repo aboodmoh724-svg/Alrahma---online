@@ -137,6 +137,27 @@ export async function POST(req: Request) {
       });
     }
 
+    if (action === "ADMIN_DELETE_REPORT") {
+      const { studentId, dateKey } = body;
+      if (!studentId || !dateKey) {
+        return NextResponse.json({ error: "بيانات التقرير غير مكتملة" }, { status: 400 });
+      }
+
+      await prisma.summerReport.delete({
+        where: {
+          studentId_dateKey: {
+            studentId,
+            dateKey,
+          },
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "تم حذف التقرير اليومي بنجاح ✅",
+      });
+    }
+
     return NextResponse.json({ error: "إجراء غير معروف" }, { status: 400 });
   } catch (error) {
     console.error("ADMIN POST EDIT REQUEST ERROR =>", error);

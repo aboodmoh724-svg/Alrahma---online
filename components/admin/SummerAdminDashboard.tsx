@@ -141,6 +141,8 @@ export default function SummerAdminDashboard({
   const [adminEditReport, setAdminEditReport] = useState<any | null>(null);
   const [savingAdminReport, setSavingAdminReport] = useState(false);
   const [adminReportMsg, setAdminReportMsg] = useState("");
+  const [selectedOverviewCircleId, setSelectedOverviewCircleId] = useState<string>("");
+  const [selectedOverviewReportStatus, setSelectedOverviewReportStatus] = useState<string>("");
 
   // Pre-Broadcast Confirmation Modal State
   const [showPreSendModal, setShowPreSendModal] = useState(false);
@@ -251,6 +253,38 @@ export default function SummerAdminDashboard({
       setAdminReportMsg(err instanceof Error ? err.message : "خطأ تعديل التقرير");
     } finally {
       setSavingAdminReport(false);
+    }
+  };
+
+  const handleDeleteReport = async (studentId: string, dateKey: string) => {
+    if (!window.confirm("⚠️ هل أنت متأكد من رغبتك في حذف هذا التقرير اليومي بالكامل؟")) {
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/summer/admin/edit-requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "ADMIN_DELETE_REPORT",
+          studentId,
+          dateKey,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل حذف التقرير");
+
+      alert("✅ تم حذف التقرير اليومي بنجاح!");
+
+      // Refresh student data
+      const refRes = await fetch("/api/summer/admin/students");
+      const refData = await refRes.json();
+      if (refData.success) {
+        setStudents(refData.students);
+      }
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "حدث خطأ أثناء حذف التقرير");
     }
   };
 
@@ -998,6 +1032,7 @@ function normalizeSearchText(text: string): string {
                   {/* Completed / Delayed Circles Alerts Today */}
                   <div className="grid gap-2 sm:grid-cols-2">
                     {circleStats.map(({ circle, filledStudents, totalStudents, isComplete }) => {
+                      if (totalStudents === 0) return null; // Skip circles with no students assigned
                       const teacherName = circle.teacher?.fullName || "غير محدد";
                       if (isComplete) {
                         return (
@@ -1015,7 +1050,13 @@ function normalizeSearchText(text: string): string {
                           </div>
                         );
                       }
-                      return null;
+                      // In-progress state
+                      return (
+                        <div key={circle.id} className="rounded-xl bg-blue-50 border border-blue-300 p-2.5 text-xs font-bold text-blue-900 flex items-center justify-between">
+                          <span>🔵 تقرير {circle.name} قيد الإدخال حالياً ({teacherName})</span>
+                          <span className="text-[10px] bg-blue-200 px-2 py-0.5 rounded-full">{filledStudents}/{totalStudents}</span>
+                        </div>
+                      );
                     })}
                   </div>
                 </div>
@@ -1093,14 +1134,41 @@ function normalizeSearchText(text: string): string {
 
                 {/* Students Progress Table */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden">
-                  <div className="flex items-center justify-between p-5 border-b border-[#d8bf83]/30 bg-[#f9f5ed]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 border-b border-[#d8bf83]/30 bg-[#f9f5ed] gap-3">
                     <div className="flex items-center gap-3">
                       <span className="text-xl">📋</span>
-                      <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل الطلاب والتقارير اليومية ({students.length})</h3>
+                      <h3 className="text-xl font-bold text-[#0b4231] font-serif">سجل الطلاب والتقارير اليومية</h3>
                     </div>
-                    <span className="text-xs font-bold text-[#bd8f2d] bg-[#bd8f2d]/10 px-3 py-1.5 rounded-xl border border-[#bd8f2d]/30">
-                      تاريخ التقرير: {todayStr}
-                    </span>
+                    <div className="flex flex-wrap items-center gap-3">
+                      {/* Circle Filter */}
+                      <select
+                        value={selectedOverviewCircleId}
+                        onChange={(e) => setSelectedOverviewCircleId(e.target.value)}
+                        className="rounded-xl border border-[#d8bf83] bg-white px-3 py-1.5 text-xs font-bold text-[#0b4231] outline-none"
+                      >
+                        <option value="">جميع الحلقات</option>
+                        {circles.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Report Status Filter */}
+                      <select
+                        value={selectedOverviewReportStatus}
+                        onChange={(e) => setSelectedOverviewReportStatus(e.target.value)}
+                        className="rounded-xl border border-[#d8bf83] bg-white px-3 py-1.5 text-xs font-bold text-[#0b4231] outline-none"
+                      >
+                        <option value="">جميع الحالات</option>
+                        <option value="FILLED">تم الرصد اليوم ✅</option>
+                        <option value="PENDING">بانتظار التعبئة ⏳</option>
+                      </select>
+
+                      <span className="text-xs font-bold text-[#bd8f2d] bg-[#bd8f2d]/10 px-3 py-1.5 rounded-xl border border-[#bd8f2d]/30">
+                        اليوم: {todayStr}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="overflow-x-auto">
@@ -1116,85 +1184,128 @@ function normalizeSearchText(text: string): string {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-[#d8bf83]/20 font-semibold">
-                        {filteredStudents.map((st) => {
-                          const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
-                          const reportFilled = Boolean(st.summerReports && st.summerReports.length > 0);
-                          const dailySent = Boolean(reportFilled && st.summerReports && st.summerReports[0]?.dailySent);
+                        {(() => {
+                          const dailyLogStudents = filteredStudents.filter((st) => {
+                            if (selectedOverviewCircleId && st.circle?.id !== selectedOverviewCircleId) return false;
+                            const reportFilled = Boolean(
+                              st.summerReports &&
+                              st.summerReports.length > 0 &&
+                              st.summerReports[0].dateKey === todayStr
+                            );
+                            if (selectedOverviewReportStatus === "FILLED" && !reportFilled) return false;
+                            if (selectedOverviewReportStatus === "PENDING" && reportFilled) return false;
+                            return true;
+                          });
 
-                          return (
-                            <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
-                              <td className="p-3.5 font-bold text-[#162e24] text-sm font-serif">
-                                <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
-                                {st.fullName}
-                              </td>
-                              <td className="p-3.5 text-gray-600 font-bold">
-                                {st.circle?.name || "بدون حلقة"}
-                              </td>
-                              <td className="p-3.5">
-                                {isNoor ? (
-                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
-                                    📘 نور البيان
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b4231] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
-                                    📖 القرآن الكريم
-                                  </span>
-                                )}
-                              </td>
-                              <td className="p-3.5">
-                                <span
-                                  className={`rounded-full px-3 py-1 text-[11px] font-black ${
-                                    reportFilled ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-900 border border-amber-300"
-                                  }`}
-                                >
-                                  {reportFilled ? "تم الرصد ✅" : "بانتظار التعبئة ⏳"}
-                                </span>
-                              </td>
-                              <td className="p-3.5">
-                                {dailySent ? (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-black text-emerald-800 border border-emerald-300 shadow-2xs">
-                                    تم الإرسال ✅
-                                  </span>
-                                ) : (
-                                  <button
-                                    onClick={() => handleSendSingleWhatsApp(st.id)}
-                                    className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#072c21] shadow-2xs"
-                                  >
-                                    💬 إرسال واتساب
-                                  </button>
-                                )}
-                              </td>
-                              <td className="p-3.5 text-center">
-                                <div className="flex items-center justify-center gap-2">
-                                  <button
-                                    onClick={() => {
-                                      setStudentForm({
-                                        studentId: st.id,
-                                        fullName: st.fullName,
-                                        parentWhatsapp: st.parentWhatsapp || "",
-                                        summerGroup: st.summerGroup || "QURAN",
-                                        circleId: st.circle?.id || "",
-                                        teacherId: st.teacher?.id || teachers[0]?.id || "",
-                                      });
-                                      setShowStudentModal(true);
-                                    }}
-                                    className="text-gray-500 hover:text-[#0b4231]"
-                                    title="تعديل"
-                                  >
-                                    ✏️
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteStudent(st.id)}
-                                    className="text-red-500 hover:text-red-700"
-                                    title="حذف"
-                                  >
-                                    🗑️
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
+                          if (dailyLogStudents.length === 0) {
+                            return (
+                              <tr>
+                                <td colSpan={6} className="p-8 text-center text-xs font-bold text-gray-400">
+                                  لا توجد نتائج تطابق خيارات التصفية المحددة 🔍
+                                </td>
+                              </tr>
+                            );
+                          }
+
+                          return dailyLogStudents.map((st) => {
+                            const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
+                            const reportFilled = Boolean(
+                              st.summerReports &&
+                              st.summerReports.length > 0 &&
+                              st.summerReports[0].dateKey === todayStr
+                            );
+                            const dailySent = Boolean(
+                              reportFilled &&
+                              st.summerReports &&
+                              st.summerReports[0]?.dailySent
+                            );
+
+                            return (
+                              <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
+                                <td className="p-3.5 font-bold text-[#162e24] text-sm font-serif">
+                                  <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
+                                  {st.fullName}
+                                </td>
+                                <td className="p-3.5 text-gray-600 font-bold">
+                                  {st.circle?.name || "بدون حلقة"}
+                                </td>
+                                <td className="p-3.5">
+                                  {isNoor ? (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
+                                      📘 نور البيان
+                                    </span>
+                                  ) : (
+                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0b4231] px-3.5 py-1 text-xs font-black text-white shadow-2xs font-serif">
+                                      📖 القرآن الكريم
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="p-3.5">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className={`rounded-full px-3 py-1 text-[11px] font-black ${
+                                        reportFilled ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-900 border border-amber-300"
+                                      }`}
+                                    >
+                                      {reportFilled ? "تم الرصد ✅" : "بانتظار التعبئة ⏳"}
+                                    </span>
+                                    {reportFilled && (
+                                      <button
+                                        onClick={() => handleDeleteReport(st.id, todayStr)}
+                                        className="rounded-lg bg-red-50 hover:bg-red-100 px-2 py-1 text-[10px] font-bold text-red-600 border border-red-200 transition"
+                                        title="حذف تقرير اليوم"
+                                      >
+                                        🗑️ حذف التقرير
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="p-3.5">
+                                  {dailySent ? (
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-black text-emerald-800 border border-emerald-300 shadow-2xs">
+                                      تم الإرسال ✅
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => handleSendSingleWhatsApp(st.id)}
+                                      className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#072c21] shadow-2xs"
+                                    >
+                                      💬 إرسال واتساب
+                                    </button>
+                                  )}
+                                </td>
+                                <td className="p-3.5 text-center">
+                                  <div className="flex items-center justify-center gap-2">
+                                    <button
+                                      onClick={() => {
+                                        setStudentForm({
+                                          studentId: st.id,
+                                          fullName: st.fullName,
+                                          parentWhatsapp: st.parentWhatsapp || "",
+                                          summerGroup: st.summerGroup || "QURAN",
+                                          circleId: st.circle?.id || "",
+                                          teacherId: st.teacher?.id || teachers[0]?.id || "",
+                                        });
+                                        setShowStudentModal(true);
+                                      }}
+                                      className="text-gray-500 hover:text-[#0b4231]"
+                                      title="تعديل"
+                                    >
+                                      ✏️
+                                    </button>
+                                    <button
+                                      onClick={() => handleDeleteStudent(st.id)}
+                                      className="text-red-500 hover:text-red-700"
+                                      title="حذف"
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          });
+                        })()}
                       </tbody>
                     </table>
                   </div>
@@ -1277,7 +1388,13 @@ function normalizeSearchText(text: string): string {
                                             onClick={() => setAdminEditReport({ ...rep, studentId: st.id, studentName: st.fullName })}
                                             className="text-[11px] font-bold text-[#bd8f2d] hover:underline"
                                           >
-                                            ✏️ تعديل الإدارة
+                                            ✏️ تعديل
+                                          </button>
+                                          <button
+                                            onClick={() => handleDeleteReport(st.id, dKey)}
+                                            className="text-[11px] font-bold text-red-600 hover:underline"
+                                          >
+                                            🗑️ حذف
                                           </button>
                                         </div>
                                       </div>
