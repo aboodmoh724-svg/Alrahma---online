@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { EducationPlanTopic } from "@/lib/summer-education-plan";
@@ -95,6 +95,64 @@ export default function SummerAdminDashboard({
   const [sendingDaily, setSendingDaily] = useState(false);
   const [selectedCircleSendId, setSelectedCircleSendId] = useState<string>("ALL");
   const [dailyStatusMsg, setDailyStatusMsg] = useState("");
+
+  // WhatsApp Channel Health & QR State
+  const [waChannels, setWaChannels] = useState<any>(null);
+  const [loadingWaStatus, setLoadingWaStatus] = useState(false);
+  const [qrKey, setQrKey] = useState(0);
+  const [testPhone, setTestPhone] = useState("");
+  const [testMsg, setTestMsg] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+  const [testStatusMsg, setTestStatusMsg] = useState("");
+
+  const checkWaStatus = async () => {
+    setLoadingWaStatus(true);
+    try {
+      const res = await fetch("/api/summer/admin/whatsapp-status");
+      const data = await res.json();
+      if (data.success) {
+        setWaChannels(data.channels);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingWaStatus(false);
+    }
+  };
+
+  useEffect(() => {
+    checkWaStatus();
+  }, []);
+
+  const handleTestSend = async () => {
+    if (!testPhone.trim()) {
+      setTestStatusMsg("❌ يرجى إدخال رقم الهاتف للتجربة");
+      return;
+    }
+    setSendingTest(true);
+    setTestStatusMsg("جاري إرسال الرسالة التجريبية...");
+    try {
+      const res = await fetch("/api/summer/admin/whatsapp-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          testPhone,
+          testMessage: testMsg || "تجربة إرسال رسالة من منصة الدورة الصيفية - تحفيظ الرحمة 🌟",
+          channel: "ONSITE_SUMMER",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTestStatusMsg(`✅ ${data.message}`);
+      } else {
+        setTestStatusMsg(`❌ ${data.error || "فشل إرسال التجربة"}`);
+      }
+    } catch (e) {
+      setTestStatusMsg("❌ حدث خطأ أثناء الاتصال بالخادم");
+    } finally {
+      setSendingTest(false);
+    }
+  };
 
   // Education Plan Form State
   const [newTopicTitle, setNewTopicTitle] = useState("");
@@ -982,40 +1040,131 @@ export default function SummerAdminDashboard({
 
             {/* DAILY SEND TAB */}
             {activeTab === "daily_send" && (
-              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm space-y-4">
-                <h3 className="text-xl font-bold text-[#0b4231] font-serif">📱 بث التقارير اليومية عبر الواتساب</h3>
-                <p className="text-xs font-bold text-gray-600">
-                  اختر حلقة محددة للإرسال أو قم بإرسال التقارير لجميع الحلقات بضغطة زر.
-                </p>
+              <div className="space-y-6">
+                {/* 1. WhatsApp Connection Status & QR Code Box */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">📡</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0b4231] font-serif">حالة اتصال قناة الواتساب والاقتران (QR Code)</h3>
+                        <p className="text-xs text-gray-500 font-semibold">فحص الجاهزية وإمكانية ربط الهاتف بمسح الكود</p>
+                      </div>
+                    </div>
 
-                <div className="flex flex-col sm:flex-row items-center gap-3">
-                  <select
-                    value={selectedCircleSendId}
-                    onChange={(e) => setSelectedCircleSendId(e.target.value)}
-                    className="w-full sm:w-64 rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none"
-                  >
-                    <option value="ALL">🌐 جميع الحلقات (إرسال كلي)</option>
-                    {circles.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        🏫 {c.name}
-                      </option>
-                    ))}
-                  </select>
+                    <button
+                      onClick={() => {
+                        checkWaStatus();
+                        setQrKey((prev) => prev + 1);
+                      }}
+                      disabled={loadingWaStatus}
+                      className="rounded-xl bg-[#f9f5ed] border border-[#d8bf83] px-3.5 py-1.5 text-xs font-bold text-[#0b4231] hover:bg-[#d8bf83]"
+                    >
+                      {loadingWaStatus ? "جاري الفحص..." : "🔄 إعادة الفحص وتحديث QR"}
+                    </button>
+                  </div>
 
-                  <button
-                    onClick={() => handleSendDailyWhatsApp(selectedCircleSendId)}
-                    disabled={sendingDaily}
-                    className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-6 py-3 text-xs font-black text-white shadow-md hover:bg-[#072c21] disabled:opacity-50 font-serif"
-                  >
-                    {sendingDaily ? "جاري الإرسال..." : "🚀 إرسال تقارير اليوم الآن"}
-                  </button>
+                  {waChannels?.ONSITE_SUMMER?.ready ? (
+                    <div className="rounded-xl bg-emerald-50 border border-emerald-300 p-4 flex items-center gap-3">
+                      <span className="text-2xl">🟢</span>
+                      <div>
+                        <h4 className="font-bold text-emerald-900 text-sm font-serif">قناة الواتساب متصلة وجاهزة للإرسال ✅</h4>
+                        <p className="text-xs font-bold text-emerald-700">البوت متصل بحساب الواتساب ومستعد لإرسال التقارير اليومية والأسبوعية.</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl bg-amber-50 border border-amber-300 p-5 space-y-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">⚠️</span>
+                        <div>
+                          <h4 className="font-bold text-amber-900 text-base font-serif">القناة غير متصلة بالواتساب (تتطلب الاقتران مسح رمز QR)</h4>
+                          <p className="text-xs font-bold text-amber-800 mt-0.5">
+                            يرجى فتح تطبيق الواتساب في هاتف الإدارة ➔ الأجهزة المرتبطة ➔ ربط جهاز ➔ مسح الكود أدناه:
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-6 justify-center bg-white p-4 rounded-xl border border-amber-200">
+                        <div className="text-center space-y-2">
+                          <img
+                            src={`/api/summer/admin/whatsapp-status/qr?channel=ONSITE_SUMMER&k=${qrKey}`}
+                            alt="WhatsApp QR Code"
+                            className="w-56 h-56 border-4 border-[#0b4231] rounded-2xl shadow-md mx-auto object-contain bg-white"
+                          />
+                          <span className="text-[11px] font-bold text-gray-500 block">اضغط زر "إعادة الفحص وتحديث QR" في حال انتهت صلاحية الصورة</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Test Send Input Box */}
+                  <div className="rounded-xl bg-[#f9f5ed] p-4 border border-[#d8bf83]/50 space-y-3">
+                    <h4 className="text-sm font-bold text-[#0b4231] font-serif">🧪 تجربة إرسال رسالة واتساب حية برقم محدد:</h4>
+                    <div className="flex flex-col sm:flex-row items-center gap-3">
+                      <input
+                        type="text"
+                        placeholder="رقم الواتساب (مثال: 05349122796 أو 90534...)"
+                        value={testPhone}
+                        onChange={(e) => setTestPhone(e.target.value)}
+                        className="w-full sm:w-64 rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold font-mono outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="نص التجربة (اختياري)"
+                        value={testMsg}
+                        onChange={(e) => setTestMsg(e.target.value)}
+                        className="w-full sm:flex-1 rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
+                      />
+                      <button
+                        onClick={handleTestSend}
+                        disabled={sendingTest}
+                        className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-5 py-2.5 text-xs font-black text-white hover:bg-[#072c21] disabled:opacity-50 font-serif"
+                      >
+                        {sendingTest ? "جاري التجربة..." : "📲 تجربة الإرسال الآن"}
+                      </button>
+                    </div>
+                    {testStatusMsg && (
+                      <div className="text-xs font-bold text-[#0b4231] pt-1">{testStatusMsg}</div>
+                    )}
+                  </div>
                 </div>
 
-                {dailyStatusMsg && (
-                  <div className="rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
-                    {dailyStatusMsg}
+                {/* 2. Bulk Daily Reports Sending Box */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm space-y-4">
+                  <h3 className="text-xl font-bold text-[#0b4231] font-serif">🚀 بث التقارير اليومية الجماعي</h3>
+                  <p className="text-xs font-bold text-gray-600">
+                    اختر حلقة محددة للإرسال أو قم بإرسال التقارير لجميع الحلقات بضغطة زر.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-3">
+                    <select
+                      value={selectedCircleSendId}
+                      onChange={(e) => setSelectedCircleSendId(e.target.value)}
+                      className="w-full sm:w-64 rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none"
+                    >
+                      <option value="ALL">🌐 جميع الحلقات (إرسال كلي)</option>
+                      {circles.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          🏫 {c.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      onClick={() => handleSendDailyWhatsApp(selectedCircleSendId)}
+                      disabled={sendingDaily}
+                      className="w-full sm:w-auto rounded-xl bg-[#0b4231] px-6 py-3 text-xs font-black text-white shadow-md hover:bg-[#072c21] disabled:opacity-50 font-serif"
+                    >
+                      {sendingDaily ? "جاري الإرسال..." : "🚀 إرسال تقارير اليوم الآن"}
+                    </button>
                   </div>
-                )}
+
+                  {dailyStatusMsg && (
+                    <div className="rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0b4231] border border-[#d8bf83]">
+                      {dailyStatusMsg}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
