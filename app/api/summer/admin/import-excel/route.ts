@@ -18,6 +18,18 @@ function makeTeacherEmail(teacherName: string) {
   return `${firstWord.toLowerCase()}@test.com`;
 }
 
+function formatCircleName(circleName: string, teacherName: string): string {
+  const cleanTeacher = teacherName.trim();
+  if (cleanTeacher.includes("أسامة سليمان")) return "حلقة القرآن - 1";
+  if (cleanTeacher.includes("راعي جوخة")) return "حلقة القرآن - 2";
+  if (cleanTeacher.includes("ريان")) return "حلقة القرآن - 3";
+  if (cleanTeacher.includes("أحمد القط")) return "حلقة نور البيان - 1";
+  if (cleanTeacher.includes("عبدالله اليحيى")) return "حلقة نور البيان - 2";
+  if (cleanTeacher.includes("محسن")) return "حلقة نور البيان - 3";
+  if (cleanTeacher.includes("العمري")) return "حلقة القرآن (عن بعد)";
+  return circleName;
+}
+
 export async function POST(request: Request) {
   try {
     let fileBuffer: Buffer | null = null;
@@ -59,6 +71,18 @@ export async function POST(request: Request) {
     const teacherMap = new Map();
     const circleMap = new Map();
 
+    // Fetch existing students in other modes (Afyon, Remote, Syria) with phone numbers
+    const otherStudents = await prisma.student.findMany({
+      where: {
+        studyMode: { not: "ONSITE_SUMMER" },
+        parentWhatsapp: { not: null },
+      },
+      select: {
+        fullName: true,
+        parentWhatsapp: true,
+      },
+    });
+
     // Find highest numerical studentCode in database
     const allStudents = await prisma.student.findMany({ select: { studentCode: true } });
     let maxCode = 7100;
@@ -71,11 +95,14 @@ export async function POST(request: Request) {
 
     let codeCounter = maxCode + 1;
     const importedStudents = [];
+    let matchedPhonesCount = 0;
 
     for (const row of dataRows) {
       const studentName = String(row[0]).trim();
-      const circleName = String(row[1]).trim();
+      const rawCircleName = String(row[1]).trim();
       const teacherName = String(row[2]).trim();
+
+      const circleName = formatCircleName(rawCircleName, teacherName);
 
       // 1. Upsert Teacher
       let teacher = teacherMap.get(teacherName);
@@ -109,7 +136,7 @@ export async function POST(request: Request) {
       let circle = circleMap.get(circleKey);
       if (!circle) {
         circle = await prisma.circle.findFirst({
-          where: { name: circleName, teacherId: teacher.id, studyMode: "ONSITE_SUMMER" },
+          where: { teacherId: teacher.id, studyMode: "ONSITE_SUMMER" },
         });
 
         if (!circle) {
@@ -120,14 +147,39 @@ export async function POST(request: Request) {
               studyMode: "ONSITE_SUMMER",
             },
           });
+        } else {
+          // Update circle name if needed
+          circle = await prisma.circle.update({
+            where: { id: circle.id },
+            data: { name: circleName },
+          });
         }
         circleMap.set(circleKey, circle);
       }
 
       // 3. Determine Group
-      const summerGroup = circleName.includes("نور البيان") ? "NOOR_AL_BAYAN" : "QURAN";
+      const summerGroup = rawCircleName.includes("نور البيان") ? "NOOR_AL_BAYAN" : "QURAN";
 
-      // 4. Upsert Student
+      // 4. Try matching parentWhatsapp from Afyon/Other students
+      let parentWhatsapp: string | null = null;
+      const cleanStudentName = studentName.replace(/\s+/g, " ");
+      const match = otherStudents.find((os) => {
+        const cleanOtherName = os.fullName.trim().replace(/\s+/g, " ");
+        if (cleanOtherName === cleanStudentName) return true;
+        const sWords = cleanStudentName.split(" ");
+        const oWords = cleanOtherName.split(" ");
+        if (sWords.length >= 2 && oWords.length >= 2 && sWords[0] === oWords[0] && sWords[1] === oWords[1]) {
+          return true;
+        }
+        return false;
+      });
+
+      if (match && match.parentWhatsapp) {
+        parentWhatsapp = match.parentWhatsapp;
+        matchedPhonesCount++;
+      }
+
+      // 5. Upsert Student
       const existingStudent = await prisma.student.findFirst({
         where: { fullName: studentName, studyMode: "ONSITE_SUMMER" },
       });
@@ -142,6 +194,7 @@ export async function POST(request: Request) {
             summerGroup,
             circleId: circle.id,
             teacherId: teacher.id,
+            parentWhatsapp,
             isActive: true,
           },
         });
@@ -153,6 +206,7 @@ export async function POST(request: Request) {
             summerGroup,
             circleId: circle.id,
             teacherId: teacher.id,
+            ...(parentWhatsapp ? { parentWhatsapp } : {}),
             isActive: true,
           },
         });
@@ -162,10 +216,11 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `تم استيراد ${importedStudents.length} طالباً و ${teacherMap.size} معلمين وحساباتهم بنجاح!`,
+      message: `تم استيراد وتنظيم ${importedStudents.length} طالباً و ${teacherMap.size} معلمين وحلقاتهم وتحديث أرقام الهاتف بنجاح!`,
       teachersCount: teacherMap.size,
       circlesCount: circleMap.size,
       studentsCount: importedStudents.length,
+      matchedPhonesCount,
     });
   } catch (error) {
     console.error("IMPORT ERROR =>", error);
