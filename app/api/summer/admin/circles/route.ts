@@ -33,8 +33,8 @@ export async function GET() {
     });
 
     const teachers = await prisma.user.findMany({
-      where: { role: "TEACHER", isActive: true },
-      select: { id: true, fullName: true },
+      where: { role: "TEACHER", studyMode: "ONSITE_SUMMER", isActive: true },
+      select: { id: true, fullName: true, email: true },
       orderBy: { fullName: "asc" },
     });
 

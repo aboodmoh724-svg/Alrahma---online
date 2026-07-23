@@ -40,8 +40,8 @@ export default async function OnsiteSummerAdminPage() {
       orderBy: { name: "asc" },
     }),
     prisma.user.findMany({
-      where: { role: "TEACHER", isActive: true },
-      select: { id: true, fullName: true },
+      where: { role: "TEACHER", studyMode: "ONSITE_SUMMER", isActive: true },
+      select: { id: true, fullName: true, email: true },
       orderBy: { fullName: "asc" },
     }),
     getSummerEducationTopics(),

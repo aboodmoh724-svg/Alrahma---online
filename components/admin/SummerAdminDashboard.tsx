@@ -75,6 +75,16 @@ export default function SummerAdminDashboard({
   const [circleTeacherId, setCircleTeacherId] = useState(teachers[0]?.id || "");
   const [savingCircle, setSavingCircle] = useState(false);
 
+  // Teacher Form Modal State
+  const [showTeacherModal, setShowTeacherModal] = useState(false);
+  const [teacherForm, setTeacherForm] = useState({
+    teacherId: "",
+    fullName: "",
+    email: "",
+    password: "",
+  });
+  const [savingTeacher, setSavingTeacher] = useState(false);
+
   // WhatsApp Batch Sending State
   const [sendingDaily, setSendingDaily] = useState(false);
   const [selectedCircleSendId, setSelectedCircleSendId] = useState<string>("ALL");
@@ -156,6 +166,12 @@ export default function SummerAdminDashboard({
       const cData = await cRes.json();
       if (cData.success) {
         setCircles(cData.circles);
+      }
+
+      const tRes = await fetch("/api/summer/admin/teachers");
+      const tData = await tRes.json();
+      if (tData.success) {
+        setTeachers(tData.teachers);
       }
     } catch (err) {
       setImportStatusMsg(`❌ خطأ: ${err instanceof Error ? err.message : "فشل الاستيراد"}`);
@@ -243,6 +259,46 @@ export default function SummerAdminDashboard({
       alert(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ الحلقة");
     } finally {
       setSavingCircle(false);
+    }
+  };
+
+  // Add / Edit Teacher Account
+  const handleSaveTeacher = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingTeacher(true);
+
+    try {
+      const isEdit = Boolean(teacherForm.teacherId);
+      const url = "/api/summer/admin/teachers";
+      const method = isEdit ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(teacherForm),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "فشل حفظ حساب المعلم");
+
+      const tRes = await fetch("/api/summer/admin/teachers");
+      const tData = await tRes.json();
+      if (tData.success) {
+        setTeachers(tData.teachers);
+      }
+
+      setShowTeacherModal(false);
+      setTeacherForm({
+        teacherId: "",
+        fullName: "",
+        email: "",
+        password: "",
+      });
+      alert(isEdit ? "✅ تم تعديل حساب المعلم بنجاح!" : "✅ تم إضافة حساب المعلم بنجاح!");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "حدث خطأ أثناء حفظ المعلم");
+    } finally {
+      setSavingTeacher(false);
     }
   };
 
@@ -808,33 +864,58 @@ export default function SummerAdminDashboard({
             {/* CIRCLES AND TEACHERS TAB */}
             {activeTab === "circles" && (
               <div className="space-y-6">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h3 className="text-xl font-bold text-[#0b4231] font-serif">إدارة المعلمين والحسابات والحلقات</h3>
-                  <button
-                    onClick={() => setShowCircleModal(true)}
-                    className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white font-serif"
-                  >
-                    ➕ إضافة حلقة جديدة
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setTeacherForm({ teacherId: "", fullName: "", email: "", password: "" });
+                        setShowTeacherModal(true);
+                      }}
+                      className="rounded-xl bg-[#bd8f2d] px-4 py-2 text-xs font-black text-[#0b4231] font-serif hover:bg-[#d8bf83] shadow-xs"
+                    >
+                      ➕ إضافة معلم جديد
+                    </button>
+                    <button
+                      onClick={() => setShowCircleModal(true)}
+                      className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-black text-white font-serif hover:bg-[#072c21] shadow-xs"
+                    >
+                      ➕ إضافة حلقة جديدة
+                    </button>
+                  </div>
                 </div>
 
                 {/* Teachers Credentials Cards */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm space-y-4">
-                  <h4 className="text-base font-bold text-[#0b4231] font-serif border-b border-[#d8bf83]/30 pb-2">
-                    🔑 حسابات المعلمين المسجلة (اسم المستخدم وكلمة المرور 12345)
-                  </h4>
+                  <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-2">
+                    <h4 className="text-base font-bold text-[#0b4231] font-serif">
+                      🔑 حسابات معلمي الدورة الصيفية ({teachers.length})
+                    </h4>
+                    <span className="text-xs text-gray-500 font-semibold">كلمة المرور الموحدة الافتراضية: <b>12345</b></span>
+                  </div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     {teachers.map((t) => (
                       <div key={t.id} className="rounded-xl border border-[#d8bf83]/60 bg-white p-4 space-y-2">
                         <div className="flex items-center justify-between">
                           <h5 className="font-bold text-[#0b4231] text-sm font-serif">{t.fullName}</h5>
-                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                            معلم صيفي
-                          </span>
+                          <button
+                            onClick={() => {
+                              setTeacherForm({
+                                teacherId: t.id,
+                                fullName: t.fullName,
+                                email: t.email || "",
+                                password: "",
+                              });
+                              setShowTeacherModal(true);
+                            }}
+                            className="rounded-lg bg-[#f9f5ed] border border-[#d8bf83] px-2.5 py-1 text-xs font-bold text-[#0b4231] hover:bg-[#0b4231] hover:text-white transition"
+                          >
+                            ✏️ تعديل الحساب
+                          </button>
                         </div>
                         <div className="text-xs space-y-1 text-gray-700 font-semibold">
                           <div>📧 اسم المستخدم: <b className="font-mono text-[#bd8f2d]">{t.email || "غير محدد"}</b></div>
-                          <div>🔑 كلمة المرور: <b className="font-mono text-gray-900">12345</b></div>
+                          <div>🔑 كلمة المرور: <b className="font-mono text-gray-500">مشفرة (اضغط تعديل للتغيير)</b></div>
                         </div>
                       </div>
                     ))}
@@ -1299,6 +1380,73 @@ export default function SummerAdminDashboard({
                   className="rounded-xl bg-[#0b4231] px-6 py-2 text-xs font-black text-white hover:bg-[#072c21] font-serif"
                 >
                   {savingCircle ? "جاري الحفظ..." : "إضافة الحلقة"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* TEACHER MODAL */}
+      {showTeacherModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="w-full max-w-md rounded-3xl bg-[#fffdf9] p-6 shadow-2xl dir-rtl border border-[#d8bf83]" dir="rtl">
+            <h3 className="text-xl font-bold text-[#0b4231] mb-4 border-b border-[#d8bf83]/30 pb-3 font-serif">
+              {teacherForm.teacherId ? "تعديل حساب المعلم" : "إضافة معلم صيفي جديد"}
+            </h3>
+            <form onSubmit={handleSaveTeacher} className="space-y-4">
+              <div>
+                <label className="mb-1 block text-xs font-bold text-[#162e24]">اسم المعلم الكامل</label>
+                <input
+                  type="text"
+                  required
+                  value={teacherForm.fullName}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, fullName: e.target.value })}
+                  placeholder="مثال: أسامة سليمان"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231]"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-[#162e24]">اسم المستخدم / البريد الإلكتروني</label>
+                <input
+                  type="email"
+                  required
+                  value={teacherForm.email}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, email: e.target.value })}
+                  placeholder="مثال: osama@test.com"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231] dir-ltr text-left"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1 block text-xs font-bold text-[#162e24]">
+                  كلمة المرور {teacherForm.teacherId && "(اتركها فارغة إذا لم تكن تريد تغييرها)"}
+                </label>
+                <input
+                  type="text"
+                  required={!teacherForm.teacherId}
+                  value={teacherForm.password}
+                  onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })}
+                  placeholder={teacherForm.teacherId ? "اتركها فارغة لإبقاء كلمة المرور الحالية" : "مثال: 12345"}
+                  className="w-full rounded-xl border border-[#d8bf83] bg-white p-3 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0b4231] dir-ltr text-left"
+                />
+              </div>
+
+              <div className="mt-6 flex justify-end gap-3 border-t border-[#d8bf83]/30 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowTeacherModal(false)}
+                  className="rounded-xl border border-gray-300 px-4 py-2 text-xs font-bold text-gray-700 hover:bg-gray-100"
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingTeacher}
+                  className="rounded-xl bg-[#0b4231] px-6 py-2 text-xs font-black text-white hover:bg-[#072c21] font-serif"
+                >
+                  {savingTeacher ? "جاري الحفظ..." : teacherForm.teacherId ? "تحديث بيانات الحساب" : "إنشاء الحساب"}
                 </button>
               </div>
             </form>
