@@ -46,8 +46,10 @@ export default function SummerAdminDashboard({
   initialEducationTopics,
 }: SummerAdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "students" | "circles" | "daily_send" | "weekly_send" | "education_plan"
+    "overview" | "reports_stats" | "students" | "circles" | "daily_send" | "weekly_send" | "education_plan"
   >("overview");
+
+  const [selectedCircleModal, setSelectedCircleModal] = useState<any | null>(null);
 
   const [students, setStudents] = useState<StudentData[]>(initialStudents);
   const [circles, setCircles] = useState<CircleOption[]>(initialCircles);
@@ -829,6 +831,16 @@ function normalizeSearchText(text: string): string {
             الرئيسية
           </button>
           <button
+            onClick={() => setActiveTab("reports_stats")}
+            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
+              activeTab === "reports_stats"
+                ? "bg-[#bd8f2d] text-[#0b4231] font-black shadow-md"
+                : "text-emerald-100 hover:bg-[#135440]"
+            }`}
+          >
+            📊 التقارير التفصيلية والإحصائيات
+          </button>
+          <button
             onClick={() => setActiveTab("students")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "students"
@@ -1070,10 +1082,8 @@ function normalizeSearchText(text: string): string {
                     })}
                   </div>
                 </div>
-
-                {/* Circle Compliance Progress Tracker */}
-                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
-                  <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30 mb-4">
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30">
                     <div className="flex items-center gap-2">
                       <span className="text-xl">📊</span>
                       <div>
@@ -1081,7 +1091,7 @@ function normalizeSearchText(text: string): string {
                           حالة إدخال تقارير الحلقات لليوم ({todayStr})
                         </h3>
                         <p className="text-xs text-gray-500 font-semibold">
-                          متابعة المعلمين والتأكد من إنجاز تقارير الحلقات
+                          اضغط على أي حلقة لعرض التفاصيل وتدقيق سجل طلابها فوراً
                         </p>
                       </div>
                     </div>
@@ -1090,27 +1100,30 @@ function normalizeSearchText(text: string): string {
                     </span>
                   </div>
 
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     {circleStats.map(({ circle, totalStudents, filledStudents, isComplete, isPending }) => (
                       <div
                         key={circle.id}
-                        className={`rounded-xl border p-4 transition ${
+                        onClick={() => setSelectedCircleModal({ circle, totalStudents, filledStudents, isComplete, isPending })}
+                        className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
                           isComplete
-                            ? "bg-emerald-50/50 border-emerald-300"
+                            ? "bg-emerald-50/70 border-emerald-300 hover:border-emerald-500"
                             : isPending
-                            ? "bg-amber-50/50 border-amber-300"
-                            : "bg-white border-[#d8bf83]/50"
+                            ? "bg-amber-50/70 border-amber-300 hover:border-amber-500"
+                            : "bg-blue-50/70 border-blue-300 hover:border-blue-500"
                         }`}
                       >
                         <div className="flex items-start justify-between">
                           <div>
-                            <h4 className="text-base font-bold text-[#0b4231] font-serif">{circle.name}</h4>
-                            <p className="text-xs font-bold text-[#bd8f2d]">
+                            <h4 className="text-base font-bold text-[#0b4231] font-serif flex items-center gap-1.5">
+                              <span>⭕ {circle.name}</span>
+                            </h4>
+                            <p className="text-xs font-bold text-[#bd8f2d] mt-0.5">
                               المعلم: {circle.teacher?.fullName || "غير محدد"}
                             </p>
                           </div>
                           <span
-                            className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                            className={`rounded-full px-3 py-0.5 text-xs font-bold ${
                               isComplete
                                 ? "bg-emerald-700 text-white"
                                 : isPending
@@ -1126,20 +1139,54 @@ function normalizeSearchText(text: string): string {
                           </span>
                         </div>
 
-                        <div className="mt-3 flex items-center justify-between text-xs font-bold border-t border-gray-200/60 pt-2">
-                          <span className="text-gray-600">
-                            تم رصد {filledStudents} من {totalStudents} طالباً
-                          </span>
+                        {/* Progress Bar */}
+                        <div className="mt-3 space-y-1">
+                          <div className="flex justify-between text-[11px] font-bold text-gray-600">
+                            <span>إنجاز الرصد:</span>
+                            <span>{filledStudents} من {totalStudents} طالباً ({totalStudents > 0 ? Math.round((filledStudents/totalStudents)*100) : 0}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${isComplete ? "bg-emerald-600" : isPending ? "bg-amber-500" : "bg-blue-600"}`}
+                              style={{ width: `${totalStudents > 0 ? (filledStudents/totalStudents)*100 : 0}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between text-xs font-bold border-t border-gray-200/60 pt-2 text-[#0b4231]">
+                          <span className="text-[11px] text-[#bd8f2d] font-serif">🔍 اضغط لعرض التفاصيل وتدقيق الطلاب ←</span>
                           <button
-                            onClick={() => handleSendDailyWhatsApp(circle.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSendDailyWhatsApp(circle.id);
+                            }}
                             className="rounded-lg bg-[#0b4231] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#072c21]"
                           >
-                            📱 إرسال تقارير الحلقة
+                            📱 إرسال واتساب
                           </button>
                         </div>
                       </div>
                     ))}
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* 📊 DETAILED REPORTS & STATS TAB */}
+            {activeTab === "reports_stats" && (
+              <div className="space-y-6">
+                {/* Header Banner */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">📊</span>
+                    <div>
+                      <h3 className="text-xl font-bold text-[#0b4231] font-serif">التقارير التفصيلية والإحصائيات الشاملة</h3>
+                      <p className="text-xs text-gray-500 font-semibold">استعراض كافة السجلات والتقارير التاريخية مع إمكانيات الفلترة والتعديل والحذف</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-bold text-[#bd8f2d] bg-[#bd8f2d]/10 px-3 py-1.5 rounded-xl border border-[#bd8f2d]/30 shrink-0">
+                    تاريخ اليوم: {todayStr}
+                  </span>
                 </div>
 
                 {/* Students Progress Table */}
@@ -1174,10 +1221,6 @@ function normalizeSearchText(text: string): string {
                         <option value="FILLED">تم الرصد اليوم ✅</option>
                         <option value="PENDING">بانتظار التعبئة ⏳</option>
                       </select>
-
-                      <span className="text-xs font-bold text-[#bd8f2d] bg-[#bd8f2d]/10 px-3 py-1.5 rounded-xl border border-[#bd8f2d]/30">
-                        اليوم: {todayStr}
-                      </span>
                     </div>
                   </div>
 
@@ -1470,7 +1513,7 @@ function normalizeSearchText(text: string): string {
                           {st.circle?.name || "بدون حلقة"} | {st.summerGroup === "NOOR_AL_BAYAN" ? "نور البيان" : "قرآن"}
                         </span>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 items-center">
                         <button
                           onClick={() => {
                             setStudentForm({
@@ -1483,9 +1526,17 @@ function normalizeSearchText(text: string): string {
                             });
                             setShowStudentModal(true);
                           }}
-                          className="text-gray-600 hover:text-[#0b4231]"
+                          className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-200 transition"
+                          title="تعديل بيانات الطالب"
                         >
-                          ✏️
+                          ✏️ تعديل
+                        </button>
+                        <button
+                          onClick={() => handleDeleteStudent(st.id)}
+                          className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-bold text-red-600 hover:bg-red-100 border border-red-200 transition"
+                          title="حذف الطالب بشكل نهائي"
+                        >
+                          🗑️ حذف الطالب
                         </button>
                       </div>
                     </div>
@@ -2681,6 +2732,168 @@ function normalizeSearchText(text: string): string {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ⭕ Selected Circle Details Modal */}
+      {selectedCircleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs dir-rtl" dir="rtl">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl bg-white p-6 shadow-2xl space-y-5 border-2 border-[#bd8f2d]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-[#d8bf83]/40 pb-4">
+              <div>
+                <span className="text-xs font-bold text-[#bd8f2d]">تفاصيل تقارير الحلقة لليوم ({todayStr})</span>
+                <h3 className="text-2xl font-black text-[#0b4231] font-serif mt-0.5">
+                  ⭕ {selectedCircleModal.circle.name}
+                </h3>
+                <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                  المعلم المسؤول: <b>{selectedCircleModal.circle.teacher?.fullName || "غير محدد"}</b> | إنجاز الحلقة: <b>{selectedCircleModal.filledStudents} من {selectedCircleModal.totalStudents} طالباً</b>
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedCircleModal(null)}
+                className="rounded-full bg-gray-100 p-2 text-gray-500 hover:bg-gray-200 hover:text-black font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Quick Actions Bar */}
+            <div className="flex items-center justify-between rounded-2xl bg-[#f9f5ed] border border-[#d8bf83]/40 p-4">
+              <span className="text-xs font-bold text-[#0b4231]">
+                يمكنك معايرة وإرسال تقارير الحلقة كاملة لأولياء الأمور مباشرة عبر الواتساب:
+              </span>
+              <button
+                onClick={() => {
+                  handleSendDailyWhatsApp(selectedCircleModal.circle.id);
+                  setSelectedCircleModal(null);
+                }}
+                className="rounded-xl bg-[#0b4231] px-4 py-2 text-xs font-bold text-white hover:bg-[#072c21] shadow-xs flex items-center gap-1.5"
+              >
+                📱 إرسال تقارير هذه الحلقة عبر الواتساب
+              </button>
+            </div>
+
+            {/* Students Table for this Circle */}
+            <div className="overflow-x-auto rounded-2xl border border-[#d8bf83]/40 bg-[#fffdf9]">
+              <table className="w-full text-right text-xs">
+                <thead className="bg-[#f0e9dd] font-bold text-[#0b4231] font-serif text-sm">
+                  <tr>
+                    <th className="p-3.5">اسم الطالب</th>
+                    <th className="p-3.5">المسار والمنهج</th>
+                    <th className="p-3.5">حالة تقرير اليوم</th>
+                    <th className="p-3.5">إرسال الواتساب</th>
+                    <th className="p-3.5 text-center">تعديل / حذف</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#d8bf83]/20 font-semibold">
+                  {(() => {
+                    const circleStudentsList = students.filter((s) => s.circle?.id === selectedCircleModal.circle.id);
+                    if (circleStudentsList.length === 0) {
+                      return (
+                        <tr>
+                          <td colSpan={5} className="p-6 text-center text-xs font-bold text-gray-400">
+                            لا يوجد طلاب مسجلون في هذه الحلقة بعد
+                          </td>
+                        </tr>
+                      );
+                    }
+
+                    return circleStudentsList.map((st) => {
+                      const isNoor = st.summerGroup === "NOOR_AL_BAYAN";
+                      const reportFilled = Boolean(
+                        st.summerReports &&
+                        st.summerReports.length > 0 &&
+                        st.summerReports[0].dateKey === todayStr
+                      );
+                      const dailySent = Boolean(
+                        reportFilled &&
+                        st.summerReports &&
+                        st.summerReports[0]?.dailySent
+                      );
+
+                      return (
+                        <tr key={st.id} className="hover:bg-[#fcf9f2] transition">
+                          <td className="p-3.5 font-bold text-[#162e24] text-sm font-serif">
+                            <span className="ml-1 font-mono text-[10px] text-[#bd8f2d]">#{st.studentCode || "-"}</span>
+                            {st.fullName}
+                          </td>
+                          <td className="p-3.5">
+                            {isNoor ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-[#bd8f2d] px-2.5 py-0.5 text-[11px] font-bold text-white">
+                                📘 نور البيان
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-[#0b4231] px-2.5 py-0.5 text-[11px] font-bold text-white">
+                                📖 القرآن الكريم
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3.5">
+                            <span
+                              className={`rounded-full px-3 py-1 text-[11px] font-black ${
+                                reportFilled ? "bg-emerald-100 text-emerald-800 border border-emerald-300" : "bg-amber-100 text-amber-900 border border-amber-300"
+                              }`}
+                            >
+                              {reportFilled ? "تم الرصد ✅" : "بانتظار التعبئة ⏳"}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            {dailySent ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-black text-emerald-800">
+                                تم الإرسال ✅
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleSendSingleWhatsApp(st.id)}
+                                className="inline-flex items-center gap-1 rounded-xl bg-[#0b4231] px-3 py-1 text-xs font-bold text-white hover:bg-[#072c21]"
+                              >
+                                💬 إرسال واتساب
+                              </button>
+                            )}
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              {reportFilled && (
+                                <button
+                                  onClick={() => {
+                                    setAdminEditReport({ ...st.summerReports![0], studentId: st.id, studentName: st.fullName });
+                                  }}
+                                  className="text-xs font-bold text-[#bd8f2d] hover:underline"
+                                >
+                                  ✏️ تعديل
+                                </button>
+                              )}
+                              {reportFilled && (
+                                <button
+                                  onClick={() => handleDeleteReport(st.id, todayStr)}
+                                  className="text-xs font-bold text-red-600 hover:underline"
+                                >
+                                  🗑️ حذف التقرير
+                                </button>
+                              )}
+                              {!reportFilled && (
+                                <span className="text-[11px] text-gray-400 font-bold">—</span>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    });
+                  })()}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <button
+                onClick={() => setSelectedCircleModal(null)}
+                className="rounded-xl border border-gray-300 bg-white px-5 py-2 text-xs font-bold text-gray-700 hover:bg-gray-50"
+              >
+                إغلاق النافذة
+              </button>
+            </div>
           </div>
         </div>
       )}
