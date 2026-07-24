@@ -284,7 +284,7 @@ export default function SummerReportForm({
       dir="rtl"
     >
       {/* 🌟 Islamic Motivational Calligraphy Banner */}
-      <div className="mb-6 rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0b4231] via-[#135440] to-[#0b4231] p-5 shadow-xl text-white text-center space-y-2 relative overflow-hidden dir-rtl" dir="rtl">
+      <div className="mb-6 rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-5 shadow-xl text-white text-center space-y-2 relative overflow-hidden dir-rtl" dir="rtl">
         <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
         <div className="relative z-10 space-y-1.5">
           <span className="inline-block rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-3 py-0.5 text-xs font-bold text-[#fbf6ef] font-serif">
@@ -299,10 +299,10 @@ export default function SummerReportForm({
       {/* Header Info */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#d8bf83]/30 pb-4">
         <div>
-          <span className="inline-block rounded-full bg-[#0f5a35]/10 px-3 py-1 text-xs font-black text-[#0f5a35]">
+          <span className="inline-block rounded-full bg-[#0c5c5e]/10 px-3 py-1 text-xs font-black text-[#0c5c5e]">
             {isNoor ? "📘 طالب نور البيان" : "📖 طالب قرآن كريم"}
           </span>
-          <h2 className="mt-1 text-2xl font-black text-[#0f5a35]">
+          <h2 className="mt-1 text-2xl font-black text-[#0c5c5e]">
             {student.fullName}
           </h2>
           {student.circleName && (
@@ -312,7 +312,7 @@ export default function SummerReportForm({
           )}
         </div>
         <div className="text-left text-sm font-bold text-[#18322a]/60">
-          تاريخ التقرير: <span className="font-mono text-[#0f5a35]">{dateKey}</span>
+          تاريخ التقرير: <span className="font-mono text-[#0c5c5e]">{dateKey}</span>
         </div>
       </div>
 
@@ -320,7 +320,7 @@ export default function SummerReportForm({
       {!isNoor && !startSaved && (
         <div className="mb-6 rounded-2xl border-2 border-dashed border-[#bd8f2d] bg-[#fdf9f0] p-4 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-[#0b4231] font-serif flex items-center gap-1.5">
+            <h3 className="text-sm font-black text-[#0c5c5e] font-serif flex items-center gap-1.5">
               📌 تسجيل بداية الطالب مع المعلم (مرة واحدة عند التحاق الطالب):
             </h3>
             <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
@@ -334,7 +334,7 @@ export default function SummerReportForm({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
             <div>
-              <label className="text-xs font-bold text-[#0b4231] block mb-1">اسم السورة:</label>
+              <label className="text-xs font-bold text-[#0c5c5e] block mb-1">اسم السورة:</label>
               <select
                 value={startSurahId}
                 onChange={(e) => {
@@ -352,7 +352,7 @@ export default function SummerReportForm({
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[#0b4231] block mb-1">من الآية رقم:</label>
+              <label className="text-xs font-bold text-[#0c5c5e] block mb-1">من الآية رقم:</label>
               <select
                 value={startFromAyah}
                 onChange={(e) => setStartFromAyah(Number(e.target.value))}
@@ -370,7 +370,7 @@ export default function SummerReportForm({
               type="button"
               onClick={handleSaveStartPoint}
               disabled={savingStart}
-              className="rounded-xl bg-[#bd8f2d] px-4 py-2.5 text-xs font-black text-[#0b4231] hover:bg-[#d8bf83] disabled:opacity-50 font-serif"
+              className="rounded-xl bg-[#bd8f2d] px-4 py-2.5 text-xs font-black text-[#0c5c5e] hover:bg-[#d8bf83] disabled:opacity-50 font-serif"
             >
               {savingStart ? "جاري الحفظ..." : "💾 حفظ نقطة البداية"}
             </button>
@@ -438,7 +438,7 @@ export default function SummerReportForm({
               type="button"
               onClick={handleRequestEdit}
               disabled={requestingEdit}
-              className="rounded-xl bg-[#0b4231] px-4 py-2.5 text-xs font-black text-white hover:bg-[#bd8f2d] hover:text-[#0b4231] transition font-serif disabled:opacity-50 shrink-0"
+              className="rounded-xl bg-[#0c5c5e] px-4 py-2.5 text-xs font-black text-white hover:bg-[#bd8f2d] hover:text-[#0c5c5e] transition font-serif disabled:opacity-50 shrink-0"
             >
               {requestingEdit ? "جاري إرسال الطلب..." : "📝 طلب إذن تعديل التقرير من الإدارة"}
             </button>
@@ -474,8 +474,8 @@ export default function SummerReportForm({
             onClick={() => setStatus("PRESENT")}
             className={`flex items-center justify-center gap-2 rounded-2xl py-3.5 text-base font-black transition-all shadow-sm ${
               status === "PRESENT"
-                ? "bg-[#0f5a35] text-white ring-2 ring-[#0f5a35] ring-offset-2"
-                : "bg-white text-[#0f5a35] border border-[#d8bf83] hover:bg-[#f6eee7]"
+                ? "bg-[#0c5c5e] text-white ring-2 ring-[#0c5c5e] ring-offset-2"
+                : "bg-white text-[#0c5c5e] border border-[#d8bf83] hover:bg-[#f6eee7]"
             }`}
           >
             <span>✅</span> حاضر
@@ -499,13 +499,13 @@ export default function SummerReportForm({
           {/* Dynamic Fields for Quran Students with Dropdown Selectors */}
           {!isNoor && (
             <div className="space-y-5 rounded-2xl border border-[#d8bf83]/40 bg-white p-5 shadow-xs">
-              <h3 className="text-base font-black text-[#0f5a35] font-serif border-b border-gray-100 pb-2">
+              <h3 className="text-base font-black text-[#0c5c5e] font-serif border-b border-gray-100 pb-2">
                 📖 متابعة حفظ وتسميع القرآن الكريم
               </h3>
 
               {/* 1. الحفظ الجديد */}
               <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
-                <label className="block text-xs font-black text-[#0f5a35] font-serif">
+                <label className="block text-xs font-black text-[#0c5c5e] font-serif">
                   ✨ الحفظ الجديد (من سورة/آية — إلى سورة/آية):
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -578,15 +578,15 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-[#0f5a35]/5 border border-[#0f5a35]/20 px-3.5 py-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#0f5a35]/60">📝 نص التقرير:</span>
-                  <p className="text-xs font-bold text-[#0f5a35]">{quranNew || "—"}</p>
+                <div className="rounded-lg bg-[#0c5c5e]/5 border border-[#0c5c5e]/20 px-3.5 py-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#0c5c5e]/60">📝 نص التقرير:</span>
+                  <p className="text-xs font-bold text-[#0c5c5e]">{quranNew || "—"}</p>
                 </div>
               </div>
 
               {/* 2. المراجعة اليومية */}
               <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
-                <label className="block text-xs font-black text-[#0f5a35] font-serif">
+                <label className="block text-xs font-black text-[#0c5c5e] font-serif">
                   🔄 المراجعة اليومية (من سورة/آية — إلى سورة/آية):
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -659,15 +659,15 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-[#0f5a35]/5 border border-[#0f5a35]/20 px-3.5 py-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#0f5a35]/60">📝 نص التقرير:</span>
-                  <p className="text-xs font-bold text-[#0f5a35]">{quranRevision || "—"}</p>
+                <div className="rounded-lg bg-[#0c5c5e]/5 border border-[#0c5c5e]/20 px-3.5 py-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#0c5c5e]/60">📝 نص التقرير:</span>
+                  <p className="text-xs font-bold text-[#0c5c5e]">{quranRevision || "—"}</p>
                 </div>
               </div>
 
               {/* 3. التلقين والتحضير */}
               <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
-                <label className="block text-xs font-black text-[#0f5a35] font-serif">
+                <label className="block text-xs font-black text-[#0c5c5e] font-serif">
                   🗣️ التلقين والتحضير (من سورة/آية — إلى سورة/آية):
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -740,9 +740,9 @@ export default function SummerReportForm({
                   </div>
                 </div>
 
-                <div className="rounded-lg bg-[#0f5a35]/5 border border-[#0f5a35]/20 px-3.5 py-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#0f5a35]/60">📝 نص التقرير:</span>
-                  <p className="text-xs font-bold text-[#0f5a35]">{quranTaqeen || "—"}</p>
+                <div className="rounded-lg bg-[#0c5c5e]/5 border border-[#0c5c5e]/20 px-3.5 py-2 mt-1">
+                  <span className="text-[11px] font-bold text-[#0c5c5e]/60">📝 نص التقرير:</span>
+                  <p className="text-xs font-bold text-[#0c5c5e]">{quranTaqeen || "—"}</p>
                 </div>
               </div>
             </div>
@@ -751,7 +751,7 @@ export default function SummerReportForm({
           {/* Dynamic Fields for Noor Al-Bayan Students */}
           {isNoor && (
             <div className="space-y-4 rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
-              <h3 className="text-base font-black text-[#0f5a35]">
+              <h3 className="text-base font-black text-[#0c5c5e]">
                 📘 متابعة نور البيان والتمهيدي
               </h3>
               <div>
@@ -763,7 +763,7 @@ export default function SummerReportForm({
                   value={noorLearned}
                   onChange={(e) => setNoorLearned(e.target.value)}
                   placeholder="مثال: حركة الفتح والكسر مع أمثلة الحروف"
-                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -776,7 +776,7 @@ export default function SummerReportForm({
                       type="button"
                       onClick={() => setNoorHomework(true)}
                       className={`flex-1 rounded-xl py-2 text-sm font-black ${
-                        noorHomework ? "bg-[#0f5a35] text-white" : "bg-gray-100 text-gray-700"
+                        noorHomework ? "bg-[#0c5c5e] text-white" : "bg-gray-100 text-gray-700"
                       }`}
                     >
                       نعم (تم التسليم)
@@ -830,7 +830,7 @@ export default function SummerReportForm({
 
           {/* Behavior & Discipline */}
           <div className="rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
-            <h3 className="mb-3 text-base font-black text-[#0f5a35]">
+            <h3 className="mb-3 text-base font-black text-[#0c5c5e]">
               ⭐ السلوك والانضباط والملاحظات
             </h3>
             <div className="mb-4">
@@ -851,7 +851,7 @@ export default function SummerReportForm({
                     onClick={() => setBehaviorGrade(item.grade)}
                     className={`rounded-xl py-2.5 text-xs font-black transition-all ${
                       behaviorGrade === item.grade
-                        ? "bg-[#bd8f2d] text-[#0b4231] shadow-md border-2 border-[#0b4231]"
+                        ? "bg-[#bd8f2d] text-[#0c5c5e] shadow-md border-2 border-[#0c5c5e]"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
@@ -869,7 +869,7 @@ export default function SummerReportForm({
                 value={behaviorNotes}
                 onChange={(e) => setBehaviorNotes(e.target.value)}
                 placeholder="ملاحظات تشجيعية أو توجيهات للأهل..."
-                className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0f5a35]"
+                className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
               />
             </div>
           </div>
@@ -881,7 +881,7 @@ export default function SummerReportForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-2xl bg-[#0f5a35] py-4 text-base font-black text-white shadow-lg transition hover:bg-[#0a3f2a] disabled:opacity-50"
+          className="w-full rounded-2xl bg-[#0c5c5e] py-4 text-base font-black text-white shadow-lg transition hover:bg-[#06484a] disabled:opacity-50"
         >
           {loading ? "جاري حفظ التقرير..." : "💾 حفظ التقرير اليومي"}
         </button>

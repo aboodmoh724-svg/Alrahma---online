@@ -21,7 +21,7 @@ export default async function SummerPortalPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0b4231] via-[#135440] to-[#0b4231] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
+    <main className="min-h-screen bg-gradient-to-b from-[#0c5c5e] via-[#117073] to-[#0c5c5e] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
       {/* Decorative Islamic Background Pattern */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
       <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#bd8f2d]/20 blur-3xl pointer-events-none" />
@@ -32,7 +32,7 @@ export default async function SummerPortalPage() {
         <div className="flex items-center justify-between border-b border-[#bd8f2d]/30 pb-5">
           <Link
             href="/onsite"
-            className="inline-flex items-center gap-2 rounded-full bg-[#0b4231]/80 px-5 py-2.5 text-sm sm:text-base font-bold text-[#bd8f2d] border border-[#bd8f2d]/40 shadow-md hover:bg-[#bd8f2d] hover:text-[#0b4231] transition-all"
+            className="inline-flex items-center gap-2 rounded-full bg-[#0c5c5e]/80 px-5 py-2.5 text-sm sm:text-base font-bold text-[#bd8f2d] border border-[#bd8f2d]/40 shadow-md hover:bg-[#bd8f2d] hover:text-[#0c5c5e] transition-all"
           >
             ← العودة للتعليم الحضوري
           </Link>
@@ -42,14 +42,14 @@ export default async function SummerPortalPage() {
         </div>
 
         {/* Motivational Islamic Calligraphy Banner */}
-        <div className="rounded-3xl border-2 border-[#bd8f2d]/70 bg-[#062c20]/80 p-8 sm:p-10 text-center space-y-4 shadow-2xl backdrop-blur-md relative overflow-hidden">
+        <div className="rounded-3xl border-2 border-[#bd8f2d]/70 bg-[#054547]/80 p-8 sm:p-10 text-center space-y-4 shadow-2xl backdrop-blur-md relative overflow-hidden">
           <div className="inline-block rounded-full bg-[#bd8f2d]/20 border border-[#bd8f2d]/50 px-5 py-1.5 text-sm font-bold text-[#f2d18a] font-serif mb-1">
             ✨ بوابَةُ الدَّورَةِ الصَّيْفِيَّةِ ✨
           </div>
           <h1 className="text-4xl sm:text-6xl font-black text-[#bd8f2d] font-ruqaa leading-tight tracking-wide drop-shadow-md">
             «خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»
           </h1>
-          <p className="text-base sm:text-xl text-emerald-100 font-serif max-w-3xl mx-auto leading-relaxed pt-2">
+          <p className="text-base sm:text-xl text-cyan-50 font-serif max-w-3xl mx-auto leading-relaxed pt-2">
             مرحباً بكم في المنظومة الرقمية لإدارة متابعة وتقارير طلاب الدورة الصيفية لتحفيظ الرحمة لتعليم القرآن الكريم ونور البيان
           </p>
         </div>
@@ -59,7 +59,7 @@ export default async function SummerPortalPage() {
           {/* Admin Card */}
           <Link
             href="/onsite/summer/admin/login"
-            className="group relative rounded-3xl border-2 border-[#bd8f2d]/40 bg-gradient-to-br from-[#0e4e3a] to-[#083326] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#bd8f2d] hover:shadow-2xl hover:shadow-[#bd8f2d]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative rounded-3xl border-2 border-[#bd8f2d]/40 bg-gradient-to-br from-[#0e5f61] to-[#063435] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#bd8f2d] hover:shadow-2xl hover:shadow-[#bd8f2d]/20 overflow-hidden flex flex-col justify-between"
           >
             <div className="absolute top-0 right-0 w-36 h-36 bg-[#bd8f2d]/10 rounded-full blur-2xl group-hover:bg-[#bd8f2d]/25 transition-all" />
             
@@ -71,7 +71,7 @@ export default async function SummerPortalPage() {
                 <h2 className="text-2xl sm:text-3xl font-black text-[#f2d18a] font-serif group-hover:text-white transition-colors">
                   لوحة التحكم الإدارية
                 </h2>
-                <p className="text-sm sm:text-base text-emerald-100/90 mt-3 leading-relaxed">
+                <p className="text-sm sm:text-base text-cyan-50/90 mt-3 leading-relaxed">
                   متابعة التقارير اليومية، بطاقات الأداء الأسبوعية، إدارة الحلقات، توزيع الطلاب، وإرسال التقارير عبر الواتساب.
                 </p>
               </div>
@@ -86,7 +86,7 @@ export default async function SummerPortalPage() {
           {/* Teacher Card */}
           <Link
             href="/onsite/summer/teacher/login"
-            className="group relative rounded-3xl border-2 border-[#bd8f2d]/40 bg-gradient-to-br from-[#125843] to-[#0b3c2e] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#bd8f2d] hover:shadow-2xl hover:shadow-[#bd8f2d]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative rounded-3xl border-2 border-[#bd8f2d]/40 bg-gradient-to-br from-[#126c6f] to-[#063b3d] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#bd8f2d] hover:shadow-2xl hover:shadow-[#bd8f2d]/20 overflow-hidden flex flex-col justify-between"
           >
             <div className="absolute top-0 right-0 w-36 h-36 bg-[#bd8f2d]/10 rounded-full blur-2xl group-hover:bg-[#bd8f2d]/25 transition-all" />
 
@@ -98,7 +98,7 @@ export default async function SummerPortalPage() {
                 <h2 className="text-2xl sm:text-3xl font-black text-[#f2d18a] font-serif group-hover:text-white transition-colors">
                   واجهة كادر المعلمين
                 </h2>
-                <p className="text-sm sm:text-base text-emerald-100/90 mt-3 leading-relaxed">
+                <p className="text-sm sm:text-base text-cyan-50/90 mt-3 leading-relaxed">
                   إدخال الحضور والغياب اليومي للطلاب، تسجيل نطاق الحفظ والمراجعة والتلقين، وتقييم الأداء والسلوك بسهولة.
                 </p>
               </div>
@@ -112,7 +112,7 @@ export default async function SummerPortalPage() {
         </div>
 
         {/* Footer Brand Info */}
-        <div className="pt-6 text-center text-sm font-bold text-emerald-200/70">
+        <div className="pt-6 text-center text-sm font-bold text-cyan-200/70">
           إدارة تحفيظ الرحمة للقرآن الكريم © {new Date().getFullYear()}
         </div>
       </div>
