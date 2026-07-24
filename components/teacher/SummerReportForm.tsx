@@ -126,6 +126,18 @@ export default function SummerReportForm({
     existingReport?.noorParticipation ?? 5
   );
 
+  // Noor Quran Surah fields (Juz Amma only - surah name only, no ayah ranges)
+  const JUZ_AMMA_SURAHS = QURAN_SURAHS.filter((s) => s.id >= 78 && s.id <= 114);
+  const [noorQuranNewSurah, setNoorQuranNewSurah] = useState<string>(
+    existingReport?.quranNew || lastPresentReport?.quranTaqeen || ""
+  );
+  const [noorQuranRevisionSurah, setNoorQuranRevisionSurah] = useState<string>(
+    existingReport?.quranRevision || ""
+  );
+  const [noorQuranTaqeenSurah, setNoorQuranTaqeenSurah] = useState<string>(
+    existingReport?.quranTaqeen || ""
+  );
+
   // Shared fields
   const [behaviorGrade, setBehaviorGrade] = useState<number>(
     existingReport?.behaviorGrade ?? 5
@@ -248,9 +260,9 @@ export default function SummerReportForm({
           studentId: student.id,
           dateKey,
           status,
-          quranNew: isNoor ? undefined : quranNew,
-          quranRevision: isNoor ? undefined : quranRevision,
-          quranTaqeen: isNoor ? undefined : quranTaqeen,
+          quranNew: isNoor ? (noorQuranNewSurah || undefined) : quranNew,
+          quranRevision: isNoor ? (noorQuranRevisionSurah || undefined) : quranRevision,
+          quranTaqeen: isNoor ? (noorQuranTaqeenSurah || undefined) : quranTaqeen,
           noorLearned: isNoor ? noorLearned : undefined,
           noorHomework: isNoor ? noorHomework : undefined,
           noorHomeworkGrade: isNoor ? noorHomeworkGrade : undefined,
@@ -738,6 +750,76 @@ export default function SummerReportForm({
 
           {/* Dynamic Fields for Noor Al-Bayan Students */}
           {isNoor && (
+            <>
+            {/* Noor Quran Surahs Section (Juz Amma) */}
+            <div className="space-y-4 rounded-2xl border border-[#0c5c5e]/30 bg-[#f0faf9] p-5 shadow-xs">
+              <h3 className="text-base font-black text-[#0c5c5e] font-serif border-b border-[#0c5c5e]/10 pb-2">
+                📖 متابعة قصار السور (جزء عمّ)
+              </h3>
+              <p className="text-xs font-semibold text-gray-500">
+                اختر اسم السورة فقط لكل قسم — يكفي تحديد سورة واحدة من جزء عمّ
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 1. درس جديد */}
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 space-y-1.5">
+                  <label className="block text-xs font-black text-emerald-900 font-serif">
+                    ✨ الدرس الجديد
+                  </label>
+                  <select
+                    value={noorQuranNewSurah}
+                    onChange={(e) => setNoorQuranNewSurah(e.target.value)}
+                    className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                  >
+                    <option value="">-- اختر السورة --</option>
+                    {JUZ_AMMA_SURAHS.map((s) => (
+                      <option key={s.id} value={`سورة ${s.name}`}>
+                        سورة {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 2. مراجعة */}
+                <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3 space-y-1.5">
+                  <label className="block text-xs font-black text-blue-900 font-serif">
+                    🔄 المراجعة
+                  </label>
+                  <select
+                    value={noorQuranRevisionSurah}
+                    onChange={(e) => setNoorQuranRevisionSurah(e.target.value)}
+                    className="w-full rounded-xl border border-blue-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                  >
+                    <option value="">-- اختر السورة --</option>
+                    {JUZ_AMMA_SURAHS.map((s) => (
+                      <option key={s.id} value={`سورة ${s.name}`}>
+                        سورة {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 3. تلقين */}
+                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5">
+                  <label className="block text-xs font-black text-amber-900 font-serif">
+                    🎤 التلقين
+                  </label>
+                  <select
+                    value={noorQuranTaqeenSurah}
+                    onChange={(e) => setNoorQuranTaqeenSurah(e.target.value)}
+                    className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                  >
+                    <option value="">-- اختر السورة --</option>
+                    {JUZ_AMMA_SURAHS.map((s) => (
+                      <option key={s.id} value={`سورة ${s.name}`}>
+                        سورة {s.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-4 rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
               <h3 className="text-base font-black text-[#0c5c5e]">
                 📘 متابعة نور البيان والتمهيدي
@@ -814,6 +896,7 @@ export default function SummerReportForm({
                 </select>
               </div>
             </div>
+          </>
           )}
 
           {/* Behavior & Discipline */}
