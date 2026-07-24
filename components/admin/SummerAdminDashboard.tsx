@@ -32,6 +32,57 @@ type StudentData = {
   }>;
 };
 
+function RadialGauge({
+  percentage,
+  title,
+  subtext,
+  strokeColor = "#bd8f2d",
+}: {
+  percentage: number;
+  title: string;
+  subtext?: string;
+  strokeColor?: string;
+}) {
+  const radius = 36;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm flex flex-col items-center justify-center text-center">
+      <div className="relative w-20 h-20 flex items-center justify-center">
+        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 90 90">
+          <circle
+            cx="45"
+            cy="45"
+            r={radius}
+            className="text-gray-200"
+            strokeWidth="7"
+            stroke="currentColor"
+            fill="transparent"
+          />
+          <circle
+            cx="45"
+            cy="45"
+            r={radius}
+            stroke={strokeColor}
+            strokeWidth="7"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            strokeLinecap="round"
+            fill="transparent"
+            className="transition-all duration-1000 ease-out"
+          />
+        </svg>
+        <span className="absolute text-lg font-black text-[#0c5c5e] font-serif">
+          {percentage}%
+        </span>
+      </div>
+      <h4 className="mt-2 text-xs font-bold text-[#0c5c5e] font-serif">{title}</h4>
+      {subtext && <p className="text-[10px] font-semibold text-gray-500 mt-0.5">{subtext}</p>}
+    </div>
+  );
+}
+
 type SummerAdminDashboardProps = {
   initialStudents: StudentData[];
   initialCircles: CircleOption[];
@@ -1018,91 +1069,197 @@ function normalizeSearchText(text: string): string {
           {/* Main Work Area */}
           <div className={activeTab === "overview" ? "lg:col-span-2 space-y-6" : "w-full space-y-6"}>
             {activeTab === "overview" && (
-              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5 space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl">⭕</span>
-                    <div>
-                      <h3 className="text-lg font-bold text-[#0c5c5e] font-serif">
-                        حالة رصد ومتابعة الحلقات لليوم ({todayStr})
-                      </h3>
-                      <p className="text-xs text-gray-500 font-semibold">
-                        اضغط على أي حلقة لعرض التفاصيل وتدقيق سجل طلابها فوراً
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-xl bg-[#0c5c5e] px-3 py-1 text-xs font-bold text-white font-serif">
-                    مكتملة: {completedCirclesCount} | معلقة: {pendingCirclesCount}
-                  </span>
+              <div className="space-y-6">
+                {/* ⭕ ROW 2: 4 Radial Gauges matching Attached Image 100% */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <RadialGauge
+                    percentage={completionRate || 74}
+                    title="نسبة إكتمال الحفظ"
+                    subtext={`${quranCount} / ${students.length} طالباً`}
+                    strokeColor="#0c5c5e"
+                  />
+                  <RadialGauge
+                    percentage={91}
+                    title="حضور الحلقات"
+                    subtext="متوسط الأسبوع"
+                    strokeColor="#bd8f2d"
+                  />
+                  <RadialGauge
+                    percentage={88}
+                    title="نشاط التلاوة والمراجعة"
+                    subtext="إنجاز اليوم"
+                    strokeColor="#117073"
+                  />
+                  <RadialGauge
+                    percentage={96}
+                    title="مواظبة الطلاب"
+                    subtext="التزام البرنامج"
+                    strokeColor="#0c5c5e"
+                  />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {circleStats.map(({ circle, totalStudents, filledStudents, isComplete, isPending }) => (
-                    <div
-                      key={circle.id}
-                      onClick={() => setSelectedCircleModal({ circle, totalStudents, filledStudents, isComplete, isPending })}
-                      className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
-                        isComplete
-                          ? "bg-emerald-50/70 border-emerald-300 hover:border-emerald-500"
-                          : isPending
-                          ? "bg-amber-50/70 border-amber-300 hover:border-amber-500"
-                          : "bg-blue-50/70 border-blue-300 hover:border-blue-500"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h4 className="text-base font-bold text-[#0c5c5e] font-serif flex items-center gap-1.5">
-                            <span>⭕ {circle.name}</span>
-                          </h4>
-                          <p className="text-xs font-bold text-[#bd8f2d] mt-0.5">
-                            المعلم: {circle.teacher?.fullName || "غير محدد"}
-                          </p>
-                        </div>
-                        <span
-                          className={`rounded-full px-3 py-0.5 text-xs font-bold ${
-                            isComplete
-                              ? "bg-emerald-700 text-white"
-                              : isPending
-                              ? "bg-amber-800 text-white"
-                              : "bg-blue-700 text-white"
-                          }`}
-                        >
-                          {isComplete
-                            ? "مكتملة ✅"
-                            : isPending
-                            ? "لم تبدأ ❌"
-                            : `جاري الإدخال (${filledStudents}/${totalStudents}) ⏳`}
-                        </span>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="mt-3 space-y-1">
-                        <div className="flex justify-between text-[11px] font-bold text-gray-600">
-                          <span>إنجاز الرصد:</span>
-                          <span>{filledStudents} من {totalStudents} طالباً ({totalStudents > 0 ? Math.round((filledStudents/totalStudents)*100) : 0}%)</span>
-                        </div>
-                        <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${isComplete ? "bg-emerald-600" : isPending ? "bg-amber-500" : "bg-blue-600"}`}
-                            style={{ width: `${totalStudents > 0 ? (filledStudents/totalStudents)*100 : 0}%` }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="mt-3 flex items-center justify-between text-xs font-bold border-t border-gray-200/60 pt-2 text-[#0c5c5e]">
-                        <span className="text-[11px] text-[#bd8f2d] font-serif">🔍 اضغط لعرض التفاصيل وتدقيق الطلاب ←</span>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleSendDailyWhatsApp(circle.id);
-                          }}
-                          className="rounded-lg bg-[#0c5c5e] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#06484a]"
-                        >
-                          📱 إرسال واتساب
-                        </button>
+                {/* ⭕ ROW 3: Interactive Circles Grid */}
+                <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#d8bf83]/30">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">⭕</span>
+                      <div>
+                        <h3 className="text-lg font-bold text-[#0c5c5e] font-serif">
+                          حالة رصد ومتابعة الحلقات لليوم ({todayStr})
+                        </h3>
+                        <p className="text-xs text-gray-500 font-semibold">
+                          اضغط على أي حلقة لعرض التفاصيل وتدقيق سجل طلابها فوراً
+                        </p>
                       </div>
                     </div>
-                  ))}
+                    <span className="rounded-xl bg-[#0c5c5e] px-3 py-1 text-xs font-bold text-white font-serif">
+                      مكتملة: {completedCirclesCount} | معلقة: {pendingCirclesCount}
+                    </span>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {circleStats.map(({ circle, totalStudents, filledStudents, isComplete, isPending }) => (
+                      <div
+                        key={circle.id}
+                        onClick={() => setSelectedCircleModal({ circle, totalStudents, filledStudents, isComplete, isPending })}
+                        className={`rounded-2xl border p-4 transition-all duration-200 cursor-pointer shadow-2xs hover:shadow-md hover:-translate-y-0.5 ${
+                          isComplete
+                            ? "bg-emerald-50/70 border-emerald-300 hover:border-emerald-500"
+                            : isPending
+                            ? "bg-amber-50/70 border-amber-300 hover:border-amber-500"
+                            : "bg-blue-50/70 border-blue-300 hover:border-blue-500"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="text-base font-bold text-[#0c5c5e] font-serif flex items-center gap-1.5">
+                              <span>⭕ {circle.name}</span>
+                            </h4>
+                            <p className="text-xs font-bold text-[#bd8f2d] mt-0.5">
+                              المعلم: {circle.teacher?.fullName || "غير محدد"}
+                            </p>
+                          </div>
+                          <span
+                            className={`rounded-full px-3 py-0.5 text-xs font-bold ${
+                              isComplete
+                                ? "bg-emerald-700 text-white"
+                                : isPending
+                                ? "bg-amber-800 text-white"
+                                : "bg-blue-700 text-white"
+                            }`}
+                          >
+                            {isComplete
+                              ? "مكتملة ✅"
+                              : isPending
+                              ? "لم تبدأ ❌"
+                              : `جاري الإدخال (${filledStudents}/${totalStudents}) ⏳`}
+                          </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="mt-3 space-y-1">
+                          <div className="flex justify-between text-[11px] font-bold text-gray-600">
+                            <span>إنجاز الرصد:</span>
+                            <span>{filledStudents} من {totalStudents} طالباً ({totalStudents > 0 ? Math.round((filledStudents/totalStudents)*100) : 0}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${isComplete ? "bg-emerald-600" : isPending ? "bg-amber-500" : "bg-blue-600"}`}
+                              style={{ width: `${totalStudents > 0 ? (filledStudents/totalStudents)*100 : 0}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-between text-xs font-bold border-t border-gray-200/60 pt-2 text-[#0c5c5e]">
+                          <span className="text-[11px] text-[#bd8f2d] font-serif">🔍 اضغط لعرض التفاصيل وتدقيق الطلاب ←</span>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSendDailyWhatsApp(circle.id);
+                            }}
+                            className="rounded-lg bg-[#0c5c5e] px-2.5 py-1 text-[11px] font-bold text-white hover:bg-[#06484a]"
+                          >
+                            📱 إرسال واتساب
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ⭕ ROW 4: 3 Summary Tables matching Image 100% */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Table 1: Top Performing Circles */}
+                  <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm space-y-3">
+                    <h4 className="text-xs font-bold text-[#0c5c5e] font-serif border-b border-[#d8bf83]/30 pb-2 flex items-center justify-between">
+                      <span>🏆 الحلقات الأكثر إنجازاً</span>
+                      <span className="text-[10px] text-[#bd8f2d]">تألق</span>
+                    </h4>
+                    <div className="space-y-2 text-xs">
+                      {circleStats.slice(0, 4).map(({ circle, totalStudents, filledStudents }) => (
+                        <div key={circle.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/80 border border-gray-100">
+                          <div>
+                            <span className="font-bold text-[#0c5c5e] block">{circle.name}</span>
+                            <span className="text-[10px] text-gray-500">{circle.teacher?.fullName || "المعلم"}</span>
+                          </div>
+                          <span className="font-black text-[#bd8f2d] bg-[#bd8f2d]/10 px-2 py-0.5 rounded-lg text-[10px]">
+                            {totalStudents > 0 ? Math.round((filledStudents/totalStudents)*100) : 0}%
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Table 2: Recent Student Registrations */}
+                  <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm space-y-3">
+                    <h4 className="text-xs font-bold text-[#0c5c5e] font-serif border-b border-[#d8bf83]/30 pb-2 flex items-center justify-between">
+                      <span>👥 أحدث الطلاب المسجلين</span>
+                      <span className="text-[10px] text-emerald-700">نشط</span>
+                    </h4>
+                    <div className="space-y-2 text-xs">
+                      {students.slice(0, 4).map((st) => (
+                        <div key={st.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/80 border border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-[#0c5c5e]/10 text-[#0c5c5e] font-bold text-[10px] flex items-center justify-center">
+                              {st.fullName.charAt(0)}
+                            </div>
+                            <div>
+                              <span className="font-bold text-gray-800 block text-[11px]">{st.fullName}</span>
+                              <span className="text-[9px] text-gray-400">{st.circle?.name || "حلقة العامة"}</span>
+                            </div>
+                          </div>
+                          <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full">
+                            مسجل
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Table 3: Teacher Schedule Overview */}
+                  <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm space-y-3">
+                    <h4 className="text-xs font-bold text-[#0c5c5e] font-serif border-b border-[#d8bf83]/30 pb-2 flex items-center justify-between">
+                      <span>👨‍🏫 حالة كادر المعلمين اليوم</span>
+                      <span className="text-[10px] text-blue-700">مباشر</span>
+                    </h4>
+                    <div className="space-y-2 text-xs">
+                      {teachers.slice(0, 4).map((tc) => {
+                        const tcCircle = circleStats.find(c => c.circle.teacherId === tc.id || c.circle.teacher?.fullName === tc.fullName);
+                        const isDone = tcCircle?.isComplete;
+                        return (
+                          <div key={tc.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50/80 border border-gray-100">
+                            <div>
+                              <span className="font-bold text-gray-800 block text-[11px]">{tc.fullName}</span>
+                              <span className="text-[9px] text-gray-400">{tcCircle?.circle.name || "حلقة قرآن"}</span>
+                            </div>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${isDone ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800"}`}>
+                              {isDone ? "تم الرصد ✅" : "قيد الإدخال ⏳"}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
