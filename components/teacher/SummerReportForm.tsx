@@ -189,7 +189,7 @@ export default function SummerReportForm({
     }
   };
 
-  const [isLocked, setIsLocked] = useState<boolean>(Boolean(existingReport?.id));
+  const [isLocked, setIsLocked] = useState<boolean>(false);
   const [requestingEdit, setRequestingEdit] = useState<boolean>(false);
   const [requestEditMsg, setRequestEditMsg] = useState<string>("");
 
@@ -424,30 +424,18 @@ export default function SummerReportForm({
         </div>
       )}
 
-      {isLocked && (
-        <div className="mb-6 rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 space-y-3">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">🔒</span>
-              <div>
-                <h4 className="font-bold text-amber-900 text-sm font-serif">تم حفظ التقرير اليومي مسبقاً</h4>
-                <p className="text-xs text-amber-800 font-semibold">التعديل المباشر مغلق مالم تحصل على إذن موافقة من الإدارة.</p>
-              </div>
+      {existingReport && (
+        <div className="mb-6 rounded-2xl border border-[#d8bf83] bg-[#fdfaf3] p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">✏️</span>
+            <div>
+              <h4 className="font-bold text-[#0c5c5e] text-sm font-serif">تعديل التقرير اليومي المباشر</h4>
+              <p className="text-xs text-gray-600 font-semibold">تم رصد هذا التقرير مسبقاً. يمكنك تعديل أي حقل وحفظ التحديثات مباشرة دون الحاجة لموافقة الإدارة.</p>
             </div>
-            <button
-              type="button"
-              onClick={handleRequestEdit}
-              disabled={requestingEdit}
-              className="rounded-xl bg-[#0c5c5e] px-4 py-2.5 text-xs font-black text-white hover:bg-[#bd8f2d] hover:text-[#0c5c5e] transition font-serif disabled:opacity-50 shrink-0"
-            >
-              {requestingEdit ? "جاري إرسال الطلب..." : "📝 طلب إذن تعديل التقرير من الإدارة"}
-            </button>
           </div>
-          {requestEditMsg && (
-            <div className="text-xs font-bold text-emerald-900 bg-emerald-100 p-2.5 rounded-xl border border-emerald-300">
-              {requestEditMsg}
-            </div>
-          )}
+          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-300 shrink-0 font-serif">
+            وضع التعديل المباشر ✅
+          </span>
         </div>
       )}
 
@@ -883,7 +871,7 @@ export default function SummerReportForm({
           disabled={loading}
           className="w-full rounded-2xl bg-[#0c5c5e] py-4 text-base font-black text-white shadow-lg transition hover:bg-[#06484a] disabled:opacity-50"
         >
-          {loading ? "جاري حفظ التقرير..." : "💾 حفظ التقرير اليومي"}
+          {loading ? "جاري الحفظ..." : existingReport ? "💾 حفظ التعديلات وتحديث التقرير اليومي" : "💾 حفظ التقرير اليومي"}
         </button>
       </div>
     </form>

@@ -1759,6 +1759,44 @@ function normalizeSearchText(text: string): string {
             {/* DAILY SEND TAB */}
             {activeTab === "daily_send" && (
               <div className="space-y-6">
+                {/* 📢 Announcement & Instructions for Re-linking New WhatsApp Number */}
+                <div className="rounded-2xl border-2 border-[#bd8f2d] bg-gradient-to-r from-[#fefbf6] to-[#fff6e5] p-5 shadow-sm space-y-3 dir-rtl" dir="rtl">
+                  <div className="flex items-center justify-between border-b border-[#d8bf83]/40 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">📱</span>
+                      <h3 className="text-base font-bold text-[#0c5c5e] font-serif">
+                        إعلان ربط رقم واتساب جديد (في حال حظر الرقم السابق)
+                      </h3>
+                    </div>
+                    <span className="rounded-full bg-[#bd8f2d] px-3 py-0.5 text-xs font-black text-[#0c5c5e] font-serif">
+                      تعليمات اقتران الرقم الجديد
+                    </span>
+                  </div>
+
+                  <p className="text-xs font-semibold text-gray-700 leading-relaxed">
+                    إذا تم حظر الرقم السابق وتود ربط المنصة برقم واتساب جديد، يرجى اتباع الخطوات التالية:
+                    <br />
+                    1. افتح تطبيق الواتساب في <b>الرقم الجديد</b>.
+                    <br />
+                    2. اذهب إلى قائمة <b>(الأجهزة المرتبطة) ➔ اضغط على (ربط جهاز)</b>.
+                    <br />
+                    3. قم بمسح رمز الـ <b>QR Code</b> الموضح أدناه مباشرة لربط الرقم الجديد بالمنصة.
+                  </p>
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={() => {
+                        checkWaStatus();
+                        setQrKey((prev) => prev + 1);
+                      }}
+                      disabled={loadingWaStatus}
+                      className="rounded-xl bg-[#0c5c5e] px-4 py-2 text-xs font-bold text-white hover:bg-[#06484a] transition shadow-2xs font-serif"
+                    >
+                      {loadingWaStatus ? "جاري التحديث..." : "🔄 استدعاء QR Code للرقم الجديد"}
+                    </button>
+                  </div>
+                </div>
+
                 {/* 1. WhatsApp Connection Status & QR Code Box */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm space-y-4">
                   <div className="flex items-center justify-between border-b border-[#d8bf83]/30 pb-3">
