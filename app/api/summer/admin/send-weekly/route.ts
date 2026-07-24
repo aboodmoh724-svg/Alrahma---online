@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { appUrl } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
+import { smartDelay, canSendMore, incrementDailySendCount, addMessageVariation } from "@/lib/smart-sender";
 
 async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -116,10 +117,16 @@ export async function POST(req: Request) {
         continue;
       }
 
+      if (!canSendMore("ONSITE_SUMMER")) {
+        failCount++;
+        failedStudents.push({ name: student.fullName, reason: "تم تجاوز الحد اليومي للإرسال" });
+        break; // Stop processing further students if daily limit is reached
+      }
+
       const cardUrl = appUrl(`/onsite/summer/admin/weekly-card/${student.id}`);
       const educationTopicStr = topicTitle ? `\n📚 *درس التربية لهذا الأسبوع:* ${topicTitle}\n` : "";
 
-      const messageText =
+      let messageText =
         `السلام عليكم ورحمة الله وبركاته 🌹\n\n` +
         `نرفق لكم *بطاقة التقرير الأسبوعي* للطالب/ـة: *${student.fullName}*\n` +
         `الحلقة: ${student.circle?.name || "-"}\n` +
@@ -129,6 +136,8 @@ export async function POST(req: Request) {
         `نشكر لكم حسن تعاونكم ومتابعتكم القيمة.\n\n` +
         `إدارة الدورة الصيفية - تحفيظ الرحمة`;
 
+      messageText = addMessageVariation(messageText);
+
       try {
         await sendWhatsAppText({
           to: phone,
@@ -136,6 +145,8 @@ export async function POST(req: Request) {
           channel: "ONSITE_SUMMER",
           source: "SUMMER_WEEKLY_REPORT",
         });
+
+        await incrementDailySendCount("ONSITE_SUMMER");
 
         // Log outgoing message
         await prisma.whatsAppOutgoingMessage.create({
@@ -158,10 +169,7 @@ export async function POST(req: Request) {
         });
       }
 
-      // Add 2-second delay between messages to avoid WhatsApp rate limiting/ban
-      if (i < students.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
+      await smartDelay(i);
     }
 
     return NextResponse.json({

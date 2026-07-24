@@ -13,6 +13,7 @@ import {
   sendWhatsAppText,
   type WhatsAppChannel,
 } from "@/lib/whatsapp";
+import { smartDelay, canSendMore, incrementDailySendCount, addMessageVariation } from "@/lib/smart-sender";
 
 type RecipientType =
   | "ALL_PARENTS"
@@ -31,8 +32,6 @@ type FailedBroadcast = BroadcastRecipient & {
   error: string;
 };
 
-const BROADCAST_BATCH_SIZE = 3;
-
 function normalizeRecipientType(value: unknown): RecipientType | null {
   if (
     value === "ALL_PARENTS" ||
@@ -50,8 +49,8 @@ function normalizeRecipientType(value: unknown): RecipientType | null {
 
 function broadcastFooter(scope: WhatsAppChannel) {
   return scope === "ONSITE"
-    ? "Ø¥Ø¯Ø§Ø±Ø© ØªØ­ÙÙŠØ¸ Ø§Ù„Ø±Ø­Ù…Ø© Ù„Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…"
-    : "Ø¥Ø¯Ø§Ø±Ø© Ù…Ù†ØµØ© Ø§Ù„Ø±Ø­Ù…Ø© Ù„ØªØ­ÙÙŠØ¸ Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…";
+    ? "Ø¥Ø¯Ø§Ø±Ø© ØªØ­Ù ÙŠØ¸ Ø§Ù„Ø±Ø­Ù…Ø© Ù„Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…"
+    : "Ø¥Ø¯Ø§Ø±Ø© Ù…Ù†ØµØ© Ø§Ù„Ø±Ø­Ù…Ø© Ù„ØªØ­Ù ÙŠØ¸ Ø§Ù„Ù‚Ø±Ø¢Ù† Ø§Ù„ÙƒØ±ÙŠÙ…";
 }
 
 function withFooter(message: string, scope: WhatsAppChannel) {
@@ -72,44 +71,43 @@ async function sendBroadcastInBatches(input: {
   let sentCount = 0;
   const failed: FailedBroadcast[] = [];
 
-  for (let index = 0; index < input.recipients.length; index += BROADCAST_BATCH_SIZE) {
-    const batch = input.recipients.slice(index, index + BROADCAST_BATCH_SIZE);
+  for (let i = 0; i < input.recipients.length; i++) {
+    const recipient = input.recipients[i];
 
-    const results = await Promise.all(
-      batch.map(async (recipient) => {
-        try {
-          await sendWhatsAppText({
-            to: recipient.phone,
-            chatId: `${recipient.phone}@c.us`,
-            body: input.message,
-            channel: input.scope,
-            source: "HUMAN_BROADCAST",
-            context: {
-              recipientType: input.recipientType,
-            },
-          });
-
-          return { ok: true as const, recipient };
-        } catch (error) {
-          return {
-            ok: false as const,
-            recipient,
-            error: error instanceof Error ? error.message : "تعذر الإرسال",
-          };
-        }
-      })
-    );
-
-    for (const result of results) {
-      if (result.ok) {
-        sentCount += 1;
-      } else {
+    if (!(await canSendMore(input.scope))) {
+      for (let j = i; j < input.recipients.length; j++) {
         failed.push({
-          phone: result.recipient.phone,
-          recipientName: result.recipient.recipientName,
-          error: result.error,
+          phone: input.recipients[j].phone,
+          recipientName: input.recipients[j].recipientName,
+          error: "تجاوز الحد اليومي للإرسال",
         });
       }
+      break;
+    }
+
+    await smartDelay(i);
+    const messageText = addMessageVariation(input.message);
+
+    try {
+      await sendWhatsAppText({
+        to: recipient.phone,
+        chatId: `${recipient.phone}@c.us`,
+        body: messageText,
+        channel: input.scope,
+        source: "HUMAN_BROADCAST",
+        context: {
+          recipientType: input.recipientType,
+        },
+      });
+
+      await incrementDailySendCount(input.scope);
+      sentCount += 1;
+    } catch (error) {
+      failed.push({
+        phone: recipient.phone,
+        recipientName: recipient.recipientName,
+        error: error instanceof Error ? error.message : "تعذر الإرسال",
+      });
     }
   }
 
@@ -144,7 +142,7 @@ export async function POST(request: Request) {
     const scope = admin.studyMode as WhatsAppChannel;
 
     if (!isWhatsAppConfigured(scope)) {
-      return NextResponse.json({ error: "Ø®Ø¯Ù…Ø© ÙˆØ§ØªØ³Ø§Ø¨ ØºÙŠØ± Ù…ÙØ¹Ù„Ø© Ø­Ø§Ù„ÙŠÙ‹Ø§ Ù„Ù‡Ø°Ø§ Ø§Ù„Ù‚Ø³Ù…" }, { status: 400 });
+      return NextResponse.json({ error: "Ø®Ø¯Ù…Ø© ÙˆØ§ØªØ³Ø§Ø¨ ØºÙŠØ± Ù…Ù Ø¹Ù„Ø© Ø­Ø§Ù„ÙŠÙ‹Ø§ Ù„Ù‡Ø°Ø§ Ø§Ù„Ù‚Ø³Ù…" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -162,7 +160,7 @@ export async function POST(request: Request) {
     }
 
     if (!recipientType) {
-      return NextResponse.json({ error: "Ù†ÙˆØ¹ Ø§Ù„Ø§Ø³ØªÙ‡Ø¯Ø§Ù ØºÙŠØ± ØµØ§Ù„Ø­" }, { status: 400 });
+      return NextResponse.json({ error: "Ù†ÙˆØ¹ Ø§Ù„Ø§Ø³ØªÙ‡Ø¯Ø§Ù  ØºÙŠØ± ØµØ§Ù„Ø­" }, { status: 400 });
     }
 
     const recipients = new Map<string, { recipientName: string }>();
@@ -260,7 +258,7 @@ export async function POST(request: Request) {
     }
 
     if (recipients.size === 0) {
-      return NextResponse.json({ error: "Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø±Ù‚Ø§Ù… ÙˆØ§ØªØ³Ø§Ø¨ ØµØ§Ù„Ø­Ø© ÙÙŠ Ø§Ù„ÙØ¦Ø© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©" }, { status: 400 });
+      return NextResponse.json({ error: "Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£Ø±Ù‚Ø§Ù… ÙˆØ§ØªØ³Ø§Ø¨ ØµØ§Ù„Ø­Ø© Ù ÙŠ Ø§Ù„Ù Ø¦Ø© Ø§Ù„Ù…Ø­Ø¯Ø¯Ø©" }, { status: 400 });
     }
 
     const finalMessage = sanitizeWhatsAppBody(withFooter(rawMessage, scope));

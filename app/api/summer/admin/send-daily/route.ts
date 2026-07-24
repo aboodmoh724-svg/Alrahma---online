@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
+import { smartDelay, canSendMore, incrementDailySendCount, getDailySendCount, getDailyLimit, addMessageVariation } from "@/lib/smart-sender";
 
 async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -176,6 +177,7 @@ export async function POST(req: Request) {
     let failCount = 0;
     let skippedAlreadySent = 0;
 
+    let sendIndex = 0;
     for (const report of reports) {
       if (report.dailySent && (!reportIds || reportIds.length === 0)) {
         skippedAlreadySent++;
@@ -194,6 +196,15 @@ export async function POST(req: Request) {
         failCount += 1;
         continue;
       }
+
+      // Check daily limit
+      if (!canSendMore("ONSITE_SUMMER")) {
+        console.log("[SmartSender] Daily limit reached for ONSITE_SUMMER. Stopping.");
+        break;
+      }
+
+      // Smart humanized delay BEFORE sending
+      await smartDelay(sendIndex);
 
       let messageText = "";
 
@@ -229,6 +240,9 @@ export async function POST(req: Request) {
         });
       }
 
+      // Add invisible variation to prevent spam detection
+      messageText = addMessageVariation(messageText);
+
       try {
         await sendWhatsAppText({
           to: phone,
@@ -236,6 +250,8 @@ export async function POST(req: Request) {
           channel: "ONSITE_SUMMER",
           source: "SUMMER_DAILY_REPORT",
         });
+
+        incrementDailySendCount("ONSITE_SUMMER");
 
         await prisma.summerReport.update({
           where: { id: report.id },
@@ -268,10 +284,7 @@ export async function POST(req: Request) {
         failCount += 1;
       }
 
-      // Add 2-second delay between messages to avoid WhatsApp rate limiting/ban
-      if (reports.indexOf(report) < reports.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-      }
+      sendIndex++;
     }
 
     return NextResponse.json({

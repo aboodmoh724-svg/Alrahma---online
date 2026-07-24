@@ -10,8 +10,15 @@ import {
   normalizeWhatsAppNumber,
   sendWhatsAppDocument,
 } from "@/lib/whatsapp";
-
-const BULK_SIZE = 2;
+import {
+  smartDelay,
+  humanDelay,
+  canSendMore,
+  incrementDailySendCount,
+  getDailySendCount,
+  getDailyLimit,
+  addMessageVariation,
+} from "@/lib/smart-sender";
 
 async function getCurrentOnsiteAdmin() {
   const cookieStore = await cookies();
@@ -79,87 +86,102 @@ export async function POST(request: Request) {
     let sentCount = 0;
     const failed: Array<{ id: string; studentName: string; error: string }> = [];
 
-    for (let index = 0; index < reports.length; index += BULK_SIZE) {
-      const batch = reports.slice(index, index + BULK_SIZE);
-      const results = await Promise.all(
-        batch.map(async (report) => {
-          const documentUrl = annualReportPublicUrl(report.reportImagePath);
-          const phone = normalizeWhatsAppNumber(
-            report.student?.parentWhatsapp || "",
-            "90"
-          );
+    for (let index = 0; index < reports.length; index++) {
+      const report = reports[index];
 
-          if (!documentUrl) {
-            return {
-              ok: false as const,
-              report,
-              error: "لا توجد صورة مرفوعة لهذا التقرير",
-            };
-          }
+      if (!canSendMore("ONSITE")) {
+        const errorMsg = "تم تجاوز الحد اليومي لإرسال الرسائل (ONSITE)";
+        failed.push({
+          id: report.id,
+          studentName: report.studentName,
+          error: errorMsg,
+        });
+        await prisma.annualReport.update({
+          where: { id: report.id },
+          data: { sendError: errorMsg },
+        });
+        continue;
+      }
 
-          if (!phone) {
-            return {
-              ok: false as const,
-              report,
-              error: "لا يوجد رقم واتساب صالح لولي الأمر",
-            };
-          }
+      await smartDelay(index);
 
-          try {
-            await sendWhatsAppDocument({
-              to: phone,
-              channel: "ONSITE",
-              documentUrl,
-              fileName: report.reportImageFilename || `${report.studentKey}.png`,
-              caption: annualReportCaption({
-                studentName: report.student?.fullName || report.studentName,
-                academicYear: report.academicYear,
-              }),
-            });
-
-            return { ok: true as const, report };
-          } catch (error) {
-            return {
-              ok: false as const,
-              report,
-              error:
-                error instanceof Error
-                  ? error.message
-                  : "تعذر إرسال التقرير",
-            };
-          }
-        })
+      const documentUrl = annualReportPublicUrl(report.reportImagePath);
+      const phone = normalizeWhatsAppNumber(
+        report.student?.parentWhatsapp || "",
+        "90"
       );
 
-      for (const result of results) {
-        if (result.ok) {
-          sentCount += 1;
-          await prisma.annualReport.update({
-            where: { id: result.report.id },
-            data: {
-              reviewStatus: "SENT",
-              sentAt: new Date(),
-              sender: {
-                connect: {
-                  id: admin.id,
-                },
+      if (!documentUrl) {
+        const errorMsg = "لا توجد صورة مرفوعة لهذا التقرير";
+        failed.push({
+          id: report.id,
+          studentName: report.studentName,
+          error: errorMsg,
+        });
+        await prisma.annualReport.update({
+          where: { id: report.id },
+          data: { sendError: errorMsg },
+        });
+        continue;
+      }
+
+      if (!phone) {
+        const errorMsg = "لا يوجد رقم واتساب صالح لولي الأمر";
+        failed.push({
+          id: report.id,
+          studentName: report.studentName,
+          error: errorMsg,
+        });
+        await prisma.annualReport.update({
+          where: { id: report.id },
+          data: { sendError: errorMsg },
+        });
+        continue;
+      }
+
+      try {
+        await sendWhatsAppDocument({
+          to: phone,
+          channel: "ONSITE",
+          documentUrl,
+          fileName: report.reportImageFilename || `${report.studentKey}.png`,
+          caption: addMessageVariation(
+            annualReportCaption({
+              studentName: report.student?.fullName || report.studentName,
+              academicYear: report.academicYear,
+            })
+          ),
+        });
+
+        incrementDailySendCount("ONSITE");
+        sentCount += 1;
+
+        await prisma.annualReport.update({
+          where: { id: report.id },
+          data: {
+            reviewStatus: "SENT",
+            sentAt: new Date(),
+            sender: {
+              connect: {
+                id: admin.id,
               },
-              sendError: null,
             },
-          });
-        } else {
-          failed.push({
-            id: result.report.id,
-            studentName: result.report.studentName,
-            error: result.error,
-          });
-          await prisma.annualReport.update({
-            where: { id: result.report.id },
-            data: {
-              sendError: result.error,
-            },
-          });
-        }
+            sendError: null,
+          },
+        });
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "تعذر إرسال التقرير";
+        failed.push({
+          id: report.id,
+          studentName: report.studentName,
+          error: errorMsg,
+        });
+        await prisma.annualReport.update({
+          where: { id: report.id },
+          data: {
+            sendError: errorMsg,
+          },
+        });
       }
     }
 

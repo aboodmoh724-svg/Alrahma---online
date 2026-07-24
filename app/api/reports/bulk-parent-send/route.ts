@@ -3,6 +3,15 @@ import { NextResponse } from "next/server";
 import { renderMessageTemplate } from "@/lib/message-templates";
 import { prisma } from "@/lib/prisma";
 import {
+  smartDelay,
+  humanDelay,
+  canSendMore,
+  incrementDailySendCount,
+  getDailySendCount,
+  getDailyLimit,
+  addMessageVariation,
+} from "@/lib/smart-sender";
+import {
   normalizeWhatsAppNumber,
   sendWhatsAppText,
   type WhatsAppChannel,
@@ -244,6 +253,7 @@ export async function POST(request: Request) {
     const alreadySent: string[] = [];
     const failed: { studentName: string; error: string }[] = [];
     let sentCount = 0;
+    let index = 0;
 
     for (const report of reports) {
       if (report.sentToParent) {
@@ -308,13 +318,26 @@ export async function POST(request: Request) {
         messageWithSummary = insertEvaluationBeforeSignature(messageWithSummary, quranMarksGuidance);
       }
 
+      if (!(await canSendMore(reportChannel))) {
+        failed.push({
+          studentName: report.student.fullName,
+          error: "تم تجاوز الحد اليومي المسموح للإرسال",
+        });
+        continue;
+      }
+
+      await smartDelay(index);
+      const finalMessage = addMessageVariation(messageWithSummary);
+
       try {
         await sendWhatsAppText({
           to: phone,
-          body: messageWithSummary,
+          body: finalMessage,
           channel: reportChannel,
           source: "TEACHER_BULK_DAILY_REPORT",
         });
+
+        await incrementDailySendCount(reportChannel);
 
         await prisma.report.update({
           where: {
@@ -347,6 +370,8 @@ export async function POST(request: Request) {
           error: messageText,
         });
       }
+
+      index++;
     }
 
     return NextResponse.json({

@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { sendWhatsAppText, normalizeWhatsAppNumber } from "@/lib/whatsapp";
+import { smartDelay, canSendMore, incrementDailySendCount, addMessageVariation } from "@/lib/smart-sender";
 
 async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -186,14 +187,25 @@ export async function POST(req: Request) {
     let failCount = 0;
     const sendLogs: { name: string; phone: string; status: "SUCCESS" | "FAILED"; error?: string }[] = [];
 
-    for (const item of recipients) {
+    for (let i = 0; i < recipients.length; i++) {
+      const item = recipients[i];
+
+      if (!canSendMore("ONSITE_SUMMER")) {
+        failCount++;
+        sendLogs.push({ name: item.name, phone: item.phone, status: "FAILED", error: "Daily limit reached" });
+        continue;
+      }
+
+      const finalMessage = addMessageVariation(messageText);
+
       try {
         await sendWhatsAppText({
           to: item.phone,
-          body: messageText,
+          body: finalMessage,
           channel: "ONSITE_SUMMER",
           source: `ADMIN_BROADCAST_${targetType}`,
         });
+        incrementDailySendCount("ONSITE_SUMMER");
         successCount++;
         sendLogs.push({ name: item.name, phone: item.phone, status: "SUCCESS" });
       } catch (err) {
@@ -202,9 +214,8 @@ export async function POST(req: Request) {
         sendLogs.push({ name: item.name, phone: item.phone, status: "FAILED", error: errStr });
       }
 
-      // Small delay between broadcasts to prevent rate limit
-      if (recipients.length > 1) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (i < recipients.length - 1) {
+        await smartDelay(i);
       }
     }
 

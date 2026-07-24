@@ -2120,7 +2120,10 @@ function normalizeSearchText(text: string): string {
 
                       <div className="rounded-xl bg-amber-50 p-3 border border-amber-200">
                         <p className="text-xs font-bold text-amber-800">
-                          ⏱️ الوقت المقدَّر: حوالي {Math.ceil(dailyInspection.readyCount * 2 / 60)} دقيقة ({dailyInspection.readyCount * 2} ثانية)
+                          ⏱️ الوقت المقدَّر: حوالي {Math.ceil(dailyInspection.readyCount * 15 / 60)} - {Math.ceil(dailyInspection.readyCount * 25 / 60)} دقيقة
+                        </p>
+                        <p className="text-[10px] font-semibold text-amber-700 mt-1">
+                          🛡️ يتم الإرسال بنمط ذكي مع تأخير عشوائي بين كل رسالة لحماية الحساب من الحظر
                         </p>
                       </div>
 
@@ -2242,7 +2245,10 @@ function normalizeSearchText(text: string): string {
 
                       <div className="rounded-xl bg-amber-50 p-3 border border-amber-200">
                         <p className="text-xs font-bold text-amber-800">
-                          ⏱️ الوقت المقدَّر: حوالي {Math.ceil(weeklyInspection.readyCount * 2 / 60)} دقيقة ({weeklyInspection.readyCount * 2} ثانية)
+                          ⏱️ الوقت المقدَّر: حوالي {Math.ceil(weeklyInspection.readyCount * 15 / 60)} - {Math.ceil(weeklyInspection.readyCount * 25 / 60)} دقيقة
+                        </p>
+                        <p className="text-[10px] font-semibold text-amber-700 mt-1">
+                          🛡️ يتم الإرسال بنمط ذكي مع تأخير عشوائي بين كل رسالة لحماية الحساب من الحظر
                         </p>
                       </div>
 
