@@ -6,7 +6,7 @@ async function getStats() {
   try {
     const [studentCount, teacherCount, circleCount] = await Promise.all([
       prisma.student.count({ where: { isActive: true } }),
-      prisma.user.count({ where: { isActive: true, role: { in: ["TEACHER", "ADMIN", "SUPERVISOR"] } } }),
+      prisma.user.count({ where: { isActive: true, role: { in: ["TEACHER", "ADMIN"] } } }),
       prisma.circle.count(),
     ]);
     return { studentCount, teacherCount, circleCount };
