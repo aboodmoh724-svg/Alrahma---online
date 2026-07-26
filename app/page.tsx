@@ -1,143 +1,160 @@
 import Link from "next/link";
 import Image from "next/image";
-import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
-import BrandLockup from "@/components/brand/BrandLockup";
-import { getAppBaseUrl } from "@/lib/app-url";
 
 const portals = [
   {
     title: "التعليم عن بعد",
     description: "حلقات إلكترونية، إشراف يومي، تقارير الطلاب، ومراسلات أولياء الأمور.",
-    badge: "Online",
+    badge: "🌐 أونلاين",
     image: "/images/afyon-circle-wide.jpeg",
-    accent: "from-[#062b1d]/94 via-[#0a3f2a]/76 to-[#0f5a35]/42",
+    accent: "from-[#062c21]/95 via-[#0c5c5e]/80 to-[#062c21]/60",
     links: [
-      { href: "/remote/admin/login", label: "دخول الإدارة" },
-      { href: "/remote/supervision/login", label: "دخول الإشراف" },
-      { href: "/remote/teacher/login", label: "دخول المعلم" },
+      { href: "/remote/admin/login", label: "🔑 دخول الإدارة العامة" },
+      { href: "/remote/supervision/login", label: "🔍 دخول الإشراف التعليمي" },
+      { href: "/remote/teacher/login", label: "📝 دخول كادر المعلمين" },
+      { href: "/registration", label: "✨ تسجيل طالب جديد" },
     ],
   },
   {
     title: "التعليم الحضوري - أفيون",
-    description: "إدارة حلقات المركز، الطلاب والمعلمين، الغياب، ورسائل أولياء الأمور.",
-    badge: "Afyon",
+    description: "إدارة حلقات المركز الحضوري، الطلاب والمعلمين، ورسائل أولياء الأمور.",
+    badge: "🏛️ أفيون",
     image: "/images/afyon-recitation-day.jpeg",
-    accent: "from-[#1c2d31]/90 via-[#0a3f2a]/58 to-[#bd8f2d]/34",
+    accent: "from-[#062c21]/95 via-[#0c5c5e]/80 to-[#062c21]/60",
     links: [
-      { href: "/onsite/admin/login", label: "دخول الإدارة" },
-      { href: "/onsite/teacher/login", label: "دخول المعلم" },
+      { href: "/onsite/admin/login", label: "🔑 دخول الإدارة العامة" },
+      { href: "/onsite/teacher/login", label: "📝 دخول كادر المعلمين" },
     ],
   },
   {
     title: "التعليم الحضوري - سوريا",
     description: "فرع مستقل ببياناته الخاصة، تسجيل أولي، وإدارة منفصلة للمعلمين والطلاب.",
-    badge: "Syria",
+    badge: "🇸🇾 سوريا",
     image: "/images/syria-login-hero.png",
-    accent: "from-[#071b15]/92 via-[#0a3f2a]/56 to-[#2f6f73]/30",
+    accent: "from-[#062c21]/95 via-[#0c5c5e]/80 to-[#062c21]/60",
     links: [
-      { href: "/syria/registration", label: "تسجيل طالب" },
-      { href: "/syria/admin/login", label: "دخول الإدارة" },
-      { href: "/syria/teacher/login", label: "دخول المعلم" },
+      { href: "/syria/admin/login", label: "🔑 دخول الإدارة العامة" },
+      { href: "/syria/teacher/login", label: "📝 دخول كادر المعلمين" },
+      { href: "/syria/registration", label: "✨ تسجيل طالب جديد" },
     ],
   },
   {
     title: "الدورة الصيفية - أفيون",
-    description: "متابعة الحضور والتقارير اليومية والأسبوعية لطلاب القرآن ونور البيان في الدورة الصيفية.",
-    badge: "دورة صيف 2026",
+    description: "متابعة الحضور والتقارير اليومية والأسبوعية لطلاب القرآن ونور البيان بالدورة الصيفية.",
+    badge: "☀️ الدورة الصيفية 2026",
     image: "/images/afyon-awards-wide.jpeg",
-    accent: "from-[#6c4e09]/92 via-[#3a2d0d]/76 to-[#0f5a35]/40",
+    accent: "from-[#062c21]/95 via-[#0c5c5e]/80 to-[#062c21]/60",
     links: [
-      { href: "/onsite/summer/admin/login", label: "دخول الإدارة" },
-      { href: "/onsite/summer/teacher/login", label: "دخول المعلم" },
+      { href: "/onsite/summer/admin/login", label: "🔑 لوحة التحكم الإدارية" },
+      { href: "/onsite/summer/teacher/login", label: "📝 واجهة كادر المعلمين" },
     ],
   },
 ];
 
 export default function HomePage() {
-  const appBaseUrl = getAppBaseUrl();
-
   return (
-    <main className="rahma-shell min-h-screen overflow-hidden px-3 py-3 sm:px-5 sm:py-6" dir="rtl">
-      <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-7xl flex-col gap-4 sm:min-h-[calc(100vh-3rem)] sm:gap-6">
-        <header className="flex items-center justify-between rounded-3xl bg-white/92 px-4 py-3 shadow-sm ring-1 ring-[#bd8f2d]/20 sm:rounded-full sm:px-5">
-          <BrandLockup compact />
-          <Link
-            href="/registration"
-            className="rounded-full bg-[#0f5a35] px-4 py-2 text-xs font-black text-white transition hover:bg-[#0a3f2a] sm:text-sm"
-          >
-            تسجيل التعليم عن بعد
-          </Link>
-        </header>
+    <main className="min-h-screen bg-[#062c21] text-white dir-rtl font-sans py-8 px-4 sm:px-6 relative overflow-hidden" dir="rtl">
+      {/* Background Geometric Pattern Accent */}
+      <div className="absolute top-0 right-0 h-full w-full pointer-events-none opacity-15 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:16px_16px]" />
 
-        <section className="grid flex-1 gap-4 lg:grid-cols-[0.8fr_1.2fr] lg:items-stretch">
-          <div className="relative overflow-hidden rounded-[2rem] bg-[#0a3f2a] p-5 text-white shadow-xl sm:rounded-[2.75rem] sm:p-8">
-            <BrandHeroMedia src="/images/afyon-awards-wide.jpeg" opacity="opacity-48" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d]/92 via-[#0a3f2a]/58 to-transparent" />
-            <div className="relative flex h-full min-h-[340px] flex-col justify-between gap-8">
-              <div>
-                <span className="inline-flex rounded-full bg-white/14 px-4 py-2 text-sm font-black text-[#f2d18a]">
-                  منصة الرحمة
-                </span>
-                <h1 className="mt-5 max-w-xl font-serif text-4xl font-black leading-tight sm:text-5xl md:text-6xl">
-                  تحفيظ الرحمة للقرآن الكريم
-                </h1>
-                <p className="mt-4 max-w-lg font-serif text-3xl font-black leading-tight text-[#f2d18a] sm:text-4xl">
-                  نحو غد مشرق
-                </p>
-                <p className="mt-5 max-w-lg text-sm leading-8 text-white/76 sm:text-base">
-                  اختر القسم المناسب مباشرة، وكل قسم مستقل ببياناته ومساره التشغيلي.
-                </p>
-              </div>
-
-              <div className="rounded-[1.6rem] bg-white/12 p-4 backdrop-blur">
-                <p className="text-sm font-black text-[#f2d18a]">الرابط المعتمد للنشر</p>
-                <p className="mt-2 break-all text-sm text-white/82">{appBaseUrl}</p>
-              </div>
+      <div className="mx-auto max-w-7xl relative z-10 space-y-8">
+        
+        {/* Top Header Bar */}
+        <header className="flex items-center justify-between rounded-2xl bg-[#0c5c5e]/80 border border-[#bd8f2d]/40 px-6 py-4 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-4">
+            <div className="rounded-xl bg-white p-1 shadow-md ring-2 ring-[#bd8f2d]">
+              <Image
+                src="/images/summer_quran_logo_v2.jpg"
+                alt="شعار تحفيظ الرحمة"
+                width={48}
+                height={48}
+                className="h-12 w-12 rounded-lg object-contain"
+              />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white font-serif">
+                إدارة تحفيظ الرحمة للقرآن الكريم
+              </h1>
+              <p className="text-xs text-[#f2d18a] font-medium">
+                المنظومة الرقمية المركزية لإدارة التقارير والتعليم
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-4">
-            {portals.map((portal) => (
-              <section
-                key={portal.title}
-                className="rahma-card grid overflow-hidden rounded-[2rem] shadow-sm ring-1 ring-[#d8bf83] sm:rounded-[2.5rem] md:grid-cols-[0.92fr_1.08fr]"
-              >
-                <div className="relative min-h-[210px] overflow-hidden bg-[#0a3f2a] p-5 text-white md:min-h-full">
-                  <Image
-                    src={portal.image}
-                    alt=""
-                    fill
-                    sizes="(min-width: 768px) 32vw, 100vw"
-                    className="absolute inset-0 object-cover"
-                  />
-                  <div className={`absolute inset-0 bg-gradient-to-l ${portal.accent}`} />
-                  <div className="relative flex h-full min-h-[170px] flex-col justify-between">
-                    <span className="w-fit rounded-full bg-white/18 px-3 py-1 text-xs font-black text-[#f2d18a]">
-                      {portal.badge}
-                    </span>
-                    <div>
-                      <h2 className="text-2xl font-black sm:text-3xl">{portal.title}</h2>
-                      <p className="mt-3 text-sm leading-8 text-white/80">{portal.description}</p>
-                    </div>
-                  </div>
-                </div>
+          <Link
+            href="/registration"
+            className="hidden sm:flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#bd8f2d] to-[#9e7623] px-5 py-2.5 text-xs font-black text-[#062c21] transition hover:brightness-110 shadow-md"
+          >
+            <span>✨</span> تسجيل التعليم عن بعد
+          </Link>
+        </header>
 
-                <div className="flex flex-col justify-center gap-2 p-4 sm:p-5">
-                  {portal.links.map((link) => (
-                    <Link
-                      key={link.href}
-                      href={link.href}
-                      className="flex items-center justify-between rounded-2xl bg-[#fffaf4] px-4 py-3 text-sm font-black text-[#1c2d31] ring-1 ring-[#d8bf83]/70 transition hover:bg-white hover:shadow-sm"
-                    >
-                      {link.label}
-                      <span className="text-lg">←</span>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            ))}
+        {/* Hero Hadith & Greeting Banner (Matching User's Screenshot) */}
+        <div className="rounded-3xl border-2 border-[#bd8f2d]/50 bg-[#0c5c5e]/90 p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden backdrop-blur-md">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#bd8f2d]/20 border border-[#bd8f2d]/40 px-4 py-1.5 text-xs font-bold text-[#f2d18a] mb-5">
+            <span>✨</span> البوابة الرقمية الشاملة <span>✨</span>
           </div>
-        </section>
+
+          <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-black text-[#f2d18a] leading-tight drop-shadow-md">
+            «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ وَمَرْتَقَى»
+          </h2>
+
+          <p className="mt-4 max-w-3xl mx-auto text-base sm:text-lg text-emerald-100/90 font-medium leading-relaxed">
+            مرحباً بكم في المنظومة الرقمية الشاملة لإدارة متابعة وتقارير طلاب تحفيظ الرحمة للقرآن الكريم
+          </p>
+        </div>
+
+        {/* 4 Portals Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {portals.map((portal) => (
+            <div
+              key={portal.title}
+              className="rounded-3xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e]/80 overflow-hidden shadow-xl hover:border-[#bd8f2d] transition-all flex flex-col justify-between"
+            >
+              {/* Card Banner with Background Image */}
+              <div className="relative p-6 text-white min-h-[160px] flex flex-col justify-between overflow-hidden">
+                <Image
+                  src={portal.image}
+                  alt={portal.title}
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="absolute inset-0 object-cover opacity-25"
+                />
+                <div className={`absolute inset-0 bg-gradient-to-t ${portal.accent}`} />
+
+                <div className="relative z-10">
+                  <span className="inline-block rounded-full bg-[#bd8f2d]/30 border border-[#bd8f2d]/50 px-3 py-1 text-xs font-bold text-[#f2d18a] mb-3">
+                    {portal.badge}
+                  </span>
+                  <h3 className="text-2xl font-bold font-serif text-white">{portal.title}</h3>
+                  <p className="mt-2 text-xs text-emerald-100/80 leading-relaxed max-w-md">
+                    {portal.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Links List */}
+              <div className="p-5 bg-[#062c21]/90 space-y-2.5 border-t border-[#bd8f2d]/30">
+                {portal.links.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="flex items-center justify-between rounded-xl bg-[#0c5c5e]/80 border border-[#bd8f2d]/30 px-4 py-3 text-xs font-bold text-[#fbf6ef] hover:bg-[#bd8f2d] hover:text-[#062c21] transition-all group shadow-sm"
+                  >
+                    <span>{link.label}</span>
+                    <span className="text-base group-hover:-translate-x-1 transition-transform">←</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <footer className="text-center py-4 border-t border-[#bd8f2d]/20 text-xs text-emerald-200/60 font-medium">
+          إدارة تحفيظ الرحمة للقرآن الكريم © {new Date().getFullYear()}
+        </footer>
+
       </div>
     </main>
   );
