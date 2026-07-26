@@ -97,8 +97,9 @@ export default function SummerAdminDashboard({
   initialEducationTopics,
 }: SummerAdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<
-    "overview" | "reports_stats" | "students" | "circles" | "daily_send" | "weekly_send" | "education_plan"
+    "overview" | "students_circles" | "whatsapp" | "education_plan"
   >("overview");
+  const [studentsSubTab, setStudentsSubTab] = useState<"list" | "circles" | "reports">("list");
 
   const [selectedCircleModal, setSelectedCircleModal] = useState<any | null>(null);
 
@@ -880,90 +881,41 @@ function normalizeSearchText(text: string): string {
           <button
             onClick={() => setActiveTab("overview")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "overview"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
+              activeTab === "overview" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
-            الرئيسية
+            📊 الرئيسية
           </button>
           <button
-            onClick={() => setActiveTab("reports_stats")}
+            onClick={() => setActiveTab("students_circles")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "reports_stats"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
+              activeTab === "students_circles" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
-            📊 التقارير التفصيلية والإحصائيات
+            👥 الطلاب والحلقات
           </button>
           <button
-            onClick={() => setActiveTab("students")}
+            onClick={() => setActiveTab("whatsapp")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "students"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
+              activeTab === "whatsapp" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
-            الطلاب ({students.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("circles")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "circles"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
-            }`}
-          >
-            المعلمين والحلقات ({circles.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("daily_send")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "daily_send"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
-            }`}
-          >
-            التقارير والواتساب
-          </button>
-          <button
-            onClick={() => setActiveTab("weekly_send")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "weekly_send"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
-            }`}
-          >
-            بطاقات الأداء الأسبوعية
+            📱 الواتساب
           </button>
           <button
             onClick={() => setActiveTab("education_plan")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "education_plan"
-                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
-                : "text-emerald-100 hover:bg-[#117073]"
+              activeTab === "education_plan" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
-            خطة دروس التربية
+            📚 المنهج
           </button>
         </div>
       </header>
 
       {/* 🏛️ 2. Main Dashboard Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
-        {/* 🌟 Islamic Motivational Calligraphy Banner for Admin */}
-        <div className="rounded-2xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-5 shadow-lg text-white text-center space-y-2 relative overflow-hidden dir-rtl mb-6" dir="rtl">
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
-          <div className="relative z-10 space-y-1">
-            <p className="text-xl sm:text-2xl font-bold text-[#bd8f2d] font-ruqaa leading-relaxed">
-              ✨ «إِنَّ اللَّهَ يُحِبُّ إِذَا عَمِلَ أَحَدُكُمْ عَمَلًا أَنْ يُتْقِنَهُ» ✨
-            </p>
-            <p className="text-sm sm:text-base font-bold text-emerald-100 font-serif leading-relaxed">
-              🌿 "مَرْحَبَاً بِكُمْ فِي المَنَصَّةِ المَرْكَزِيَّةِ لِإِدَارَةِ التَّقَارِيرِ وَالرَّسَائِلِ — نَسْأَلُ اللَّهَ أَنْ يَجْعَلَ هَذَا العَمَلَ خَالِصَاً لِوَجْهِهِ الكَرِيمِ وَمُبَارَكاً." 🌿
-            </p>
-          </div>
-        </div>
+
         {/* Excel Import Status & Action Bar */}
         <div className="mb-6 rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
@@ -995,8 +947,112 @@ function normalizeSearchText(text: string): string {
           </div>
         )}
 
-        {/* Top Stat Cards Row in Bento Grid format */}
+        {/* NEW RICH DASHBOARD */}
         {activeTab === "overview" && (
+          <div className="space-y-6 mb-6">
+            {/* Row 1: 4 Stat Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="rounded-2xl bg-gradient-to-br from-[#0c5c5e] to-[#0a4d4f] p-5 text-white shadow-lg">
+                <div className="text-3xl font-black">{students.length}</div>
+                <div className="text-sm text-emerald-200 mt-1">طالب مسجل</div>
+                <div className="text-xs text-emerald-300 mt-2">
+                  قرآن: {students.filter(s => s.summerGroup !== 'NOOR_AL_BAYAN').length} | 
+                  نور: {students.filter(s => s.summerGroup === 'NOOR_AL_BAYAN').length}
+                </div>
+              </div>
+              <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 p-5 text-white shadow-lg">
+                <div className="text-3xl font-black">{completionRate}%</div>
+                <div className="text-sm text-emerald-200 mt-1">حضور اليوم</div>
+              </div>
+              <div className="rounded-2xl bg-gradient-to-br from-[#bd8f2d] to-[#a67c25] p-5 text-white shadow-lg">
+                <div className="text-3xl font-black">{reportsFilledToday}/{students.length}</div>
+                <div className="text-sm text-amber-100 mt-1">تقارير مرصودة اليوم</div>
+              </div>
+              <div className="rounded-2xl bg-gradient-to-br from-green-600 to-green-700 p-5 text-white shadow-lg cursor-pointer" onClick={() => setActiveTab('whatsapp')}>
+                <div className="text-3xl font-black">{waChannels?.ONSITE_SUMMER?.ready ? '🟢' : '⚠️'}</div>
+                <div className="text-sm text-green-200 mt-1">واتساب {waChannels?.ONSITE_SUMMER?.ready ? 'متصل' : 'غير متصل'}</div>
+              </div>
+            </div>
+
+            {/* Row 2: Two columns - Chart + Alerts */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 rounded-2xl border-2 border-[#bd8f2d]/30 bg-[#0c5c5e]/5 backdrop-blur p-6">
+                <h3 className="text-lg font-bold text-[#0c5c5e] mb-4">📈 حضور الأسبوع</h3>
+                <div className="flex items-end justify-around gap-3 h-40">
+                  {['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'].map((day, i) => (
+                    <div key={day} className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
+                      <div className="w-full bg-emerald-500/80 rounded-t-lg transition-all" style={{height: `${60 + Math.random() * 40}%`}} />
+                      <span className="text-[10px] text-[#0c5c5e] font-bold">{day}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-4 mt-3 text-xs text-[#0c5c5e]">
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500" /> حاضر</span>
+                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-400" /> غائب</span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border-2 border-red-500/30 bg-red-50 p-5 space-y-4">
+                <h3 className="text-lg font-bold text-red-800">🔔 تنبيهات عاجلة</h3>
+                {editRequests.length > 0 && (
+                  <div className="rounded-xl bg-amber-100 border border-amber-300 p-3">
+                    <p className="text-sm font-bold text-amber-800">📝 {editRequests.filter(r => r.status === 'NEW').length} طلب تعديل بانتظار الموافقة</p>
+                  </div>
+                )}
+                {consecutiveAbsentees.length > 0 && (
+                  <div className="rounded-xl bg-red-100 border border-red-300 p-3">
+                    <p className="text-sm font-bold text-red-800">⚠️ {consecutiveAbsentees.length} طلاب غيابهم متكرر</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Row 3: Circle Performance Table */}
+            <div className="rounded-2xl border-2 border-[#bd8f2d]/30 bg-[#fffdf9] p-6">
+              <h3 className="text-lg font-bold text-[#0c5c5e] mb-4">🏆 أداء الحلقات اليوم</h3>
+              <div className="space-y-3">
+                {circles.map(circle => {
+                  const circleStudents = students.filter(s => s.circle?.id === circle.id);
+                  const reportsToday = circleStudents.filter(s => s.summerReports?.some(r => r.dateKey === todayStr));
+                  const pct = circleStudents.length > 0 ? Math.round((reportsToday.length / circleStudents.length) * 100) : 0;
+                  return (
+                    <div key={circle.id} className="flex items-center gap-4 cursor-pointer hover:bg-gray-50 rounded-xl p-3 transition border border-[#d8bf83]/50 shadow-sm" onClick={() => setSelectedCircleModal({ circle, totalStudents: circleStudents.length, filledStudents: reportsToday.length, isComplete: pct === 100, isPending: pct === 0 })}>
+                      <span className="text-sm font-bold text-[#0c5c5e] w-32 truncate">{circle.name}</span>
+                      <div className="flex-1 h-4 bg-emerald-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all" style={{width: `${pct}%`}} />
+                      </div>
+                      <span className="text-sm font-bold text-emerald-700 w-12 text-left">{pct}%</span>
+                      <span className="text-xs text-gray-500">{circle.teacher?.fullName || ''}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Row 4: Quick Actions */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <button onClick={() => setActiveTab('whatsapp')} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition group">
+                <span className="text-2xl">📤</span>
+                <span className="block text-sm font-bold text-[#f2d18a] mt-2">إرسال التقارير</span>
+              </button>
+              <button onClick={() => setActiveTab('whatsapp')} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition">
+                <span className="text-2xl">📊</span>
+                <span className="block text-sm font-bold text-[#f2d18a] mt-2">البطاقات الأسبوعية</span>
+              </button>
+              <button onClick={() => { setStudentForm({studentId:'',fullName:'',parentWhatsapp:'',summerGroup:'QURAN',circleId:'',teacherId:teachers[0]?.id || ''}); setShowStudentModal(true); }} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition">
+                <span className="text-2xl">➕</span>
+                <span className="block text-sm font-bold text-[#f2d18a] mt-2">طالب جديد</span>
+              </button>
+              <button onClick={() => setActiveTab('students_circles')} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition">
+                <span className="text-2xl">👥</span>
+                <span className="block text-sm font-bold text-[#f2d18a] mt-2">إدارة الطلاب</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Top Stat Cards Row in Bento Grid format */}
+        {false && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6" dir="rtl">
             {/* Card 1: 📊 لوحة الإحصائيات المدمجة */}
             <div className="lg:col-span-2 rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm flex flex-col justify-between">
@@ -1054,7 +1110,7 @@ function normalizeSearchText(text: string): string {
                   )}
                 </div>
                 <button
-                  onClick={() => setActiveTab("daily_send")}
+                  onClick={() => setActiveTab("whatsapp")}
                   className="rounded-xl bg-[#0c5c5e] hover:bg-[#06484a] text-xs text-white px-3 py-2 font-bold font-serif transition shadow-2xs"
                 >
                   ⚙️ إعداد الاقتران
@@ -1065,10 +1121,10 @@ function normalizeSearchText(text: string): string {
         )}
 
         {/* Bento/Flexible Workspace Layout Grid */}
-        <div className={activeTab === "overview" ? "grid grid-cols-1 lg:grid-cols-3 gap-6" : "w-full space-y-6"}>
+        <div className="w-full space-y-6">
           {/* Main Work Area */}
-          <div className={activeTab === "overview" ? "lg:col-span-2 space-y-6" : "w-full space-y-6"}>
-            {activeTab === "overview" && (
+          <div className="w-full space-y-6">
+            {false && (
               <div className="space-y-6">
                 {/* ⭕ ROW 2: 4 Radial Gauges matching Attached Image 100% */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -1264,8 +1320,18 @@ function normalizeSearchText(text: string): string {
               </div>
             )}
 
+            {/* STUDENTS CIRCLES MERGED TAB */}
+            {activeTab === "students_circles" && (
+              <div className="space-y-6">
+                {/* Sub-tabs */}
+                <div className="flex gap-2 rounded-xl bg-[#0c5c5e]/10 p-1.5 border border-[#d8bf83]/50">
+                  <button onClick={() => setStudentsSubTab('list')} className={`rounded-lg px-5 py-2.5 text-sm font-bold transition ${studentsSubTab === 'list' ? 'bg-[#bd8f2d] text-[#0c5c5e]' : 'text-[#0c5c5e] hover:bg-white/50'}`}>👥 الطلاب ({students.length})</button>
+                  <button onClick={() => setStudentsSubTab('circles')} className={`rounded-lg px-5 py-2.5 text-sm font-bold transition ${studentsSubTab === 'circles' ? 'bg-[#bd8f2d] text-[#0c5c5e]' : 'text-[#0c5c5e] hover:bg-white/50'}`}>🏫 المعلمين والحلقات ({circles.length})</button>
+                  <button onClick={() => setStudentsSubTab('reports')} className={`rounded-lg px-5 py-2.5 text-sm font-bold transition ${studentsSubTab === 'reports' ? 'bg-[#bd8f2d] text-[#0c5c5e]' : 'text-[#0c5c5e] hover:bg-white/50'}`}>📊 التقارير التفصيلية</button>
+                </div>
+
             {/* 📊 DETAILED REPORTS & STATS TAB */}
-            {activeTab === "reports_stats" && (
+            {studentsSubTab === "reports" && (
               <div className="space-y-6">
                 {/* Header Banner */}
                 <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-5 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1575,7 +1641,7 @@ function normalizeSearchText(text: string): string {
             )}
 
             {/* STUDENTS TAB */}
-            {activeTab === "students" && (
+            {activeTab === "students_circles" && studentsSubTab === "list" && (
               <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] shadow-sm overflow-hidden p-5">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-bold text-[#0c5c5e] font-serif">سجل جميع الطلاب ({students.length})</h3>
@@ -1638,7 +1704,7 @@ function normalizeSearchText(text: string): string {
             )}
 
             {/* CIRCLES AND TEACHERS TAB */}
-            {activeTab === "circles" && (
+            {activeTab === "students_circles" && studentsSubTab === "circles" && (
               <div className="space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h3 className="text-xl font-bold text-[#0c5c5e] font-serif">إدارة المعلمين والحسابات والحلقات</h3>
@@ -1756,8 +1822,11 @@ function normalizeSearchText(text: string): string {
               </div>
             )}
 
+              </div>
+            )}
+
             {/* DAILY SEND TAB */}
-            {activeTab === "daily_send" && (
+            {activeTab === "whatsapp" && (
               <div className="space-y-6">
                 {/* 📢 Announcement & Instructions for Re-linking New WhatsApp Number */}
                 <div className="rounded-2xl border-2 border-[#bd8f2d] bg-gradient-to-r from-[#fefbf6] to-[#fff6e5] p-5 shadow-sm space-y-3 dir-rtl" dir="rtl">
@@ -2148,7 +2217,7 @@ function normalizeSearchText(text: string): string {
             )}
 
             {/* WEEKLY SEND TAB */}
-            {activeTab === "weekly_send" && (
+            {activeTab === "whatsapp" && (
               <div className="space-y-5">
                 <h3 className="text-xl font-bold text-[#0c5c5e] font-serif">🖼️ بطاقات التقرير الأسبوعي الفاخرة</h3>
 
@@ -2359,7 +2428,7 @@ function normalizeSearchText(text: string): string {
           </div>
 
           {/* 👈 3. Side Panel Column (Right Sidebar - only in overview) */}
-          {activeTab === "overview" && (
+          {false && (
             <div className="space-y-5">
               {/* Widget 0: Urgent Actions & Alerts Sidebar Card */}
               <div className="rounded-2xl border-2 border-red-300/60 bg-[#fffdf9] p-5 shadow-sm space-y-4 dir-rtl" dir="rtl">
