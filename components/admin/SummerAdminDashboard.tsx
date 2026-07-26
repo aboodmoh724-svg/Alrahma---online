@@ -987,19 +987,23 @@ function normalizeSearchText(text: string): string {
 
             {/* Row 2: Two columns - Live Circles Grid + Action Hub */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column: Today's Live Circles Grid (Takes 2 cols) */}
-              <div className="lg:col-span-2 rounded-2xl border border-[#c59b27]/30 bg-white p-6 shadow-sm space-y-4">
-                <div className="flex items-center justify-between border-b border-[#c59b27]/20 pb-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-[#14532d] font-serif">🏆 حالة إنجاز الحلقات اليوم</h3>
-                    <p className="text-xs text-slate-500">متابعة دقيقة لرصد التقارير اليومية لكل حلقة معلم</p>
+              {/* Left Column: Today's Live Circles Grid (Takes 2 cols) - Styled with Logo 2 (تحفيظ الرحمة: Slate Teal & Sand Gold) */}
+              <div className="lg:col-span-2 rounded-2xl border-2 border-[#cbb292]/40 bg-white shadow-md overflow-hidden space-y-0">
+                {/* Logo 2 Header Bar: Deep Slate Teal with Sand Gold Accent */}
+                <div className="bg-gradient-to-r from-[#0f292d] via-[#16383c] to-[#0f292d] p-4 flex items-center justify-between border-b border-[#cbb292]/30 text-white">
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl">🏆</span>
+                    <div>
+                      <h3 className="text-base font-bold text-[#f2e8d5] font-serif">حالة إنجاز الحلقات اليوم</h3>
+                      <p className="text-[11px] text-[#cbb292]">متابعة دقيقة لرصد التقارير اليومية لكل حلقة معلم</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-bold text-[#14532d] bg-[#14532d]/10 px-3 py-1 rounded-full border border-[#14532d]/20">
+                  <span className="text-xs font-bold text-slate-950 bg-[#cbb292] px-3 py-1 rounded-full shadow-xs">
                     مباشر
                   </span>
                 </div>
 
-                <div className="space-y-2.5 pt-1">
+                <div className="p-5 space-y-3 bg-[#fdfcf9]">
                   {circles.map((circle) => {
                     const circleStudents = students.filter((s) => s.circle?.id === circle.id);
                     const reportsToday = circleStudents.filter((s) => s.summerReports?.some((r) => r.dateKey === todayStr));
@@ -1007,15 +1011,15 @@ function normalizeSearchText(text: string): string {
                     return (
                       <div
                         key={circle.id}
-                        className="flex items-center gap-4 cursor-pointer hover:bg-[#fbf9f4] rounded-xl p-3.5 transition-colors border border-[#c59b27]/20 shadow-2xs"
+                        className="flex items-center gap-4 cursor-pointer hover:bg-white rounded-xl p-3.5 transition-all border border-[#cbb292]/30 shadow-2xs hover:border-[#14532d] group"
                         onClick={() => setSelectedCircleModal({ circle, totalStudents: circleStudents.length, filledStudents: reportsToday.length, isComplete: pct === 100, isPending: pct === 0 })}
                       >
                         <div className="w-36 shrink-0">
-                          <span className="text-sm font-bold text-[#14532d] block truncate">{circle.name}</span>
+                          <span className="text-sm font-bold text-[#0f292d] group-hover:text-[#14532d] block truncate font-serif">{circle.name}</span>
                           <span className="text-[11px] text-slate-500 block truncate">{circle.teacher?.fullName || 'بدون معلم'}</span>
                         </div>
                         
-                        <div className="flex-1 h-3 bg.slate-100 rounded-full overflow-hidden border border-slate-200">
+                        <div className="flex-1 h-3.5 bg-[#f0ede6] rounded-full overflow-hidden border border-[#cbb292]/30">
                           <div
                             className={`h-full rounded-full transition-all duration-300 ${
                               pct === 100 ? 'bg-[#14532d]' : pct > 0 ? 'bg-[#c59b27]' : 'bg-slate-300'
@@ -1036,98 +1040,106 @@ function normalizeSearchText(text: string): string {
                 </div>
               </div>
 
-              {/* Right Column: Action Hub & Urgent Alerts (Takes 1 col) */}
-              <div className="rounded-2xl border border-[#c59b27]/30 bg-white p-6 shadow-sm space-y-4">
-                <div className="border-b border-[#c59b27]/20 pb-3">
-                  <h3 className="text-lg font-bold text-[#14532d] font-serif">🔔 مركز التنبيهات والإجراءات</h3>
-                  <p className="text-xs text-slate-500">الطلبات والإشعارات العاجلة بانتظار قرارك</p>
+              {/* Right Column: Action Hub & Urgent Alerts (Takes 1 col) - Logo 2 Slate & Sand Styling */}
+              <div className="rounded-2xl border-2 border-[#cbb292]/40 bg-white shadow-md overflow-hidden space-y-0">
+                {/* Logo 2 Header Bar */}
+                <div className="bg-gradient-to-r from-[#0f292d] via-[#16383c] to-[#0f292d] p-4 flex items-center justify-between border-b border-[#cbb292]/30 text-white">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-xl">🔔</span>
+                    <div>
+                      <h3 className="text-base font-bold text-[#f2e8d5] font-serif">مركز الإجراءات العاجلة</h3>
+                      <p className="text-[11px] text-[#cbb292]">الطلبات والإشعارات بانتظار قرارك</p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Teacher Edit Requests */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-amber-800">طلبات تعديل المعلمين</span>
-                    <span className="text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                      {editRequests.filter((r) => r.status === "NEW").length} معلق
-                    </span>
+                <div className="p-5 space-y-4 bg-[#fdfcf9]">
+                  {/* Teacher Edit Requests */}
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#0f292d] font-serif">طلبات تعديل المعلمين</span>
+                      <span className="text-[11px] font-bold text-amber-900 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-300">
+                        {editRequests.filter((r) => r.status === "NEW").length} معلق
+                      </span>
+                    </div>
+
+                    {editRequests.filter((r) => r.status === "NEW").length === 0 ? (
+                      <div className="rounded-xl bg-[#f7f5ef] p-3 text-center text-xs text-slate-500 border border-[#cbb292]/30">
+                        ✨ لا توجد طلبات تعديل معلقة حالياً
+                      </div>
+                    ) : (
+                      editRequests
+                        .filter((r) => r.status === "NEW")
+                        .slice(0, 3)
+                        .map((req) => (
+                          <div key={req.id} className="rounded-xl bg-[#fdfcf9] p-3.5 border border-[#cbb292]/40 space-y-2.5 shadow-2xs">
+                            <div className="flex items-center justify-between text-xs font-bold text-[#0f292d]">
+                              <span>{req.teacher?.fullName}</span>
+                              <span className="text-[#14532d]">{req.student?.fullName}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-700 leading-relaxed bg-white p-2.5 rounded-lg border border-[#cbb292]/30">
+                              "{req.reason}"
+                            </p>
+                            <div className="flex items-center gap-2 pt-1">
+                              <button
+                                onClick={() => handleReviewRequest(req.id, "APPROVED")}
+                                className="flex-1 rounded-lg bg-[#14532d] hover:bg-[#0f3d21] py-1.5 text-xs font-bold text-white transition shadow-2xs"
+                              >
+                                ✓ موافقة
+                              </button>
+                              <button
+                                onClick={() => handleReviewRequest(req.id, "REJECTED")}
+                                className="flex-1 rounded-lg bg-rose-700 hover:bg-rose-800 py-1.5 text-xs font-bold text-white transition shadow-2xs"
+                              >
+                                ✕ رفض
+                              </button>
+                            </div>
+                          </div>
+                        ))
+                    )}
                   </div>
 
-                  {editRequests.filter((r) => r.status === "NEW").length === 0 ? (
-                    <div className="rounded-xl bg-[#fbf9f4] p-3 text-center text-xs text-slate-500 border border-[#c59b27]/20">
-                      ✨ لا توجد طلبات تعديل معلقة حالياً
+                  {/* Consecutive Absentees */}
+                  <div className="space-y-2.5 pt-3 border-t border-[#cbb292]/30">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-rose-800 font-serif">تنبيهات الغياب المتكرر</span>
+                      <span className="text-[11px] font-bold text-rose-800 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                        {consecutiveAbsentees.length} طالب
+                      </span>
                     </div>
-                  ) : (
-                    editRequests
-                      .filter((r) => r.status === "NEW")
-                      .slice(0, 3)
-                      .map((req) => (
-                        <div key={req.id} className="rounded-xl bg-amber-50/60 p-3 border border-amber-200 space-y-2">
-                          <div className="flex items-center justify-between text-xs font-bold text-slate-900">
-                            <span>{req.teacher?.fullName}</span>
-                            <span className="text-[#14532d]">{req.student?.fullName}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-700 leading-relaxed bg-white p-2 rounded border border-amber-100">
-                            "{req.reason}"
-                          </p>
-                          <div className="flex items-center gap-2 pt-1">
-                            <button
-                              onClick={() => handleReviewRequest(req.id, "APPROVED")}
-                              className="flex-1 rounded-lg bg-[#14532d] hover:bg-[#0f3d21] py-1.5 text-xs font-bold text-white transition shadow-2xs"
-                            >
-                              ✓ موافقة
-                            </button>
-                            <button
-                              onClick={() => handleReviewRequest(req.id, "REJECTED")}
-                              className="flex-1 rounded-lg bg-rose-700 hover:bg-rose-800 py-1.5 text-xs font-bold text-white transition shadow-2xs"
-                            >
-                              ✕ رفض
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                  )}
-                </div>
 
-                {/* Consecutive Absentees */}
-                <div className="space-y-2.5 pt-2 border-t border-slate-100">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-rose-800">تنبيهات الغياب المتكرر</span>
-                    <span className="text-[11px] font-bold text-rose-800 bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                      {consecutiveAbsentees.length} طالب
-                    </span>
+                    {consecutiveAbsentees.length === 0 ? (
+                      <div className="rounded-xl bg-[#f7f5ef] p-3 text-center text-xs text-slate-500 border border-[#cbb292]/30">
+                        🌱 ممتاز، لا يوجد طلاب غائبون 3 أيام متتالية
+                      </div>
+                    ) : (
+                      <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+                        {consecutiveAbsentees.map((st) => (
+                          <div key={st.id} className="flex items-center justify-between rounded-xl bg-rose-50/70 p-2.5 border border-rose-200 text-xs">
+                            <div>
+                              <span className="font-bold text-slate-900 block">{st.fullName}</span>
+                              <span className="text-[10px] text-slate-500 block">{st.circle?.name}</span>
+                            </div>
+                            <span className="text-[10px] font-bold text-rose-800 bg-white px-2 py-1 rounded border border-rose-200">
+                              غائب 3 أيام متتالية
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-
-                  {consecutiveAbsentees.length === 0 ? (
-                    <div className="rounded-xl bg-[#fbf9f4] p-3 text-center text-xs text-slate-500 border border-[#c59b27]/20">
-                      🌱 ممتاز، لا يوجد طلاب غائبون 3 أيام متتالية
-                    </div>
-                  ) : (
-                    <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
-                      {consecutiveAbsentees.map((st) => (
-                        <div key={st.id} className="flex items-center justify-between rounded-xl bg-rose-50/60 p-2.5 border border-rose-200 text-xs">
-                          <div>
-                            <span className="font-bold text-slate-900 block">{st.fullName}</span>
-                            <span className="text-[10px] text-slate-500 block">{st.circle?.name}</span>
-                          </div>
-                          <span className="text-[10px] font-bold text-rose-800 bg-white px-2 py-1 rounded border border-rose-200">
-                            غائب 3 أيام متتالية
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
 
-            {/* Row 3: Quick Action Buttons */}
+            {/* Row 3: Quick Action Buttons — Styled with Slate Teal & Sand Gold (Logo 2) */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <button
                 onClick={() => setActiveTab('whatsapp')}
-                className="rounded-2xl border border-[#c59b27]/30 bg-white p-4 text-center hover:bg-[#fbf9f4] transition-all shadow-sm group"
+                className="rounded-2xl border-2 border-[#cbb292]/50 bg-gradient-to-br from-[#0f292d] to-[#16383c] p-4 text-center hover:brightness-110 transition-all shadow-md group text-white"
               >
                 <span className="text-2xl block group-hover:scale-110 transition-transform">🚀</span>
-                <span className="block text-sm font-bold text-[#14532d] mt-2 font-serif">مركز بث الواتساب</span>
+                <span className="block text-sm font-bold text-[#f2e8d5] mt-2 font-serif">مركز بث الواتساب</span>
               </button>
 
               <button
@@ -1135,26 +1147,26 @@ function normalizeSearchText(text: string): string {
                   setStudentForm({ studentId: '', fullName: '', parentWhatsapp: '', summerGroup: 'QURAN', circleId: '', teacherId: teachers[0]?.id || '' });
                   setShowStudentModal(true);
                 }}
-                className="rounded-2xl border border-[#c59b27]/30 bg-white p-4 text-center hover:bg-[#fbf9f4] transition-all shadow-sm group"
+                className="rounded-2xl border-2 border-[#cbb292]/50 bg-gradient-to-br from-[#0f292d] to-[#16383c] p-4 text-center hover:brightness-110 transition-all shadow-md group text-white"
               >
                 <span className="text-2xl block group-hover:scale-110 transition-transform">➕</span>
-                <span className="block text-sm font-bold text-[#14532d] mt-2 font-serif">إضافة طالب جديد</span>
+                <span className="block text-sm font-bold text-[#f2e8d5] mt-2 font-serif">إضافة طالب جديد</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('students_circles')}
-                className="rounded-2xl border border-[#c59b27]/30 bg-white p-4 text-center hover:bg-[#fbf9f4] transition-all shadow-sm group"
+                className="rounded-2xl border-2 border-[#cbb292]/50 bg-gradient-to-br from-[#0f292d] to-[#16383c] p-4 text-center hover:brightness-110 transition-all shadow-md group text-white"
               >
                 <span className="text-2xl block group-hover:scale-110 transition-transform">👥</span>
-                <span className="block text-sm font-bold text-[#14532d] mt-2 font-serif">سجل الطلاب والحلقات</span>
+                <span className="block text-sm font-bold text-[#f2e8d5] mt-2 font-serif">سجل الطلاب والحلقات</span>
               </button>
 
               <button
                 onClick={() => setActiveTab('education_plan')}
-                className="rounded-2xl border border-[#c59b27]/30 bg-white p-4 text-center hover:bg-[#fbf9f4] transition-all shadow-sm group"
+                className="rounded-2xl border-2 border-[#cbb292]/50 bg-gradient-to-br from-[#0f292d] to-[#16383c] p-4 text-center hover:brightness-110 transition-all shadow-md group text-white"
               >
                 <span className="text-2xl block group-hover:scale-110 transition-transform">📚</span>
-                <span className="block text-sm font-bold text-[#14532d] mt-2 font-serif">خطة المنهج التربوي</span>
+                <span className="block text-sm font-bold text-[#f2e8d5] mt-2 font-serif">خطة المنهج التربوي</span>
               </button>
             </div>
           </div>
