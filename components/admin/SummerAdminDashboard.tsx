@@ -1112,7 +1112,7 @@ function normalizeSearchText(text: string): string {
                             <span className="text-[10px] text-slate-400 block">{st.circle?.name}</span>
                           </div>
                           <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-1 rounded">
-                            غائب {st.consecutiveAbsenceCount} أيام
+                            غائب 3 أيام متتالية
                           </span>
                         </div>
                       ))}
