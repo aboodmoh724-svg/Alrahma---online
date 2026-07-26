@@ -21,35 +21,35 @@ export default async function SummerPortalPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#0c5c5e] via-[#117073] to-[#0c5c5e] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
+    <main className="min-h-screen bg-[#faf8f4] text-[#1a2e23] relative overflow-hidden dir-rtl" dir="rtl">
       {/* Decorative Islamic Background Pattern */}
-      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
-      <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#bd8f2d]/20 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#bd8f2d]/20 blur-3xl pointer-events-none" />
+      <div className="absolute inset-0 opacity-5 bg-[radial-gradient(#d4a853_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
 
-      <div className="mx-auto max-w-5xl relative z-10 space-y-8">
-        {/* Header Navigation */}
-        <div className="flex items-center justify-between border-b border-[#bd8f2d]/30 pb-5">
+      {/* Header bar */}
+      <div className="bg-[#0c5c5e] w-full px-4 py-4 shadow-md relative z-20">
+        <div className="mx-auto max-w-5xl flex items-center justify-between">
           <Link
             href="/onsite"
-            className="inline-flex items-center gap-2 rounded-full bg-[#0c5c5e]/80 px-5 py-2.5 text-sm sm:text-base font-bold text-[#bd8f2d] border border-[#bd8f2d]/40 shadow-md hover:bg-[#bd8f2d] hover:text-[#0c5c5e] transition-all"
+            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2 text-sm font-bold text-[#d4a853] hover:bg-white/20 transition-all"
           >
             ← العودة للتعليم الحضوري
           </Link>
-          <span className="rounded-full bg-[#bd8f2d]/20 px-5 py-2 text-sm sm:text-base font-bold text-[#f2d18a] border border-[#bd8f2d]/40">
+          <span className="text-sm sm:text-base font-bold text-[#d4a853]">
             ☀️ الدورة الصيفية لتحفيظ الرحمة للقرآن الكريم
           </span>
         </div>
+      </div>
 
+      <div className="mx-auto max-w-5xl relative z-10 px-4 py-8 sm:py-12 space-y-8">
         {/* Motivational Islamic Calligraphy Banner */}
-        <div className="rounded-3xl border-2 border-[#bd8f2d]/70 bg-[#054547]/80 p-8 sm:p-10 text-center space-y-4 shadow-2xl backdrop-blur-md relative overflow-hidden">
-          <div className="inline-block rounded-full bg-[#bd8f2d]/20 border border-[#bd8f2d]/50 px-5 py-1.5 text-sm font-bold text-[#f2d18a] font-serif mb-1">
+        <div className="rounded-2xl border border-[#d4a853]/30 bg-white p-8 sm:p-10 text-center space-y-4 shadow-[0_2px_12px_rgba(0,0,0,0.06)] relative overflow-hidden">
+          <div className="inline-block rounded-full bg-[#faf8f4] border border-[#d4a853]/20 px-5 py-1.5 text-sm font-bold text-[#d4a853] font-serif mb-1">
             ✨ بوابَةُ الدَّورَةِ الصَّيْفِيَّةِ ✨
           </div>
-          <h1 className="text-4xl sm:text-6xl font-black text-[#bd8f2d] font-ruqaa leading-tight tracking-wide drop-shadow-md">
+          <h1 className="text-4xl sm:text-6xl font-black text-[#0c5c5e] font-ruqaa leading-tight tracking-wide">
             «خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ»
           </h1>
-          <p className="text-base sm:text-xl text-cyan-50 font-serif max-w-3xl mx-auto leading-relaxed pt-2">
+          <p className="text-base sm:text-xl text-[#1a2e23] font-serif max-w-3xl mx-auto leading-relaxed pt-2">
             مرحباً بكم في المنظومة الرقمية لإدارة متابعة وتقارير طلاب الدورة الصيفية لتحفيظ الرحمة لتعليم القرآن الكريم ونور البيان
           </p>
         </div>
@@ -59,25 +59,23 @@ export default async function SummerPortalPage() {
           {/* Admin Card */}
           <Link
             href="/onsite/summer/admin/login"
-            className="group relative rounded-3xl border-2 border-[#bd8f2d]/40 bg-gradient-to-br from-[#0e5f61] to-[#063435] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#bd8f2d] hover:shadow-2xl hover:shadow-[#bd8f2d]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative bg-white border border-[#d4a853]/20 rounded-2xl p-8 sm:p-10 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-[#bd8f2d]/10 rounded-full blur-2xl group-hover:bg-[#bd8f2d]/25 transition-all" />
-            
             <div className="space-y-4 relative z-10">
-              <div className="w-18 h-18 rounded-2xl bg-[#bd8f2d]/20 border border-[#bd8f2d]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
+              <div className="w-16 h-16 rounded-2xl bg-[#faf8f4] border border-[#d4a853]/30 flex items-center justify-center text-4xl group-hover:scale-110 transition-transform p-3 shadow-sm">
                 🏛️
               </div>
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#f2d18a] font-serif group-hover:text-white transition-colors">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#0c5c5e] font-serif">
                   لوحة التحكم الإدارية
                 </h2>
-                <p className="text-sm sm:text-base text-cyan-50/90 mt-3 leading-relaxed">
+                <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
                   متابعة التقارير اليومية، بطاقات الأداء الأسبوعية، إدارة الحلقات، توزيع الطلاب، وإرسال التقارير عبر الواتساب.
                 </p>
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-[#bd8f2d]/20 flex items-center justify-between text-base font-bold text-[#bd8f2d] group-hover:text-[#f2d18a] relative z-10">
+            <div className="mt-8 pt-4 border-t border-[#d4a853]/10 flex items-center justify-between text-base font-bold text-[#d4a853] relative z-10">
               <span>تسجيل دخول الإدارة</span>
               <span className="transform group-hover:-translate-x-2 transition-transform text-xl">←</span>
             </div>
@@ -86,25 +84,23 @@ export default async function SummerPortalPage() {
           {/* Teacher Card */}
           <Link
             href="/onsite/summer/teacher/login"
-            className="group relative rounded-3xl border-2 border-[#bd8f2d]/40 bg-gradient-to-br from-[#126c6f] to-[#063b3d] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#bd8f2d] hover:shadow-2xl hover:shadow-[#bd8f2d]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative bg-white border border-[#d4a853]/20 rounded-2xl p-8 sm:p-10 shadow-[0_2px_12px_rgba(0,0,0,0.06)] hover:shadow-[0_6px_24px_rgba(0,0,0,0.1)] hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-[#bd8f2d]/10 rounded-full blur-2xl group-hover:bg-[#bd8f2d]/25 transition-all" />
-
             <div className="space-y-4 relative z-10">
-              <div className="w-18 h-18 rounded-2xl bg-[#bd8f2d]/20 border border-[#bd8f2d]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
+              <div className="w-16 h-16 rounded-2xl bg-[#faf8f4] border border-[#d4a853]/30 flex items-center justify-center text-4xl group-hover:scale-110 transition-transform p-3 shadow-sm">
                 📖
               </div>
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black text-[#f2d18a] font-serif group-hover:text-white transition-colors">
+                <h2 className="text-2xl sm:text-3xl font-black text-[#0c5c5e] font-serif">
                   واجهة كادر المعلمين
                 </h2>
-                <p className="text-sm sm:text-base text-cyan-50/90 mt-3 leading-relaxed">
+                <p className="text-sm sm:text-base text-gray-600 mt-3 leading-relaxed">
                   إدخال الحضور والغياب اليومي للطلاب، تسجيل نطاق الحفظ والمراجعة والتلقين، وتقييم الأداء والسلوك بسهولة.
                 </p>
               </div>
             </div>
 
-            <div className="mt-8 pt-4 border-t border-[#bd8f2d]/20 flex items-center justify-between text-base font-bold text-[#bd8f2d] group-hover:text-[#f2d18a] relative z-10">
+            <div className="mt-8 pt-4 border-t border-[#d4a853]/10 flex items-center justify-between text-base font-bold text-[#d4a853] relative z-10">
               <span>تسجيل دخول المعلم</span>
               <span className="transform group-hover:-translate-x-2 transition-transform text-xl">←</span>
             </div>
@@ -112,7 +108,7 @@ export default async function SummerPortalPage() {
         </div>
 
         {/* Footer Brand Info */}
-        <div className="pt-6 text-center text-sm font-bold text-cyan-200/70">
+        <div className="pt-6 text-center text-sm font-bold text-[#6b7280]">
           إدارة تحفيظ الرحمة للقرآن الكريم © {new Date().getFullYear()}
         </div>
       </div>

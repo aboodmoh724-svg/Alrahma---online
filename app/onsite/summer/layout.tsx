@@ -11,7 +11,7 @@ export default function SummerLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#f3f6f9] text-[#1b2e3c] font-sans antialiased">
+    <div className="min-h-screen bg-[#faf8f4] text-[#1a2e23] font-sans antialiased">
       {/* Import Google Fonts with Ornate Arabic & Calligraphy Fonts */}
       <link
         href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@400;600;700;800;900&family=El+Messiri:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@500;700&display=swap"
