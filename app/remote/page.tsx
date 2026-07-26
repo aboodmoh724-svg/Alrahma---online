@@ -1,90 +1,159 @@
-﻿import Link from "next/link";
-import BrandHeroMedia from "@/components/brand/BrandHeroMedia";
-import BrandLockup from "@/components/brand/BrandLockup";
-
-const entries = [
-  {
-    href: "/remote/admin/login",
-    title: "دخول الإدارة",
-    description: "الماليات، الرسائل، طلبات التسجيل، وإدارة المشرفين والصلاحيات.",
-    icon: "إ",
-    tone: "bg-[#0a3f2a] text-white",
-  },
-  {
-    href: "/remote/supervision/login",
-    title: "دخول الإشراف",
-    description: "المهام الإشرافية، متابعة الطلاب والمعلمين، والطلبات المحولة من الإدارة.",
-    icon: "ش",
-    tone: "bg-[#fffaf4] text-[#0a3f2a]",
-  },
-  {
-    href: "/remote/teacher/login",
-    title: "دخول المعلم",
-    description: "إضافة التقارير اليومية ومتابعة سجل الطلاب والتنبيهات.",
-    icon: "م",
-    tone: "bg-[#f6eee7] text-[#8a661f]",
-  },
-];
+import Link from "next/link";
+import Image from "next/image";
 
 export default function RemotePage() {
   return (
-    <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-4 flex items-center justify-between sm:mb-6">
-          <Link href="/" className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#bd8f2d]/15">
-            الرئيسية
+    <main className="min-h-screen bg-gradient-to-b from-[#1a4a4d] via-[#1f5558] to-[#1a4a4d] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
+      {/* Decorative Background Pattern */}
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#cbb292_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
+
+      <div className="mx-auto max-w-5xl relative z-10 space-y-8">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between border-b border-[#cbb292]/30 pb-5">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 rounded-full bg-[#1a4a4d]/80 px-5 py-2.5 text-sm sm:text-base font-bold text-[#cbb292] border border-[#cbb292]/40 shadow-md hover:bg-[#cbb292] hover:text-[#162a2c] transition-all"
+          >
+            ← العودة للصفحة الرئيسية
           </Link>
-          <span className="rounded-full bg-[#0f5a35]/12 px-4 py-2 text-sm font-bold text-[#0f5a35]">
-            تعليم عن بعد
+          <span className="rounded-full bg-[#cbb292]/20 px-5 py-2 text-sm sm:text-base font-bold text-[#f2e8d5] border border-[#cbb292]/40">
+            🌐 قسم التعليم عن بعد
           </span>
         </div>
 
-        <section className="rahma-card grid overflow-hidden rounded-[1.75rem] sm:rounded-[2.5rem] lg:grid-cols-[0.95fr_1.05fr]">
-          <div className="rahma-muted-pattern relative hidden min-h-[360px] overflow-hidden bg-[#0a3f2a] lg:block lg:min-h-[680px]">
-            <BrandHeroMedia src="/images/afyon-circle-wide.jpeg" opacity="opacity-68" />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#062b1d] via-[#0a3f2a]/68 to-[#0f5a35]/26" />
-            <div className="absolute bottom-8 right-8 max-w-md text-white">
-              <BrandLockup light />
-              <h1 className="text-4xl font-black">اختر بوابة الدخول</h1>
-              <p className="mt-3 text-sm leading-7 text-white/78">
-                لكل دور واجهته المستقلة: الإدارة، الإشراف، أو المعلم.
-              </p>
-            </div>
-          </div>
+        {/* Banner with Student Photo */}
+        <div className="rounded-3xl border-2 border-[#cbb292]/70 bg-[#153e40]/90 p-8 sm:p-10 text-center space-y-4 shadow-2xl relative overflow-hidden">
+          <Image src="/images/afyon-circle-wide.jpeg" alt="" fill sizes="100vw" className="absolute inset-0 object-cover opacity-15" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/80 via-[#153e40]/90 to-[#153e40]/95" />
 
-          <div className="flex items-center justify-center p-4 sm:p-6 md:p-12">
-            <div className="w-full max-w-xl space-y-3 sm:space-y-5">
-              <div className="relative mb-2 overflow-hidden rounded-3xl bg-[#0a3f2a] p-5 text-white ring-1 ring-[#d8bf83] lg:hidden">
-                <BrandHeroMedia src="/images/afyon-circle-wide.jpeg" opacity="opacity-42" />
-                <div className="relative">
-                  <p className="text-sm font-bold text-[#f1d28a]">تعليم عن بعد</p>
-                  <h1 className="mt-2 text-2xl font-black">اختر بوابة الدخول</h1>
-                  <p className="mt-2 text-sm leading-6 text-white/75">
-                    لكل دور واجهته المستقلة: الإدارة، الإشراف، أو المعلم.
-                  </p>
-                </div>
-              </div>
-              {entries.map((entry) => (
-                <Link
-                  key={entry.href}
-                  href={entry.href}
-                  className={`group flex items-center justify-between rounded-3xl p-4 shadow-sm transition duration-200 hover:-translate-y-0.5 sm:p-6 ${entry.tone}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/90 text-lg font-black text-[#0f5a35] sm:h-14 sm:w-14 sm:text-xl">
-                      {entry.icon}
-                    </span>
-                    <div>
-                      <h2 className="text-lg font-black sm:text-xl">{entry.title}</h2>
-                      <p className="mt-1 text-xs leading-6 opacity-75 sm:text-sm">{entry.description}</p>
-                    </div>
-                  </div>
-                  <span className="text-2xl transition group-hover:-translate-x-1">←</span>
-                </Link>
-              ))}
+          <div className="relative z-10 space-y-3">
+            <div className="inline-block rounded-full bg-[#cbb292]/20 border border-[#cbb292]/50 px-5 py-1.5 text-sm font-bold text-[#f2e8d5] font-serif">
+              ✨ بوابة التعليم عن بعد ✨
             </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-[#cbb292] font-ruqaa leading-tight tracking-wide">
+              منصة الرحمة لتعليم القرآن الكريم
+            </h1>
+            <p className="text-sm sm:text-base text-slate-200/90 font-serif max-w-2xl mx-auto leading-relaxed pt-2">
+              حلقات قرآنية إلكترونية، متابعة إشرافية يومية، تقارير الطلاب، ومراسلات أولياء الأمور
+            </p>
           </div>
-        </section>
+        </div>
+
+        {/* Selection Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+          {/* Admin Card */}
+          <Link
+            href="/remote/admin/login"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+            
+            <div className="space-y-4 relative z-10">
+              <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
+                🏛️
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  لوحة التحكم الإدارية
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300/90 mt-3 leading-relaxed">
+                  الماليات، الرسائل، طلبات التسجيل، وإدارة المشرفين والصلاحيات والإحصائيات.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-[#cbb292]/20 flex items-center justify-between text-base font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>تسجيل دخول الإدارة</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-xl">←</span>
+            </div>
+          </Link>
+
+          {/* Supervision Card */}
+          <Link
+            href="/remote/supervision/login"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+
+            <div className="space-y-4 relative z-10">
+              <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
+                🔍
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  واجهة الإشراف التعليمي
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300/90 mt-3 leading-relaxed">
+                  المهام الإشرافية، متابعة الطلاب والمعلمين، والطلبات المحولة من الإدارة.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-[#cbb292]/20 flex items-center justify-between text-base font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>تسجيل دخول المشرف</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-xl">←</span>
+            </div>
+          </Link>
+
+          {/* Teacher Card */}
+          <Link
+            href="/remote/teacher/login"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+
+            <div className="space-y-4 relative z-10">
+              <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
+                📖
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  واجهة كادر المعلمين
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300/90 mt-3 leading-relaxed">
+                  إضافة التقارير اليومية ومتابعة سجل الطلاب والتنبيهات والمراسلات.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-[#cbb292]/20 flex items-center justify-between text-base font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>تسجيل دخول المعلم</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-xl">←</span>
+            </div>
+          </Link>
+
+          {/* Registration Card */}
+          <Link
+            href="/registration"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+
+            <div className="space-y-4 relative z-10">
+              <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
+                ✨
+              </div>
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  تسجيل طالب جديد
+                </h2>
+                <p className="text-sm sm:text-base text-slate-300/90 mt-3 leading-relaxed">
+                  نموذج تسجيل أولي لطالب جديد في حلقات التعليم عن بعد.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-[#cbb292]/20 flex items-center justify-between text-base font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>بدء التسجيل</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-xl">←</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-4 text-center text-sm font-bold text-slate-400/70">
+          إدارة تحفيظ الرحمة للقرآن الكريم © {new Date().getFullYear()}
+        </div>
       </div>
     </main>
   );

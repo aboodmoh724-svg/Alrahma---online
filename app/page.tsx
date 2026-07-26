@@ -3,17 +3,15 @@ import Image from "next/image";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#162a2c] via-[#1c383b] to-[#162a2c] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
+    <main className="min-h-screen bg-gradient-to-b from-[#1a4a4d] via-[#1f5558] to-[#1a4a4d] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
       {/* Decorative Islamic Background Pattern */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#cbb292_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
-      <div className="absolute -top-40 -right-40 w-96 h-96 rounded-full bg-[#cbb292]/20 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full bg-[#cbb292]/20 blur-3xl pointer-events-none" />
 
       <div className="mx-auto max-w-6xl relative z-10 space-y-8">
-        {/* Header with BOTH Logos (Platform + Tahfeez) */}
+        {/* Header with BOTH Logos (Tahfeez + Platform) */}
         <div className="flex items-center justify-between border-b border-[#cbb292]/30 pb-5">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-2xl bg-white/10 border border-[#cbb292]/40 p-1.5 backdrop-blur-sm">
+            <div className="flex items-center gap-1.5 rounded-2xl bg-white/15 border border-[#cbb292]/40 p-1.5">
               <Image
                 src="/logo.webp"
                 alt="شعار تحفيظ الرحمة"
@@ -39,37 +37,50 @@ export default function HomePage() {
           </div>
           <Link
             href="/registration"
-            className="rounded-full bg-[#162a2c]/80 px-5 py-2.5 text-sm font-bold text-[#cbb292] border border-[#cbb292]/40 shadow-md hover:bg-[#cbb292] hover:text-[#162a2c] transition-all"
+            className="rounded-full bg-[#1a4a4d]/80 px-5 py-2.5 text-sm font-bold text-[#cbb292] border border-[#cbb292]/40 shadow-md hover:bg-[#cbb292] hover:text-[#162a2c] transition-all"
           >
             ✨ تسجيل طالب جديد
           </Link>
         </div>
 
-        {/* Motivational Islamic Calligraphy Banner */}
-        <div className="rounded-3xl border-2 border-[#cbb292]/70 bg-[#0f2022]/80 p-8 sm:p-10 text-center space-y-4 shadow-2xl backdrop-blur-md relative overflow-hidden">
-          <div className="inline-block rounded-full bg-[#cbb292]/20 border border-[#cbb292]/50 px-5 py-1.5 text-sm font-bold text-[#f2e8d5] font-serif mb-1">
-            ✨ البوابة الرقمية الشاملة ✨
+        {/* Motivational Islamic Calligraphy Banner with Student Photo */}
+        <div className="rounded-3xl border-2 border-[#cbb292]/60 bg-[#153e40]/90 p-8 sm:p-10 text-center space-y-4 shadow-2xl relative overflow-hidden">
+          {/* Background Student Photo */}
+          <Image
+            src="/images/afyon-awards-wide.jpeg"
+            alt=""
+            fill
+            sizes="100vw"
+            className="absolute inset-0 object-cover opacity-15"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/80 via-[#153e40]/90 to-[#153e40]/95" />
+
+          <div className="relative z-10 space-y-4">
+            <div className="inline-block rounded-full bg-[#cbb292]/20 border border-[#cbb292]/50 px-5 py-1.5 text-sm font-bold text-[#f2e8d5] font-serif mb-1">
+              ✨ البوابة الرقمية الشاملة ✨
+            </div>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#cbb292] font-ruqaa leading-tight tracking-wide">
+              «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ»
+            </h1>
+            <p className="text-xl sm:text-2xl font-black text-[#cbb292]/80 font-ruqaa tracking-wide">
+              وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي
+            </p>
+            <p className="text-sm sm:text-base text-slate-200/90 font-serif max-w-3xl mx-auto leading-relaxed pt-2">
+              مرحباً بكم في المنظومة الرقمية الشاملة لإدارة تحفيظ الرحمة للقرآن الكريم
+            </p>
           </div>
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-[#cbb292] font-ruqaa leading-tight tracking-wide drop-shadow-md">
-            «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ»
-          </h1>
-          <p className="text-xl sm:text-2xl font-black text-[#cbb292]/80 font-ruqaa tracking-wide">
-            وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي
-          </p>
-          <p className="text-sm sm:text-base text-slate-200/90 font-serif max-w-3xl mx-auto leading-relaxed pt-2">
-            مرحباً بكم في المنظومة الرقمية الشاملة لإدارة تحفيظ الرحمة للقرآن الكريم
-          </p>
         </div>
 
-        {/* 4 Main Portal Cards Grid (Same style as summer page cards) */}
+        {/* 4 Main Portal Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
 
           {/* Card 1: التعليم عن بعد */}
           <Link
             href="/remote"
-            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1c383b] to-[#0f2022] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full blur-2xl group-hover:bg-[#cbb292]/25 transition-all" />
+            <Image src="/images/afyon-circle-wide.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
             
             <div className="space-y-4 relative z-10">
               <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
@@ -94,9 +105,10 @@ export default function HomePage() {
           {/* Card 2: التعليم الحضوري - أفيون */}
           <Link
             href="/onsite"
-            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#203c3f] to-[#0f2022] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full blur-2xl group-hover:bg-[#cbb292]/25 transition-all" />
+            <Image src="/images/afyon-recitation-day.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
 
             <div className="space-y-4 relative z-10">
               <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
@@ -118,16 +130,17 @@ export default function HomePage() {
             </div>
           </Link>
 
-          {/* Card 3: قسم سوريا */}
+          {/* Card 3: قسم سوريا (No flag emoji) */}
           <Link
             href="/syria"
-            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1c383b] to-[#0f2022] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full blur-2xl group-hover:bg-[#cbb292]/25 transition-all" />
+            <Image src="/images/syria-login-hero.png" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
 
             <div className="space-y-4 relative z-10">
               <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">
-                🇸🇾
+                🕌
               </div>
               <div>
                 <h2 className="text-2xl sm:text-3xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
@@ -148,9 +161,10 @@ export default function HomePage() {
           {/* Card 4: الدورة الصيفية */}
           <Link
             href="/onsite/summer"
-            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#203c3f] to-[#0f2022] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full blur-2xl group-hover:bg-[#cbb292]/25 transition-all" />
+            <Image src="/images/afyon-awards-wide.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
+            <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
 
             <div className="space-y-4 relative z-10">
               <div className="w-18 h-18 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-4xl shadow-inner group-hover:scale-110 transition-transform p-3">

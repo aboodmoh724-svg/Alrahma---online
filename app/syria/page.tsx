@@ -1,68 +1,132 @@
 import Link from "next/link";
 import Image from "next/image";
-import BrandLockup from "@/components/brand/BrandLockup";
 
 export default function SyriaPage() {
   return (
-    <main className="rahma-shell min-h-screen px-3 py-3 sm:px-5 sm:py-6" dir="rtl">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-4 flex items-center justify-between sm:mb-6">
+    <main className="min-h-screen bg-gradient-to-b from-[#1a4a4d] via-[#1f5558] to-[#1a4a4d] text-[#fbf6ef] px-4 py-8 sm:py-12 relative overflow-hidden dir-rtl" dir="rtl">
+      {/* Decorative Background Pattern */}
+      <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#cbb292_1.5px,transparent_1.5px)] [background-size:16px_16px] pointer-events-none" />
+
+      <div className="mx-auto max-w-5xl relative z-10 space-y-8">
+        {/* Header Navigation */}
+        <div className="flex items-center justify-between border-b border-[#cbb292]/30 pb-5">
           <Link
             href="/"
-            className="rounded-full bg-white px-4 py-2 text-sm font-bold text-[#1c2d31] shadow-sm ring-1 ring-[#bd8f2d]/15"
+            className="inline-flex items-center gap-2 rounded-full bg-[#1a4a4d]/80 px-5 py-2.5 text-sm sm:text-base font-bold text-[#cbb292] border border-[#cbb292]/40 shadow-md hover:bg-[#cbb292] hover:text-[#162a2c] transition-all"
           >
-            الرئيسية
+            ← العودة للصفحة الرئيسية
           </Link>
-          <span className="rounded-full bg-[#0f5a35]/12 px-4 py-2 text-sm font-bold text-[#0f5a35]">
-            تعليم حضوري - سوريا
+          <span className="rounded-full bg-[#cbb292]/20 px-5 py-2 text-sm sm:text-base font-bold text-[#f2e8d5] border border-[#cbb292]/40">
+            🕌 التعليم الحضوري - سوريا
           </span>
         </div>
 
-        <section className="rahma-card grid overflow-hidden rounded-[1.75rem] shadow-xl sm:rounded-[2.5rem] lg:grid-cols-[1.05fr_0.95fr]">
-          <div className="relative min-h-[390px] overflow-hidden bg-[#0a3f2a] lg:min-h-[680px]">
-            <Image
-              src="/images/syria-login-hero.png"
-              alt=""
-              fill
-              sizes="(min-width: 1024px) 55vw, 100vw"
-              className="object-contain object-center opacity-55 blur-[1px]"
-              priority
-            />
-            <div className="absolute inset-0 bg-[#0a3f2a]/34" />
-          </div>
+        {/* Banner */}
+        <div className="rounded-3xl border-2 border-[#cbb292]/70 bg-[#153e40]/90 p-8 sm:p-10 text-center space-y-4 shadow-2xl relative overflow-hidden">
+          <Image src="/images/syria-login-hero.png" alt="" fill sizes="100vw" className="absolute inset-0 object-cover opacity-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/80 via-[#153e40]/90 to-[#153e40]/95" />
 
-          <div className="flex items-center justify-center p-5 sm:p-8 md:p-12">
-            <div className="w-full max-w-md space-y-4">
-              <div className="mb-6">
-                <BrandLockup className="mb-4" />
-                <h1 className="text-4xl font-black leading-tight text-[#0a3f2a] sm:text-5xl">
-                  التعليم الحضوري - سوريا
-                </h1>
-                <p className="mt-4 text-sm leading-8 text-[#1c2d31]/68">
-                  بداية مستقلة لفرع سوريا: تسجيل أولي، إدارة منفصلة، ومعلمون وحلقات خاصة بالفرع.
+          <div className="relative z-10 space-y-3">
+            <div className="inline-block rounded-full bg-[#cbb292]/20 border border-[#cbb292]/50 px-5 py-1.5 text-sm font-bold text-[#f2e8d5] font-serif">
+              ✨ بوابة فرع سوريا ✨
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-[#cbb292] font-ruqaa leading-tight tracking-wide">
+              تحفيظ الرحمة - فرع سوريا
+            </h1>
+            <p className="text-sm sm:text-base text-slate-200/90 font-serif max-w-2xl mx-auto leading-relaxed pt-2">
+              فرع ميداني مستقل ببياناته الخاصة، تسجيل أولي للطلاب، وإدارة مخصصة
+            </p>
+          </div>
+        </div>
+
+        {/* Selection Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+          {/* Admin Card */}
+          <Link
+            href="/syria/admin/login"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-28 h-28 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+            
+            <div className="space-y-4 relative z-10">
+              <div className="w-16 h-16 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform p-2.5">
+                🏛️
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  لوحة الإدارة
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300/90 mt-2 leading-relaxed">
+                  إدارة الحلقات والطلاب والمعلمين ومتابعة الحضور والتقارير.
                 </p>
               </div>
-              <Link
-                href="/syria/registration"
-                className="block rounded-[1.5rem] bg-[#0f5a35] p-5 text-center text-lg font-black text-white shadow-md transition hover:-translate-y-0.5 sm:rounded-[2rem] sm:p-8 sm:text-xl"
-              >
-                تسجيل طالب
-              </Link>
-              <Link
-                href="/syria/admin/login"
-                className="block rounded-[1.5rem] bg-[#0a3f2a] p-5 text-center text-lg font-black text-white shadow-md transition hover:-translate-y-0.5 sm:rounded-[2rem] sm:p-8 sm:text-xl"
-              >
-                دخول الإدارة
-              </Link>
-              <Link
-                href="/syria/teacher/login"
-                className="block rounded-[1.5rem] bg-[#bd8f2d] p-5 text-center text-lg font-black text-white shadow-md transition hover:-translate-y-0.5 sm:rounded-[2rem] sm:p-8 sm:text-xl"
-              >
-                دخول المعلم
-              </Link>
             </div>
-          </div>
-        </section>
+
+            <div className="mt-6 pt-3 border-t border-[#cbb292]/20 flex items-center justify-between text-sm font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>دخول الإدارة</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-lg">←</span>
+            </div>
+          </Link>
+
+          {/* Teacher Card */}
+          <Link
+            href="/syria/teacher/login"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-28 h-28 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+
+            <div className="space-y-4 relative z-10">
+              <div className="w-16 h-16 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform p-2.5">
+                📖
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  واجهة المعلمين
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300/90 mt-2 leading-relaxed">
+                  إدخال تقارير الطلاب اليومية وتسجيل الحفظ والمراجعة وتقييم الأداء.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-3 border-t border-[#cbb292]/20 flex items-center justify-between text-sm font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>دخول المعلم</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-lg">←</span>
+            </div>
+          </Link>
+
+          {/* Registration Card */}
+          <Link
+            href="/syria/registration"
+            className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
+          >
+            <div className="absolute top-0 right-0 w-28 h-28 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
+
+            <div className="space-y-4 relative z-10">
+              <div className="w-16 h-16 rounded-2xl bg-[#cbb292]/20 border border-[#cbb292]/50 flex items-center justify-center text-3xl shadow-inner group-hover:scale-110 transition-transform p-2.5">
+                ✨
+              </div>
+              <div>
+                <h2 className="text-xl sm:text-2xl font-black text-[#f2e8d5] font-serif group-hover:text-white transition-colors">
+                  تسجيل طالب جديد
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300/90 mt-2 leading-relaxed">
+                  نموذج التسجيل الأولي للطلاب الجدد في فرع سوريا.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 pt-3 border-t border-[#cbb292]/20 flex items-center justify-between text-sm font-bold text-[#cbb292] group-hover:text-[#f2e8d5] relative z-10">
+              <span>بدء التسجيل</span>
+              <span className="transform group-hover:-translate-x-2 transition-transform text-lg">←</span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Footer */}
+        <div className="pt-4 text-center text-sm font-bold text-slate-400/70">
+          إدارة تحفيظ الرحمة للقرآن الكريم © {new Date().getFullYear()}
+        </div>
       </div>
     </main>
   );
