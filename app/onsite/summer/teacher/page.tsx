@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
 type SummerReportToday = {
@@ -59,110 +59,201 @@ export default async function OnsiteSummerTeacherDashboard() {
   });
 
   const filledCount = students.filter((s) => s.summerReports.length > 0).length;
-  const absentCount = students.filter((s) => s.summerReports.length > 0 && (s.summerReports[0] as SummerReportToday).status === "ABSENT").length;
-  const presentCount = filledCount - absentCount;
-
-  const quotes = [
-    "«خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ» — رواه البخاري",
-    "«مَنْ قَرَأَ حَرْفاً مِنْ كِتابِ اللَّهِ فَلَهُ بِهِ حَسَنَةٌ» — رواه الترمذي",
-    "«اقرؤوا القرآن فإنه يأتي يوم القيامة شفيعاً لأصحابه» — رواه مسلم",
-    "«إنَّ اللَّهَ يَرْفَعُ بِهذا الكِتابِ أقْواماً ويَضَعُ بِهِ آخَرِينَ» — رواه مسلم",
-    "«الماهِرُ بالقُرآنِ مع السَّفَرَةِ الكِرامِ البَرَرَةِ» — متفق عليه",
-    "«يُقالُ لِصاحِبِ القُرآنِ: اقرأ وارتقِ ورتِّل» — رواه أبو داود",
-    "«تعلَّموا القرآنَ وعلِّموهُ الناسَ» — رواه الترمذي",
-  ];
-  const dayIndex = new Date().getDay();
-  const quoteParts = quotes[dayIndex].split(" — ");
-  const quoteText = quoteParts[0];
-  const quoteAttribution = quoteParts[1] ? `— ${quoteParts[1]}` : "";
+  const completionPercentage =
+    students.length > 0 ? Math.round((filledCount / students.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#faf8f4] text-[#1a2e23] dir-rtl font-sans pb-12" dir="rtl">
-      {/* 1. Header Bar */}
-      <header className="bg-[#0c5c5e] text-white">
-        <div className="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-bold text-[#d4a853]">لوحة المعلم</h1>
-          <LogoutButton redirectUrl="/onsite/summer" />
+    <div className="min-h-screen bg-[#f7f2ea] text-[#162e24] dir-rtl font-sans pb-12" dir="rtl">
+      {/* 🕌 1. Full-Width Dark Emerald Islamic Calligraphy Header for Teacher */}
+      <header className="relative bg-[#0c5c5e] text-white shadow-xl overflow-hidden border-b-4 border-[#bd8f2d]">
+        {/* Geometric Islamic Mandala Accent SVG */}
+        <div className="absolute top-0 right-0 h-full w-[420px] pointer-events-none opacity-25 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-5 pb-5 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-[#bd8f2d]">
+              <Image
+                src="/images/summer_quran_logo_v2.jpg"
+                alt="شعار الدورة الصيفية"
+                width={56}
+                height={56}
+                className="h-14 w-14 rounded-xl object-contain"
+              />
+            </div>
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-3 py-0.5 text-xs font-bold text-cyan-100">
+                🌟 بوابة المعلم الصيفي
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#fbf6ef] font-serif leading-tight mt-1">
+                الدورة الصيفية الأولى
+              </h1>
+              <p className="text-xs font-semibold text-cyan-200">
+                لوحة رصد ومتابعة التقارير اليومية | تحفيظ الرحمة
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 rounded-xl bg-[#117073] px-4 py-2 border border-[#bd8f2d]/40 shrink-0">
+              <div className="h-8 w-8 rounded-full bg-[#bd8f2d] flex items-center justify-center font-bold text-xs text-[#0c5c5e]">
+                أ
+              </div>
+              <div className="text-right">
+                <span className="block text-xs font-bold text-white font-serif">
+                  أستاذ: {teacher.fullName}
+                </span>
+                <span className="block text-[10px] text-cyan-200">
+                  تاريخ اليوم: {todayStr}
+                </span>
+              </div>
+            </div>
+
+            <LogoutButton redirectUrl="/onsite/summer" />
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-4 pt-8 space-y-6">
-        {/* 2. Welcome Section */}
-        <div>
-          <h2 className="text-[#0c5c5e] font-extrabold text-2xl">
-            مرحباً أستاذ {teacher.fullName} 🌙
-          </h2>
-        </div>
-
-        {/* 3. Motivational Islamic Quote */}
-        <div className="bg-white rounded-2xl border border-[#d4a853]/30 p-6 text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-          <p className="font-ruqaa text-[#0c5c5e] text-xl mb-2 leading-relaxed">
-            {quoteText}
-          </p>
-          <p className="text-[#d4a853] text-sm">
-            {quoteAttribution}
-          </p>
-        </div>
-
-        {/* 4. Quick Stats Row */}
-        <div className="flex flex-wrap gap-3">
-          <div className="flex-1 min-w-[100px] bg-white rounded-2xl border border-[#d4a853]/15 p-4 text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <p className="text-xs text-[#6b7280] mb-1">حاضر</p>
-            <p className="font-bold text-lg text-[#10b981]">{presentCount} ✅</p>
-          </div>
-          <div className="flex-1 min-w-[100px] bg-white rounded-2xl border border-[#d4a853]/15 p-4 text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <p className="text-xs text-[#6b7280] mb-1">غائب</p>
-            <p className="font-bold text-lg text-[#ef4444]">{absentCount} ❌</p>
-          </div>
-          <div className="flex-1 min-w-[100px] bg-white rounded-2xl border border-[#d4a853]/15 p-4 text-center shadow-[0_2px_12px_rgba(0,0,0,0.06)]">
-            <p className="text-xs text-[#6b7280] mb-1">تقارير مُرصدة</p>
-            <p className="font-bold text-lg text-[#0c5c5e]">{filledCount}/{students.length} 📝</p>
+      {/* 🏛️ 2. Main Workspace Content Container */}
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 space-y-6">
+        {/* 🌟 Islamic Motivational Calligraphy Banner for Teachers */}
+        <div className="rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-6 shadow-xl text-white text-center space-y-3 relative overflow-hidden dir-rtl" dir="rtl">
+          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+          <div className="relative z-10 space-y-2">
+            <span className="inline-block rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-4 py-1 text-xs sm:text-sm font-bold text-[#fbf6ef] font-serif">
+              ✨ بشارة لحَفَظَةِ كِتَابِ اللَّهِ ✨
+            </span>
+            <h2 className="text-2xl sm:text-4xl font-bold text-[#bd8f2d] font-ruqaa leading-snug tracking-wide">
+              «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ ... وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي»
+            </h2>
+            <p className="text-xs sm:text-sm font-bold text-cyan-100 font-serif max-w-2xl mx-auto">
+              هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ وَهَذَا الشَّرَفَ العَظِيمَ فِي خِدْمَةِ كِتَابِ اللَّهِ تَعَالَى
+            </p>
           </div>
         </div>
 
-        {/* 5. Student List */}
-        <div className="space-y-4 pt-2">
-          {students.map((student) => {
-            const reportToday = student.summerReports[0] as SummerReportToday | undefined;
-            const isDone = Boolean(reportToday);
-            const firstLetter = student.fullName.charAt(0);
+        {/* Top Progress & Completion Summary Banner */}
+        <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-[#0c5c5e] font-serif">
+              نسبة إنجاز تقارير الحلقة اليوم
+            </h2>
+            <p className="text-xs font-semibold text-gray-500 mt-1">
+              تم رصد <b className="text-[#0c5c5e] font-serif text-sm">{filledCount}</b> من إجمالي{" "}
+              <b className="text-[#bd8f2d] font-serif text-sm">{students.length}</b> طالباً بحلقتك
+            </p>
+          </div>
 
-            return (
+          <div className="w-full sm:w-64 space-y-2">
+            <div className="flex justify-between items-center text-xs font-bold">
+              <span className="text-gray-600">التقدم الفعلي</span>
+              <span className="text-[#0c5c5e] font-serif text-base">{completionPercentage}%</span>
+            </div>
+            <div className="h-3.5 w-full rounded-full bg-gray-200 overflow-hidden border border-gray-300/40">
               <div
-                key={student.id}
-                className="bg-white rounded-2xl border border-[#d4a853]/15 p-4 flex flex-col sm:flex-row sm:items-center justify-between shadow-[0_2px_12px_rgba(0,0,0,0.06)] transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_6px_24px_rgba(0,0,0,0.1)] gap-4"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 shrink-0 rounded-full bg-[#0c5c5e] text-white flex items-center justify-center font-bold text-xl">
-                    {firstLetter}
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-[#1a2e23]">{student.fullName}</h3>
-                    {student.circle?.name && (
-                      <p className="text-sm text-[#6b7280] mt-0.5">{student.circle.name}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="shrink-0 flex items-center gap-3 self-end sm:self-auto">
-                  {isDone && (
-                    <span className="text-xs font-bold text-[#10b981] bg-[#10b981]/10 px-2 py-1 rounded-full whitespace-nowrap">
-                      ✅ تم الرصد
-                    </span>
-                  )}
-                  <Link
-                    href={`/onsite/summer/teacher/reports/${student.id}`}
-                    className="bg-[#0c5c5e] hover:bg-[#0a4a4b] text-white text-sm font-bold py-2 px-4 rounded-xl transition-colors whitespace-nowrap"
+                className="h-full rounded-full bg-[#0c5c5e] transition-all duration-500"
+                style={{ width: `${completionPercentage}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 📋 Students List Cards Grid */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-[#0c5c5e] font-serif">
+              قائمة طلابك في الحلقة ({students.length} طالباً)
+            </h3>
+          </div>
+
+          {students.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffdf9] p-10 text-center text-sm font-bold text-gray-500">
+              لا يوجد طلاب مسجلين في حلقتك حتى الآن.
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {students.map((student) => {
+                const reportToday = student.summerReports[0] as SummerReportToday | undefined;
+                const isDone = Boolean(reportToday);
+                const isNoor = student.summerGroup === "NOOR_AL_BAYAN";
+
+                return (
+                  <div
+                    key={student.id}
+                    className={`flex flex-col justify-between rounded-2xl border p-5 transition shadow-sm ${
+                      isDone
+                        ? "border-emerald-400/60 bg-emerald-50/40"
+                        : "border-[#d8bf83]/60 bg-[#fffdf9]"
+                    }`}
                   >
-                    {isDone ? "تعديل التقرير" : "📝 رصد التقرير"}
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
-          {students.length === 0 && (
-            <div className="text-center py-8 text-[#6b7280]">
-              لا يوجد طلاب مسجلين
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          {isNoor ? (
+                            <span className="rounded-full bg-[#bd8f2d] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
+                              📘 طالب نور البيان
+                            </span>
+                          ) : (
+                            <span className="rounded-full bg-[#0c5c5e] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
+                              📖 طالب قرآن كريم
+                            </span>
+                          )}
+
+                          {student.studentCode === "7500" && (
+                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">
+                              تجريبي
+                            </span>
+                          )}
+                        </div>
+
+                        <h4 className="mt-2 text-xl font-bold text-[#162e24] font-serif">
+                          {student.fullName}
+                        </h4>
+
+                        {student.circle?.name && (
+                          <p className="text-xs font-bold text-[#bd8f2d] mt-0.5">
+                            حلقة: {student.circle.name}
+                          </p>
+                        )}
+                      </div>
+
+                      <span
+                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-black font-serif ${
+                          isDone
+                            ? "bg-emerald-700 text-white shadow-2xs"
+                            : "bg-amber-100 text-amber-900 border border-amber-300/60"
+                        }`}
+                      >
+                        {isDone
+                          ? reportToday?.status === "ABSENT"
+                            ? "غائب ❌"
+                            : "تم الرصد ✅"
+                          : "بانتظار التعبئة ⏳"}
+                      </span>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-between border-t border-[#d8bf83]/30 pt-3">
+                      <span className="text-xs font-semibold text-gray-600">
+                        {isDone
+                          ? isNoor
+                            ? `الدرس: ${reportToday?.noorLearned || "حاضر"}`
+                            : `الحفظ: ${reportToday?.quranNew || "حاضر"}`
+                          : "لم يتم حفظ تقرير اليوم"}
+                      </span>
+
+                      <Link
+                        href={`/onsite/summer/teacher/reports/${student.id}`}
+                        className={`rounded-xl px-4 py-2 text-xs font-bold transition shadow-2xs font-serif ${
+                          isDone
+                            ? "bg-white text-[#0c5c5e] border border-[#0c5c5e] hover:bg-emerald-50"
+                            : "bg-[#0c5c5e] text-white hover:bg-[#06484a]"
+                        }`}
+                      >
+                        {isDone ? "تعديل التقرير" : "تعبئة التقرير 📝"}
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

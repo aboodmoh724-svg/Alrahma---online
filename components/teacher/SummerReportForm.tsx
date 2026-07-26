@@ -292,7 +292,7 @@ export default function SummerReportForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-[#d4a853]/15 bg-[#faf8f4] p-6 shadow-sm dir-rtl"
+      className="rounded-3xl border border-[#d8bf83]/50 bg-[#fffaf4] p-6 shadow-md dir-rtl"
       dir="rtl"
     >
       {/* 🌟 Islamic Motivational Calligraphy Banner */}
@@ -330,7 +330,7 @@ export default function SummerReportForm({
 
       {/* 📌 Optional One-Time Start Point Registration for Quran Students */}
       {!isNoor && !startSaved && (
-        <div className="mb-6 rounded-2xl border border-[#d4a853]/15 bg-white shadow-sm p-4 space-y-3">
+        <div className="mb-6 rounded-2xl border-2 border-dashed border-[#bd8f2d] bg-[#fdf9f0] p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-[#0c5c5e] font-serif flex items-center gap-1.5">
               📌 تسجيل بداية الطالب مع المعلم (مرة واحدة عند التحاق الطالب):
@@ -353,7 +353,7 @@ export default function SummerReportForm({
                   setStartSurahId(Number(e.target.value));
                   setStartFromAyah(1);
                 }}
-                className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2.5 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
               >
                 {QURAN_SURAHS.map((s) => (
                   <option key={s.id} value={s.id}>
@@ -368,7 +368,7 @@ export default function SummerReportForm({
               <select
                 value={startFromAyah}
                 onChange={(e) => setStartFromAyah(Number(e.target.value))}
-                className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2.5 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
               >
                 {Array.from({ length: selectedStartSurah.versesCount }, (_, i) => i + 1).map((a) => (
                   <option key={a} value={a}>
@@ -393,7 +393,7 @@ export default function SummerReportForm({
 
       {/* 📌 Optional One-Time Start Point Registration for Noor Al-Bayan Students */}
       {isNoor && !startSaved && (
-        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-4 space-y-3">
+        <div className="mb-6 rounded-2xl border-2 border-dashed border-[#2563eb] bg-[#f0f7ff] p-4 space-y-3">
           <div className="flex items-center justify-between">
             <h3 className="text-sm font-black text-[#1e3a8a] font-serif flex items-center gap-1.5">
               📌 تسجيل بداية الطالب مع المعلم في كتاب (نور البيان):
@@ -413,7 +413,7 @@ export default function SummerReportForm({
               <select
                 value={noorStartPage}
                 onChange={(e) => setNoorStartPage(Number(e.target.value))}
-                className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2.5 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                className="w-full rounded-xl border border-blue-300 bg-white p-2.5 text-xs font-bold outline-none"
               >
                 {Array.from({ length: 100 }, (_, i) => i + 1).map((pg) => (
                   <option key={pg} value={pg}>
@@ -437,7 +437,7 @@ export default function SummerReportForm({
       )}
 
       {existingReport && (
-        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 flex items-center justify-between gap-3">
+        <div className="mb-6 rounded-2xl border border-[#d8bf83] bg-[#fdfaf3] p-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">✏️</span>
             <div>
@@ -475,7 +475,7 @@ export default function SummerReportForm({
             className={`flex items-center justify-center gap-2 rounded-2xl py-3.5 text-base font-black transition-all shadow-sm ${
               status === "PRESENT"
                 ? "bg-[#0c5c5e] text-white ring-2 ring-[#0c5c5e] ring-offset-2"
-                : "bg-white text-[#0c5c5e] border border-[#d4a853]/30 hover:bg-[#faf8f4]"
+                : "bg-white text-[#0c5c5e] border border-[#d8bf83] hover:bg-[#f6eee7]"
             }`}
           >
             <span>✅</span> حاضر
@@ -485,8 +485,8 @@ export default function SummerReportForm({
             onClick={() => setStatus("ABSENT")}
             className={`flex items-center justify-center gap-2 rounded-2xl py-3.5 text-base font-black transition-all shadow-sm ${
               status === "ABSENT"
-                ? "bg-red-500 text-white ring-2 ring-red-500 ring-offset-2"
-                : "bg-white text-[#0c5c5e] border border-[#d4a853]/30 hover:bg-[#faf8f4]"
+                ? "bg-red-600 text-white ring-2 ring-red-600 ring-offset-2"
+                : "bg-white text-red-600 border border-red-200 hover:bg-red-50"
             }`}
           >
             <span>❌</span> غائب
@@ -498,13 +498,13 @@ export default function SummerReportForm({
         <div className="space-y-5">
           {/* Dynamic Fields for Quran Students with Dropdown Selectors */}
           {!isNoor && (
-            <div className="space-y-5 rounded-2xl border border-[#d4a853]/15 bg-white p-5 shadow-sm">
+            <div className="space-y-5 rounded-2xl border border-[#d8bf83]/40 bg-white p-5 shadow-xs">
               <h3 className="text-base font-black text-[#0c5c5e] font-serif border-b border-gray-100 pb-2">
                 📖 متابعة حفظ وتسميع القرآن الكريم
               </h3>
 
               {/* 1. الحفظ الجديد */}
-              <div className="rounded-xl bg-emerald-50/50 border border-emerald-200/50 p-3.5 space-y-2">
+              <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
                 <label className="block text-xs font-black text-[#0c5c5e] font-serif">
                   ✨ الحفظ الجديد (من سورة/آية — إلى سورة/آية):
                 </label>
@@ -517,7 +517,7 @@ export default function SummerReportForm({
                         setNewSurahId(Number(e.target.value));
                         setNewFromAyah(1);
                       }}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -532,7 +532,7 @@ export default function SummerReportForm({
                     <select
                       value={newFromAyah}
                       onChange={(e) => setNewFromAyah(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {Array.from({ length: selectedNewSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
@@ -552,7 +552,7 @@ export default function SummerReportForm({
                         const endSurah = QURAN_SURAHS.find((s) => s.id === val);
                         if (endSurah) setNewToAyah(Math.min(newToAyah, endSurah.versesCount));
                       }}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -567,7 +567,7 @@ export default function SummerReportForm({
                     <select
                       value={newToAyah}
                       onChange={(e) => setNewToAyah(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {Array.from({ length: selectedNewEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
@@ -585,7 +585,7 @@ export default function SummerReportForm({
               </div>
 
               {/* 2. المراجعة اليومية */}
-              <div className="rounded-xl bg-blue-50/50 border border-blue-200/50 p-3.5 space-y-2">
+              <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
                 <label className="block text-xs font-black text-[#0c5c5e] font-serif">
                   🔄 المراجعة اليومية (من سورة/آية — إلى سورة/آية):
                 </label>
@@ -598,7 +598,7 @@ export default function SummerReportForm({
                         setRevSurahId(Number(e.target.value));
                         setRevFromAyah(1);
                       }}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -613,7 +613,7 @@ export default function SummerReportForm({
                     <select
                       value={revFromAyah}
                       onChange={(e) => setRevFromAyah(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {Array.from({ length: selectedRevSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
@@ -633,7 +633,7 @@ export default function SummerReportForm({
                         const endSurah = QURAN_SURAHS.find((s) => s.id === val);
                         if (endSurah) setRevToAyah(Math.min(revToAyah, endSurah.versesCount));
                       }}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -648,7 +648,7 @@ export default function SummerReportForm({
                     <select
                       value={revToAyah}
                       onChange={(e) => setRevToAyah(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {Array.from({ length: selectedRevEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
@@ -666,7 +666,7 @@ export default function SummerReportForm({
               </div>
 
               {/* 3. التلقين والتحضير */}
-              <div className="rounded-xl bg-amber-50/50 border border-amber-200/50 p-3.5 space-y-2">
+              <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
                 <label className="block text-xs font-black text-[#0c5c5e] font-serif">
                   🗣️ التلقين والتحضير (من سورة/آية — إلى سورة/آية):
                 </label>
@@ -679,7 +679,7 @@ export default function SummerReportForm({
                         setTaqeenSurahId(Number(e.target.value));
                         setTaqeenFromAyah(1);
                       }}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -694,7 +694,7 @@ export default function SummerReportForm({
                     <select
                       value={taqeenFromAyah}
                       onChange={(e) => setTaqeenFromAyah(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {Array.from({ length: selectedTaqeenSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
@@ -714,7 +714,7 @@ export default function SummerReportForm({
                         const endSurah = QURAN_SURAHS.find((s) => s.id === val);
                         if (endSurah) setTaqeenToAyah(Math.min(taqeenToAyah, endSurah.versesCount));
                       }}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {QURAN_SURAHS.map((s) => (
                         <option key={s.id} value={s.id}>
@@ -729,7 +729,7 @@ export default function SummerReportForm({
                     <select
                       value={taqeenToAyah}
                       onChange={(e) => setTaqeenToAyah(Number(e.target.value))}
-                      className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-2 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                      className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
                     >
                       {Array.from({ length: selectedTaqeenEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
                         <option key={a} value={a}>
@@ -752,7 +752,7 @@ export default function SummerReportForm({
           {isNoor && (
             <>
             {/* Noor Quran Surahs Section (Juz Amma) */}
-            <div className="space-y-4 rounded-2xl border border-[#d4a853]/15 bg-white p-5 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#0c5c5e]/30 bg-[#f0faf9] p-5 shadow-xs">
               <h3 className="text-base font-black text-[#0c5c5e] font-serif border-b border-[#0c5c5e]/10 pb-2">
                 📖 متابعة قصار السور (جزء عمّ)
               </h3>
@@ -769,7 +769,7 @@ export default function SummerReportForm({
                   <select
                     value={noorQuranNewSurah}
                     onChange={(e) => setNoorQuranNewSurah(e.target.value)}
-                    className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] px-3 py-2 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                    className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
                   >
                     <option value="">-- اختر السورة --</option>
                     {JUZ_AMMA_SURAHS.map((s) => (
@@ -788,7 +788,7 @@ export default function SummerReportForm({
                   <select
                     value={noorQuranRevisionSurah}
                     onChange={(e) => setNoorQuranRevisionSurah(e.target.value)}
-                    className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] px-3 py-2 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                    className="w-full rounded-xl border border-blue-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
                   >
                     <option value="">-- اختر السورة --</option>
                     {JUZ_AMMA_SURAHS.map((s) => (
@@ -807,7 +807,7 @@ export default function SummerReportForm({
                   <select
                     value={noorQuranTaqeenSurah}
                     onChange={(e) => setNoorQuranTaqeenSurah(e.target.value)}
-                    className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] px-3 py-2 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                    className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
                   >
                     <option value="">-- اختر السورة --</option>
                     {JUZ_AMMA_SURAHS.map((s) => (
@@ -820,7 +820,7 @@ export default function SummerReportForm({
               </div>
             </div>
 
-            <div className="space-y-4 rounded-2xl border border-[#d4a853]/15 bg-white p-4 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
               <h3 className="text-base font-black text-[#0c5c5e]">
                 📘 متابعة نور البيان والتمهيدي
               </h3>
@@ -833,7 +833,7 @@ export default function SummerReportForm({
                   value={noorLearned}
                   onChange={(e) => setNoorLearned(e.target.value)}
                   placeholder="مثال: حركة الفتح والكسر مع أمثلة الحروف"
-                  className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] px-4 py-2.5 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -869,7 +869,7 @@ export default function SummerReportForm({
                   <select
                     value={noorHomeworkGrade}
                     onChange={(e) => setNoorHomeworkGrade(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] px-4 py-2 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                    className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2 text-sm font-bold outline-none"
                   >
                     {[5, 4, 3, 2, 1].map((val) => (
                       <option key={val} value={val}>
@@ -886,7 +886,7 @@ export default function SummerReportForm({
                 <select
                   value={noorParticipation}
                   onChange={(e) => setNoorParticipation(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] px-4 py-2 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2 text-sm font-bold outline-none"
                 >
                   {[5, 4, 3, 2, 1].map((val) => (
                     <option key={val} value={val}>
@@ -900,7 +900,7 @@ export default function SummerReportForm({
           )}
 
           {/* Behavior & Discipline */}
-          <div className="rounded-2xl border border-[#d4a853]/15 bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
             <h3 className="mb-3 text-base font-black text-[#0c5c5e]">
               ⭐ السلوك والانضباط والملاحظات
             </h3>
@@ -922,8 +922,8 @@ export default function SummerReportForm({
                     onClick={() => setBehaviorGrade(item.grade)}
                     className={`rounded-xl py-2.5 text-xs font-black transition-all ${
                       behaviorGrade === item.grade
-                        ? "bg-[#d4a853] text-white shadow-md"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        ? "bg-[#bd8f2d] text-[#0c5c5e] shadow-md border-2 border-[#0c5c5e]"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
                     {item.label}
@@ -940,7 +940,7 @@ export default function SummerReportForm({
                 value={behaviorNotes}
                 onChange={(e) => setBehaviorNotes(e.target.value)}
                 placeholder="ملاحظات تشجيعية أو توجيهات للأهل..."
-                className="w-full rounded-xl border border-[#d4a853]/30 bg-[#faf8f4] p-3 text-sm font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
               />
             </div>
           </div>
@@ -952,7 +952,7 @@ export default function SummerReportForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-2xl bg-[#0c5c5e] py-4 font-bold text-white shadow-lg transition hover:bg-[#0a4d4f] disabled:opacity-50"
+          className="w-full rounded-2xl bg-[#0c5c5e] py-4 text-base font-black text-white shadow-lg transition hover:bg-[#06484a] disabled:opacity-50"
         >
           {loading ? "جاري الحفظ..." : existingReport ? "💾 حفظ التعديلات وتحديث التقرير اليومي" : "💾 حفظ التقرير اليومي"}
         </button>

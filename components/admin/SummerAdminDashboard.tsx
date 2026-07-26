@@ -881,7 +881,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("overview")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "overview"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -891,7 +891,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("reports_stats")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "reports_stats"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -901,7 +901,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("students")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "students"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -911,7 +911,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("circles")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "circles"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -921,7 +921,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("daily_send")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "daily_send"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -931,7 +931,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("weekly_send")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "weekly_send"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -941,7 +941,7 @@ function normalizeSearchText(text: string): string {
             onClick={() => setActiveTab("education_plan")}
             className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
               activeTab === "education_plan"
-                ? "bg-white text-[#0c5c5e] font-black shadow-md"
+                ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md"
                 : "text-emerald-100 hover:bg-[#117073]"
             }`}
           >
@@ -951,15 +951,15 @@ function normalizeSearchText(text: string): string {
       </header>
 
       {/* 🏛️ 2. Main Dashboard Content Container */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 pb-8">
+      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
         {/* 🌟 Islamic Motivational Calligraphy Banner for Admin */}
-        <div className="rounded-2xl border-2 border-[#d4a853]/30 bg-white p-5 shadow-lg text-[#1a2e23] text-center space-y-2 relative overflow-hidden dir-rtl mb-6" dir="rtl">
+        <div className="rounded-2xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-5 shadow-lg text-white text-center space-y-2 relative overflow-hidden dir-rtl mb-6" dir="rtl">
           <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:12px_12px]" />
           <div className="relative z-10 space-y-1">
-            <p className="text-xl sm:text-2xl font-bold text-[#0c5c5e] font-ruqaa leading-relaxed">
+            <p className="text-xl sm:text-2xl font-bold text-[#bd8f2d] font-ruqaa leading-relaxed">
               ✨ «إِنَّ اللَّهَ يُحِبُّ إِذَا عَمِلَ أَحَدُكُمْ عَمَلًا أَنْ يُتْقِنَهُ» ✨
             </p>
-            <p className="text-sm sm:text-base font-bold text-[#6b7280] font-serif leading-relaxed">
+            <p className="text-sm sm:text-base font-bold text-emerald-100 font-serif leading-relaxed">
               🌿 "مَرْحَبَاً بِكُمْ فِي المَنَصَّةِ المَرْكَزِيَّةِ لِإِدَارَةِ التَّقَارِيرِ وَالرَّسَائِلِ — نَسْأَلُ اللَّهَ أَنْ يَجْعَلَ هَذَا العَمَلَ خَالِصَاً لِوَجْهِهِ الكَرِيمِ وَمُبَارَكاً." 🌿
             </p>
           </div>
@@ -2452,16 +2452,16 @@ function normalizeSearchText(text: string): string {
               </div>
 
               {/* Widget 1: Islamic Education Plan Topic Selector */}
-              <div className="rounded-2xl border border-[#d4a853]/15 bg-white p-5 text-[#1a2e23] shadow-md">
+              <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#0c5c5e] p-5 text-white shadow-md">
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lg">📄</span>
-                  <h4 className="text-base font-bold text-[#d4a853] font-serif">خطط التعليم الإسلامي</h4>
+                  <h4 className="text-base font-bold text-[#bd8f2d] font-serif">خطط التعليم الإسلامي</h4>
                 </div>
 
                 <select
                   value={selectedTopicId}
                   onChange={(e) => setSelectedTopicId(e.target.value)}
-                  className="w-full rounded-xl bg-[#faf8f4] border border-[#d4a853]/50 p-2.5 text-xs font-bold text-[#1a2e23] outline-none focus:ring-2 focus:ring-[#d4a853]"
+                  className="w-full rounded-xl bg-[#117073] border border-[#bd8f2d]/50 p-2.5 text-xs font-bold text-white outline-none focus:ring-2 focus:ring-[#bd8f2d]"
                 >
                   {educationTopics.map((t) => (
                     <option key={t.id} value={t.id}>
@@ -2471,9 +2471,9 @@ function normalizeSearchText(text: string): string {
                 </select>
 
                 {currentSelectedTopic && (
-                  <div className="mt-3 rounded-xl bg-[#faf8f4] p-3 border border-[#d4a853]/15 text-xs">
-                    <span className="block font-bold text-[#0c5c5e] mb-1 font-serif">الدرس النشط الآن:</span>
-                    <p className="font-semibold leading-relaxed text-[#6b7280] mb-2">
+                  <div className="mt-3 rounded-xl bg-[#117073]/80 p-3 border border-white/10 text-xs">
+                    <span className="block font-bold text-[#bd8f2d] mb-1 font-serif">الدرس النشط الآن:</span>
+                    <p className="font-semibold leading-relaxed text-cyan-100 mb-2">
                       {currentSelectedTopic.details}
                     </p>
                     <button
