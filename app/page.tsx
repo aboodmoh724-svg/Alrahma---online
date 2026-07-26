@@ -51,9 +51,9 @@ export default function HomePage() {
             alt=""
             fill
             sizes="100vw"
-            className="absolute inset-0 object-cover opacity-30"
+            className="absolute inset-0 object-cover opacity-15"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/60 via-[#153e40]/70 to-[#153e40]/85" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/80 via-[#153e40]/90 to-[#153e40]/95" />
 
           <div className="relative z-10 space-y-4">
             <div className="inline-block rounded-full bg-[#cbb292]/20 border border-[#cbb292]/50 px-5 py-1.5 text-sm font-bold text-[#f2e8d5] font-serif mb-1">
@@ -79,7 +79,7 @@ export default function HomePage() {
             href="/remote"
             className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <Image src="/images/afyon-circle-wide.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-25 group-hover:opacity-35 transition-opacity duration-500" />
+            <Image src="/images/afyon-circle-wide.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
             <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
             
             <div className="space-y-4 relative z-10">
@@ -107,7 +107,7 @@ export default function HomePage() {
             href="/onsite"
             className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <Image src="/images/afyon-recitation-day.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-25 group-hover:opacity-35 transition-opacity duration-500" />
+            <Image src="/images/afyon-recitation-day.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
             <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
 
             <div className="space-y-4 relative z-10">
@@ -135,7 +135,7 @@ export default function HomePage() {
             href="/syria"
             className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#1f5558] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <Image src="/images/syria-login-hero.png" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-25 group-hover:opacity-35 transition-opacity duration-500" />
+            <Image src="/images/syria-login-hero.png" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
             <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
 
             <div className="space-y-4 relative z-10">
@@ -163,7 +163,7 @@ export default function HomePage() {
             href="/onsite/summer"
             className="group relative rounded-3xl border-2 border-[#cbb292]/40 bg-gradient-to-br from-[#22595c] to-[#153e40] p-8 sm:p-10 shadow-xl transition-all duration-300 hover:-translate-y-1 hover:border-[#cbb292] hover:shadow-2xl hover:shadow-[#cbb292]/20 overflow-hidden flex flex-col justify-between"
           >
-            <Image src="/images/afyon-awards-wide.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-25 group-hover:opacity-35 transition-opacity duration-500" />
+            <Image src="/images/afyon-awards-wide.jpeg" alt="" fill sizes="(min-width:768px) 50vw, 100vw" className="absolute inset-0 object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500" />
             <div className="absolute top-0 right-0 w-36 h-36 bg-[#cbb292]/10 rounded-full group-hover:bg-[#cbb292]/20 transition-all" />
 
             <div className="space-y-4 relative z-10">
