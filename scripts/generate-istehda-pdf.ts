@@ -1,0 +1,544 @@
+import puppeteer from "puppeteer";
+import path from "path";
+import fs from "fs";
+
+async function generatePDF() {
+  console.log("🚀 Generating High-Resolution PDF Presentation Deck for Istehda Quran Platform...");
+
+  const htmlContent = `
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>عرض تجريبي - منصة استهداء لتعليم القرآن الكريم</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cairo:wght@600;700;800;900&family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <style>
+    @page {
+      size: 1920px 1080px;
+      margin: 0;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+    }
+    body {
+      background: #f9f9fb;
+      color: #1c2d31;
+      width: 1920px;
+    }
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      position: relative;
+      overflow: hidden;
+      background: #f9f9fb;
+      page-break-after: always;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+
+    /* Colors */
+    .bg-emerald { background-color: #1e4d3b; }
+    .bg-gold { background-color: #c59b27; }
+    .text-emerald { color: #1e4d3b; }
+    .text-gold { color: #c59b27; }
+    .border-emerald { border-color: #1e4d3b; }
+    .border-gold { border-color: #c59b27; }
+
+    .font-cairo { font-family: 'Cairo', sans-serif; }
+    .font-amiri { font-family: 'Amiri', serif; }
+
+    /* Header Component */
+    .slide-header {
+      background: #1e4d3b;
+      border-bottom: 5px solid #c59b27;
+      padding: 24px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    .slide-header h2 {
+      font-family: 'Cairo', sans-serif;
+      font-size: 38px;
+      font-weight: 800;
+      color: #c59b27;
+    }
+    .slide-header p {
+      font-size: 22px;
+      color: #e2e8f0;
+      margin-top: 4px;
+    }
+
+    /* Card Box */
+    .card {
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+      border: 2px solid rgba(197, 155, 39, 0.3);
+      padding: 30px;
+      position: relative;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 1: Cover Slide -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide" style="padding: 50px;">
+    <div style="border: 4px solid #c59b27; border-radius: 30px; height: 100%; padding: 15px; background: #ffffff;">
+      <div style="border: 2px solid #1e4d3b; border-radius: 20px; height: 100%; padding: 50px 70px; background: #fafafc; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
+        
+        <!-- Header Banner -->
+        <div style="background: #1e4d3b; border: 3px solid #c59b27; border-radius: 25px; width: 100%; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.12);">
+          <div style="display: inline-block; background: rgba(197,155,39,0.2); border: 1.5px solid #c59b27; color: #f2e8d5; font-size: 24px; font-weight: 700; padding: 6px 30px; border-radius: 50px; margin-bottom: 20px;">
+            ✨ منصة استهداء لتعليم القرآن الكريم ✨
+          </div>
+          <h1 class="font-cairo" style="font-size: 52px; font-weight: 900; color: #ffffff; margin-bottom: 15px;">
+            مشروع منصة قرآنية تعليمية متكاملة
+          </h1>
+          <p style="font-size: 26px; color: #f2e8d5; font-weight: 500;">
+            تجمع بين الإتقان في الحفظ والتلاوة ومجالس الاستهداء بالقرآن الكريم
+          </p>
+        </div>
+
+        <!-- Student Researcher Info -->
+        <div style="background: #ffffff; border: 2.5px solid #c59b27; border-radius: 24px; width: 80%; padding: 30px 40px; box-shadow: 0 10px 25px rgba(0,0,0,0.06);">
+          <p style="font-size: 22px; color: #c59b27; font-weight: 700; margin-bottom: 8px;">👤 إعداد الطالب الباحث:</p>
+          <h2 class="font-cairo" style="font-size: 40px; font-weight: 900; color: #1e4d3b; margin-bottom: 8px;">عبد الرحمن محمد دهبية</h2>
+          <p style="font-size: 22px; color: #4a5568; font-weight: 700;">الرقم الأكاديمي: 30484377</p>
+        </div>
+
+        <!-- Academic Footer -->
+        <div style="background: #1e4d3b; border: 2px solid #c59b27; border-radius: 18px; width: 90%; padding: 18px; color: #c59b27; font-size: 24px; font-weight: 700;">
+          🏛️ برنامج البناء المنهجي – دفعة العطاء | إسطنبول، تركيا | 2026م
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 2: Executive Summary -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <h2>ملخص المشروع — الرؤية والأهداف والثمرات</h2>
+        <p>دراسة شاملة لربط حفظ القرآن بالتزكية والمعايشة العملية</p>
+      </div>
+      <div style="background: rgba(197,155,39,0.2); border: 1px solid #c59b27; color: #c59b27; font-size: 20px; font-weight: 700; padding: 6px 20px; border-radius: 30px;">
+        الشريحة 2 من 7
+      </div>
+    </div>
+
+    <div style="padding: 40px 60px; display: flex; flex-direction: column; gap: 30px; height: 100%;">
+      <!-- 3 Cards Grid -->
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+        
+        <!-- Problem Card -->
+        <div class="card" style="border-color: #9b2c2c;">
+          <div style="background: #1e4d3b; color: #c59b27; font-size: 24px; font-weight: 800; padding: 12px; border-radius: 14px; text-align: center; margin-bottom: 20px;" class="font-cairo">
+            ⚠️ المشكلة
+          </div>
+          <p style="font-size: 21px; line-height: 1.8; color: #1c2d31;">
+            أغلب المنصات القرآنية إما أن تهتم بالحفظ والتجويد وتُهمل الجوانب التربوية والتزكوية، أو العكس تهتم بالبرامج التربوية وتُهمل حفظ القرآن وإتقانه. وكلا الأمرين مهم لا يستغنى أحد عن الآخر.
+          </p>
+        </div>
+
+        <!-- Importance Card -->
+        <div class="card" style="border-color: #c59b27;">
+          <div style="background: #1e4d3b; color: #c59b27; font-size: 24px; font-weight: 800; padding: 12px; border-radius: 14px; text-align: center; margin-bottom: 20px;" class="font-cairo">
+            ⭐ الأهمية
+          </div>
+          <p style="font-size: 21px; line-height: 1.8; color: #1c2d31;">
+            الأمة تمر حالياً بمحطات صعبة، وعليها السير وفق منهج النبوة في دار الأرقم: أخذ القرآن والعمل به. المشروع يرجع لهذا المنهج عبر دمج الإتقان مع مجالس الاستهداء والمعايشة العملية.
+          </p>
+        </div>
+
+        <!-- Solution Card -->
+        <div class="card" style="border-color: #1e4d3b;">
+          <div style="background: #1e4d3b; color: #c59b27; font-size: 24px; font-weight: 800; padding: 12px; border-radius: 14px; text-align: center; margin-bottom: 20px;" class="font-cairo">
+            💡 الوسيلة
+          </div>
+          <p style="font-size: 21px; line-height: 1.8; color: #1c2d31;">
+            منصة إلكترونية (موقع) تضم مسارات تعليمية متنوعة، مع دمج الذكاء الاصطناعي وإنشاء محتوى بصري يعرض فكرة المنصة ومميزاتها عبر الموشن جرافيك وفيديوهات الذكاء الاصطناعي.
+          </p>
+        </div>
+      </div>
+
+      <!-- Fruits Bottom Box -->
+      <div style="background: #1e4d3b; border: 2.5px solid #c59b27; border-radius: 24px; padding: 30px 40px; color: #ffffff; margin-top: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <h3 class="font-cairo" style="font-size: 28px; color: #c59b27; margin-bottom: 12px;">🌿 الثمرات المتوقعة للمشروع:</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; font-size: 20px; line-height: 1.8;">
+          <div>
+            <strong style="color: #f2e8d5;">📌 الثمرات الأساسية:</strong>
+            <p style="color: #e2e8f0; margin-top: 5px;">تعلم القرآن وإتقانه • إقامة مجالس الاستهداء بالقرآن الدائمة • التزكية بالقرآن والعمل به • المعايشة العملية للقرآن في الحياة اليومية.</p>
+          </div>
+          <div>
+            <strong style="color: #f2e8d5;">📌 الثمرات الجانبية:</strong>
+            <p style="color: #e2e8f0; margin-top: 5px;">إنشاء صحبة قرآنية • التواصل المستمر مع أولياء الأمور • تغيير ثقافة المجتمع نحو القرآن كمنهاج حياة • إشغال وقت الشباب بالنافع وتجنيبهم التفاهة.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 3: Project Motivation -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <h2>أسباب اختيار الثغر والمشروع — دوافع الانطلاق</h2>
+        <p>الركائز الذاتية والواقعية والموارد المتاحة لبناء المنصة</p>
+      </div>
+      <div style="background: rgba(197,155,39,0.2); border: 1px solid #c59b27; color: #c59b27; font-size: 20px; font-weight: 700; padding: 6px 20px; border-radius: 30px;">
+        الشريحة 3 من 7
+      </div>
+    </div>
+
+    <div style="padding: 40px 60px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; height: 100%;">
+      
+      <!-- Block 1 -->
+      <div class="card" style="border-color: #1e4d3b;">
+        <div style="background: #1e4d3b; border: 1px solid #c59b27; color: #c59b27; font-size: 23px; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; margin-bottom: 25px;" class="font-cairo">
+          1️⃣ الأسباب الذاتية والخبرة
+        </div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 20px; font-size: 20px; line-height: 1.7; color: #1c2d31;">
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>التواجد في حلقات القرآن الكريم وتحفيظه منذ الصغر.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>المشاركة والمساهمة المستمرة في المخيمات القرآنية الصيفية.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>تجربة عمل ميدانية ناجحة في مدينة أفيون (قرآن، تربية، وتواصل مع الأهل).</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>الحصول على إجازات في القرآن الكريم والمتون العلمية.</span></li>
+        </ul>
+      </div>
+
+      <!-- Block 2 -->
+      <div class="card" style="border-color: #c59b27; background: #fffdf7;">
+        <div style="background: #1e4d3b; border: 1px solid #c59b27; color: #c59b27; font-size: 23px; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; margin-bottom: 25px;" class="font-cairo">
+          2️⃣ الأسباب الواقعية والضرورة
+        </div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 20px; font-size: 20px; line-height: 1.7; color: #1c2d31;">
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>ضيق الأنشطة الحضورية يضطر الكثيرين للجلوس في المنازل.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>طبيعة العمل والدراسة في تركيا وأوروبا لا تسمح بالدوام التقليدي.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>التعليم الإلكتروني أصبح واقعاً ملموساً وضرورة معاصرة.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>دمج الذكاء الاصطناعي مفيد جداً في تطوير العملية التربوية.</span></li>
+        </ul>
+      </div>
+
+      <!-- Block 3 -->
+      <div class="card" style="border-color: #1e4d3b;">
+        <div style="background: #1e4d3b; border: 1px solid #c59b27; color: #c59b27; font-size: 23px; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; margin-bottom: 25px;" class="font-cairo">
+          3️⃣ الموارد والفرص المتاحة
+        </div>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 20px; font-size: 20px; line-height: 1.7; color: #1c2d31;">
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>توفر الوقت الكافي لإدارة المشروع والإشراف التام عليه.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>الجاهزية التقنية وخبرة دمج أدوات الذكاء الاصطناعي في المنظومة.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>علاقات مع معلمين ومصممين واستشاريين في المجال القرآني.</span></li>
+          <li style="display: flex; gap: 10px;"><span>🔹</span><span>توفر الدعم المالي المبدئي للانطلاق المباشر والتأسيس.</span></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 4: Platform System & Roadmap -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <h2>التعريف بالمشروع ونظامه وخارطة الطريق</h2>
+        <p>الرؤية التنفيذية ومراحل النمو والتوسع المستقبلي للمنصة</p>
+      </div>
+      <div style="background: rgba(197,155,39,0.2); border: 1px solid #c59b27; color: #c59b27; font-size: 20px; font-weight: 700; padding: 6px 20px; border-radius: 30px;">
+        الشريحة 4 من 7
+      </div>
+    </div>
+
+    <div style="padding: 40px 60px; display: flex; flex-direction: column; gap: 30px; height: 100%;">
+      
+      <!-- Top 2 Cards: Definition & Goals -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div class="card" style="border-color: #1e4d3b;">
+          <h3 class="font-cairo" style="font-size: 26px; color: #1e4d3b; margin-bottom: 15px;">📖 التعريف بالمشروع:</h3>
+          <p style="font-size: 21px; line-height: 1.8; color: #1c2d31;">
+            منصة قرآنية تعليمية متكاملة تجمع بين الإتقان في التلاوة والحفظ، ومجالس الاستهداء بالقرآن، والتزكية به، والعمل به، لجعل القرآن مشروع حياة لدى شباب الجيل الصاعد.
+          </p>
+        </div>
+        <div class="card" style="border-color: #c59b27;">
+          <h3 class="font-cairo" style="font-size: 26px; color: #c59b27; margin-bottom: 15px;">🎯 الأهداف الاستراتيجية:</h3>
+          <ul style="font-size: 20px; line-height: 1.7; color: #1c2d31; padding-right: 20px;">
+            <li>الوصول لشريحة واسعة من الشباب في تركيا وأوروبا والعالم العربي.</li>
+            <li>خلق بيئة قرآنية إلكترونية جاذبة ومحفزة على الاستمرار.</li>
+            <li>تطوير المحتوى القرآني عبر الإعلام الرقمي المبتكر وفيديوهات AI.</li>
+            <li>بناء أجيال معايشة للقرآن تنطلق من الفهم إلى العمل والتطبيق.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Roadmap Timeline Bottom Box -->
+      <div style="background: #1e4d3b; border: 2.5px solid #c59b27; border-radius: 24px; padding: 30px; color: #ffffff; box-shadow: 0 10px 25px rgba(0,0,0,0.1);">
+        <h3 class="font-cairo" style="font-size: 28px; color: #c59b27; margin-bottom: 25px; text-align: center;">🗺️ خارطة الطريق ومراحل النمو والتنفيذ (Roadmap Timeline)</h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px;">
+          
+          <div style="background: #ffffff; border-radius: 16px; padding: 20px; text-align: center; color: #1c2d31; border: 2px solid #c59b27;">
+            <div style="width: 45px; height: 45px; background: #c59b27; color: #1e4d3b; border-radius: 50%; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;" class="font-cairo">1</div>
+            <h4 class="font-cairo" style="font-size: 20px; color: #1e4d3b; font-weight: 800; margin-bottom: 6px;">التحضير</h4>
+            <p style="font-size: 15px; color: #c59b27; font-weight: 700; margin-bottom: 8px;">أسبوعين - شهر</p>
+            <p style="font-size: 16px; color: #4a5568; line-height: 1.5;">تطوير المنصة، دمج الذكاء الاصطناعي، وبناء الفريق.</p>
+          </div>
+
+          <div style="background: #ffffff; border-radius: 16px; padding: 20px; text-align: center; color: #1c2d31; border: 2px solid #c59b27;">
+            <div style="width: 45px; height: 45px; background: #c59b27; color: #1e4d3b; border-radius: 50%; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;" class="font-cairo">2</div>
+            <h4 class="font-cairo" style="font-size: 20px; color: #1e4d3b; font-weight: 800; margin-bottom: 6px;">التجريبي</h4>
+            <p style="font-size: 15px; color: #c59b27; font-weight: 700; margin-bottom: 8px;">شهر (50 طالباً)</p>
+            <p style="font-size: 16px; color: #4a5568; line-height: 1.5;">إطلاق تجريبي قياسي واختبار جودة الأداء.</p>
+          </div>
+
+          <div style="background: #ffffff; border-radius: 16px; padding: 20px; text-align: center; color: #1c2d31; border: 2px solid #c59b27;">
+            <div style="width: 45px; height: 45px; background: #c59b27; color: #1e4d3b; border-radius: 50%; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;" class="font-cairo">3</div>
+            <h4 class="font-cairo" style="font-size: 20px; color: #1e4d3b; font-weight: 800; margin-bottom: 6px;">الإطلاق الأوسع</h4>
+            <p style="font-size: 15px; color: #c59b27; font-weight: 700; margin-bottom: 8px;">شهر (1,000 طالب)</p>
+            <p style="font-size: 16px; color: #4a5568; line-height: 1.5;">كثافة إعلامية وحملات جذب مستهدفة.</p>
+          </div>
+
+          <div style="background: #ffffff; border-radius: 16px; padding: 20px; text-align: center; color: #1c2d31; border: 2px solid #c59b27;">
+            <div style="width: 45px; height: 45px; background: #c59b27; color: #1e4d3b; border-radius: 50%; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;" class="font-cairo">4</div>
+            <h4 class="font-cairo" style="font-size: 20px; color: #1e4d3b; font-weight: 800; margin-bottom: 6px;">التوسع</h4>
+            <p style="font-size: 15px; color: #c59b27; font-weight: 700; margin-bottom: 8px;">شهرين (5,000 طالب)</p>
+            <p style="font-size: 16px; color: #4a5568; line-height: 1.5;">توسيع القاعدة الجماهيرية والمسارات.</p>
+          </div>
+
+          <div style="background: #ffffff; border-radius: 16px; padding: 20px; text-align: center; color: #1c2d31; border: 2px solid #c59b27;">
+            <div style="width: 45px; height: 45px; background: #c59b27; color: #1e4d3b; border-radius: 50%; font-size: 24px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto;" class="font-cairo">5</div>
+            <h4 class="font-cairo" style="font-size: 20px; color: #1e4d3b; font-weight: 800; margin-bottom: 6px;">التطوير المستمر</h4>
+            <p style="font-size: 15px; color: #c59b27; font-weight: 700; margin-bottom: 8px;">مرحلة مستمرة</p>
+            <p style="font-size: 16px; color: #4a5568; line-height: 1.5;">إضافة مجالس حفظ السنة والسيرة النبوية.</p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 5: Challenges & Solutions -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <h2>التحديات وطرق التعامل معها — خطة الاستدامة</h2>
+        <p>حلول منهجية وعملية لمواجهة تحديات التشغيل والمنافسة</p>
+      </div>
+      <div style="background: rgba(197,155,39,0.2); border: 1px solid #c59b27; color: #c59b27; font-size: 20px; font-weight: 700; padding: 6px 20px; border-radius: 30px;">
+        الشريحة 5 من 7
+      </div>
+    </div>
+
+    <div style="padding: 40px 60px; display: flex; flex-direction: column; gap: 25px; height: 100%;">
+      
+      <!-- Pair 1 -->
+      <div style="display: grid; grid-template-columns: 1fr 60px 1fr; gap: 20px; align-items: center;">
+        <div class="card" style="border-color: #c59b27; background: #fffdf5;">
+          <h3 class="font-cairo" style="font-size: 23px; color: #c59b27; margin-bottom: 8px;">⚠️ التحدي 1: التزام المعلمين وجودة الأداء</h3>
+          <p style="font-size: 19px; color: #4a5568; line-height: 1.6;">صعوبة ضبط أداء وتفرغ المعلمين والالتزام بالخطة التربوية المحددة.</p>
+        </div>
+        <div style="background: #c59b27; color: #1e4d3b; width: 50px; height: 50px; border-radius: 50%; font-size: 28px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto;">➔</div>
+        <div class="card" style="border-color: #1e4d3b;">
+          <h3 class="font-cairo" style="font-size: 23px; color: #1e4d3b; margin-bottom: 8px;">🛡️ الحل الإجرائي:</h3>
+          <p style="font-size: 19px; color: #1c2d31; line-height: 1.6;">التدريب المنهجي الدوري، التأهيل المستمر، توفير الاستقرار المالي والمكافآت المجزية لإبقاء الكفاءات.</p>
+        </div>
+      </div>
+
+      <!-- Pair 2 -->
+      <div style="display: grid; grid-template-columns: 1fr 60px 1fr; gap: 20px; align-items: center;">
+        <div class="card" style="border-color: #c59b27; background: #fffdf5;">
+          <h3 class="font-cairo" style="font-size: 23px; color: #c59b27; margin-bottom: 8px;">⚠️ التحدي 2: منافسة المنصات والتشتت</h3>
+          <p style="font-size: 19px; color: #4a5568; line-height: 1.6;">كثرة المشتتات وسطحية المحتوى الرقمي المتداول بين الجيل الصاعد.</p>
+        </div>
+        <div style="background: #c59b27; color: #1e4d3b; width: 50px; height: 50px; border-radius: 50%; font-size: 28px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto;">➔</div>
+        <div class="card" style="border-color: #1e4d3b;">
+          <h3 class="font-cairo" style="font-size: 23px; color: #1e4d3b; margin-bottom: 8px;">🛡️ الحل الإجرائي:</h3>
+          <p style="font-size: 19px; color: #1c2d31; line-height: 1.6;">صناعة إعلام بصري وموشن جرافيك مبتكر وفيديوهات ذكاء اصطناعي تتناسب مع تطلعات الشباب لمزاحمة الباطل.</p>
+        </div>
+      </div>
+
+      <!-- Pair 3 -->
+      <div style="display: grid; grid-template-columns: 1fr 60px 1fr; gap: 20px; align-items: center;">
+        <div class="card" style="border-color: #c59b27; background: #fffdf5;">
+          <h3 class="font-cairo" style="font-size: 23px; color: #c59b27; margin-bottom: 8px;">⚠️ التحدي 3: الاستدامة المالية والتكاليف</h3>
+          <p style="font-size: 19px; color: #4a5568; line-height: 1.6;">تأمين ميزانية التشغيل وتغطية تكاليف الخوادم والرواتب والتسويق.</p>
+        </div>
+        <div style="background: #c59b27; color: #1e4d3b; width: 50px; height: 50px; border-radius: 50%; font-size: 28px; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto;">➔</div>
+        <div class="card" style="border-color: #1e4d3b;">
+          <h3 class="font-cairo" style="font-size: 23px; color: #1e4d3b; margin-bottom: 8px;">🛡️ الحل الإجرائي:</h3>
+          <p style="font-size: 19px; color: #1c2d31; line-height: 1.6;">تحصيل رسوم ميسرة تناسب مقدرة الطلاب لتغطية الكلفة، مع منح مجانية واستقطاب ممولين وداعمين لهذا المشروع.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 6: Website Mockup & Budget -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div>
+        <h2>معاينة البوابة الرقمية والملخص المالي التأسيسي</h2>
+        <p>التحقق الميداني من جاهزية النظام والتقديرات المباشرة للانطلاق</p>
+      </div>
+      <div style="background: rgba(197,155,39,0.2); border: 1px solid #c59b27; color: #c59b27; font-size: 20px; font-weight: 700; padding: 6px 20px; border-radius: 30px;">
+        الشريحة 6 من 7
+      </div>
+    </div>
+
+    <div style="padding: 40px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; height: 100%;">
+      
+      <!-- Right Card: Live UI Preview Mockup Card -->
+      <div class="card" style="border-color: #1e4d3b; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="background: #1e4d3b; color: #c59b27; font-size: 24px; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; margin-bottom: 20px;" class="font-cairo">
+          💻 معاينة واجهة المنصة الرقمية العاملة
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+          <div style="background: #f4f6f5; border: 1.5px solid #c59b27; border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 20px; font-weight: 700; color: #1e4d3b;" class="font-cairo">📊 لوحة متابعة إنجاز الحفظ والمراجعة</span>
+            <span style="background: #1e4d3b; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 16px;">متابعة يومية دقيقة</span>
+          </div>
+
+          <div style="background: #f4f6f5; border: 1.5px solid #c59b27; border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 20px; font-weight: 700; color: #1e4d3b;" class="font-cairo">📈 نسبة تقدم الطالب والتقييم السلوكي</span>
+            <span style="background: #c59b27; color: #1e4d3b; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 16px;">سجل 100% متكامل</span>
+          </div>
+
+          <div style="background: #f4f6f5; border: 1.5px solid #c59b27; border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 20px; font-weight: 700; color: #1e4d3b;" class="font-cairo">🎥 بث حلقة Zoom التفاعلية المباشرة</span>
+            <span style="background: #1e4d3b; color: #ffffff; padding: 4px 12px; border-radius: 20px; font-size: 16px;">ربط متكامل ومباشر</span>
+          </div>
+
+          <div style="background: #f4f6f5; border: 1.5px solid #c59b27; border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 20px; font-weight: 700; color: #1e4d3b;" class="font-cairo">💬 التواصل المباشر مع أولياء الأمور</span>
+            <span style="background: #c59b27; color: #1e4d3b; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 16px;">تقارير واتساب فورية</span>
+          </div>
+        </div>
+
+        <p style="font-size: 17px; color: #4a5568; text-align: center; margin-top: 15px;">
+          المنظومة جاهزة برمجياً ومجربة ميدانياً لإدارة الحلقات والتقارير اليومية والتواصل المباشر.
+        </p>
+      </div>
+
+      <!-- Left Card: Financial Budget Card -->
+      <div class="card" style="border-color: #c59b27; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="background: #1e4d3b; color: #c59b27; font-size: 24px; font-weight: 800; padding: 14px; border-radius: 14px; text-align: center; margin-bottom: 20px;" class="font-cairo">
+          💰 الملخص المالي التأسيسي (فترة 4 أشهر)
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 20px;">
+          
+          <div style="background: #f0fdf4; border: 2px solid #1e4d3b; border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h4 class="font-cairo" style="font-size: 21px; color: #1e4d3b; font-weight: 800;">الميزانية المطلوبة للانطلاق</h4>
+              <p style="font-size: 16px; color: #4a5568; margin-top: 4px;">تغطي تطوير الخوادم، برمجيات المنصة، التسويق والرواتب.</p>
+            </div>
+            <span style="font-size: 26px; font-weight: 900; color: #1e4d3b; white-space: nowrap;" class="font-cairo">$2,000 – $2,300</span>
+          </div>
+
+          <div style="background: #fefcbf; border: 2px solid #c59b27; border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h4 class="font-cairo" style="font-size: 21px; color: #744210; font-weight: 800;">المبلغ المتوفر حالياً (دعم مبدئي)</h4>
+              <p style="font-size: 16px; color: #744210; margin-top: 4px;">تم تأمينه كدعم أولي لبدء الأعمال التأسيسية.</p>
+            </div>
+            <span style="font-size: 26px; font-weight: 900; color: #744210; white-space: nowrap;" class="font-cairo">$1,000 – $1,300</span>
+          </div>
+
+          <div style="background: #fff5f5; border: 2px solid #c53030; border-radius: 16px; padding: 20px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h4 class="font-cairo" style="font-size: 21px; color: #9b2c2c; font-weight: 800;">المبلغ المتبقي للانطلاق المباشر</h4>
+              <p style="font-size: 16px; color: #9b2c2c; margin-top: 4px;">المبلغ المطلوب لتغطية كامل الخطة التشغيلية للمرحلة 1.</p>
+            </div>
+            <span style="font-size: 26px; font-weight: 900; color: #c53030; white-space: nowrap;" class="font-cairo">$800 – $1,000</span>
+          </div>
+
+        </div>
+
+        <p style="font-size: 17px; color: #4a5568; text-align: center; margin-top: 15px;">
+          دعم بسيط متبقٍ يضمن تشغيل المنصة لمدة 4 أشهر قادمة بكامل طاقتها.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <!-- SLIDE 7: Conclusion -->
+  <!-- ════════════════════════════════════════════════════════════ -->
+  <div class="slide" style="padding: 50px;">
+    <div style="border: 4px solid #c59b27; border-radius: 30px; height: 100%; padding: 15px; background: #ffffff;">
+      <div style="border: 2px solid #1e4d3b; border-radius: 20px; height: 100%; padding: 50px 70px; background: #fafafc; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center;">
+        
+        <!-- Header Badge -->
+        <div style="background: #1e4d3b; border: 2px solid #c59b27; border-radius: 50px; padding: 12px 40px; color: #c59b27; font-size: 26px; font-weight: 800;" class="font-cairo">
+          🌿 الخاتمة والتطلع للمستقبل 🌿
+        </div>
+
+        <!-- Central Quote Box -->
+        <div style="background: #ffffff; border: 3px solid #c59b27; border-radius: 30px; width: 95%; padding: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.08); margin: 30px 0;">
+          <h3 class="font-cairo" style="font-size: 30px; color: #c59b27; margin-bottom: 25px;">«كلمة ختامية»</h3>
+          <p class="font-amiri" style="font-size: 32px; line-height: 2.2; color: #1e4d3b; font-weight: 700;">
+            "نسأل الله تعالى أن تكون هذه المنصة القرآنية خطوة مباركة ولبنة عملية صادقة في مسار الإصلاح. إننا على يقين تام بأن هذا المشروع ليس مجرد نهاية مطاف أكاديمي، بل هو نواة حقيقية وانطلاقة لمشاريع كبرى؛ متى ما قُدّر لها أن تُقام على أسس صحيحة ومتينة، لنبتغي بها وجه الله تعالى وخدمة كتابه العظيم."
+          </p>
+        </div>
+
+        <!-- Researcher Footer -->
+        <div style="background: #1e4d3b; border: 2px solid #c59b27; border-radius: 20px; width: 90%; padding: 20px; color: #c59b27; font-size: 22px; font-weight: 700; display: flex; justify-content: space-around; align-items: center;">
+          <span>👤 إعداد الطالب: عبد الرحمن محمد دهبية (الرقم الأكاديمي: 30484377)</span>
+          <span>🏛️ برنامج البناء المنهجي - دفعة العطاء | إسطنبول، تركيا</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
+  `;
+
+  const tmpHtmlPath = path.join(process.cwd(), "public", "downloads", "istehda_slides.html");
+  fs.writeFileSync(tmpHtmlPath, htmlContent, "utf-8");
+
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+  });
+
+  const page = await browser.newPage();
+  await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 2 });
+  await page.goto(`file://${tmpHtmlPath}`, { waitUntil: "networkidle0" });
+
+  const pdfPath = path.join(process.cwd(), "public", "downloads", "Istehda_Presentation_Deck.pdf");
+  await page.pdf({
+    path: pdfPath,
+    width: "1920px",
+    height: "1080px",
+    printBackground: true,
+    margin: { top: 0, right: 0, bottom: 0, left: 0 },
+  });
+
+  await browser.close();
+  console.log(`✅ PDF file generated successfully at: ${pdfPath}`);
+}
+
+generatePDF().catch((err) => {
+  console.error("❌ Error generating PDF:", err);
+  process.exit(1);
+});
