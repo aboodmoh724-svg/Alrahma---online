@@ -1073,13 +1073,13 @@ function normalizeSearchText(text: string): string {
                           </p>
                           <div className="flex items-center gap-2 pt-1">
                             <button
-                              onClick={() => handleReviewEditRequest(req.id, "APPROVED")}
+                              onClick={() => handleReviewRequest(req.id, "APPROVED")}
                               className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 py-1.5 text-xs font-bold text-white transition shadow-sm"
                             >
                               ✓ موافقة
                             </button>
                             <button
-                              onClick={() => handleReviewEditRequest(req.id, "REJECTED")}
+                              onClick={() => handleReviewRequest(req.id, "REJECTED")}
                               className="flex-1 rounded-lg bg-rose-600/80 hover:bg-rose-600 py-1.5 text-xs font-bold text-white transition shadow-sm"
                             >
                               ✕ رفض
