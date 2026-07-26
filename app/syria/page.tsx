@@ -23,8 +23,8 @@ export default function SyriaPage() {
 
         {/* Banner */}
         <div className="rounded-3xl border-2 border-[#cbb292]/70 bg-[#153e40]/90 p-8 sm:p-10 text-center space-y-4 shadow-2xl relative overflow-hidden">
-          <Image src="/images/syria-login-hero.png" alt="" fill sizes="100vw" className="absolute inset-0 object-cover opacity-10" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/80 via-[#153e40]/90 to-[#153e40]/95" />
+          <Image src="/images/syria-login-hero.png" alt="" fill sizes="100vw" className="absolute inset-0 object-cover opacity-30" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#153e40]/60 via-[#153e40]/70 to-[#153e40]/85" />
 
           <div className="relative z-10 space-y-3">
             <div className="inline-block rounded-full bg-[#cbb292]/20 border border-[#cbb292]/50 px-5 py-1.5 text-sm font-bold text-[#f2e8d5] font-serif">
