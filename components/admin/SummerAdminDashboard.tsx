@@ -816,14 +816,14 @@ function normalizeSearchText(text: string): string {
   const currentSelectedTopic = educationTopics.find((t) => t.id === selectedTopicId) || educationTopics[0];
 
   return (
-    <div className="min-h-screen bg-[#f7f2ea] text-[#162e24] dir-rtl font-sans pb-12" dir="rtl">
-      {/* 🕌 1. Full-Width Dark Emerald Islamic Calligraphy Header */}
-      <header className="relative bg-[#0c5c5e] text-white shadow-xl overflow-hidden border-b-4 border-[#bd8f2d]">
-        <div className="absolute top-0 right-0 h-full w-[420px] pointer-events-none opacity-25 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#092b22] to-[#0f172a] text-slate-100 dir-rtl font-sans pb-12" dir="rtl">
+      {/* 🕌 1. Full-Width Dark Slate & Emerald Header */}
+      <header className="relative bg-[#0a231c]/90 text-white shadow-2xl overflow-hidden border-b border-[#d4af37]/30 backdrop-blur-md">
+        <div className="absolute top-0 right-0 h-full w-[420px] pointer-events-none opacity-10 bg-[radial-gradient(#d4af37_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
         
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-5 pb-4 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-[#bd8f2d]/30">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-5 pb-4 flex flex-col md:flex-row items-center justify-between gap-4 border-b border-[#d4af37]/20">
           <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-[#bd8f2d]">
+            <div className="rounded-2xl bg-slate-950 p-1.5 shadow-md ring-1 ring-[#d4af37]/50">
               <Image
                 src="/images/summer_quran_logo_v2.jpg"
                 alt="شعار الدورة الصيفية"
@@ -833,11 +833,11 @@ function normalizeSearchText(text: string): string {
               />
             </div>
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-[#fbf6ef] font-serif leading-tight">
-                الدورة الصيفية الأولى
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#f3e5c8] font-serif leading-tight">
+                لوحة الإدارة العامة — الدورة الصيفية
               </h1>
-              <p className="text-xs font-semibold text-emerald-200">
-                منصة الإدارة المركزية والتقارير الصيفية | تحفيظ الرحمة
+              <p className="text-xs font-semibold text-emerald-300/80">
+                إدارة تحفيظ الرحمة لتعليم القرآن الكريم ونور البيان
               </p>
             </div>
           </div>
@@ -849,13 +849,13 @@ function normalizeSearchText(text: string): string {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="بحث بالاسم، الكود، الواتساب، أو الحلقة..."
-                className="w-full rounded-xl bg-[#117073] border border-[#bd8f2d]/40 pr-9 pl-8 py-2 text-xs text-white placeholder-emerald-200/60 outline-none focus:ring-2 focus:ring-[#bd8f2d]"
+                className="w-full rounded-xl bg-slate-900/80 border border-[#d4af37]/30 pr-9 pl-8 py-2.5 text-xs text-slate-100 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#d4af37] transition shadow-inner"
               />
-              <span className="absolute right-3 top-2.5 text-xs text-emerald-200/80">🔍</span>
+              <span className="absolute right-3 top-3 text-xs text-slate-400">🔍</span>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute left-2.5 top-2 text-xs text-emerald-200 hover:text-white font-bold"
+                  className="absolute left-2.5 top-2.5 text-xs text-slate-400 hover:text-white font-bold"
                   title="مسح البحث"
                 >
                   ✖
@@ -863,13 +863,13 @@ function normalizeSearchText(text: string): string {
               )}
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl bg-[#117073] px-3.5 py-2 border border-[#bd8f2d]/40 shrink-0">
-              <div className="h-8 w-8 rounded-full bg-[#bd8f2d] flex items-center justify-center font-bold text-xs text-[#0c5c5e]">
+            <div className="flex items-center gap-2 rounded-xl bg-slate-900/80 px-3.5 py-2 border border-[#d4af37]/30 shrink-0">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-[#d4af37] to-[#b38e2d] flex items-center justify-center font-bold text-xs text-slate-950 shadow-sm">
                 م
               </div>
               <div className="text-right">
-                <span className="block text-xs font-bold text-white font-serif">أستاذ محمد سيف الدين</span>
-                <span className="block text-[10px] text-emerald-200">المدير العام</span>
+                <span className="block text-xs font-bold text-slate-100 font-serif">أستاذ محمد سيف الدين</span>
+                <span className="block text-[10px] text-[#d4af37]">المدير العام</span>
               </div>
             </div>
             <LogoutButton redirectUrl="/onsite/summer" />
@@ -877,38 +877,46 @@ function normalizeSearchText(text: string): string {
         </div>
 
         {/* Embedded Navigation Tabs Row */}
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-1.5 overflow-x-auto py-2.5 text-sm font-bold">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 flex items-center gap-2 overflow-x-auto py-3 text-sm font-bold">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "overview" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
+            className={`rounded-xl px-5 py-2.5 transition-all font-serif text-sm flex items-center gap-2 ${
+              activeTab === "overview"
+                ? "bg-gradient-to-r from-[#d4af37] to-[#b38e2d] text-slate-950 font-black shadow-lg shadow-[#d4af37]/20 ring-1 ring-amber-200"
+                : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
             }`}
           >
-            📊 الرئيسية
+            <span>📊</span> الرئيسية
           </button>
           <button
             onClick={() => setActiveTab("students_circles")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "students_circles" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
+            className={`rounded-xl px-5 py-2.5 transition-all font-serif text-sm flex items-center gap-2 ${
+              activeTab === "students_circles"
+                ? "bg-gradient-to-r from-[#d4af37] to-[#b38e2d] text-slate-950 font-black shadow-lg shadow-[#d4af37]/20 ring-1 ring-amber-200"
+                : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
             }`}
           >
-            👥 الطلاب والحلقات
+            <span>👥</span> الطلاب والحلقات
           </button>
           <button
             onClick={() => setActiveTab("whatsapp")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "whatsapp" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
+            className={`rounded-xl px-5 py-2.5 transition-all font-serif text-sm flex items-center gap-2 ${
+              activeTab === "whatsapp"
+                ? "bg-gradient-to-r from-[#d4af37] to-[#b38e2d] text-slate-950 font-black shadow-lg shadow-[#d4af37]/20 ring-1 ring-amber-200"
+                : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
             }`}
           >
-            📱 الواتساب
+            <span>📱</span> الواتساب
           </button>
           <button
             onClick={() => setActiveTab("education_plan")}
-            className={`rounded-xl px-5 py-2 transition-all font-serif text-base ${
-              activeTab === "education_plan" ? "bg-[#bd8f2d] text-[#0c5c5e] font-black shadow-md" : "text-emerald-100 hover:bg-[#117073]"
+            className={`rounded-xl px-5 py-2.5 transition-all font-serif text-sm flex items-center gap-2 ${
+              activeTab === "education_plan"
+                ? "bg-gradient-to-r from-[#d4af37] to-[#b38e2d] text-slate-950 font-black shadow-lg shadow-[#d4af37]/20 ring-1 ring-amber-200"
+                : "text-slate-300 hover:bg-slate-800/60 hover:text-white"
             }`}
           >
-            📚 المنهج
+            <span>📚</span> المنهج
           </button>
         </div>
       </header>
@@ -916,136 +924,239 @@ function normalizeSearchText(text: string): string {
       {/* 🏛️ 2. Main Dashboard Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6">
 
-        {/* Excel Import Status & Action Bar */}
-        <div className="mb-6 rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 className="text-base font-bold text-[#0c5c5e] font-serif">📥 استيراد بيانات الطلاب والحلقات والقرآن</h3>
-            <p className="text-xs font-semibold text-gray-500">
-              استيراد تلقائي لكافة الطلاب المعلمين والحسابات من ملف Excel (كلمة مرور المعلمين: <b className="text-[#bd8f2d]">12345</b>)
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleImportExcel()}
-              disabled={importingExcel}
-              className="rounded-xl bg-[#0c5c5e] px-5 py-2 text-xs font-black text-white hover:bg-[#06484a] disabled:opacity-50 font-serif shadow-xs"
-            >
-              {importingExcel ? "جاري الاستيراد..." : "⚡ تشغيل استيراد Excel التلقائي"}
-            </button>
-
-            <label className="cursor-pointer rounded-xl border border-[#d8bf83] bg-[#f9f5ed] px-4 py-2 text-xs font-bold text-[#0c5c5e] hover:bg-[#d8bf83]">
-              📁 رفع ملف جديد
-              <input type="file" accept=".xls,.xlsx" onChange={handleImportExcel} className="hidden" />
-            </label>
-          </div>
-        </div>
-
-        {importStatusMsg && (
-          <div className="mb-6 rounded-xl bg-[#f9f5ed] p-3 text-xs font-bold text-[#0c5c5e] border border-[#d8bf83]">
-            {importStatusMsg}
-          </div>
-        )}
-
-        {/* NEW RICH DASHBOARD */}
+        {/* NEW LUXURY OVERVIEW DASHBOARD */}
         {activeTab === "overview" && (
           <div className="space-y-6 mb-6">
             {/* Row 1: 4 Stat Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="rounded-2xl bg-gradient-to-br from-[#0c5c5e] to-[#0a4d4f] p-5 text-white shadow-lg">
-                <div className="text-3xl font-black">{students.length}</div>
-                <div className="text-sm text-emerald-200 mt-1">طالب مسجل</div>
-                <div className="text-xs text-emerald-300 mt-2">
+              <div className="rounded-2xl border border-[#d4af37]/30 bg-slate-900/70 backdrop-blur-md p-5 text-white shadow-xl relative overflow-hidden group hover:border-[#d4af37]/60 transition-all">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">👥</span>
+                  <span className="text-xs font-semibold text-[#d4af37] bg-[#d4af37]/10 px-2.5 py-1 rounded-full border border-[#d4af37]/20">العدد الكلي</span>
+                </div>
+                <div className="text-3xl font-black text-slate-100 mt-3">{students.length}</div>
+                <div className="text-xs font-bold text-slate-300 mt-1">طالب مسجل بالدورة</div>
+                <div className="text-[11px] text-emerald-400 mt-2 font-medium">
                   قرآن: {students.filter(s => s.summerGroup !== 'NOOR_AL_BAYAN').length} | 
-                  نور: {students.filter(s => s.summerGroup === 'NOOR_AL_BAYAN').length}
+                  نور البيان: {students.filter(s => s.summerGroup === 'NOOR_AL_BAYAN').length}
                 </div>
               </div>
-              <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-700 p-5 text-white shadow-lg">
-                <div className="text-3xl font-black">{completionRate}%</div>
-                <div className="text-sm text-emerald-200 mt-1">حضور اليوم</div>
+
+              <div className="rounded-2xl border border-[#d4af37]/30 bg-slate-900/70 backdrop-blur-md p-5 text-white shadow-xl relative overflow-hidden group hover:border-[#d4af37]/60 transition-all">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">📊</span>
+                  <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">اليوم</span>
+                </div>
+                <div className="text-3xl font-black text-emerald-400 mt-3">{completionRate}%</div>
+                <div className="text-xs font-bold text-slate-300 mt-1">نسبة حضور الطلاب اليوم</div>
+                <div className="w-full bg-slate-800 rounded-full h-1.5 mt-3 overflow-hidden">
+                  <div className="bg-emerald-400 h-full rounded-full transition-all" style={{ width: `${completionRate}%` }} />
+                </div>
               </div>
-              <div className="rounded-2xl bg-gradient-to-br from-[#bd8f2d] to-[#a67c25] p-5 text-white shadow-lg">
-                <div className="text-3xl font-black">{reportsFilledToday}/{students.length}</div>
-                <div className="text-sm text-amber-100 mt-1">تقارير مرصودة اليوم</div>
+
+              <div className="rounded-2xl border border-[#d4af37]/30 bg-slate-900/70 backdrop-blur-md p-5 text-white shadow-xl relative overflow-hidden group hover:border-[#d4af37]/60 transition-all">
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">📝</span>
+                  <span className="text-xs font-semibold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20">الرصد</span>
+                </div>
+                <div className="text-3xl font-black text-amber-300 mt-3">{reportsFilledToday} <span className="text-base text-slate-400 font-normal">/ {students.length}</span></div>
+                <div className="text-xs font-bold text-slate-300 mt-1">تقارير مرصودة حتى الآن</div>
+                <div className="text-[11px] text-amber-400/90 mt-2 font-medium">
+                  المتبقي للرصد: {students.length - reportsFilledToday} طالب
+                </div>
               </div>
-              <div className="rounded-2xl bg-gradient-to-br from-green-600 to-green-700 p-5 text-white shadow-lg cursor-pointer" onClick={() => setActiveTab('whatsapp')}>
-                <div className="text-3xl font-black">{waChannels?.ONSITE_SUMMER?.ready ? '🟢' : '⚠️'}</div>
-                <div className="text-sm text-green-200 mt-1">واتساب {waChannels?.ONSITE_SUMMER?.ready ? 'متصل' : 'غير متصل'}</div>
+
+              <div 
+                className="rounded-2xl border border-[#d4af37]/30 bg-slate-900/70 backdrop-blur-md p-5 text-white shadow-xl relative overflow-hidden group hover:border-[#d4af37]/60 transition-all cursor-pointer" 
+                onClick={() => setActiveTab('whatsapp')}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-2xl">📱</span>
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${waChannels?.ONSITE_SUMMER?.ready ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-red-400 bg-red-500/10 border-red-500/20'}`}>
+                    {waChannels?.ONSITE_SUMMER?.ready ? 'جاهز' : 'تحقق'}
+                  </span>
+                </div>
+                <div className="text-2xl font-black mt-3 flex items-center gap-2">
+                  <span>{waChannels?.ONSITE_SUMMER?.ready ? '🟢' : '⚠️'}</span>
+                  <span className="text-lg text-slate-100">{waChannels?.ONSITE_SUMMER?.ready ? 'متصل بنجاح' : 'غير متصل'}</span>
+                </div>
+                <div className="text-xs font-bold text-slate-300 mt-1">حالة محرك البث الفوري</div>
+                <div className="text-[11px] text-[#d4af37] mt-2 font-medium">
+                  اضغط للانتقال لمركز الواتساب ←
+                </div>
               </div>
             </div>
 
-            {/* Row 2: Two columns - Chart + Alerts */}
+            {/* Row 2: Two columns - Live Circles Grid + Action Hub */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 rounded-2xl border-2 border-[#bd8f2d]/30 bg-[#0c5c5e]/5 backdrop-blur p-6">
-                <h3 className="text-lg font-bold text-[#0c5c5e] mb-4">📈 حضور الأسبوع</h3>
-                <div className="flex items-end justify-around gap-3 h-40">
-                  {['السبت','الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس'].map((day, i) => (
-                    <div key={day} className="flex flex-col items-center gap-1 flex-1 h-full justify-end">
-                      <div className="w-full bg-emerald-500/80 rounded-t-lg transition-all" style={{height: `${60 + Math.random() * 40}%`}} />
-                      <span className="text-[10px] text-[#0c5c5e] font-bold">{day}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-4 mt-3 text-xs text-[#0c5c5e]">
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-emerald-500" /> حاضر</span>
-                  <span className="flex items-center gap-1"><span className="w-3 h-3 rounded bg-red-400" /> غائب</span>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border-2 border-red-500/30 bg-red-50 p-5 space-y-4">
-                <h3 className="text-lg font-bold text-red-800">🔔 تنبيهات عاجلة</h3>
-                {editRequests.length > 0 && (
-                  <div className="rounded-xl bg-amber-100 border border-amber-300 p-3">
-                    <p className="text-sm font-bold text-amber-800">📝 {editRequests.filter(r => r.status === 'NEW').length} طلب تعديل بانتظار الموافقة</p>
+              {/* Left Column: Today's Live Circles Grid (Takes 2 cols) */}
+              <div className="lg:col-span-2 rounded-2xl border border-[#d4af37]/30 bg-slate-900/70 backdrop-blur-md p-6 shadow-xl space-y-4">
+                <div className="flex items-center justify-between border-b border-[#d4af37]/20 pb-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-[#f3e5c8] font-serif">🏆 حالة إنجاز الحلقات اليوم</h3>
+                    <p className="text-xs text-slate-400">متابعة دقيقة لرصد التقارير اليومية لكل حلقة معلم</p>
                   </div>
-                )}
-                {consecutiveAbsentees.length > 0 && (
-                  <div className="rounded-xl bg-red-100 border border-red-300 p-3">
-                    <p className="text-sm font-bold text-red-800">⚠️ {consecutiveAbsentees.length} طلاب غيابهم متكرر</p>
-                  </div>
-                )}
-              </div>
-            </div>
+                  <span className="text-xs font-semibold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
+                    مباشر
+                  </span>
+                </div>
 
-            {/* Row 3: Circle Performance Table */}
-            <div className="rounded-2xl border-2 border-[#bd8f2d]/30 bg-[#fffdf9] p-6">
-              <h3 className="text-lg font-bold text-[#0c5c5e] mb-4">🏆 أداء الحلقات اليوم</h3>
-              <div className="space-y-3">
-                {circles.map(circle => {
-                  const circleStudents = students.filter(s => s.circle?.id === circle.id);
-                  const reportsToday = circleStudents.filter(s => s.summerReports?.some(r => r.dateKey === todayStr));
-                  const pct = circleStudents.length > 0 ? Math.round((reportsToday.length / circleStudents.length) * 100) : 0;
-                  return (
-                    <div key={circle.id} className="flex items-center gap-4 cursor-pointer hover:bg-gray-50 rounded-xl p-3 transition border border-[#d8bf83]/50 shadow-sm" onClick={() => setSelectedCircleModal({ circle, totalStudents: circleStudents.length, filledStudents: reportsToday.length, isComplete: pct === 100, isPending: pct === 0 })}>
-                      <span className="text-sm font-bold text-[#0c5c5e] w-32 truncate">{circle.name}</span>
-                      <div className="flex-1 h-4 bg-emerald-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all" style={{width: `${pct}%`}} />
+                <div className="space-y-3 pt-2">
+                  {circles.map((circle) => {
+                    const circleStudents = students.filter((s) => s.circle?.id === circle.id);
+                    const reportsToday = circleStudents.filter((s) => s.summerReports?.some((r) => r.dateKey === todayStr));
+                    const pct = circleStudents.length > 0 ? Math.round((reportsToday.length / circleStudents.length) * 100) : 0;
+                    return (
+                      <div
+                        key={circle.id}
+                        className="flex items-center gap-4 cursor-pointer hover:bg-slate-800/80 rounded-xl p-3.5 transition-all border border-slate-800 hover:border-[#d4af37]/40 shadow-sm"
+                        onClick={() => setSelectedCircleModal({ circle, totalStudents: circleStudents.length, filledStudents: reportsToday.length, isComplete: pct === 100, isPending: pct === 0 })}
+                      >
+                        <div className="w-36 shrink-0">
+                          <span className="text-sm font-bold text-slate-100 block truncate">{circle.name}</span>
+                          <span className="text-[11px] text-slate-400 block truncate">{circle.teacher?.fullName || 'بدون معلم'}</span>
+                        </div>
+                        
+                        <div className="flex-1 h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              pct === 100 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : pct > 0 ? 'bg-gradient-to-r from-amber-500 to-emerald-400' : 'bg-slate-700'
+                            }`}
+                            style={{ width: `${pct}%` }}
+                          />
+                        </div>
+                        
+                        <div className="text-left shrink-0 w-16">
+                          <span className={`text-sm font-black ${pct === 100 ? 'text-emerald-400' : pct > 0 ? 'text-amber-300' : 'text-slate-500'}`}>
+                            {pct}%
+                          </span>
+                          <span className="text-[10px] text-slate-400 block">({reportsToday.length}/{circleStudents.length})</span>
+                        </div>
                       </div>
-                      <span className="text-sm font-bold text-emerald-700 w-12 text-left">{pct}%</span>
-                      <span className="text-xs text-gray-500">{circle.teacher?.fullName || ''}</span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Action Hub & Urgent Alerts (Takes 1 col) */}
+              <div className="rounded-2xl border border-[#d4af37]/30 bg-slate-900/70 backdrop-blur-md p-6 shadow-xl space-y-5">
+                <div className="border-b border-[#d4af37]/20 pb-4">
+                  <h3 className="text-lg font-bold text-[#f3e5c8] font-serif">🔔 مركز التنبيهات والإجراءات</h3>
+                  <p className="text-xs text-slate-400">الطلبات والإشعارات العاجلة بانتظار اتخاذ قرارك</p>
+                </div>
+
+                {/* Teacher Edit Requests */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-amber-300">طلبات تعديل المعلمين</span>
+                    <span className="text-[11px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                      {editRequests.filter((r) => r.status === "NEW").length} معلق
+                    </span>
+                  </div>
+
+                  {editRequests.filter((r) => r.status === "NEW").length === 0 ? (
+                    <div className="rounded-xl bg-slate-950/60 p-3 text-center text-xs text-slate-400 border border-slate-800">
+                      ✨ لا توجد طلبات تعديل معلقة حالياً
                     </div>
-                  );
-                })}
+                  ) : (
+                    editRequests
+                      .filter((r) => r.status === "NEW")
+                      .slice(0, 3)
+                      .map((req) => (
+                        <div key={req.id} className="rounded-xl bg-slate-950/80 p-3.5 border border-amber-500/30 space-y-2">
+                          <div className="flex items-center justify-between text-xs font-bold text-slate-200">
+                            <span>{req.teacher?.fullName}</span>
+                            <span className="text-emerald-400">{req.student?.fullName}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-300 leading-relaxed bg-slate-900 p-2 rounded border border-slate-800">
+                            "{req.reason}"
+                          </p>
+                          <div className="flex items-center gap-2 pt-1">
+                            <button
+                              onClick={() => handleReviewEditRequest(req.id, "APPROVED")}
+                              className="flex-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 py-1.5 text-xs font-bold text-white transition shadow-sm"
+                            >
+                              ✓ موافقة
+                            </button>
+                            <button
+                              onClick={() => handleReviewEditRequest(req.id, "REJECTED")}
+                              className="flex-1 rounded-lg bg-rose-600/80 hover:bg-rose-600 py-1.5 text-xs font-bold text-white transition shadow-sm"
+                            >
+                              ✕ رفض
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                  )}
+                </div>
+
+                {/* Consecutive Absentees */}
+                <div className="space-y-3 pt-2 border-t border-slate-800">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-rose-400">تنبيهات الغياب المتكرر</span>
+                    <span className="text-[11px] font-bold text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                      {consecutiveAbsentees.length} طالب
+                    </span>
+                  </div>
+
+                  {consecutiveAbsentees.length === 0 ? (
+                    <div className="rounded-xl bg-slate-950/60 p-3 text-center text-xs text-slate-400 border border-slate-800">
+                      🌱 ممتاز، لا يوجد طلاب غائبون 3 أيام متتالية
+                    </div>
+                  ) : (
+                    <div className="max-h-40 overflow-y-auto space-y-2 pr-1">
+                      {consecutiveAbsentees.map((st) => (
+                        <div key={st.id} className="flex items-center justify-between rounded-xl bg-slate-950/80 p-2.5 border border-rose-500/20 text-xs">
+                          <div>
+                            <span className="font-bold text-slate-200 block">{st.fullName}</span>
+                            <span className="text-[10px] text-slate-400 block">{st.circle?.name}</span>
+                          </div>
+                          <span className="text-[10px] font-bold text-rose-400 bg-rose-500/10 px-2 py-1 rounded">
+                            غائب {st.consecutiveAbsenceCount} أيام
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Row 4: Quick Actions */}
+            {/* Row 3: Quick Action Buttons */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <button onClick={() => setActiveTab('whatsapp')} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition group">
-                <span className="text-2xl">📤</span>
-                <span className="block text-sm font-bold text-[#f2d18a] mt-2">إرسال التقارير</span>
+              <button
+                onClick={() => setActiveTab('whatsapp')}
+                className="rounded-2xl border border-[#d4af37]/40 bg-gradient-to-r from-emerald-800 to-emerald-900 p-4 text-center hover:brightness-110 transition-all shadow-lg group"
+              >
+                <span className="text-2xl block group-hover:scale-110 transition-transform">🚀</span>
+                <span className="block text-sm font-bold text-[#f3e5c8] mt-2 font-serif">مركز بث الواتساب</span>
               </button>
-              <button onClick={() => setActiveTab('whatsapp')} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition">
-                <span className="text-2xl">📊</span>
-                <span className="block text-sm font-bold text-[#f2d18a] mt-2">البطاقات الأسبوعية</span>
+
+              <button
+                onClick={() => {
+                  setStudentForm({ studentId: '', fullName: '', parentWhatsapp: '', summerGroup: 'QURAN', circleId: '', teacherId: teachers[0]?.id || '' });
+                  setShowStudentModal(true);
+                }}
+                className="rounded-2xl border border-[#d4af37]/40 bg-gradient-to-r from-slate-900 to-slate-800 p-4 text-center hover:brightness-110 transition-all shadow-lg group"
+              >
+                <span className="text-2xl block group-hover:scale-110 transition-transform">➕</span>
+                <span className="block text-sm font-bold text-[#f3e5c8] mt-2 font-serif">إضافة طالب جديد</span>
               </button>
-              <button onClick={() => { setStudentForm({studentId:'',fullName:'',parentWhatsapp:'',summerGroup:'QURAN',circleId:'',teacherId:teachers[0]?.id || ''}); setShowStudentModal(true); }} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition">
-                <span className="text-2xl">➕</span>
-                <span className="block text-sm font-bold text-[#f2d18a] mt-2">طالب جديد</span>
+
+              <button
+                onClick={() => setActiveTab('students_circles')}
+                className="rounded-2xl border border-[#d4af37]/40 bg-gradient-to-r from-slate-900 to-slate-800 p-4 text-center hover:brightness-110 transition-all shadow-lg group"
+              >
+                <span className="text-2xl block group-hover:scale-110 transition-transform">👥</span>
+                <span className="block text-sm font-bold text-[#f3e5c8] mt-2 font-serif">سجل الطلاب والحلقات</span>
               </button>
-              <button onClick={() => setActiveTab('students_circles')} className="rounded-2xl border-2 border-[#bd8f2d]/40 bg-[#0c5c5e] p-4 text-center hover:bg-[#0a4d4f] transition">
-                <span className="text-2xl">👥</span>
-                <span className="block text-sm font-bold text-[#f2d18a] mt-2">إدارة الطلاب</span>
+
+              <button
+                onClick={() => setActiveTab('education_plan')}
+                className="rounded-2xl border border-[#d4af37]/40 bg-gradient-to-r from-slate-900 to-slate-800 p-4 text-center hover:brightness-110 transition-all shadow-lg group"
+              >
+                <span className="text-2xl block group-hover:scale-110 transition-transform">📚</span>
+                <span className="block text-sm font-bold text-[#f3e5c8] mt-2 font-serif">خطة المنهج التربوي</span>
               </button>
             </div>
           </div>
