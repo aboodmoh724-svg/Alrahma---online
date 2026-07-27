@@ -92,14 +92,15 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { teacherId, fullName, email, password } = body;
+    const { teacherId, id, fullName, email, password } = body;
+    const targetId = teacherId || id;
 
-    if (!teacherId) {
+    if (!targetId) {
       return NextResponse.json({ error: "معرف المعلم مطلوب" }, { status: 400 });
     }
 
     const teacher = await prisma.user.findFirst({
-      where: { id: teacherId, role: "TEACHER", studyMode: "ONSITE_SUMMER" },
+      where: { id: targetId, role: "TEACHER", studyMode: "ONSITE_SUMMER" },
     });
 
     if (!teacher) {
@@ -129,7 +130,7 @@ export async function PUT(req: Request) {
     }
 
     const updatedTeacher = await prisma.user.update({
-      where: { id: teacherId },
+      where: { id: targetId },
       data: updateData,
       select: { id: true, fullName: true, email: true },
     });
