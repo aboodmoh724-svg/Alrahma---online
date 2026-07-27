@@ -62,6 +62,7 @@ export async function POST(req: Request) {
     }
 
     const todayStr = dateKey || new Date().toISOString().split("T")[0];
+    const isPastDate = todayStr < new Date().toISOString().split("T")[0];
 
     const reportData = {
       studentId: student.id,
@@ -90,7 +91,50 @@ export async function POST(req: Request) {
       update: reportData,
     });
 
-    return NextResponse.json({ success: true, report });
+    // If report is for a past date, create an Admin TeacherRequest for approval
+    if (isPastDate) {
+      const teacherInfo = await prisma.user.findUnique({
+        where: { id: teacherId },
+        select: { fullName: true },
+      });
+      const studentInfo = await prisma.student.findUnique({
+        where: { id: studentId },
+        select: { fullName: true },
+      });
+
+      const requestSubject = `طلب تعبئة/تعديل تقرير يوم سابق بتاريخ ${todayStr}`;
+      
+      const existingReq = await prisma.teacherRequest.findFirst({
+        where: {
+          teacherId,
+          studentId: student.id,
+          subject: requestSubject,
+          status: { in: ["NEW", "IN_REVIEW"] },
+        },
+      });
+
+      if (!existingReq) {
+        await prisma.teacherRequest.create({
+          data: {
+            teacherId,
+            studentId: student.id,
+            type: "GENERAL",
+            priority: "HIGH",
+            target: "ADMIN",
+            status: "NEW",
+            subject: requestSubject,
+            details: `تعبئة/تعديل تقرير يوم سابق: قام المعلم (${teacherInfo?.fullName || "المعلم"}) بتعبئة تقرير الطالب (${studentInfo?.fullName || "الطالب"}) بتاريخ سابق (${todayStr}). يتطلب موافقة واعتماد الإدارة.`,
+          },
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      report,
+      isPastDate,
+      pendingApproval: isPastDate,
+    });
   } catch (error) {
     console.error("SUMMER REPORT SAVE ERROR =>", error);
     return NextResponse.json({ error: "حدث خطأ أثناء حفظ تقرير الدورة الصيفية" }, { status: 500 });

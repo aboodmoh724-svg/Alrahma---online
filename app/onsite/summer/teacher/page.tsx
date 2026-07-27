@@ -14,7 +14,11 @@ type SummerReportToday = {
 
 import LogoutButton from "@/components/LogoutButton";
 
-export default async function OnsiteSummerTeacherDashboard() {
+type DashboardPageProps = {
+  searchParams?: Promise<{ dateKey?: string }>;
+};
+
+export default async function OnsiteSummerTeacherDashboard({ searchParams }: DashboardPageProps) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("alrahma_user_id")?.value;
 
@@ -36,9 +40,37 @@ export default async function OnsiteSummerTeacherDashboard() {
     redirect("/onsite/summer/admin");
   }
 
+  const sParams = (await searchParams) || {};
   const todayStr = new Date().toISOString().split("T")[0];
+  const selectedDateKey = sParams.dateKey && /^\d{4}-\d{2}-\d{2}$/.test(sParams.dateKey) ? sParams.dateKey : todayStr;
+  const isPastDate = selectedDateKey < todayStr;
 
-  // Fetch teacher's assigned students
+  // Generate available past dates from previous Sunday up to today, skipping Mondays
+  const availableDates: Array<{ dateKey: string; label: string; isToday: boolean }> = [];
+  const today = new Date();
+  
+  for (let i = 0; i < 14; i++) {
+    const d = new Date();
+    d.setDate(today.getDate() - i);
+    const dayOfWeek = d.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+    
+    // Skip Mondays (day 1) as Monday is a holiday in the Summer course
+    if (dayOfWeek === 1) continue;
+
+    const dateStr = d.toISOString().split("T")[0];
+    const isTodayDate = dateStr === todayStr;
+
+    const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    const dayLabel = `${dayNames[dayOfWeek]} (${dateStr})`;
+
+    availableDates.push({
+      dateKey: dateStr,
+      label: isTodayDate ? `اليوم - ${dayLabel}` : dayLabel,
+      isToday: isTodayDate,
+    });
+  }
+
+  // Fetch teacher's assigned students & reports for selectedDateKey
   const students = await prisma.student.findMany({
     where: {
       isActive: true,
@@ -51,7 +83,7 @@ export default async function OnsiteSummerTeacherDashboard() {
     include: {
       circle: { select: { name: true } },
       summerReports: {
-        where: { dateKey: todayStr },
+        where: { dateKey: selectedDateKey },
         select: { id: true, status: true, quranNew: true, noorLearned: true },
       },
     },
@@ -115,6 +147,71 @@ export default async function OnsiteSummerTeacherDashboard() {
 
       {/* 🏛️ 2. Main Workspace Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 space-y-6">
+        {/* 📅 Date Selector Bar */}
+        <div className="rounded-2xl border-2 border-[#bd8f2d]/60 bg-white p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📅</span>
+            <div>
+              <h3 className="text-sm font-bold text-[#0c5c5e] font-serif">
+                تحديد تاريخ التقرير المراد تعبئته / استعراضه:
+              </h3>
+              <p className="text-xs font-semibold text-gray-500">
+                {selectedDateKey === todayStr
+                  ? "أنت تعاين تقارير اليوم الحالي (الافتراضي)."
+                  : `أنت تعاين تقارير يوم سابق: ${selectedDateKey}`}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link
+              href="/onsite/summer/teacher"
+              className={`rounded-xl px-3 py-2 text-xs font-bold font-serif transition border ${
+                selectedDateKey === todayStr
+                  ? "bg-[#0c5c5e] text-white border-[#0c5c5e]"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300"
+              }`}
+            >
+              اليوم الحالي 🌟
+            </Link>
+
+            <form method="GET" className="flex items-center gap-2">
+              <select
+                name="dateKey"
+                defaultValue={selectedDateKey}
+                className="rounded-xl border-2 border-[#0c5c5e] bg-[#fffaf4] px-4 py-2 text-xs font-bold text-[#0c5c5e] outline-none font-mono"
+              >
+                {availableDates.map((d) => (
+                  <option key={d.dateKey} value={d.dateKey}>
+                    {d.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="submit"
+                className="rounded-xl bg-[#0c5c5e] px-4 py-2 text-xs font-bold text-white hover:bg-[#084547] font-serif"
+              >
+                انتقال ➔
+              </button>
+            </form>
+          </div>
+        </div>
+
+        {/* Past Date Alert Banner */}
+        {isPastDate && (
+          <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
+              <span>⚠️ تنبيه: تقوم برصد/تعديل تقرير ليوم سابق:</span>
+              <span className="bg-amber-200 px-2.5 py-0.5 rounded-md font-mono text-amber-950">
+                {selectedDateKey}
+              </span>
+            </div>
+            <span className="text-xs font-bold text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 shrink-0 font-serif">
+              تتطلب موافقة واعتماد الإدارة بعد الحفظ 📩
+            </span>
+          </div>
+        )}
+
         {/* 🌟 Islamic Motivational Calligraphy Banner for Teachers */}
         <div className="rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-6 shadow-xl text-white text-center space-y-3 relative overflow-hidden dir-rtl" dir="rtl">
           <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
@@ -135,7 +232,7 @@ export default async function OnsiteSummerTeacherDashboard() {
         <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-[#0c5c5e] font-serif">
-              نسبة إنجاز تقارير الحلقة اليوم
+              نسبة إنجاز تقارير الحلقة ({selectedDateKey})
             </h2>
             <p className="text-xs font-semibold text-gray-500 mt-1">
               تم رصد <b className="text-[#0c5c5e] font-serif text-sm">{filledCount}</b> من إجمالي{" "}
@@ -241,7 +338,7 @@ export default async function OnsiteSummerTeacherDashboard() {
                       </span>
 
                       <Link
-                        href={`/onsite/summer/teacher/reports/${student.id}`}
+                        href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
                         className={`rounded-xl px-4 py-2 text-xs font-bold transition shadow-2xs font-serif ${
                           isDone
                             ? "bg-white text-[#0c5c5e] border border-[#0c5c5e] hover:bg-emerald-50"

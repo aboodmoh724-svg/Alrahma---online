@@ -21,9 +21,9 @@ async function generatePPTX() {
   const SOFT_CARD_BG = "F4F6F5";
 
   // Shape aliases from pptx.shapes
-  const RECT = pptx.shapes.RECTANGLE;
-  const ROUND_RECT = pptx.shapes.ROUNDED_RECTANGLE;
-  const OVAL = pptx.shapes.OVAL;
+  const RECT = (pptx as any).shapes.RECTANGLE;
+  const ROUND_RECT = (pptx as any).shapes.ROUNDED_RECTANGLE;
+  const OVAL = (pptx as any).shapes.OVAL;
 
   // Shared Header Helper
   const addHeader = (slide: pptxgen.Slide, titleText: string, subtitleText: string) => {

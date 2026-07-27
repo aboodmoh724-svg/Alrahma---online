@@ -8,10 +8,14 @@ type ReportPageProps = {
   params: Promise<{
     studentId: string;
   }>;
+  searchParams?: Promise<{
+    dateKey?: string;
+  }>;
 };
 
 export default async function OnsiteSummerTeacherReportPage({
   params,
+  searchParams,
 }: ReportPageProps) {
   const cookieStore = await cookies();
   const userId = cookieStore.get("alrahma_user_id")?.value;
@@ -21,7 +25,9 @@ export default async function OnsiteSummerTeacherReportPage({
   }
 
   const { studentId } = await params;
+  const sParams = (await searchParams) || {};
   const todayStr = new Date().toISOString().split("T")[0];
+  const targetDateKey = sParams.dateKey && /^\d{4}-\d{2}-\d{2}$/.test(sParams.dateKey) ? sParams.dateKey : todayStr;
 
   const student = await prisma.student.findFirst({
     where: {
@@ -36,7 +42,7 @@ export default async function OnsiteSummerTeacherReportPage({
     include: {
       circle: { select: { name: true } },
       summerReports: {
-        where: { dateKey: todayStr },
+        where: { dateKey: targetDateKey },
         take: 1,
       },
       teacherProgressRecords: {
@@ -55,7 +61,7 @@ export default async function OnsiteSummerTeacherReportPage({
     where: {
       studentId: student.id,
       status: "PRESENT",
-      dateKey: { lt: todayStr },
+      dateKey: { lt: targetDateKey },
     },
     orderBy: { dateKey: "desc" },
     select: {
@@ -100,7 +106,7 @@ export default async function OnsiteSummerTeacherReportPage({
           existingReport={existingReport}
           lastPresentReport={lastPresentReport}
           initialStartProgress={initialStartProgress}
-          dateKey={todayStr}
+          dateKey={targetDateKey}
         />
       </div>
     </main>
