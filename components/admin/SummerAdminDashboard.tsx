@@ -146,39 +146,33 @@ export default function SummerAdminDashboard({
   const todayStr = new Date().toISOString().split("T")[0];
   const pendingRequests = editRequests.filter((r) => r.status === "NEW");
 
-  // Calculate Real Alert Indicators
+  // Calculate Real Statistics
   const studentsWithReports = students.filter((s) => s.summerReports && s.summerReports.length > 0);
   const studentsWithoutReports = students.filter((s) => !s.summerReports || s.summerReports.length === 0);
 
   return (
     <div className="min-h-screen bg-[#faf6ef] text-[#18322a] font-sans dir-rtl flex" dir="rtl">
       {/* 🏛️ 1. Modern RTL Executive Command Sidebar */}
-      <aside className="w-80 bg-[#0c5c5e] text-white flex flex-col justify-between shrink-0 shadow-2xl border-l-4 border-[#bd8f2d] min-h-screen sticky top-0">
+      <aside className="w-80 bg-gradient-to-b from-[#0a4b4d] via-[#0c5c5e] to-[#083e40] text-white flex flex-col justify-between shrink-0 shadow-2xl border-l-4 border-[#bd8f2d] min-h-screen sticky top-0">
         <div>
-          {/* Brand Header */}
+          {/* Brand Header with Clear Islamic Quran Emblem */}
           <div className="p-6 border-b border-[#bd8f2d]/40 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-white p-1.5 ring-2 ring-[#bd8f2d] shadow-md">
-                <Image
-                  src="/images/summer_quran_logo_v2.jpg"
-                  alt="شعار الإدارة"
-                  width={48}
-                  height={48}
-                  className="h-12 w-12 object-contain rounded-xl"
-                />
+              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#bd8f2d] to-[#8c6717] p-0.5 shadow-md flex items-center justify-center text-2xl shrink-0 border border-amber-200">
+                📖
               </div>
               <div>
-                <h1 className="text-xl font-bold font-ruqaa text-[#bd8f2d] tracking-wide">
+                <h1 className="text-xl font-bold font-ruqaa text-[#bd8f2d] tracking-wide drop-shadow-xs">
                   تحفيظ الرحمة
                 </h1>
                 <p className="text-xs font-bold text-[#fbf6ef]">
-                  اللوحة الإدارية التنفيذية العامة
+                  إدارة الدورة الصيفية للقرآن الكريم
                 </p>
               </div>
             </div>
 
             {/* Live Status Badge */}
-            <div className="flex items-center justify-between rounded-2xl bg-[#117073] px-3.5 py-2 text-xs font-bold text-[#fbf6ef] border border-[#bd8f2d]/40">
+            <div className="flex items-center justify-between rounded-2xl bg-[#084143] px-3.5 py-2 text-xs font-bold text-[#fbf6ef] border border-[#bd8f2d]/40 shadow-2xs">
               <span className="flex items-center gap-2">
                 <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
                 المنظومة نشطة
@@ -187,7 +181,7 @@ export default function SummerAdminDashboard({
             </div>
           </div>
 
-          {/* Sidebar Menu Items with Large Fonts */}
+          {/* Sidebar Menu Items */}
           <nav className="p-4 space-y-2 text-sm font-bold font-serif">
             <button
               onClick={() => setActiveSection("operations")}
@@ -322,8 +316,8 @@ export default function SummerAdminDashboard({
 
       {/* 🏛️ 2. Main Executive Content Workspace */}
       <main className="flex-1 p-6 space-y-6 overflow-y-auto">
-        {/* Top Executive Header Bar */}
-        <header className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-5 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* Clean Executive Header Bar */}
+        <header className="rounded-3xl border-2 border-[#bd8f2d] bg-gradient-to-r from-[#fbf7f0] via-white to-[#fbf7f0] p-5 shadow-sm flex items-center justify-between">
           <div>
             <span className="inline-block rounded-full bg-[#0c5c5e]/10 px-3.5 py-1 text-xs font-bold text-[#0c5c5e] font-serif mb-1">
               ✨ بوابة الإشراف الإداري العام
@@ -333,66 +327,60 @@ export default function SummerAdminDashboard({
             </h2>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
-            <button
-              onClick={() => {
-                setStudentToEdit(null);
-                setIsStudentModalOpen(true);
-              }}
-              className="rounded-2xl bg-[#0c5c5e] hover:bg-[#084547] text-white px-4 py-2.5 text-xs font-bold transition shadow-sm font-serif flex items-center gap-2"
-            >
-              <span>➕</span>
-              <span>إضافة طالب جديد</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setTeacherToEdit(null);
-                setIsTeacherModalOpen(true);
-              }}
-              className="rounded-2xl bg-[#bd8f2d] hover:bg-[#a6781d] text-[#0c5c5e] px-4 py-2.5 text-xs font-bold transition shadow-sm font-serif flex items-center gap-2"
-            >
-              <span>🎓</span>
-              <span>إضافة معلم جديد</span>
-            </button>
-
-            <button
-              onClick={() => setIsCircleModalOpen(true)}
-              className="rounded-2xl border-2 border-[#0c5c5e] bg-white hover:bg-[#0c5c5e]/10 text-[#0c5c5e] px-3.5 py-2.5 text-xs font-bold transition font-serif flex items-center gap-1.5"
-            >
-              <span>🕌</span>
-              <span>إنشاء حلقة</span>
-            </button>
+          <div className="flex items-center gap-2">
+            <span className="rounded-2xl bg-[#0c5c5e]/10 text-[#0c5c5e] px-4 py-2 text-xs font-bold font-serif">
+              الموافق: {todayStr}
+            </span>
           </div>
         </header>
 
         {/* SECTION 1: OPERATIONS COMMAND HUB */}
         {activeSection === "operations" && (
           <div className="space-y-6">
-            {/* Bento Key Metric Cards */}
+            {/* Rich Colored Bento Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-[#0c5c5e] font-serif">👥 إجمالي الطلاب النشطين</span>
-                <div className="text-3xl font-bold font-mono text-[#0c5c5e]">{students.length}</div>
-                <p className="text-[11px] text-gray-600 font-bold">مسجلون بالدورة الصيفية</p>
+              <div className="rounded-3xl border-2 border-[#bd8f2d] bg-gradient-to-br from-[#0c5c5e] to-[#117073] text-white p-5 shadow-md space-y-2">
+                <span className="text-xs font-bold text-cyan-100 font-serif">👥 إجمالي الطلاب النشطين</span>
+                <div className="text-3xl font-bold font-mono text-[#bd8f2d]">{students.length}</div>
+                <p className="text-[11px] text-cyan-100 font-bold">مسجلون بالدورة الصيفية</p>
               </div>
 
-              <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-[#0c5c5e] font-serif">🕌 الحلقات الدراسية</span>
-                <div className="text-3xl font-bold font-mono text-[#bd8f2d]">{circles.length}</div>
-                <p className="text-[11px] text-gray-600 font-bold">حلقة قرآن ونور بيان</p>
+              <div className="rounded-3xl border-2 border-white bg-gradient-to-br from-[#bd8f2d] to-[#d4aa48] text-[#0c5c5e] p-5 shadow-md space-y-2">
+                <span className="text-xs font-bold text-[#0c5c5e]/80 font-serif">🕌 الحلقات الدراسية</span>
+                <div className="text-3xl font-bold font-mono text-[#0c5c5e]">{circles.length}</div>
+                <p className="text-[11px] text-[#0c5c5e]/90 font-bold">حلقة قرآن ونور بيان</p>
               </div>
 
-              <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-[#0c5c5e] font-serif">🎓 الكادر التعليمي</span>
-                <div className="text-3xl font-bold font-mono text-[#0c5c5e]">{teachers.length}</div>
-                <p className="text-[11px] text-gray-600 font-bold">معلماً ومربياً فاضلاً</p>
+              <div className="rounded-3xl border-2 border-[#bd8f2d] bg-gradient-to-br from-[#164e4e] to-[#0c5c5e] text-white p-5 shadow-md space-y-2">
+                <span className="text-xs font-bold text-cyan-100 font-serif">🎓 الكادر التعليمي</span>
+                <div className="text-3xl font-bold font-mono text-[#bd8f2d]">{teachers.length}</div>
+                <p className="text-[11px] text-cyan-100 font-bold">معلماً ومربياً فاضلاً</p>
               </div>
 
-              <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-5 shadow-sm space-y-2">
-                <span className="text-xs font-bold text-[#0c5c5e] font-serif">📩 الطلبات المعلقة</span>
-                <div className="text-3xl font-bold font-mono text-rose-600">{pendingRequests.length}</div>
-                <p className="text-[11px] text-rose-700 font-bold">تعبئة/تعديل أيام سابقة</p>
+              <div className="rounded-3xl border-2 border-amber-300 bg-gradient-to-br from-rose-800 to-rose-950 text-white p-5 shadow-md space-y-2">
+                <span className="text-xs font-bold text-amber-200 font-serif">📩 الطلبات المعلقة</span>
+                <div className="text-3xl font-bold font-mono text-amber-300">{pendingRequests.length}</div>
+                <p className="text-[11px] text-rose-200 font-bold">تعبئة/تعديل أيام سابقة</p>
+              </div>
+            </div>
+
+            {/* Operations Summary Progress Card */}
+            <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-6 shadow-sm space-y-4">
+              <h3 className="text-lg font-bold text-[#0c5c5e] font-serif flex items-center gap-2">
+                <span>📈</span>
+                <span>ملخص نسبة الرصد والإنجاز الإداري اليومي</span>
+              </h3>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl border border-emerald-300 bg-emerald-50/80 p-4 space-y-1">
+                  <span className="text-xs font-bold text-emerald-900 font-serif">الطلاب المرصود لهم تقارير:</span>
+                  <div className="text-2xl font-bold font-mono text-emerald-800">{studentsWithReports.length} طالب</div>
+                </div>
+
+                <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-4 space-y-1">
+                  <span className="text-xs font-bold text-amber-900 font-serif">بانتظار رصد المعلمين الأول:</span>
+                  <div className="text-2xl font-bold font-mono text-amber-800">{studentsWithoutReports.length} طالب</div>
+                </div>
               </div>
             </div>
 
@@ -452,7 +440,7 @@ export default function SummerAdminDashboard({
         {/* SECTION 2: STUDENTS & TRANSFER HUB */}
         {activeSection === "students" && (
           <div className="space-y-5">
-            {/* Search & Action Bar */}
+            {/* Scoped Button Bar inside Students Hub */}
             <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-4 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                 <input
@@ -487,14 +475,16 @@ export default function SummerAdminDashboard({
                 </select>
               </div>
 
+              {/* Scoped Add Student Button */}
               <button
                 onClick={() => {
                   setStudentToEdit(null);
                   setIsStudentModalOpen(true);
                 }}
-                className="rounded-xl bg-[#0c5c5e] text-white px-4 py-2.5 text-xs font-bold hover:bg-[#084547] transition shadow-2xs font-serif shrink-0"
+                className="rounded-xl bg-[#0c5c5e] text-white px-5 py-2.5 text-xs font-bold hover:bg-[#084547] transition shadow-2xs font-serif shrink-0 flex items-center gap-2"
               >
-                ➕ إضافة طالب جديد
+                <span>➕</span>
+                <span>إضافة طالب جديد</span>
               </button>
             </div>
 
@@ -616,7 +606,8 @@ export default function SummerAdminDashboard({
         {/* SECTION 3: TEACHERS & CIRCLES COMMAND */}
         {activeSection === "teachers" && (
           <div className="space-y-5">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Scoped Button Bar inside Teachers Hub */}
+            <div className="rounded-3xl border-2 border-[#bd8f2d] bg-[#fbf7f0] p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
               <h3 className="text-xl font-bold text-[#0c5c5e] font-serif">
                 إدارة الكادر التعليمي والحلقات ({teachers.length} معلماً)
               </h3>
@@ -627,16 +618,18 @@ export default function SummerAdminDashboard({
                     setTeacherToEdit(null);
                     setIsTeacherModalOpen(true);
                   }}
-                  className="rounded-2xl bg-[#0c5c5e] text-white px-4 py-2 text-xs font-bold hover:bg-[#084547] transition shadow-sm font-serif"
+                  className="rounded-xl bg-[#0c5c5e] text-white px-4 py-2 text-xs font-bold hover:bg-[#084547] transition shadow-sm font-serif flex items-center gap-1.5"
                 >
-                  ➕ إضافة معلم جديد
+                  <span>➕</span>
+                  <span>إضافة معلم جديد</span>
                 </button>
 
                 <button
                   onClick={() => setIsCircleModalOpen(true)}
-                  className="rounded-2xl border-2 border-[#bd8f2d] bg-[#fbf7f0] text-[#0c5c5e] px-4 py-2 text-xs font-bold hover:bg-[#bd8f2d]/20 transition shadow-sm font-serif"
+                  className="rounded-xl border-2 border-[#bd8f2d] bg-white text-[#0c5c5e] px-4 py-2 text-xs font-bold hover:bg-[#bd8f2d]/20 transition shadow-sm font-serif flex items-center gap-1.5"
                 >
-                  🕌 إنشاء حلقة جديدة
+                  <span>🕌</span>
+                  <span>إنشاء حلقة جديدة</span>
                 </button>
               </div>
             </div>
@@ -729,13 +722,13 @@ export default function SummerAdminDashboard({
                 <div className="flex items-center gap-2">
                   <button
                     onClick={fetchQrCode}
-                    className={`rounded-2xl px-4 py-2 text-xs font-bold font-serif transition shadow-sm ${
+                    className={`rounded-2xl px-4 py-2.5 text-xs font-bold font-serif transition shadow-sm ${
                       whatsappConnected
                         ? "bg-emerald-600 text-white hover:bg-emerald-700"
                         : "bg-rose-600 text-white hover:bg-rose-700 animate-pulse"
                     }`}
                   >
-                    {whatsappConnected ? "الواتساب متصل ✅ (اعادة الفحص)" : "🔴 الواتساب غير متصل (اضغط للمسح بالـ QR)"}
+                    {whatsappConnected ? "الواتساب متصل ✅ (إعادة الفحص)" : "🔴 الواتساب غير متصل (اضغط لمسح الـ QR Code)"}
                   </button>
                 </div>
               </div>
@@ -788,7 +781,7 @@ export default function SummerAdminDashboard({
                 </div>
               </div>
 
-              {/* Student Progress Selector List */}
+              {/* Student Progress Selector List with working Report trigger */}
               <div className="space-y-3 pt-2">
                 <h4 className="text-sm font-bold text-[#0c5c5e] font-serif">
                   📋 اختيار طالب لمعاينة وطباعة سجله التراكمي كاملاً:
@@ -807,7 +800,7 @@ export default function SummerAdminDashboard({
                       <span className="text-[#0c5c5e] font-serif">{st.fullName}</span>
                       <div className="flex items-center gap-2">
                         <span className="text-gray-500 text-[11px]">{st.circle?.name || "بدون حلقة"}</span>
-                        <span className="rounded-lg bg-emerald-100 text-emerald-900 px-2 py-0.5 text-[10px]">🖨️ التقرير</span>
+                        <span className="rounded-lg bg-emerald-100 text-emerald-900 px-2 py-0.5 text-[10px]">🖨️ معاينة وطباعة التقرير</span>
                       </div>
                     </div>
                   ))}
@@ -837,10 +830,10 @@ export default function SummerAdminDashboard({
                 <div className="rounded-2xl border border-rose-300 bg-white p-4 space-y-2">
                   <span className="font-bold text-rose-950 text-sm font-serif">🔴 تنبيه الطلاب بدون تقارير مرصودة:</span>
                   <div className="text-xs text-gray-700 space-y-1">
-                    {studentsWithoutReports.slice(0, 5).map((s) => (
+                    {studentsWithoutReports.slice(0, 8).map((s) => (
                       <div key={s.id} className="flex justify-between items-center bg-rose-50 p-2 rounded-lg">
                         <span>{s.fullName}</span>
-                        <span className="text-rose-700 font-mono">لم يرصد</span>
+                        <span className="text-rose-700 font-mono">بانتظار التقرير الأول</span>
                       </div>
                     ))}
                     {studentsWithoutReports.length === 0 && <p className="text-emerald-700 font-bold">جميع الطلاب مرصود لهم تقارير ✅</p>}

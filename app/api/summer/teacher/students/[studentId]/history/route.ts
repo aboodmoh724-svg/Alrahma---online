@@ -8,28 +8,41 @@ export async function GET(
 ) {
   try {
     const cookieStore = await cookies();
-    const teacherId = cookieStore.get("alrahma_user_id")?.value;
+    const userId = cookieStore.get("alrahma_user_id")?.value;
 
-    if (!teacherId) {
+    if (!userId) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: { id: userId, isActive: true },
+      select: { id: true, role: true },
+    });
+
+    if (!user) {
       return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
     }
 
     const { studentId } = await props.params;
+    const isAdmin = user.role === "ADMIN";
 
     const student = await prisma.student.findFirst({
       where: {
         id: studentId,
         isActive: true,
         studyMode: "ONSITE_SUMMER",
-        OR: [
-          { teacherId },
-          { studentCode: "7500" },
-        ],
+        ...(isAdmin
+          ? {}
+          : {
+              OR: [
+                { teacherId: user.id },
+                { studentCode: "7500" },
+              ],
+            }),
       },
       include: {
         circle: { select: { name: true } },
         teacherProgressRecords: {
-          where: { teacherId },
           take: 1,
         },
         summerReports: {
