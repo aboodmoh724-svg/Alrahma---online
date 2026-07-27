@@ -43,6 +43,34 @@ export default function SummerReportForm({
   const router = useRouter();
   const isNoor = student.summerGroup === "NOOR_AL_BAYAN";
 
+  // Generate available dates from 2026-07-09 up to today, excluding Mondays
+  const availableDates: Array<{ dateKey: string; label: string; isToday: boolean }> = [];
+  const todayStr = new Date().toISOString().split("T")[0];
+  const today = new Date();
+  const startDate = new Date("2026-07-09");
+
+  const curr = new Date(startDate);
+  while (curr <= today) {
+    const dayOfWeek = curr.getDay();
+    if (dayOfWeek !== 1) { // Skip Mondays
+      const dateStr = curr.toISOString().split("T")[0];
+      const isTodayDate = dateStr === todayStr;
+      const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+      const dayLabel = `${dayNames[dayOfWeek]} (${dateStr})`;
+
+      availableDates.push({
+        dateKey: dateStr,
+        label: isTodayDate ? `🌟 اليوم الحالي - ${dayLabel}` : dayLabel,
+        isToday: isTodayDate,
+      });
+    }
+    curr.setDate(curr.getDate() + 1);
+  }
+  availableDates.reverse();
+
+  const activeDateObj = availableDates.find((d) => d.dateKey === dateKey);
+  const activeDateLabel = activeDateObj ? activeDateObj.label : dateKey;
+
   const [status, setStatus] = useState<"PRESENT" | "ABSENT">(
     existingReport?.status || "PRESENT"
   );
@@ -331,6 +359,46 @@ export default function SummerReportForm({
         </div>
       </div>
 
+      {/* 📅 Prominent In-Form Date Selector & Confirmation Bar */}
+      <div className="mb-6 rounded-3xl border-2 border-[#bd8f2d] bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-4.5 text-white shadow-md space-y-3">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-10 w-10 rounded-2xl bg-white/10 border border-[#bd8f2d]/50 flex items-center justify-center text-xl shrink-0">
+              📅
+            </div>
+            <div>
+              <span className="inline-block rounded-full bg-[#bd8f2d]/30 border border-[#bd8f2d]/60 px-3 py-0.5 text-xs font-bold text-cyan-100 font-serif mb-1">
+                تأكيد اليوم والتاريخ المستهدف
+              </span>
+              <h3 className="text-base sm:text-lg font-bold text-[#bd8f2d] font-ruqaa leading-snug">
+                أنت تقوم الآن بتعبئة تقرير يوم: <span className="underline decoration-[#bd8f2d] underline-offset-4 text-white">{activeDateLabel}</span>
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <label className="text-xs font-bold text-cyan-200 shrink-0 font-serif">
+              تغيير اليوم:
+            </label>
+            <select
+              value={dateKey}
+              onChange={(e) =>
+                router.push(
+                  `/onsite/summer/teacher/reports/${student.id}?dateKey=${e.target.value}`
+                )
+              }
+              className="w-full sm:w-auto rounded-xl border-2 border-[#bd8f2d] bg-white px-3.5 py-2 text-xs font-bold text-[#0c5c5e] outline-none shadow-xs font-mono"
+            >
+              {availableDates.map((d) => (
+                <option key={d.dateKey} value={d.dateKey}>
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Header Info */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#d8bf83]/30 pb-4">
         <div>
@@ -347,7 +415,7 @@ export default function SummerReportForm({
           )}
         </div>
         <div className="text-left text-sm font-bold text-[#18322a]/60">
-          تاريخ التقرير: <span className="font-mono text-[#0c5c5e]">{dateKey}</span>
+          تاريخ التقرير الحالي: <span className="font-mono font-bold text-[#0c5c5e]">{dateKey}</span>
         </div>
       </div>
 
