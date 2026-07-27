@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ReportStatus } from "@prisma/client";
+import { getTodayDateKey } from "@/lib/date-utils";
 
 function optionalNumber(value: unknown) {
   if (value === null || value === undefined || value === "") return null;
@@ -54,6 +55,7 @@ export async function POST(req: Request) {
         id: true,
         studyMode: true,
         summerGroup: true,
+        studentCode: true,
       },
     });
 
@@ -61,8 +63,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "الطالب غير موجود في الدورة الصيفية" }, { status: 403 });
     }
 
-    const todayStr = dateKey || new Date().toISOString().split("T")[0];
-    const isPastDate = todayStr < new Date().toISOString().split("T")[0];
+    const actualToday = getTodayDateKey();
+    const todayStr = dateKey || actualToday;
+    const isPastDate = todayStr < actualToday;
 
     const reportData = {
       studentId: student.id,
@@ -92,7 +95,7 @@ export async function POST(req: Request) {
     });
 
     // If report is for a past date, create an Admin TeacherRequest for approval
-    if (isPastDate) {
+    if (isPastDate && student.studentCode !== "7500") {
       const teacherInfo = await prisma.user.findUnique({
         where: { id: teacherId },
         select: { fullName: true },

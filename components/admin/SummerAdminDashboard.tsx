@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
 import LogoutButton from "@/components/LogoutButton";
 import AdminStudentModal from "./AdminStudentModal";
 import AdminTransferStudentModal from "./AdminTransferStudentModal";
@@ -41,6 +40,9 @@ export default function SummerAdminDashboard({
   const [filterGroup, setFilterGroup] = useState<"ALL" | "QURAN" | "NOOR_AL_BAYAN">("ALL");
   const [filterCircleId, setFilterCircleId] = useState<string>("ALL");
 
+  // Reports
+  const [reportSearchQuery, setReportSearchQuery] = useState("");
+
   // Student Modals
   const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
   const [studentToEdit, setStudentToEdit] = useState<any | null>(null);
@@ -57,6 +59,7 @@ export default function SummerAdminDashboard({
 
   // Circle Modal
   const [isCircleModalOpen, setIsCircleModalOpen] = useState(false);
+  const [circleToEdit, setCircleToEdit] = useState<any | null>(null);
 
   // Edit/Past-Days Requests State
   const [editRequests, setEditRequests] = useState<any[]>([]);
@@ -65,6 +68,9 @@ export default function SummerAdminDashboard({
   const [whatsappConnected, setWhatsappConnected] = useState(false);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [sendingDaily, setSendingDaily] = useState(false);
+  const [sendingWeekly, setSendingWeekly] = useState(false);
+  const [whatsappResult, setWhatsappResult] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
   // Fetch Edit Requests and WhatsApp Status
   const fetchEditRequests = async () => {
@@ -135,6 +141,76 @@ export default function SummerAdminDashboard({
       }
     } catch (err) {
       console.error("Error deleting teacher:", err);
+    }
+  };
+
+  const handleDeleteStudent = async (studentId: string, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الطالب: ${name}؟ سيتم حذف كافة سجلاته.`)) return;
+    try {
+      const res = await fetch(`/api/summer/admin/students?id=${studentId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("فشل حذف الطالب");
+      }
+    } catch (err) {
+      console.error("Error deleting student:", err);
+    }
+  };
+
+  const handleDeleteCircle = async (circleId: string, name: string) => {
+    if (!confirm(`هل أنت متأكد من حذف الحلقة: ${name}؟`)) return;
+    try {
+      const res = await fetch(`/api/summer/admin/circles?id=${circleId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        alert("فشل حذف الحلقة");
+      }
+    } catch (err) {
+      console.error("Error deleting circle:", err);
+    }
+  };
+
+  const handleSendDaily = async () => {
+    if (!confirm("هل أنت متأكد من إرسال التقارير اليومية لجميع أولياء الأمور؟")) return;
+    setSendingDaily(true);
+    setWhatsappResult(null);
+    try {
+      const res = await fetch('/api/summer/admin/send-daily', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setWhatsappResult({ message: `تم الإرسال بنجاح. ${data.message || ''}`, type: 'success' });
+      } else {
+        setWhatsappResult({ message: `حدث خطأ: ${data.error || 'فشل الإرسال'}`, type: 'error' });
+      }
+    } catch (err) {
+      setWhatsappResult({ message: 'حدث خطأ غير متوقع أثناء الإرسال', type: 'error' });
+    } finally {
+      setSendingDaily(false);
+    }
+  };
+
+  const handleSendWeekly = async () => {
+    if (!confirm("هل أنت متأكد من إرسال البطاقات الأسبوعية لجميع أولياء الأمور؟")) return;
+    setSendingWeekly(true);
+    setWhatsappResult(null);
+    try {
+      const res = await fetch('/api/summer/admin/send-weekly', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        setWhatsappResult({ message: `تم الإرسال بنجاح. ${data.message || ''}`, type: 'success' });
+      } else {
+        setWhatsappResult({ message: `حدث خطأ: ${data.error || 'فشل الإرسال'}`, type: 'error' });
+      }
+    } catch (err) {
+      setWhatsappResult({ message: 'حدث خطأ غير متوقع أثناء الإرسال', type: 'error' });
+    } finally {
+      setSendingWeekly(false);
     }
   };
 
@@ -656,6 +732,14 @@ export default function SummerAdminDashboard({
                             >
                               ✏️ تعديل
                             </button>
+
+                            <button
+                              onClick={() => handleDeleteStudent(st.id, st.fullName)}
+                              className="rounded-xl border border-rose-300 bg-white hover:bg-rose-50 text-rose-700 px-2 py-1 text-[11px] font-bold transition"
+                              title="حذف الطالب"
+                            >
+                              🗑️
+                            </button>
                           </div>
                         </td>
                       </tr>
@@ -689,7 +773,10 @@ export default function SummerAdminDashboard({
                 </button>
 
                 <button
-                  onClick={() => setIsCircleModalOpen(true)}
+                  onClick={() => {
+                    setCircleToEdit(null);
+                    setIsCircleModalOpen(true);
+                  }}
                   className="w-full sm:w-auto rounded-xl border-2 border-[#bd8f2d] bg-white text-[#0c5c5e] px-4 py-2 text-xs font-bold hover:bg-[#bd8f2d]/20 transition shadow-sm font-serif flex items-center justify-center gap-1.5"
                 >
                   <span>🕌</span>
@@ -753,9 +840,30 @@ export default function SummerAdminDashboard({
                       {assignedCircles.length > 0 ? (
                         <div className="flex flex-wrap gap-1.5 pt-1">
                           {assignedCircles.map((c) => (
-                            <span key={c.id} className="rounded-lg bg-white border border-[#bd8f2d]/50 px-2.5 py-1 text-[#0c5c5e]">
-                              حلقة: {c.name} ({c.students?.length || 0} طلاب)
-                            </span>
+                            <div key={c.id} className="flex items-center gap-1 rounded-lg bg-white border border-[#bd8f2d]/50 px-2 py-1">
+                              <span className="text-[#0c5c5e]">
+                                حلقة: {c.name} ({c.students?.length || 0} طلاب)
+                              </span>
+                              <div className="flex items-center gap-1 border-r border-gray-200 pr-1 mr-1">
+                                <button
+                                  onClick={() => {
+                                    setCircleToEdit(c);
+                                    setIsCircleModalOpen(true);
+                                  }}
+                                  className="text-[10px] text-gray-500 hover:text-[#0c5c5e]"
+                                  title="تعديل الحلقة"
+                                >
+                                  ✏️
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteCircle(c.id, c.name)}
+                                  className="text-[10px] text-gray-500 hover:text-rose-600"
+                                  title="حذف الحلقة"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            </div>
                           ))}
                         </div>
                       ) : (
@@ -814,6 +922,33 @@ export default function SummerAdminDashboard({
                   </div>
                 </div>
               )}
+
+              {/* WhatsApp Broadcast Actions */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                <button
+                  onClick={handleSendDaily}
+                  disabled={!whatsappConnected || sendingDaily}
+                  className="rounded-2xl bg-[#0c5c5e] text-white p-4 font-bold font-serif hover:bg-[#084143] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>📩</span>
+                  <span>{sendingDaily ? "جاري الإرسال..." : "إرسال التقارير اليومية لأولياء الأمور"}</span>
+                </button>
+                
+                <button
+                  onClick={handleSendWeekly}
+                  disabled={!whatsappConnected || sendingWeekly}
+                  className="rounded-2xl border-2 border-[#bd8f2d] bg-white text-[#0c5c5e] p-4 font-bold font-serif hover:bg-[#fbf7f0] transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span>📊</span>
+                  <span>{sendingWeekly ? "جاري الإرسال..." : "إرسال البطاقات الأسبوعية"}</span>
+                </button>
+              </div>
+
+              {whatsappResult && (
+                <div className={`mt-4 p-4 rounded-xl text-sm font-bold ${whatsappResult.type === 'success' ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-rose-100 text-rose-800 border border-rose-200'}`}>
+                  {whatsappResult.message}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -851,8 +986,18 @@ export default function SummerAdminDashboard({
                   📋 اختيار طالب لمعاينة وطباعة سجله التراكمي كاملاً:
                 </h4>
 
+                <input
+                  type="text"
+                  placeholder="ابحث عن طالب..."
+                  value={reportSearchQuery}
+                  onChange={(e) => setReportSearchQuery(e.target.value)}
+                  className="w-full sm:w-64 rounded-xl border border-[#bd8f2d]/50 bg-white px-3.5 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e] mb-2"
+                />
+
                 <div className="max-h-80 overflow-y-auto rounded-2xl border border-[#bd8f2d]/40 bg-white p-2 space-y-1 text-xs font-bold">
-                  {students.map((st) => (
+                  {students
+                    .filter((st) => st.fullName.includes(reportSearchQuery) || (st.studentCode && st.studentCode.includes(reportSearchQuery)))
+                    .map((st) => (
                     <div
                       key={st.id}
                       onClick={() => {
@@ -982,6 +1127,7 @@ export default function SummerAdminDashboard({
 
       <AdminCircleModal
         isOpen={isCircleModalOpen}
+        circleToEdit={circleToEdit}
         teachers={teachers}
         onClose={() => setIsCircleModalOpen(false)}
         onSuccess={() => window.location.reload()}

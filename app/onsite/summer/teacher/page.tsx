@@ -3,14 +3,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
+import { getTodayDateKey, getLocalDayOfWeek, toLocalDateKey } from "@/lib/date-utils";
 
-type SummerReportToday = {
-  id: string;
-  status: string;
-  studentId: string;
-  quranNew?: string | null;
-  noorLearned?: string | null;
-};
+
 
 import LogoutButton from "@/components/LogoutButton";
 
@@ -43,7 +38,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
   }
 
   const sParams = (await searchParams) || {};
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getTodayDateKey();
   const selectedDateKey = sParams.dateKey && /^\d{4}-\d{2}-\d{2}$/.test(sParams.dateKey) ? sParams.dateKey : todayStr;
   const isPastDate = selectedDateKey < todayStr;
 
@@ -54,11 +49,11 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
 
   const curr = new Date(startDate);
   while (curr <= today) {
-    const dayOfWeek = curr.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+    const dayOfWeek = getLocalDayOfWeek(curr); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
 
     // Skip Mondays (day 1) as Monday is a holiday in the Summer course
     if (dayOfWeek !== 1) {
-      const dateStr = curr.toISOString().split("T")[0];
+      const dateStr = toLocalDateKey(curr);
       const isTodayDate = dateStr === todayStr;
 
       const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];

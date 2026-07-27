@@ -73,3 +73,55 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "حدث خطأ أثناء إضافة الحلقة" }, { status: 500 });
   }
 }
+
+export async function PUT(req: Request) {
+  try {
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    const { id, name, teacherId } = await req.json();
+    if (!id || !name) {
+      return NextResponse.json({ error: "البيانات غير مكتملة" }, { status: 400 });
+    }
+
+    const circle = await prisma.circle.update({
+      where: { id },
+      data: {
+        name: name.trim(),
+        teacherId: teacherId || null,
+      },
+    });
+
+    return NextResponse.json({ success: true, circle });
+  } catch (error) {
+    console.error("UPDATE SUMMER CIRCLE ERROR =>", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء تحديث الحلقة" }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const admin = await verifyAdmin();
+    if (!admin) {
+      return NextResponse.json({ error: "غير مصرح" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "معرف الحلقة مطلوب" }, { status: 400 });
+    }
+
+    await prisma.circle.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("DELETE SUMMER CIRCLE ERROR =>", error);
+    return NextResponse.json({ error: "حدث خطأ أثناء حذف الحلقة" }, { status: 500 });
+  }
+}

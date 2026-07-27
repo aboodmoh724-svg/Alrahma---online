@@ -18,7 +18,12 @@ export async function POST(req: Request) {
     }
 
     const student = await prisma.student.findFirst({
-      where: { id: studentId, isActive: true, studyMode: "ONSITE_SUMMER" },
+      where: { 
+        id: studentId, 
+        isActive: true, 
+        studyMode: "ONSITE_SUMMER",
+        OR: [{ teacherId }, { studentCode: "7500" }]
+      },
       select: { id: true, fullName: true },
     });
 

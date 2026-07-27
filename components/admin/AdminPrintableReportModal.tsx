@@ -56,7 +56,7 @@ export default function AdminPrintableReportModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4 dir-rtl"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 dir-rtl"
       dir="rtl"
       onClick={onClose}
     >

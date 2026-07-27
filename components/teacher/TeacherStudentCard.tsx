@@ -188,7 +188,9 @@ export default function TeacherStudentCard({
         <div className="mt-5 flex items-center justify-between border-t border-[#d8bf83]/40 pt-3">
           <span className="text-xs font-semibold text-gray-600">
             {isDone
-              ? isNoor
+              ? reportForSelectedDate?.status === "ABSENT"
+                ? "غائب عن الحلقة"
+                : isNoor
                 ? `درس اليوم: ${reportForSelectedDate?.noorLearned || "حاضر"}`
                 : `حفظ اليوم: ${reportForSelectedDate?.quranNew || "حاضر"}`
               : `تقرير تاريخ: ${selectedDateKey}`}

@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getTodayDateKey, getLocalDayOfWeek, toLocalDateKey } from "@/lib/date-utils";
 
 export async function GET(
   req: Request,
@@ -63,7 +64,7 @@ export async function GET(
     const absentCount = reports.filter((r) => r.status === "ABSENT").length;
 
     // Calculate missing working dates from 2026-07-09 up to today (excluding Mondays)
-    const todayStr = new Date().toISOString().split("T")[0];
+    const todayStr = getTodayDateKey();
     const startDate = new Date("2026-07-09");
     const today = new Date();
     const recordedDateKeys = new Set(reports.map((r) => r.dateKey));
@@ -71,8 +72,8 @@ export async function GET(
 
     const curr = new Date(startDate);
     while (curr <= today) {
-      const dateStr = curr.toISOString().split("T")[0];
-      const dayOfWeek = curr.getDay(); // 1 is Monday
+      const dateStr = toLocalDateKey(curr);
+      const dayOfWeek = getLocalDayOfWeek(curr); // 1 is Monday
 
       if (dayOfWeek !== 1 && !recordedDateKeys.has(dateStr)) {
         missingDateKeys.push(dateStr);

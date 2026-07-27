@@ -47,9 +47,7 @@ export default function AdminStudentModal({
     setError(null);
 
     try {
-      const endpoint = isEditing
-        ? `/api/summer/admin/students`
-        : `/api/summer/admin/students`;
+      const endpoint = "/api/summer/admin/students";
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(endpoint, {

@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SummerReportForm from "@/components/teacher/SummerReportForm";
+import { getTodayDateKey } from "@/lib/date-utils";
 
 type ReportPageProps = {
   params: Promise<{
@@ -26,7 +27,7 @@ export default async function OnsiteSummerTeacherReportPage({
 
   const { studentId } = await params;
   const sParams = (await searchParams) || {};
-  const todayStr = new Date().toISOString().split("T")[0];
+  const todayStr = getTodayDateKey();
   const targetDateKey = sParams.dateKey && /^\d{4}-\d{2}-\d{2}$/.test(sParams.dateKey) ? sParams.dateKey : todayStr;
 
   const student = await prisma.student.findFirst({
