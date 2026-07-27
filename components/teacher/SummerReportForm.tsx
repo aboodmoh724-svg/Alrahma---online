@@ -28,7 +28,7 @@ type SummerReportData = {
 type SummerReportFormProps = {
   student: StudentInfo;
   existingReport?: SummerReportData | null;
-  lastPresentReport?: { quranTaqeen?: string | null; quranRevision?: string | null; noorLearned?: string | null } | null;
+  lastPresentReport?: { dateKey?: string | null; quranNew?: string | null; quranTaqeen?: string | null; quranRevision?: string | null; noorLearned?: string | null } | null;
   initialStartProgress?: { startSurah: string; startAyah?: number | null; startPage?: number | null } | null;
   dateKey: string;
 };
@@ -360,6 +360,28 @@ export default function SummerReportForm({
           <p className="text-xs font-bold text-amber-800">
             أنت تقوم بتعبئة/تعديل تقرير ليوم سابق. سيتم حفظ التقرير وإرسال إشعار وطلب اعتماد للإدارة لمراجعته بالموافقة.
           </p>
+        </div>
+      )}
+
+      {!existingReport && lastPresentReport && (
+        <div className="mb-6 rounded-2xl border-2 border-emerald-400/80 bg-emerald-50/90 p-4 space-y-2.5 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm font-serif">
+              <span>✨ الاقتراح الذكي استناداً لآخر تقرير حضور ({lastPresentReport.dateKey}):</span>
+            </div>
+            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-200/80 px-2.5 py-0.5 rounded-full font-mono">
+              تم تعبئة المقترحات تلقائياً ⚡
+            </span>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 text-xs font-bold text-emerald-900 bg-white/70 p-3 rounded-xl border border-emerald-200">
+            {lastPresentReport.quranTaqeen && (
+              <p>📖 الحفظ الجديد المقترح اليوم: <b className="text-emerald-950">{lastPresentReport.quranTaqeen}</b></p>
+            )}
+            {lastPresentReport.quranNew && (
+              <p>🔄 المراجعة المقترحة اليوم: <b className="text-emerald-950">{lastPresentReport.quranNew}</b></p>
+            )}
+          </div>
         </div>
       )}
 

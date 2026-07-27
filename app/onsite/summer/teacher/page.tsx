@@ -14,6 +14,8 @@ type SummerReportToday = {
 
 import LogoutButton from "@/components/LogoutButton";
 
+import TeacherStudentCard from "@/components/teacher/TeacherStudentCard";
+
 type DashboardPageProps = {
   searchParams?: Promise<{ dateKey?: string }>;
 };
@@ -45,32 +47,35 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
   const selectedDateKey = sParams.dateKey && /^\d{4}-\d{2}-\d{2}$/.test(sParams.dateKey) ? sParams.dateKey : todayStr;
   const isPastDate = selectedDateKey < todayStr;
 
-  // Generate available past dates from previous Sunday up to today, skipping Mondays
+  // Generate available past dates from 9 July 2026 up to today, skipping Mondays
   const availableDates: Array<{ dateKey: string; label: string; isToday: boolean }> = [];
   const today = new Date();
-  
-  for (let i = 0; i < 14; i++) {
-    const d = new Date();
-    d.setDate(today.getDate() - i);
-    const dayOfWeek = d.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
-    
+  const startDate = new Date("2026-07-09");
+
+  const curr = new Date(startDate);
+  while (curr <= today) {
+    const dayOfWeek = curr.getDay(); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+
     // Skip Mondays (day 1) as Monday is a holiday in the Summer course
-    if (dayOfWeek === 1) continue;
+    if (dayOfWeek !== 1) {
+      const dateStr = curr.toISOString().split("T")[0];
+      const isTodayDate = dateStr === todayStr;
 
-    const dateStr = d.toISOString().split("T")[0];
-    const isTodayDate = dateStr === todayStr;
+      const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+      const dayLabel = `${dayNames[dayOfWeek]} (${dateStr})`;
 
-    const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-    const dayLabel = `${dayNames[dayOfWeek]} (${dateStr})`;
-
-    availableDates.push({
-      dateKey: dateStr,
-      label: isTodayDate ? `اليوم - ${dayLabel}` : dayLabel,
-      isToday: isTodayDate,
-    });
+      availableDates.push({
+        dateKey: dateStr,
+        label: isTodayDate ? `اليوم - ${dayLabel}` : dayLabel,
+        isToday: isTodayDate,
+      });
+    }
+    curr.setDate(curr.getDate() + 1);
   }
+  // Reverse so newest date comes first
+  availableDates.reverse();
 
-  // Fetch teacher's assigned students & reports for selectedDateKey
+  // Fetch teacher's assigned students & all summerReports from 2026-07-09
   const students = await prisma.student.findMany({
     where: {
       isActive: true,
@@ -83,14 +88,47 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
     include: {
       circle: { select: { name: true } },
       summerReports: {
-        where: { dateKey: selectedDateKey },
-        select: { id: true, status: true, quranNew: true, noorLearned: true },
+        where: {
+          dateKey: { gte: "2026-07-09" },
+        },
+        orderBy: { dateKey: "desc" },
       },
     },
     orderBy: { fullName: "asc" },
   });
 
-  const filledCount = students.filter((s) => s.summerReports.length > 0).length;
+  // Calculate missing dates for all students from 2026-07-09
+  const allWorkingDates = availableDates.map((d) => d.dateKey);
+
+  const studentsWithMeta = students.map((st) => {
+    const reportForSelectedDate = st.summerReports.find((r) => r.dateKey === selectedDateKey) || null;
+    const lastPresentReport = st.summerReports.find((r) => r.status === "PRESENT") || null;
+
+    const recordedKeys = new Set(st.summerReports.map((r) => r.dateKey));
+    const missingDateKeys = allWorkingDates.filter((dKey) => !recordedKeys.has(dKey));
+
+    return {
+      student: {
+        id: st.id,
+        fullName: st.fullName,
+        studentCode: st.studentCode,
+        summerGroup: st.summerGroup,
+        circleName: st.circle?.name,
+      },
+      reportForSelectedDate,
+      lastPresentReport: lastPresentReport
+        ? {
+            dateKey: lastPresentReport.dateKey,
+            quranNew: lastPresentReport.quranNew,
+            quranRevision: lastPresentReport.quranRevision,
+            noorLearned: lastPresentReport.noorLearned,
+          }
+        : null,
+      missingDateKeys,
+    };
+  });
+
+  const filledCount = studentsWithMeta.filter((s) => Boolean(s.reportForSelectedDate)).length;
   const completionPercentage =
     students.length > 0 ? Math.round((filledCount / students.length) * 100) : 0;
 
@@ -113,10 +151,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
               />
             </div>
             <div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-3 py-0.5 text-xs font-bold text-cyan-100">
-                🌟 بوابة المعلم الصيفي
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#fbf6ef] font-serif leading-tight mt-1">
+              <h1 className="text-2xl font-bold font-ruqaa text-[#bd8f2d] tracking-wide">
                 الدورة الصيفية الأولى
               </h1>
               <p className="text-xs font-semibold text-cyan-200">
@@ -134,7 +169,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
                 <span className="block text-xs font-bold text-white font-serif">
                   أستاذ: {teacher.fullName}
                 </span>
-                <span className="block text-[10px] text-cyan-200">
+                <span className="block text-[10px] text-cyan-200 font-mono">
                   تاريخ اليوم: {todayStr}
                 </span>
               </div>
@@ -262,95 +297,23 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
             </h3>
           </div>
 
-          {students.length === 0 ? (
+          {studentsWithMeta.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffdf9] p-10 text-center text-sm font-bold text-gray-500">
               لا يوجد طلاب مسجلين في حلقتك حتى الآن.
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
-              {students.map((student) => {
-                const reportToday = student.summerReports[0] as SummerReportToday | undefined;
-                const isDone = Boolean(reportToday);
-                const isNoor = student.summerGroup === "NOOR_AL_BAYAN";
-
-                return (
-                  <div
-                    key={student.id}
-                    className={`flex flex-col justify-between rounded-2xl border p-5 transition shadow-sm ${
-                      isDone
-                        ? "border-emerald-400/60 bg-emerald-50/40"
-                        : "border-[#d8bf83]/60 bg-[#fffdf9]"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          {isNoor ? (
-                            <span className="rounded-full bg-[#bd8f2d] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
-                              📘 طالب نور البيان
-                            </span>
-                          ) : (
-                            <span className="rounded-full bg-[#0c5c5e] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
-                              📖 طالب قرآن كريم
-                            </span>
-                          )}
-
-                          {student.studentCode === "7500" && (
-                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800">
-                              تجريبي
-                            </span>
-                          )}
-                        </div>
-
-                        <h4 className="mt-2 text-xl font-bold text-[#162e24] font-serif">
-                          {student.fullName}
-                        </h4>
-
-                        {student.circle?.name && (
-                          <p className="text-xs font-bold text-[#bd8f2d] mt-0.5">
-                            حلقة: {student.circle.name}
-                          </p>
-                        )}
-                      </div>
-
-                      <span
-                        className={`shrink-0 rounded-full px-3 py-1 text-xs font-black font-serif ${
-                          isDone
-                            ? "bg-emerald-700 text-white shadow-2xs"
-                            : "bg-amber-100 text-amber-900 border border-amber-300/60"
-                        }`}
-                      >
-                        {isDone
-                          ? reportToday?.status === "ABSENT"
-                            ? "غائب ❌"
-                            : "تم الرصد ✅"
-                          : "بانتظار التعبئة ⏳"}
-                      </span>
-                    </div>
-
-                    <div className="mt-5 flex items-center justify-between border-t border-[#d8bf83]/30 pt-3">
-                      <span className="text-xs font-semibold text-gray-600">
-                        {isDone
-                          ? isNoor
-                            ? `الدرس: ${reportToday?.noorLearned || "حاضر"}`
-                            : `الحفظ: ${reportToday?.quranNew || "حاضر"}`
-                          : "لم يتم حفظ تقرير اليوم"}
-                      </span>
-
-                      <Link
-                        href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
-                        className={`rounded-xl px-4 py-2 text-xs font-bold transition shadow-2xs font-serif ${
-                          isDone
-                            ? "bg-white text-[#0c5c5e] border border-[#0c5c5e] hover:bg-emerald-50"
-                            : "bg-[#0c5c5e] text-white hover:bg-[#06484a]"
-                        }`}
-                      >
-                        {isDone ? "تعديل التقرير" : "تعبئة التقرير 📝"}
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
+              {studentsWithMeta.map((item) => (
+                <TeacherStudentCard
+                  key={item.student.id}
+                  student={item.student}
+                  selectedDateKey={selectedDateKey}
+                  todayStr={todayStr}
+                  reportForSelectedDate={item.reportForSelectedDate}
+                  lastPresentReport={item.lastPresentReport}
+                  missingDateKeys={item.missingDateKeys}
+                />
+              ))}
             </div>
           )}
         </div>
