@@ -63,6 +63,25 @@ export default function AdminTransferStudentModal({
     }
   };
 
+  const handleTeacherChange = (selectedTeacherId: string) => {
+    setTargetTeacherId(selectedTeacherId);
+    const matchingCircle: any = circles.find(
+      (c: any) => c.teacherId === selectedTeacherId || c.teacher?.id === selectedTeacherId
+    );
+    if (matchingCircle) {
+      setTargetCircleId(matchingCircle.id);
+    }
+  };
+
+  const handleCircleChange = (selectedCircleId: string) => {
+    setTargetCircleId(selectedCircleId);
+    const selectedCircle: any = circles.find((c) => c.id === selectedCircleId);
+    const circleTeacherId = selectedCircle?.teacherId || selectedCircle?.teacher?.id;
+    if (circleTeacherId) {
+      setTargetTeacherId(circleTeacherId);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 dir-rtl"
@@ -112,10 +131,10 @@ export default function AdminTransferStudentModal({
 
           {/* New Teacher Selection */}
           <div>
-            <label className="block mb-1 font-serif">اختيار المعلم الجديد *</label>
+            <label className="block mb-1 font-serif">اختيار المعلم الجديد * (يربط تلقائياً بالحلقة)</label>
             <select
               value={targetTeacherId || student.teacherId}
-              onChange={(e) => setTargetTeacherId(e.target.value)}
+              onChange={(e) => handleTeacherChange(e.target.value)}
               className="w-full rounded-xl border border-[#bd8f2d]/50 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-800 outline-none"
             >
               {teachers.map((t) => (
@@ -128,10 +147,10 @@ export default function AdminTransferStudentModal({
 
           {/* New Circle Selection */}
           <div>
-            <label className="block mb-1 font-serif">اختيار الحلقة الجديدة *</label>
+            <label className="block mb-1 font-serif">اختيار الحلقة الجديدة * (تربط تلقائياً بالمعلم)</label>
             <select
               value={targetCircleId || student.circleId || ""}
-              onChange={(e) => setTargetCircleId(e.target.value)}
+              onChange={(e) => handleCircleChange(e.target.value)}
               className="w-full rounded-xl border border-[#bd8f2d]/50 bg-white px-3.5 py-2.5 text-xs font-bold text-gray-800 outline-none"
             >
               <option value="">-- بدون حلقة محددة --</option>
