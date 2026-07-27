@@ -158,12 +158,12 @@ export default function SummerAdminDashboard({
       {/* 📱 Mobile Top Navigation Header */}
       <div className="lg:hidden sticky top-0 z-40 bg-[#0c5c5e] text-white px-4 py-3 border-b-2 border-[#bd8f2d] flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2.5">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-[#bd8f2d] to-[#8c6717] p-0.5 flex items-center justify-center text-lg shrink-0 border border-amber-200">
-            📖
+          <div className="h-10 w-10 rounded-xl bg-white p-1 shadow-md flex items-center justify-center shrink-0 border border-amber-300">
+            <img src="/images/alrahma_tahfeez_logo.png" alt="شعار تحفيظ الرحمة" className="h-full w-full object-contain" />
           </div>
           <div>
             <h1 className="text-base font-bold font-ruqaa text-[#bd8f2d]">تحفيظ الرحمة</h1>
-            <p className="text-[10px] text-cyan-100 font-bold">الإدارة الصيفية</p>
+            <p className="text-[10px] text-cyan-100 font-bold">إدارة الدورة الصيفية للقرآن الكريم</p>
           </div>
         </div>
 
@@ -198,8 +198,8 @@ export default function SummerAdminDashboard({
           {/* Brand Header */}
           <div className="p-6 border-b border-[#bd8f2d]/40 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-[#bd8f2d] to-[#8c6717] p-0.5 shadow-md flex items-center justify-center text-2xl shrink-0 border border-amber-200">
-                📖
+              <div className="h-14 w-14 rounded-2xl bg-white p-1.5 shadow-md flex items-center justify-center shrink-0 border-2 border-[#bd8f2d]">
+                <img src="/images/alrahma_tahfeez_logo.png" alt="شعار تحفيظ الرحمة" className="h-full w-full object-contain" />
               </div>
               <div>
                 <h1 className="text-xl font-bold font-ruqaa text-[#bd8f2d] tracking-wide drop-shadow-xs">
