@@ -79,6 +79,8 @@ model Student {
   teacher        User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   summerGroup    String?
   summerReports  SummerReport[]
+
+  @@index([isActive, studyMode, teacherId])
 }
 
 model StudentTeacherProgress {
@@ -878,5 +880,7 @@ model SummerReport {
   @@unique([studentId, dateKey])
   @@index([dateKey])
   @@index([teacherId])
+  @@index([studentId, status, dateKey])
+  @@index([teacherId, dateKey])
 }
 
