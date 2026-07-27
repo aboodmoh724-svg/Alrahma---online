@@ -56,6 +56,7 @@ export default function AdminStudentModal({
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          studentId: studentToEdit?.id,
           id: studentToEdit?.id,
           fullName: fullName.trim(),
           summerGroup,

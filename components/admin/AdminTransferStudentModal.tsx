@@ -43,6 +43,7 @@ export default function AdminTransferStudentModal({
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          studentId: student.id,
           id: student.id,
           fullName: student.fullName,
           teacherId: targetTeacherId || student.teacherId,

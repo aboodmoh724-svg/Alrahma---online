@@ -91,14 +91,15 @@ export async function PUT(req: Request) {
     }
 
     const body = await req.json();
-    const { studentId, fullName, parentWhatsapp, summerGroup, circleId, teacherId } = body;
+    const { studentId, id, fullName, parentWhatsapp, summerGroup, circleId, teacherId } = body;
+    const targetId = studentId || id;
 
-    if (!studentId) {
+    if (!targetId) {
       return NextResponse.json({ error: "معرف الطالب مطلوب" }, { status: 400 });
     }
 
     const student = await prisma.student.update({
-      where: { id: studentId },
+      where: { id: targetId },
       data: {
         fullName: typeof fullName === "string" ? fullName.trim() : undefined,
         parentWhatsapp: typeof parentWhatsapp === "string" ? parentWhatsapp.trim() : undefined,
