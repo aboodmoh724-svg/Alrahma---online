@@ -28,6 +28,7 @@ export default async function OnsiteSummerAdminPage() {
         circle: { select: { id: true, name: true } },
         teacher: { select: { id: true, fullName: true } },
         summerReports: {
+          select: { id: true, dateKey: true, status: true },
           orderBy: { dateKey: "desc" },
           take: 1,
         },

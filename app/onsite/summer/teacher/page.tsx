@@ -91,6 +91,15 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
         where: {
           dateKey: { gte: "2026-07-09" },
         },
+        select: {
+          id: true,
+          status: true,
+          dateKey: true,
+          quranNew: true,
+          quranRevision: true,
+          quranTaqeen: true,
+          noorLearned: true,
+        },
         orderBy: { dateKey: "desc" },
       },
     },
