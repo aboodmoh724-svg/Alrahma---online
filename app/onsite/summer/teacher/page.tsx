@@ -137,44 +137,44 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
     students.length > 0 ? Math.round((filledCount / students.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#f7f2ea] text-[#162e24] dir-rtl font-sans pb-12" dir="rtl">
-      {/* 🕌 1. Full-Width Dark Emerald Islamic Calligraphy Header for Teacher */}
-      <header className="relative bg-[#0c5c5e] text-white shadow-xl overflow-hidden border-b-4 border-[#bd8f2d]">
-        {/* Geometric Islamic Mandala Accent SVG */}
-        <div className="absolute top-0 right-0 h-full w-[420px] pointer-events-none opacity-25 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
+    <div className="min-h-screen bg-[#faf8f4] text-[#1a2e23] dir-rtl font-sans pb-16" dir="rtl">
+      {/* 🕌 1. Full-Width Dark Emerald Header */}
+      <header className="relative bg-[#0c5c5e] text-white shadow-lg overflow-hidden border-b border-[#d4a853]/30">
+        {/* Subtle Geometric Overlay */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d4a853_1.5px,transparent_1.5px)] [background-size:14px_14px] pointer-events-none" />
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 pt-5 pb-5 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-white p-1.5 shadow-md ring-2 ring-[#bd8f2d]">
+            <div className="rounded-2xl bg-white p-2 shadow-md ring-2 ring-[#d4a853]/60">
               <Image
                 src="/images/summer_quran_logo_v2.jpg"
                 alt="شعار الدورة الصيفية"
-                width={56}
-                height={56}
-                className="h-14 w-14 rounded-xl object-contain"
+                width={52}
+                height={52}
+                className="h-13 w-13 rounded-xl object-contain"
               />
             </div>
             <div>
-              <h1 className="text-2xl font-bold font-ruqaa text-[#bd8f2d] tracking-wide">
-                الدورة الصيفية الأولى
+              <h1 className="text-2xl font-bold font-ruqaa text-[#f2d18a] tracking-wide">
+                لوحة المعلم - الدورة الصيفية
               </h1>
-              <p className="text-xs font-semibold text-cyan-200">
-                لوحة رصد ومتابعة التقارير اليومية | تحفيظ الرحمة
+              <p className="text-xs font-semibold text-emerald-100/80">
+                إدارة تحفيظ القرآن الكريم | رصد التقارير اليومية
               </p>
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 rounded-xl bg-[#117073] px-4 py-2 border border-[#bd8f2d]/40 shrink-0">
-              <div className="h-8 w-8 rounded-full bg-[#bd8f2d] flex items-center justify-center font-bold text-xs text-[#0c5c5e]">
-                أ
+            <div className="flex items-center gap-3 rounded-2xl bg-[#0a4d4f] px-4 py-2 border border-[#d4a853]/30 shadow-inner shrink-0">
+              <div className="h-9 w-9 rounded-full bg-[#d4a853] flex items-center justify-center font-black text-sm text-[#0c5c5e] shadow-xs">
+                {teacher.fullName ? teacher.fullName.charAt(0) : "أ"}
               </div>
               <div className="text-right">
                 <span className="block text-xs font-bold text-white font-serif">
                   أستاذ: {teacher.fullName}
                 </span>
-                <span className="block text-[10px] text-cyan-200 font-mono">
-                  تاريخ اليوم: {todayStr}
+                <span className="block text-[10px] text-emerald-200/90 font-mono">
+                  اليوم: {todayStr}
                 </span>
               </div>
             </div>
@@ -186,15 +186,33 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
 
       {/* 🏛️ 2. Main Workspace Content Container */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 space-y-6">
+        {/* 🌟 Islamic Motivational Calligraphy Card */}
+        <div className="rounded-3xl border border-[#d4a853]/30 bg-white p-6 shadow-sm text-center space-y-3 relative overflow-hidden dir-rtl" dir="rtl">
+          <div className="absolute top-0 right-0 h-full w-24 bg-gradient-to-l from-[#d4a853]/10 to-transparent pointer-events-none" />
+          <div className="relative z-10 space-y-2">
+            <span className="inline-block rounded-full bg-[#faf8f4] border border-[#d4a853]/30 px-4 py-1 text-xs font-bold text-[#d4a853] font-serif shadow-2xs">
+              ✨ بشارة لحَفَظَةِ كِتَابِ اللَّهِ ✨
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-[#0c5c5e] font-ruqaa leading-snug tracking-wide">
+              «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ ... وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي»
+            </h2>
+            <p className="text-xs sm:text-sm font-semibold text-gray-600 font-serif max-w-2xl mx-auto">
+              هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ وَهَذَا الشَّرَفَ العَظِيمَ فِي خِدْمَةِ كِتَابِ اللَّهِ تَعَالَى
+            </p>
+          </div>
+        </div>
+
         {/* 📅 Date Selector Bar */}
-        <div className="rounded-2xl border-2 border-[#bd8f2d]/60 bg-white p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">📅</span>
+        <div className="rounded-2xl border border-[#d4a853]/25 bg-white p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#faf8f4] border border-[#d4a853]/30 flex items-center justify-center text-xl shrink-0">
+              📅
+            </div>
             <div>
               <h3 className="text-sm font-bold text-[#0c5c5e] font-serif">
                 تحديد تاريخ التقرير المراد تعبئته / استعراضه:
               </h3>
-              <p className="text-xs font-semibold text-gray-500">
+              <p className="text-xs font-medium text-gray-500 mt-0.5">
                 {selectedDateKey === todayStr
                   ? "أنت تعاين تقارير اليوم الحالي (الافتراضي)."
                   : `أنت تعاين تقارير يوم سابق: ${selectedDateKey}`}
@@ -202,13 +220,13 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
             <Link
               href="/onsite/summer/teacher"
-              className={`rounded-xl px-3 py-2 text-xs font-bold font-serif transition border ${
+              className={`rounded-xl px-3.5 py-2 text-xs font-bold font-serif transition border ${
                 selectedDateKey === todayStr
-                  ? "bg-[#0c5c5e] text-white border-[#0c5c5e]"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 border-gray-300"
+                  ? "bg-[#0c5c5e] text-white border-[#0c5c5e] shadow-xs"
+                  : "bg-[#faf8f4] text-gray-700 hover:bg-gray-100 border-[#d4a853]/30"
               }`}
             >
               اليوم الحالي 🌟
@@ -218,7 +236,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
               <select
                 name="dateKey"
                 defaultValue={selectedDateKey}
-                className="rounded-xl border-2 border-[#0c5c5e] bg-[#fffaf4] px-4 py-2 text-xs font-bold text-[#0c5c5e] outline-none font-mono"
+                className="rounded-xl border border-[#d4a853]/40 bg-[#faf8f4] px-3.5 py-2 text-xs font-bold text-[#0c5c5e] outline-none font-mono focus:ring-2 focus:ring-[#0c5c5e]/20"
               >
                 {availableDates.map((d) => (
                   <option key={d.dateKey} value={d.dateKey}>
@@ -228,7 +246,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
               </select>
               <button
                 type="submit"
-                className="rounded-xl bg-[#0c5c5e] px-4 py-2 text-xs font-bold text-white hover:bg-[#084547] font-serif"
+                className="rounded-xl bg-[#0c5c5e] px-4 py-2 text-xs font-bold text-white hover:bg-[#0a4d4f] transition font-serif shadow-xs"
               >
                 انتقال ➔
               </button>
@@ -238,10 +256,10 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
 
         {/* Past Date Alert Banner */}
         {isPastDate && (
-          <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+          <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
             <div className="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
               <span>⚠️ تنبيه: تقوم برصد/تعديل تقرير ليوم سابق:</span>
-              <span className="bg-amber-200 px-2.5 py-0.5 rounded-md font-mono text-amber-950">
+              <span className="bg-amber-200/80 px-2.5 py-0.5 rounded-md font-mono text-amber-950">
                 {selectedDateKey}
               </span>
             </div>
@@ -251,31 +269,15 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
           </div>
         )}
 
-        {/* 🌟 Islamic Motivational Calligraphy Banner for Teachers */}
-        <div className="rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-6 shadow-xl text-white text-center space-y-3 relative overflow-hidden dir-rtl" dir="rtl">
-          <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
-          <div className="relative z-10 space-y-2">
-            <span className="inline-block rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-4 py-1 text-xs sm:text-sm font-bold text-[#fbf6ef] font-serif">
-              ✨ بشارة لحَفَظَةِ كِتَابِ اللَّهِ ✨
-            </span>
-            <h2 className="text-2xl sm:text-4xl font-bold text-[#bd8f2d] font-ruqaa leading-snug tracking-wide">
-              «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ ... وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي»
-            </h2>
-            <p className="text-xs sm:text-sm font-bold text-cyan-100 font-serif max-w-2xl mx-auto">
-              هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ وَهَذَا الشَّرَفَ العَظِيمَ فِي خِدْمَةِ كِتَابِ اللَّهِ تَعَالَى
-            </p>
-          </div>
-        </div>
-
         {/* Top Progress & Completion Summary Banner */}
-        <div className="rounded-2xl border border-[#d8bf83]/60 bg-[#fffdf9] p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="rounded-2xl border border-[#d4a853]/25 bg-white p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-[#0c5c5e] font-serif">
               نسبة إنجاز تقارير الحلقة ({selectedDateKey})
             </h2>
             <p className="text-xs font-semibold text-gray-500 mt-1">
               تم رصد <b className="text-[#0c5c5e] font-serif text-sm">{filledCount}</b> من إجمالي{" "}
-              <b className="text-[#bd8f2d] font-serif text-sm">{students.length}</b> طالباً بحلقتك
+              <b className="text-[#d4a853] font-serif text-sm">{students.length}</b> طالباً بحلقتك
             </p>
           </div>
 
@@ -284,7 +286,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
               <span className="text-gray-600">التقدم الفعلي</span>
               <span className="text-[#0c5c5e] font-serif text-base">{completionPercentage}%</span>
             </div>
-            <div className="h-3.5 w-full rounded-full bg-gray-200 overflow-hidden border border-gray-300/40">
+            <div className="h-3.5 w-full rounded-full bg-[#faf8f4] overflow-hidden border border-[#d4a853]/20 p-0.5">
               <div
                 className="h-full rounded-full bg-[#0c5c5e] transition-all duration-500"
                 style={{ width: `${completionPercentage}%` }}
@@ -302,7 +304,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
           </div>
 
           {studentsWithMeta.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#d8bf83] bg-[#fffdf9] p-10 text-center text-sm font-bold text-gray-500">
+            <div className="rounded-2xl border border-dashed border-[#d4a853]/30 bg-white p-10 text-center text-sm font-bold text-gray-500">
               لا يوجد طلاب مسجلين في حلقتك حتى الآن.
             </div>
           ) : (

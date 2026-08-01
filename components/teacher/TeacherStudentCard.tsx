@@ -45,14 +45,14 @@ export default function TeacherStudentCard({
   return (
     <>
       <div
-        className={`relative flex flex-col justify-between rounded-3xl border-2 p-5 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-0.5 ${
+        className={`relative flex flex-col justify-between rounded-3xl border p-5 transition-all duration-300 shadow-xs hover:shadow-lg hover:-translate-y-0.5 ${
           isDone
-            ? "border-emerald-400/80 bg-gradient-to-b from-[#f2faf6] via-white to-[#f4faf7]"
-            : "border-[#bd8f2d]/50 bg-white"
+            ? "border-emerald-300/90 bg-gradient-to-b from-emerald-50/40 via-white to-white"
+            : "border-[#d4a853]/30 bg-white"
         }`}
       >
         {/* Decorative corner accent */}
-        <div className="absolute top-0 left-0 w-16 h-16 pointer-events-none opacity-10 bg-[radial-gradient(#0c5c5e_1px,transparent_1px)] [background-size:6px_6px] rounded-tl-3xl" />
+        <div className="absolute top-0 left-0 w-16 h-16 pointer-events-none opacity-5 bg-[radial-gradient(#0c5c5e_1px,transparent_1px)] [background-size:6px_6px] rounded-tl-3xl" />
 
         {/* Top Info Header */}
         <div className="space-y-3">
@@ -60,28 +60,28 @@ export default function TeacherStudentCard({
             <div>
               <div className="flex items-center gap-2">
                 {isNoor ? (
-                  <span className="rounded-full bg-[#bd8f2d] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
+                  <span className="rounded-full bg-[#d4a853] px-3 py-0.5 text-xs font-bold text-white font-serif shadow-2xs">
                     📘 طالب نور البيان
                   </span>
                 ) : (
-                  <span className="rounded-full bg-[#0c5c5e] px-3 py-0.5 text-xs font-black text-white font-serif shadow-2xs">
+                  <span className="rounded-full bg-[#0c5c5e] px-3 py-0.5 text-xs font-bold text-white font-serif shadow-2xs">
                     📖 طالب قرآن كريم
                   </span>
                 )}
 
                 {student.studentCode === "7500" && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-black text-amber-800 border border-amber-300">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
                     تجريبي
                   </span>
                 )}
               </div>
 
-              <h4 className="mt-2 text-xl font-bold text-[#162e24] font-serif leading-snug">
+              <h4 className="mt-2 text-xl font-bold text-[#1a2e23] font-serif leading-snug">
                 {student.fullName}
               </h4>
 
               {student.circleName && (
-                <p className="text-xs font-bold text-[#bd8f2d] mt-0.5 font-serif">
+                <p className="text-xs font-bold text-[#d4a853] mt-0.5 font-serif">
                   حلقة: {student.circleName}
                 </p>
               )}
@@ -94,7 +94,7 @@ export default function TeacherStudentCard({
                     ? reportForSelectedDate?.status === "ABSENT"
                       ? "bg-red-600 text-white shadow-2xs"
                       : "bg-emerald-700 text-white shadow-2xs"
-                    : "bg-amber-100 text-amber-900 border border-amber-300/80"
+                    : "bg-amber-100/80 text-amber-900 border border-amber-300/80"
                 }`}
               >
                 {isDone
@@ -108,7 +108,7 @@ export default function TeacherStudentCard({
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(true)}
-                className="mt-1 flex items-center gap-1.5 rounded-xl border border-[#0c5c5e]/30 bg-[#0c5c5e]/5 px-2.5 py-1 text-xs font-bold text-[#0c5c5e] hover:bg-[#0c5c5e] hover:text-white transition shadow-2xs font-serif"
+                className="mt-1 flex items-center gap-1.5 rounded-xl border border-[#0c5c5e]/30 bg-[#faf8f4] px-2.5 py-1 text-xs font-bold text-[#0c5c5e] hover:bg-[#0c5c5e] hover:text-white transition shadow-2xs font-serif"
               >
                 <span>📜</span>
                 <span>سجل الطالب</span>
@@ -117,7 +117,7 @@ export default function TeacherStudentCard({
           </div>
 
           {/* Quick Summary Section: Last Memorized / Lesson */}
-          <div className="rounded-2xl border border-[#bd8f2d]/30 bg-[#fdfaf5] p-3 space-y-1.5 text-xs">
+          <div className="rounded-2xl border border-[#d4a853]/20 bg-[#faf8f4] p-3 space-y-1.5 text-xs">
             <div className="flex items-center justify-between">
               <span className="font-bold text-[#0c5c5e] font-serif">📌 آخر تقرير حضور مرصود:</span>
               <span className="font-mono font-bold text-gray-500 text-[11px]">
@@ -185,7 +185,7 @@ export default function TeacherStudentCard({
         </div>
 
         {/* Action Button Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-[#d8bf83]/40 pt-3">
+        <div className="mt-5 flex items-center justify-between border-t border-[#d4a853]/20 pt-3">
           <span className="text-xs font-semibold text-gray-600">
             {isDone
               ? reportForSelectedDate?.status === "ABSENT"
@@ -198,10 +198,10 @@ export default function TeacherStudentCard({
 
           <Link
             href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
-            className={`rounded-2xl px-4 py-2 text-xs font-bold transition shadow-sm font-serif ${
+            className={`rounded-2xl px-4 py-2 text-xs font-bold transition shadow-2xs font-serif ${
               isDone
                 ? "bg-white text-[#0c5c5e] border-2 border-[#0c5c5e] hover:bg-emerald-50"
-                : "bg-[#0c5c5e] text-white hover:bg-[#06484a]"
+                : "bg-[#0c5c5e] text-white hover:bg-[#0a4d4f]"
             }`}
           >
             {isDone ? "تعديل التقرير ✏️" : "تعبئة التقرير 📝"}
