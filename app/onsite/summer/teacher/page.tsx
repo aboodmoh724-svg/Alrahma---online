@@ -328,23 +328,25 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
 
           {/* Show more dates via select for older dates */}
           {availableDates.length > 7 && (
-            <form method="GET" className="shrink-0">
+            <form method="GET" className="shrink-0 flex items-center gap-1.5">
               <select
                 name="dateKey"
-                defaultValue={selectedDateKey}
-                onChange={(e) => {
-                  const form = e.target.closest('form');
-                  if (form) form.submit();
-                }}
+                defaultValue=""
                 className="h-[58px] rounded-xl border border-[#E5E3DF] bg-white px-3 text-[12px] font-semibold text-[#6B7280] outline-none focus:border-[#0C5C5E] focus:ring-1 focus:ring-[#0C5C5E]/20 cursor-pointer"
               >
-                <option value="">تواريخ سابقة...</option>
+                <option value="">سابق...</option>
                 {availableDates.slice(7).map((d) => (
                   <option key={d.dateKey} value={d.dateKey}>
                     {d.label}
                   </option>
                 ))}
               </select>
+              <button
+                type="submit"
+                className="h-[58px] rounded-xl bg-[#0C5C5E] px-3 text-white text-[12px] font-semibold hover:bg-[#0A4D4F] transition"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
             </form>
           )}
         </div>
