@@ -5,11 +5,9 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getTodayDateKey, getLocalDayOfWeek, toLocalDateKey } from "@/lib/date-utils";
 
-
-
 import LogoutButton from "@/components/LogoutButton";
-
 import TeacherStudentCard from "@/components/teacher/TeacherStudentCard";
+import CircularProgress from "@/components/ui/CircularProgress";
 
 type DashboardPageProps = {
   searchParams?: Promise<{ dateKey?: string }>;
@@ -43,13 +41,13 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
   const isPastDate = selectedDateKey < todayStr;
 
   // Generate available past dates from 9 July 2026 up to today, skipping Mondays
-  const availableDates: Array<{ dateKey: string; label: string; isToday: boolean }> = [];
+  const availableDates: Array<{ dateKey: string; label: string; isToday: boolean; dayName: string; dayNum: string }> = [];
   const today = new Date();
   const startDate = new Date("2026-07-09");
 
   const curr = new Date(startDate);
   while (curr <= today) {
-    const dayOfWeek = getLocalDayOfWeek(curr); // 0: Sun, 1: Mon, 2: Tue, 3: Wed, 4: Thu, 5: Fri, 6: Sat
+    const dayOfWeek = getLocalDayOfWeek(curr);
 
     // Skip Mondays (day 1) as Monday is a holiday in the Summer course
     if (dayOfWeek !== 1) {
@@ -57,18 +55,24 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
       const isTodayDate = dateStr === todayStr;
 
       const dayNames = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+      const shortDayNames = ["أح", "اث", "ثل", "أر", "خم", "جم", "سب"];
       const dayLabel = `${dayNames[dayOfWeek]} (${dateStr})`;
 
       availableDates.push({
         dateKey: dateStr,
         label: isTodayDate ? `اليوم - ${dayLabel}` : dayLabel,
         isToday: isTodayDate,
+        dayName: shortDayNames[dayOfWeek],
+        dayNum: dateStr.slice(8),
       });
     }
     curr.setDate(curr.getDate() + 1);
   }
   // Reverse so newest date comes first
   availableDates.reverse();
+
+  // Get recent 7 days for the day picker
+  const recentDays = availableDates.slice(0, 7);
 
   // Fetch teacher's assigned students & all summerReports from 2026-07-09
   const students = await prisma.student.findMany({
@@ -133,196 +137,330 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
   });
 
   const filledCount = studentsWithMeta.filter((s) => Boolean(s.reportForSelectedDate)).length;
+  const remainingCount = students.length - filledCount;
   const completionPercentage =
     students.length > 0 ? Math.round((filledCount / students.length) * 100) : 0;
 
+  // Split students into pending and completed
+  const pendingStudents = studentsWithMeta.filter((s) => !s.reportForSelectedDate);
+  const completedStudents = studentsWithMeta.filter((s) => Boolean(s.reportForSelectedDate));
+
+  // Smart greeting based on time of day
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? "صباح الخير" : "مساء الخير";
+  const firstName = teacher.fullName?.split(" ")[0] || "أستاذ";
+
+  // Smart status message
+  const getStatusMessage = () => {
+    if (completionPercentage === 100) return "ما شاء الله، تم إكمال رصد جميع الطلاب لهذا اليوم";
+    if (remainingCount === 1) return "بقي طالب واحد فقط لإكمال الرصد";
+    if (remainingCount === 2) return "بقي طالبان فقط لإكمال الرصد";
+    if (remainingCount <= 10) return `بقي ${remainingCount} طلاب لإكمال الرصد`;
+    return `لديك ${remainingCount} طالباً بانتظار الرصد`;
+  };
+
+  // Islamic star SVG icon for section headers
+  const StarIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5Z" />
+    </svg>
+  );
+
   return (
-    <div className="min-h-screen bg-[#faf8f4] text-[#1a2e23] dir-rtl font-sans pb-16" dir="rtl">
-      {/* 🕌 1. Full-Width Dark Emerald Header */}
-      <header className="relative bg-[#0c5c5e] text-white shadow-lg overflow-hidden border-b border-[#d4a853]/30">
-        {/* Subtle Geometric Overlay */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#d4a853_1.5px,transparent_1.5px)] [background-size:14px_14px] pointer-events-none" />
-
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4 relative z-10">
-          <div className="flex items-center gap-4">
-            <div className="rounded-2xl bg-white p-2 shadow-md ring-2 ring-[#d4a853]/60">
+    <div className="min-h-screen pb-16">
+      {/* ═══════════════ SIGNATURE HEADER ═══════════════ */}
+      <header className="bg-[#0C5C5E] text-white sticky top-0 z-40">
+        <div className="mx-auto max-w-[1200px] px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16">
+            {/* Right: Logo + Brand */}
+            <div className="flex items-center gap-3">
               <Image
-                src="/images/summer_quran_logo_v2.jpg"
-                alt="شعار الدورة الصيفية"
-                width={52}
-                height={52}
-                className="h-13 w-13 rounded-xl object-contain"
+                src="/images/alrahma_tahfeez_logo.png"
+                alt="تحفيظ الرحمة"
+                width={38}
+                height={38}
+                className="h-[38px] w-[38px] rounded-lg object-contain"
               />
+              <div className="hidden sm:block h-8 w-px bg-white/20" />
+              <div>
+                <h1 className="text-[15px] font-bold font-heading text-white leading-tight">
+                  تحفيظ الرحمة
+                </h1>
+                <p className="text-[11px] font-medium text-white/60 hidden sm:block">
+                  الدورة الصيفية
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl font-bold font-ruqaa text-[#f2d18a] tracking-wide">
-                لوحة المعلم - الدورة الصيفية
-              </h1>
-              <p className="text-xs font-semibold text-emerald-100/80">
-                إدارة تحفيظ القرآن الكريم | رصد التقارير اليومية
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-3 rounded-2xl bg-[#0a4d4f] px-4 py-2 border border-[#d4a853]/30 shadow-inner shrink-0">
-              <div className="h-9 w-9 rounded-full bg-[#d4a853] flex items-center justify-center font-black text-sm text-[#0c5c5e] shadow-xs">
+            {/* Left: Teacher info + Logout */}
+            <div className="flex items-center gap-3">
+              <div className="text-left hidden sm:block">
+                <span className="block text-[13px] font-semibold text-white/90">
+                  {teacher.fullName}
+                </span>
+                <span className="block text-[11px] text-white/50">
+                  {todayStr}
+                </span>
+              </div>
+              <div className="h-9 w-9 rounded-full bg-white/15 flex items-center justify-center text-sm font-bold text-white border border-white/20">
                 {teacher.fullName ? teacher.fullName.charAt(0) : "أ"}
               </div>
-              <div className="text-right">
-                <span className="block text-xs font-bold text-white font-serif">
-                  أستاذ: {teacher.fullName}
-                </span>
-                <span className="block text-[10px] text-emerald-200/90 font-mono">
-                  اليوم: {todayStr}
-                </span>
-              </div>
+              <LogoutButton
+                redirectUrl="/onsite/summer"
+                className="h-9 w-9 rounded-lg bg-transparent hover:bg-white/10 flex items-center justify-center text-white/70 hover:text-white transition border border-transparent hover:border-white/20"
+              />
             </div>
-
-            <LogoutButton redirectUrl="/onsite/summer" />
           </div>
         </div>
+
+        {/* Islamic decorative strip */}
+        <div
+          className="h-1 w-full"
+          style={{
+            background: 'linear-gradient(90deg, #0C5C5E, #1A8A8D, #0C5C5E)',
+          }}
+        />
       </header>
 
-      {/* 🏛️ 2. Main Workspace Content Container */}
-      <main className="mx-auto max-w-7xl px-4 sm:px-6 pt-6 space-y-6">
-        {/* 🌟 Islamic Motivational Calligraphy Card */}
-        <div className="rounded-3xl border border-[#d4a853]/30 bg-white p-6 shadow-sm text-center space-y-3 relative overflow-hidden dir-rtl" dir="rtl">
-          <div className="absolute top-0 right-0 h-full w-24 bg-gradient-to-l from-[#d4a853]/10 to-transparent pointer-events-none" />
-          <div className="relative z-10 space-y-2">
-            <span className="inline-block rounded-full bg-[#faf8f4] border border-[#d4a853]/30 px-4 py-1 text-xs font-bold text-[#d4a853] font-serif shadow-2xs">
-              ✨ بشارة لحَفَظَةِ كِتَابِ اللَّهِ ✨
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-[#0c5c5e] font-ruqaa leading-snug tracking-wide">
-              «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ ... وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي»
-            </h2>
-            <p className="text-xs sm:text-sm font-semibold text-gray-600 font-serif max-w-2xl mx-auto">
-              هَنِيئاً لَكُمْ هَذِهِ الرِّسَالَةَ المُبَارَكَةَ وَهَذَا الشَّرَفَ العَظِيمَ فِي خِدْمَةِ كِتَابِ اللَّهِ تَعَالَى
+      {/* ═══════════════ MAIN CONTENT ═══════════════ */}
+      <main className="mx-auto max-w-[1200px] px-4 sm:px-6 pt-6 space-y-5">
+
+        {/* ─── Smart Greeting Card ─── */}
+        <div className="bg-[#EDF5F4] rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-5 relative overflow-hidden">
+          {/* Subtle illustration watermark in corner */}
+          <div className="absolute bottom-0 left-0 w-32 h-32 opacity-[0.06] pointer-events-none">
+            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M60 10C60 10 20 40 20 70C20 90 38 110 60 110C82 110 100 90 100 70C100 40 60 10 60 10Z" fill="#0C5C5E"/>
+              <path d="M40 65L60 30L80 65" stroke="#0C5C5E" strokeWidth="2" fill="none"/>
+              <path d="M35 80L60 50L85 80" stroke="#0C5C5E" strokeWidth="1.5" fill="none"/>
+            </svg>
+          </div>
+
+          <div className="relative z-10 flex-1">
+            <p className="text-[13px] font-medium text-[#0C5C5E]/70 mb-1">
+              السلام عليكم ورحمة الله
             </p>
+            <h2 className="text-xl sm:text-2xl font-bold font-heading text-[#0C5C5E] leading-tight">
+              {timeGreeting} أستاذ {firstName}
+            </h2>
+            <p className="text-[14px] text-[#374151] mt-2 font-medium">
+              {getStatusMessage()}
+            </p>
+
+            {/* Quick Stats Row */}
+            <div className="flex flex-wrap gap-4 mt-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#0C5C5E]/10 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C5C5E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div>
+                  <span className="block text-[11px] text-[#6B7280]">إجمالي الطلاب</span>
+                  <span className="block text-[15px] font-bold text-[#1F2937]">{students.length}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-[#059669]/10 flex items-center justify-center">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <div>
+                  <span className="block text-[11px] text-[#6B7280]">تم الرصد</span>
+                  <span className="block text-[15px] font-bold text-[#059669]">{filledCount}</span>
+                </div>
+              </div>
+
+              {remainingCount > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-[#D97706]/10 flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  </div>
+                  <div>
+                    <span className="block text-[11px] text-[#6B7280]">بانتظار</span>
+                    <span className="block text-[15px] font-bold text-[#D97706]">{remainingCount}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Circular Progress */}
+          <div className="shrink-0">
+            <CircularProgress
+              percentage={completionPercentage}
+              size={110}
+              strokeWidth={8}
+              filledCount={filledCount}
+              totalCount={students.length}
+            />
           </div>
         </div>
 
-        {/* 📅 Date Selector Bar */}
-        <div className="rounded-2xl border border-[#d4a853]/25 bg-white p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#faf8f4] border border-[#d4a853]/30 flex items-center justify-center text-xl shrink-0">
-              📅
-            </div>
-            <div>
-              <h3 className="text-sm font-bold text-[#0c5c5e] font-serif">
-                تحديد تاريخ التقرير المراد تعبئته / استعراضه:
-              </h3>
-              <p className="text-xs font-medium text-gray-500 mt-0.5">
-                {selectedDateKey === todayStr
-                  ? "أنت تعاين تقارير اليوم الحالي (الافتراضي)."
-                  : `أنت تعاين تقارير يوم سابق: ${selectedDateKey}`}
-              </p>
-            </div>
-          </div>
+        {/* ─── Horizontal Day Picker ─── */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <span className="text-[13px] font-semibold text-[#6B7280] shrink-0 ml-2">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="inline-block ml-1"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            التاريخ:
+          </span>
+          {recentDays.map((day) => {
+            const isSelected = day.dateKey === selectedDateKey;
+            return (
+              <Link
+                key={day.dateKey}
+                href={day.isToday ? "/onsite/summer/teacher" : `/onsite/summer/teacher?dateKey=${day.dateKey}`}
+                className={`shrink-0 flex flex-col items-center justify-center w-[52px] h-[58px] rounded-xl transition-all duration-200 border ${
+                  isSelected
+                    ? "bg-[#0C5C5E] text-white border-[#0C5C5E] shadow-md"
+                    : "bg-white text-[#374151] border-[#E5E3DF] hover:border-[#0C5C5E]/40 hover:bg-[#EDF5F4]"
+                }`}
+              >
+                <span className={`text-[11px] font-medium ${isSelected ? "text-white/70" : "text-[#9CA3AF]"}`}>
+                  {day.dayName}
+                </span>
+                <span className={`text-[16px] font-bold ${isSelected ? "text-white" : "text-[#1F2937]"}`}>
+                  {day.dayNum}
+                </span>
+                {day.isToday && (
+                  <div className={`w-1.5 h-1.5 rounded-full mt-0.5 ${isSelected ? "bg-white" : "bg-[#0C5C5E]"}`} />
+                )}
+              </Link>
+            );
+          })}
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <Link
-              href="/onsite/summer/teacher"
-              className={`rounded-xl px-3.5 py-2 text-xs font-bold font-serif transition border ${
-                selectedDateKey === todayStr
-                  ? "bg-[#0c5c5e] text-white border-[#0c5c5e] shadow-xs"
-                  : "bg-[#faf8f4] text-gray-700 hover:bg-gray-100 border-[#d4a853]/30"
-              }`}
-            >
-              اليوم الحالي 🌟
-            </Link>
-
-            <form method="GET" className="flex items-center gap-2">
+          {/* Show more dates via select for older dates */}
+          {availableDates.length > 7 && (
+            <form method="GET" className="shrink-0">
               <select
                 name="dateKey"
                 defaultValue={selectedDateKey}
-                className="rounded-xl border border-[#d4a853]/40 bg-[#faf8f4] px-3.5 py-2 text-xs font-bold text-[#0c5c5e] outline-none font-mono focus:ring-2 focus:ring-[#0c5c5e]/20"
+                onChange={(e) => {
+                  const form = e.target.closest('form');
+                  if (form) form.submit();
+                }}
+                className="h-[58px] rounded-xl border border-[#E5E3DF] bg-white px-3 text-[12px] font-semibold text-[#6B7280] outline-none focus:border-[#0C5C5E] focus:ring-1 focus:ring-[#0C5C5E]/20 cursor-pointer"
               >
-                {availableDates.map((d) => (
+                <option value="">تواريخ سابقة...</option>
+                {availableDates.slice(7).map((d) => (
                   <option key={d.dateKey} value={d.dateKey}>
                     {d.label}
                   </option>
                 ))}
               </select>
-              <button
-                type="submit"
-                className="rounded-xl bg-[#0c5c5e] px-4 py-2 text-xs font-bold text-white hover:bg-[#0a4d4f] transition font-serif shadow-xs"
-              >
-                انتقال ➔
-              </button>
             </form>
-          </div>
+          )}
         </div>
 
-        {/* Past Date Alert Banner */}
+        {/* ─── Past Date Alert ─── */}
         {isPastDate && (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50/80 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-2xs">
-            <div className="flex items-center gap-2 text-amber-900 font-bold text-xs sm:text-sm">
-              <span>⚠️ تنبيه: تقوم برصد/تعديل تقرير ليوم سابق:</span>
-              <span className="bg-amber-200/80 px-2.5 py-0.5 rounded-md font-mono text-amber-950">
-                {selectedDateKey}
-              </span>
+          <div className="rounded-xl border border-[#FDE68A] bg-[#FEF3C7] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              <div>
+                <span className="text-[13px] font-bold text-[#92400E]">
+                  تقوم برصد تقرير ليوم سابق: {selectedDateKey}
+                </span>
+                <p className="text-[12px] text-[#92400E]/70 mt-0.5">
+                  يتطلب موافقة الإدارة بعد الحفظ
+                </p>
+              </div>
             </div>
-            <span className="text-xs font-bold text-amber-900 bg-amber-100 px-3 py-1 rounded-full border border-amber-300 shrink-0 font-serif">
-              تتطلب موافقة واعتماد الإدارة بعد الحفظ 📩
-            </span>
+            <Link
+              href="/onsite/summer/teacher"
+              className="shrink-0 text-[12px] font-semibold text-[#0C5C5E] hover:underline"
+            >
+              العودة لليوم الحالي
+            </Link>
           </div>
         )}
 
-        {/* Top Progress & Completion Summary Banner */}
-        <div className="rounded-2xl border border-[#d4a853]/25 bg-white p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-[#0c5c5e] font-serif">
-              نسبة إنجاز تقارير الحلقة ({selectedDateKey})
-            </h2>
-            <p className="text-xs font-semibold text-gray-500 mt-1">
-              تم رصد <b className="text-[#0c5c5e] font-serif text-sm">{filledCount}</b> من إجمالي{" "}
-              <b className="text-[#d4a853] font-serif text-sm">{students.length}</b> طالباً بحلقتك
+        {/* ─── All Students Completed Message ─── */}
+        {completionPercentage === 100 && students.length > 0 && (
+          <div className="rounded-xl bg-[#D1FAE5] border border-[#A7F3D0] p-5 text-center">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            <p className="text-[15px] font-bold text-[#065F46] font-heading">
+              بارك الله فيك، تم إكمال رصد جميع الطلاب لهذا اليوم
+            </p>
+            <p className="text-[13px] text-[#065F46]/70 mt-1">
+              «خيركم من تعلم القرآن وعلمه»
             </p>
           </div>
+        )}
 
-          <div className="w-full sm:w-64 space-y-2">
-            <div className="flex justify-between items-center text-xs font-bold">
-              <span className="text-gray-600">التقدم الفعلي</span>
-              <span className="text-[#0c5c5e] font-serif text-base">{completionPercentage}%</span>
-            </div>
-            <div className="h-3.5 w-full rounded-full bg-[#faf8f4] overflow-hidden border border-[#d4a853]/20 p-0.5">
-              <div
-                className="h-full rounded-full bg-[#0c5c5e] transition-all duration-500"
-                style={{ width: `${completionPercentage}%` }}
-              />
-            </div>
-          </div>
-        </div>
+        {/* ═══════════════ STUDENT SECTIONS ═══════════════ */}
 
-        {/* 📋 Students List Cards Grid */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xl font-bold text-[#0c5c5e] font-serif">
-              قائمة طلابك في الحلقة ({students.length} طالباً)
+        {studentsWithMeta.length === 0 ? (
+          /* Empty State */
+          <div className="rounded-xl border border-dashed border-[#E5E3DF] bg-white p-12 text-center">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#D1CFC9" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="mx-auto mb-3"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <h3 className="text-[15px] font-bold text-[#374151] font-heading">
+              لا يوجد طلاب في حلقتك
             </h3>
+            <p className="text-[13px] text-[#9CA3AF] mt-1">
+              سيظهر طلابك هنا عند إسنادهم إلى حلقتك من قبل الإدارة
+            </p>
           </div>
+        ) : (
+          <>
+            {/* ─── Pending Students ─── */}
+            {pendingStudents.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="text-[#0C5C5E]"><StarIcon /></span>
+                  <h3 className="text-[17px] font-bold font-heading text-[#1F2937]">
+                    بانتظار الرصد
+                  </h3>
+                  <span className="bg-[#D97706]/10 text-[#D97706] text-[12px] font-bold px-2.5 py-0.5 rounded-md">
+                    {pendingStudents.length}
+                  </span>
+                </div>
 
-          {studentsWithMeta.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#d4a853]/30 bg-white p-10 text-center text-sm font-bold text-gray-500">
-              لا يوجد طلاب مسجلين في حلقتك حتى الآن.
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {studentsWithMeta.map((item) => (
-                <TeacherStudentCard
-                  key={item.student.id}
-                  student={item.student}
-                  selectedDateKey={selectedDateKey}
-                  todayStr={todayStr}
-                  reportForSelectedDate={item.reportForSelectedDate}
-                  lastPresentReport={item.lastPresentReport}
-                  missingDateKeys={item.missingDateKeys}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {pendingStudents.map((item, i) => (
+                    <div key={item.student.id} style={{ animationDelay: `${i * 60}ms` }} className="animate-fadeIn">
+                      <TeacherStudentCard
+                        student={item.student}
+                        selectedDateKey={selectedDateKey}
+                        todayStr={todayStr}
+                        reportForSelectedDate={item.reportForSelectedDate}
+                        lastPresentReport={item.lastPresentReport}
+                        missingDateKeys={item.missingDateKeys}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ─── Completed Students ─── */}
+            {completedStudents.length > 0 && (
+              <section>
+                <div className="flex items-center gap-2 mb-3">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  <h3 className="text-[17px] font-bold font-heading text-[#1F2937]">
+                    تم الرصد
+                  </h3>
+                  <span className="bg-[#059669]/10 text-[#059669] text-[12px] font-bold px-2.5 py-0.5 rounded-md">
+                    {completedStudents.length}
+                  </span>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {completedStudents.map((item, i) => (
+                    <div key={item.student.id} style={{ animationDelay: `${i * 40}ms` }} className="animate-fadeIn">
+                      <TeacherStudentCard
+                        student={item.student}
+                        selectedDateKey={selectedDateKey}
+                        todayStr={todayStr}
+                        reportForSelectedDate={item.reportForSelectedDate}
+                        lastPresentReport={item.lastPresentReport}
+                        missingDateKeys={item.missingDateKeys}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        )}
       </main>
     </div>
   );

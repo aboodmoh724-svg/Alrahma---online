@@ -39,177 +39,196 @@ export default function TeacherStudentCard({
   missingDateKeys,
 }: TeacherStudentCardProps) {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
   const isDone = Boolean(reportForSelectedDate);
+  const isAbsent = isDone && reportForSelectedDate?.status === "ABSENT";
   const isNoor = student.summerGroup === "NOOR_AL_BAYAN";
 
   return (
     <>
       <div
-        className={`relative flex flex-col justify-between rounded-3xl border p-5 transition-all duration-300 shadow-xs hover:shadow-lg hover:-translate-y-0.5 ${
+        className={`group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden ${
           isDone
-            ? "border-emerald-300/90 bg-gradient-to-b from-emerald-50/40 via-white to-white"
-            : "border-[#d4a853]/30 bg-white"
+            ? isAbsent
+              ? "border-[#FECACA] hover:shadow-md"
+              : "border-[#A7F3D0] hover:shadow-md"
+            : "border-[#E5E3DF] hover:shadow-lg hover:-translate-y-0.5"
         }`}
+        style={{
+          borderRightWidth: '3px',
+          borderRightColor: isDone
+            ? isAbsent ? '#DC2626' : '#059669'
+            : '#0C5C5E',
+        }}
       >
-        {/* Decorative corner accent */}
-        <div className="absolute top-0 left-0 w-16 h-16 pointer-events-none opacity-5 bg-[radial-gradient(#0c5c5e_1px,transparent_1px)] [background-size:6px_6px] rounded-tl-3xl" />
-
-        {/* Top Info Header */}
-        <div className="space-y-3">
+        <div className="p-4">
+          {/* Row 1: Name + Track + Status */}
           <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                {isNoor ? (
-                  <span className="rounded-full bg-[#d4a853] px-3 py-0.5 text-xs font-bold text-white font-serif shadow-2xs">
-                    📘 طالب نور البيان
-                  </span>
-                ) : (
-                  <span className="rounded-full bg-[#0c5c5e] px-3 py-0.5 text-xs font-bold text-white font-serif shadow-2xs">
-                    📖 طالب قرآن كريم
-                  </span>
-                )}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className={`text-[16px] font-bold leading-tight truncate ${
+                  isDone && !isAbsent ? "text-[#374151]/70" : "text-[#1F2937]"
+                }`}>
+                  {isDone && !isAbsent && (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block ml-1 -mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  )}
+                  {student.fullName}
+                </h4>
+
+                <span className={`shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold ${
+                  isNoor
+                    ? "bg-[#D97706]/10 text-[#92400E]"
+                    : "bg-[#0C5C5E]/10 text-[#0C5C5E]"
+                }`}>
+                  {isNoor ? "نور البيان" : "قرآن"}
+                </span>
 
                 {student.studentCode === "7500" && (
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-300">
+                  <span className="shrink-0 rounded-md bg-[#DBEAFE] px-1.5 py-0.5 text-[10px] font-semibold text-[#1E40AF]">
                     تجريبي
                   </span>
                 )}
               </div>
 
-              <h4 className="mt-2 text-xl font-bold text-[#1a2e23] font-serif leading-snug">
-                {student.fullName}
-              </h4>
-
+              {/* Circle name - subtle */}
               {student.circleName && (
-                <p className="text-xs font-bold text-[#d4a853] mt-0.5 font-serif">
-                  حلقة: {student.circleName}
+                <p className="text-[12px] text-[#9CA3AF] mt-0.5 truncate">
+                  {student.circleName}
                 </p>
               )}
             </div>
 
-            <div className="flex flex-col items-end gap-1.5 shrink-0">
-              <span
-                className={`rounded-full px-3.5 py-1 text-xs font-black font-serif ${
-                  isDone
-                    ? reportForSelectedDate?.status === "ABSENT"
-                      ? "bg-red-600 text-white shadow-2xs"
-                      : "bg-emerald-700 text-white shadow-2xs"
-                    : "bg-amber-100/80 text-amber-900 border border-amber-300/80"
-                }`}
-              >
-                {isDone
-                  ? reportForSelectedDate?.status === "ABSENT"
-                    ? "غائب ❌"
-                    : "تم الرصد ✅"
-                  : "بانتظار التعبئة ⏳"}
-              </span>
+            {/* Status badge */}
+            <span className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold ${
+              isDone
+                ? isAbsent
+                  ? "bg-[#FEE2E2] text-[#DC2626]"
+                  : "bg-[#D1FAE5] text-[#059669]"
+                : "bg-[#FEF3C7] text-[#D97706]"
+            }`}>
+              {isDone
+                ? isAbsent ? "غائب" : "تم الرصد"
+                : "بانتظار"}
+            </span>
+          </div>
 
-              {/* History Modal Trigger Button */}
+          {/* Row 2: Quick info + Actions */}
+          <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#E5E3DF]/60">
+            <div className="flex items-center gap-2">
+              {/* More button - shows details */}
+              <button
+                type="button"
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center gap-1 text-[12px] font-medium text-[#6B7280] hover:text-[#0C5C5E] transition"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                <span>التفاصيل</span>
+              </button>
+
+              {/* History button */}
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(true)}
-                className="mt-1 flex items-center gap-1.5 rounded-xl border border-[#0c5c5e]/30 bg-[#faf8f4] px-2.5 py-1 text-xs font-bold text-[#0c5c5e] hover:bg-[#0c5c5e] hover:text-white transition shadow-2xs font-serif"
+                className="flex items-center gap-1 text-[12px] font-medium text-[#6B7280] hover:text-[#0C5C5E] transition"
               >
-                <span>📜</span>
-                <span>سجل الطالب</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                <span>السجل</span>
               </button>
-            </div>
-          </div>
 
-          {/* Quick Summary Section: Last Memorized / Lesson */}
-          <div className="rounded-2xl border border-[#d4a853]/20 bg-[#faf8f4] p-3 space-y-1.5 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-[#0c5c5e] font-serif">📌 آخر تقرير حضور مرصود:</span>
-              <span className="font-mono font-bold text-gray-500 text-[11px]">
-                {lastPresentReport?.dateKey || "لا يوجد سابقاً"}
-              </span>
+              {/* Missing days count */}
+              {missingDateKeys.length > 0 && (
+                <span className="text-[11px] font-medium text-[#D97706] bg-[#FEF3C7] px-1.5 py-0.5 rounded">
+                  {missingDateKeys.length} يوم ناقص
+                </span>
+              )}
             </div>
 
-            {lastPresentReport ? (
-              <div className="space-y-1 text-gray-800">
-                {!isNoor ? (
-                  <>
-                    {lastPresentReport.quranNew && (
-                      <p className="font-semibold text-emerald-900 line-clamp-1">
-                        📖 الحفظ: <b className="font-bold">{lastPresentReport.quranNew}</b>
-                      </p>
-                    )}
-                    {lastPresentReport.quranRevision && (
-                      <p className="font-semibold text-amber-900 line-clamp-1">
-                        🔄 المراجعة: <b className="font-bold">{lastPresentReport.quranRevision}</b>
-                      </p>
-                    )}
-                  </>
-                ) : (
-                  lastPresentReport.noorLearned && (
-                    <p className="font-semibold text-emerald-900 line-clamp-1">
-                      📘 الدرس: <b className="font-bold">{lastPresentReport.noorLearned}</b>
-                    </p>
-                  )
-                )}
-              </div>
-            ) : (
-              <p className="text-gray-400 italic text-[11px]">لم يتم تسجيل تقرير حضور سابق للطالب</p>
-            )}
+            {/* Primary action */}
+            <Link
+              href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
+              className={`rounded-lg px-4 py-2 text-[13px] font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                isDone
+                  ? "bg-white text-[#0C5C5E] border border-[#0C5C5E]/30 hover:bg-[#EDF5F4]"
+                  : "bg-[#0C5C5E] text-white hover:bg-[#0A4D4F] shadow-sm hover:shadow-md"
+              }`}
+            >
+              {isDone ? (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  <span>تعديل</span>
+                </>
+              ) : (
+                <>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                  <span>رصد التقرير</span>
+                </>
+              )}
+            </Link>
           </div>
 
-          {/* Missing Past Days Quick Shortcuts */}
-          {missingDateKeys.length > 0 && (
-            <div className="space-y-1.5 pt-1">
-              <span className="block text-[11px] font-bold text-amber-900 font-serif">
-                🔴 الأيام غير المُرصدة مؤخراً ({missingDateKeys.length} أيام):
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {missingDateKeys.slice(0, 4).map((dKey) => (
-                  <Link
-                    key={dKey}
-                    href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${dKey}`}
-                    className="rounded-lg border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-900 hover:bg-amber-200 transition font-mono flex items-center gap-1 shadow-2xs"
-                  >
-                    <span>⚡</span>
-                    <span>{dKey.slice(5)}</span>
-                  </Link>
-                ))}
-                {missingDateKeys.length > 4 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowHistoryModal(true)}
-                    className="rounded-lg border border-gray-300 bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-700 hover:bg-gray-200 transition"
-                  >
-                    +{missingDateKeys.length - 4} المزيد...
-                  </button>
-                )}
+          {/* Expandable Details Section */}
+          {showDetails && (
+            <div className="mt-3 pt-3 border-t border-[#E5E3DF]/60 space-y-2 animate-fadeIn">
+              {/* Last recorded report */}
+              <div className="text-[12px] text-[#6B7280]">
+                <span className="font-semibold text-[#374151]">آخر تقرير حضور: </span>
+                <span>{lastPresentReport?.dateKey || "لا يوجد"}</span>
               </div>
+
+              {lastPresentReport && (
+                <div className="text-[12px] text-[#374151] space-y-1">
+                  {!isNoor ? (
+                    <>
+                      {lastPresentReport.quranNew && (
+                        <p className="truncate">
+                          <span className="text-[#059669] font-semibold">الحفظ:</span> {lastPresentReport.quranNew}
+                        </p>
+                      )}
+                      {lastPresentReport.quranRevision && (
+                        <p className="truncate">
+                          <span className="text-[#D97706] font-semibold">المراجعة:</span> {lastPresentReport.quranRevision}
+                        </p>
+                      )}
+                    </>
+                  ) : (
+                    lastPresentReport.noorLearned && (
+                      <p className="truncate">
+                        <span className="text-[#059669] font-semibold">الدرس:</span> {lastPresentReport.noorLearned}
+                      </p>
+                    )
+                  )}
+                </div>
+              )}
+
+              {/* Missing days shortcuts */}
+              {missingDateKeys.length > 0 && (
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {missingDateKeys.slice(0, 4).map((dKey) => (
+                    <Link
+                      key={dKey}
+                      href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${dKey}`}
+                      className="rounded-md border border-[#FDE68A] bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-semibold text-[#92400E] hover:bg-[#FDE68A] transition"
+                    >
+                      {dKey.slice(5)}
+                    </Link>
+                  ))}
+                  {missingDateKeys.length > 4 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowHistoryModal(true)}
+                      className="rounded-md bg-[#F3F4F6] px-2 py-0.5 text-[11px] font-medium text-[#6B7280] hover:bg-[#E5E7EB] transition"
+                    >
+                      +{missingDateKeys.length - 4} المزيد
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {/* Action Button Footer */}
-        <div className="mt-5 flex items-center justify-between border-t border-[#d4a853]/20 pt-3">
-          <span className="text-xs font-semibold text-gray-600">
-            {isDone
-              ? reportForSelectedDate?.status === "ABSENT"
-                ? "غائب عن الحلقة"
-                : isNoor
-                ? `درس اليوم: ${reportForSelectedDate?.noorLearned || "حاضر"}`
-                : `حفظ اليوم: ${reportForSelectedDate?.quranNew || "حاضر"}`
-              : `تقرير تاريخ: ${selectedDateKey}`}
-          </span>
-
-          <Link
-            href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
-            className={`rounded-2xl px-4 py-2 text-xs font-bold transition shadow-2xs font-serif ${
-              isDone
-                ? "bg-white text-[#0c5c5e] border-2 border-[#0c5c5e] hover:bg-emerald-50"
-                : "bg-[#0c5c5e] text-white hover:bg-[#0a4d4f]"
-            }`}
-          >
-            {isDone ? "تعديل التقرير ✏️" : "تعبئة التقرير 📝"}
-          </Link>
-        </div>
       </div>
 
-      {/* Interactive History Modal */}
+      {/* History Modal */}
       {showHistoryModal && (
         <StudentHistoryModal
           studentId={student.id}
