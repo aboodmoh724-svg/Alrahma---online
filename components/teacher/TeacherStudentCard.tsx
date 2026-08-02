@@ -88,6 +88,14 @@ export default function TeacherStudentCard({
                     تجريبي
                   </span>
                 )}
+
+                {/* Missing days alert badge on header */}
+                {missingDateKeys.length > 0 && (
+                  <span className="shrink-0 flex items-center gap-1 text-[10px] font-bold text-[#D97706] bg-[#FEF3C7] border border-[#FDE68A] px-2 py-0.5 rounded-md">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <span>{missingDateKeys.length} يوم ناقص</span>
+                  </span>
+                )}
               </div>
 
               {/* Circle name - subtle */}
@@ -99,16 +107,31 @@ export default function TeacherStudentCard({
             </div>
 
             {/* Status badge */}
-            <span className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold ${
+            <span className={`shrink-0 rounded-md px-2.5 py-1 text-[11px] font-bold flex items-center gap-1 ${
               isDone
                 ? isAbsent
                   ? "bg-[#FEE2E2] text-[#DC2626]"
                   : "bg-[#D1FAE5] text-[#059669]"
                 : "bg-[#FEF3C7] text-[#D97706]"
             }`}>
-              {isDone
-                ? isAbsent ? "غائب" : "تم الرصد"
-                : "بانتظار"}
+              {isDone ? (
+                isAbsent ? (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    <span>غائب</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    <span>تم الرصد</span>
+                  </>
+                )
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>بانتظار الرصد</span>
+                </>
+              )}
             </span>
           </div>
 
@@ -119,7 +142,7 @@ export default function TeacherStudentCard({
               <button
                 type="button"
                 onClick={() => setShowDetails(!showDetails)}
-                className="flex items-center gap-1 text-[12px] font-medium text-[#6B7280] hover:text-[#0C5C5E] transition"
+                className="flex items-center gap-1 text-[12px] font-medium text-[#6B7280] hover:text-[#0C5C5E] transition-colors duration-200 ease-out"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                 <span>التفاصيل</span>
@@ -129,27 +152,20 @@ export default function TeacherStudentCard({
               <button
                 type="button"
                 onClick={() => setShowHistoryModal(true)}
-                className="flex items-center gap-1 text-[12px] font-medium text-[#6B7280] hover:text-[#0C5C5E] transition"
+                className="flex items-center gap-1 text-[12px] font-medium text-[#6B7280] hover:text-[#0C5C5E] transition-colors duration-200 ease-out"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 <span>السجل</span>
               </button>
-
-              {/* Missing days count */}
-              {missingDateKeys.length > 0 && (
-                <span className="text-[11px] font-medium text-[#D97706] bg-[#FEF3C7] px-1.5 py-0.5 rounded">
-                  {missingDateKeys.length} يوم ناقص
-                </span>
-              )}
             </div>
 
-            {/* Primary action */}
+            {/* Primary action button */}
             <Link
               href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
-              className={`rounded-lg px-4 py-2 text-[13px] font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+              className={`rounded-lg px-4 py-2 text-[13px] font-bold transition-all duration-200 ease-out flex items-center gap-1.5 ${
                 isDone
-                  ? "bg-white text-[#0C5C5E] border border-[#0C5C5E]/30 hover:bg-[#EDF5F4]"
-                  : "bg-[#0C5C5E] text-white hover:bg-[#0A4D4F] shadow-sm hover:shadow-md"
+                  ? "bg-[#EDF5F4] text-[#0C5C5E] hover:bg-[#D4ECEB] border border-[#0C5C5E]/20"
+                  : "bg-[#0C5C5E] text-white hover:bg-[#0A4D4F] shadow-xs hover:shadow-sm"
               }`}
             >
               {isDone ? (

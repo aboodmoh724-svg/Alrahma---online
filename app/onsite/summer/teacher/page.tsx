@@ -8,6 +8,7 @@ import { getTodayDateKey, getLocalDayOfWeek, toLocalDateKey } from "@/lib/date-u
 import LogoutButton from "@/components/LogoutButton";
 import TeacherStudentCard from "@/components/teacher/TeacherStudentCard";
 import CircularProgress from "@/components/ui/CircularProgress";
+import QuranEducationIllustration from "@/components/ui/QuranEducationIllustration";
 
 type DashboardPageProps = {
   searchParams?: Promise<{ dateKey?: string }>;
@@ -159,6 +160,9 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
     return `لديك ${remainingCount} طالباً بانتظار الرصد`;
   };
 
+  // Estimated time remaining (approx ~1.5 mins per student)
+  const estimatedMinutes = Math.ceil(remainingCount * 1.5);
+
   // Islamic star SVG icon for section headers
   const StarIcon = () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -226,14 +230,10 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
       <main className="mx-auto max-w-[1200px] px-4 sm:px-6 pt-6 space-y-5">
 
         {/* ─── Smart Greeting Card ─── */}
-        <div className="bg-[#EDF5F4] rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-5 relative overflow-hidden">
-          {/* Subtle illustration watermark in corner */}
-          <div className="absolute bottom-0 left-0 w-32 h-32 opacity-[0.06] pointer-events-none">
-            <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M60 10C60 10 20 40 20 70C20 90 38 110 60 110C82 110 100 90 100 70C100 40 60 10 60 10Z" fill="#0C5C5E"/>
-              <path d="M40 65L60 30L80 65" stroke="#0C5C5E" strokeWidth="2" fill="none"/>
-              <path d="M35 80L60 50L85 80" stroke="#0C5C5E" strokeWidth="1.5" fill="none"/>
-            </svg>
+        <div className="bg-[#EDF5F4] rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-5 relative overflow-hidden">
+          {/* Native Quran Education Vector Illustration */}
+          <div className="hidden lg:block absolute left-28 -bottom-4 opacity-[0.45] pointer-events-none">
+            <QuranEducationIllustration className="w-36 h-36" />
           </div>
 
           <div className="relative z-10 flex-1">
@@ -269,14 +269,36 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
                 </div>
               </div>
 
-              {remainingCount > 0 && (
+              {remainingCount > 0 ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#D97706]/10 flex items-center justify-center">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] text-[#6B7280]">بانتظار</span>
+                      <span className="block text-[15px] font-bold text-[#D97706]">{remainingCount}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-[#0C5C5E]/10 flex items-center justify-center">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0C5C5E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div>
+                      <span className="block text-[11px] text-[#6B7280]">الوقت المتوقع</span>
+                      <span className="block text-[15px] font-bold text-[#0C5C5E]">~{estimatedMinutes} دقيقة</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
                 <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-[#D97706]/10 flex items-center justify-center">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <div className="w-8 h-8 rounded-lg bg-[#059669]/10 flex items-center justify-center">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                   </div>
                   <div>
-                    <span className="block text-[11px] text-[#6B7280]">بانتظار</span>
-                    <span className="block text-[15px] font-bold text-[#D97706]">{remainingCount}</span>
+                    <span className="block text-[11px] text-[#6B7280]">الحالة</span>
+                    <span className="block text-[15px] font-bold text-[#059669]">مكتمل 100%</span>
                   </div>
                 </div>
               )}
@@ -284,7 +306,7 @@ export default async function OnsiteSummerTeacherDashboard({ searchParams }: Das
           </div>
 
           {/* Circular Progress */}
-          <div className="shrink-0">
+          <div className="shrink-0 relative z-10">
             <CircularProgress
               percentage={completionPercentage}
               size={110}
