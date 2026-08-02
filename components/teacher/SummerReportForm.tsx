@@ -764,6 +764,7 @@ export default function SummerReportForm({
                     className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[12px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
                   >
                     <option value="">-- اختر السورة --</option>
+                    <option value="لا يوجد">لا يوجد</option>
                     {JUZ_AMMA_SURAHS.map((s) => (
                       <option key={s.id} value={`سورة ${s.name}`}>سورة {s.name}</option>
                     ))}
@@ -778,6 +779,7 @@ export default function SummerReportForm({
                     className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[12px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
                   >
                     <option value="">-- اختر السورة --</option>
+                    <option value="لا يوجد">لا يوجد</option>
                     {JUZ_AMMA_SURAHS.map((s) => (
                       <option key={s.id} value={`سورة ${s.name}`}>سورة {s.name}</option>
                     ))}
@@ -792,6 +794,7 @@ export default function SummerReportForm({
                     className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[12px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
                   >
                     <option value="">-- اختر السورة --</option>
+                    <option value="لا يوجد">لا يوجد</option>
                     {JUZ_AMMA_SURAHS.map((s) => (
                       <option key={s.id} value={`سورة ${s.name}`}>سورة {s.name}</option>
                     ))}
