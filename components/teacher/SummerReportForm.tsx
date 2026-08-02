@@ -897,59 +897,61 @@ export default function SummerReportForm({
         /* ABSENT NOTICE CARD */
         <div className="bg-[#FEE2E2]/30 rounded-xl border border-[#FECACA] p-5 text-center space-y-1">
           <p className="text-[14px] font-bold text-[#991B1B]">
-            الطالب مسجّل (غائب) عن حلقة اليوم
+            تم تسجيل الطالب (غائب) عن حلقة اليوم
           </p>
           <p className="text-[12px] text-[#7F1D1D]">
-            يمكنك حفظ التقرير مباشرة لتثبيت غياب الطالب في النظام.
+            اضغط على "حفظ التقرير" بالأسفل لتأكيد وتسجيل الغياب مباشر في النظام.
           </p>
         </div>
       )}
 
-      {/* 4️⃣ EVALUATION & BEHAVIOR NOTES CARD */}
-      <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-4">
-        <h3 className="text-[15px] font-bold font-heading text-[#1F2937]">
-          التقييم السلوكي والملاحظات
-        </h3>
+      {/* 4️⃣ EVALUATION & BEHAVIOR NOTES CARD (ONLY WHEN PRESENT) */}
+      {status === "PRESENT" && (
+        <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-4">
+          <h3 className="text-[15px] font-bold font-heading text-[#1F2937]">
+            التقييم السلوكي والملاحظات
+          </h3>
 
-        <div className="space-y-3">
-          <div>
-            <label className="block text-[12px] font-semibold text-[#374151] mb-1">التقييم السلوكي والانضباط:</label>
-            <div className="flex gap-1.5">
-              {[
-                { grade: 5, label: "5 - ممتاز ⭐" },
-                { grade: 4, label: "4 - جيد جداً" },
-                { grade: 3, label: "3 - جيد" },
-                { grade: 2, label: "2 - مقبول" },
-                { grade: 1, label: "1 - متابعة" },
-              ].map((item) => (
-                <button
-                  key={item.grade}
-                  type="button"
-                  onClick={() => setBehaviorGrade(item.grade)}
-                  className={`h-10 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out flex items-center justify-center ${
-                    behaviorGrade === item.grade
-                      ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E] shadow-xs"
-                      : "border-[#E5E3DF] bg-white text-[#6B7280] hover:bg-[#F7F5F0]"
-                  }`}
-                >
-                  <span>{item.label}</span>
-                </button>
-              ))}
+          <div className="space-y-3">
+            <div>
+              <label className="block text-[12px] font-semibold text-[#374151] mb-1">التقييم السلوكي والانضباط:</label>
+              <div className="flex gap-1.5">
+                {[
+                  { grade: 5, label: "5 - ممتاز ⭐" },
+                  { grade: 4, label: "4 - جيد جداً" },
+                  { grade: 3, label: "3 - جيد" },
+                  { grade: 2, label: "2 - مقبول" },
+                  { grade: 1, label: "1 - متابعة" },
+                ].map((item) => (
+                  <button
+                    key={item.grade}
+                    type="button"
+                    onClick={() => setBehaviorGrade(item.grade)}
+                    className={`h-10 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out flex items-center justify-center ${
+                      behaviorGrade === item.grade
+                        ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E] shadow-xs"
+                        : "border-[#E5E3DF] bg-white text-[#6B7280] hover:bg-[#F7F5F0]"
+                    }`}
+                  >
+                    <span>{item.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-[12px] font-semibold text-[#374151] mb-1">ملاحظات المعلم السلوكية والتوجيهية (اختياري):</label>
+              <textarea
+                rows={3}
+                placeholder="اكتب أي ملاحظة تشجيعية أو توجيهات للأهل..."
+                value={behaviorNotes}
+                onChange={(e) => setBehaviorNotes(e.target.value)}
+                className="w-full rounded-lg border border-[#E5E3DF] p-3 text-[13px] text-[#1F2937] outline-none focus:border-[#0C5C5E] resize-none"
+              />
             </div>
           </div>
-
-          <div>
-            <label className="block text-[12px] font-semibold text-[#374151] mb-1">ملاحظات المعلم السلوكية والتوجيهية (اختياري):</label>
-            <textarea
-              rows={3}
-              placeholder="اكتب أي ملاحظة تشجيعية أو توجيهات للأهل..."
-              value={behaviorNotes}
-              onChange={(e) => setBehaviorNotes(e.target.value)}
-              className="w-full rounded-lg border border-[#E5E3DF] p-3 text-[13px] text-[#1F2937] outline-none focus:border-[#0C5C5E] resize-none"
-            />
-          </div>
         </div>
-      </div>
+      )}
 
       {/* ERROR DISPLAY */}
       {error && (
