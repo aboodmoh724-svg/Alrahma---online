@@ -60,7 +60,7 @@ export default function SummerReportForm({
 
       availableDates.push({
         dateKey: dateStr,
-        label: isTodayDate ? `🌟 اليوم الحالي - ${dayLabel}` : dayLabel,
+        label: isTodayDate ? `اليوم - ${dayLabel}` : dayLabel,
         isToday: isTodayDate,
       });
     }
@@ -177,7 +177,7 @@ export default function SummerReportForm({
     existingReport?.noorParticipation ?? 5
   );
 
-  // Noor Quran Surah fields (Juz Amma only - surah name only, no ayah ranges)
+  // Noor Quran Surah fields (Juz Amma only)
   const JUZ_AMMA_SURAHS = QURAN_SURAHS.filter((s) => s.id >= 78 && s.id <= 114);
   const [noorQuranNewSurah, setNoorQuranNewSurah] = useState<string>(
     existingReport?.quranNew || lastPresentReport?.quranTaqeen || ""
@@ -252,34 +252,6 @@ export default function SummerReportForm({
     }
   };
 
-  const [isLocked, setIsLocked] = useState<boolean>(false);
-  const [requestingEdit, setRequestingEdit] = useState<boolean>(false);
-  const [requestEditMsg, setRequestEditMsg] = useState<string>("");
-
-  const handleRequestEdit = async () => {
-    setRequestingEdit(true);
-    setRequestEditMsg("");
-    try {
-      const res = await fetch("/api/summer/teacher/request-edit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          studentId: student.id,
-          dateKey,
-          reason: "طلب إذن تعديل التقرير اليومي من الإدارة",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "فشل إرسال طلب التعديل");
-
-      setRequestEditMsg("✅ تم تقديم طلب التعديل للإدارة بنجاح! ستظهر لك صلاحية التعديل فور موافقة المدير.");
-    } catch (err) {
-      setRequestEditMsg(err instanceof Error ? err.message : "حدث خطأ أثناء طلب التعديل");
-    } finally {
-      setRequestingEdit(false);
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -319,75 +291,63 @@ export default function SummerReportForm({
           noorHomeworkGrade: isNoor ? noorHomeworkGrade : undefined,
           noorParticipation: isNoor ? noorParticipation : undefined,
           behaviorGrade,
-          behaviorNotes,
+          behaviorNotes: behaviorNotes || undefined,
         }),
       });
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "فشل حفظ التقرير");
+        throw new Error(data.error || "حدث خطأ أثناء حفظ التقرير");
       }
 
       setSuccess(true);
+      // Auto-redirect to teacher dashboard after 1.2s
       setTimeout(() => {
-        router.push("/onsite/summer/teacher");
+        router.push(`/onsite/summer/teacher?dateKey=${dateKey}`);
         router.refresh();
-      }, 1000);
+      }, 1200);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "حدث خطأ غامض");
+      setError(err instanceof Error ? err.message : "حدث خطأ أثناء الاتصال بالخادم");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="rounded-3xl border border-[#d8bf83]/50 bg-[#fffaf4] p-6 shadow-md dir-rtl"
-      dir="rtl"
-    >
-      {/* 🌟 Islamic Motivational Calligraphy Banner */}
-      <div className="mb-6 rounded-3xl border-2 border-[#bd8f2d]/60 bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-5 shadow-xl text-white text-center space-y-2 relative overflow-hidden dir-rtl" dir="rtl">
-        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(#bd8f2d_1.5px,transparent_1.5px)] [background-size:14px_14px]" />
-        <div className="relative z-10 space-y-1.5">
-          <span className="inline-block rounded-full bg-[#bd8f2d]/25 border border-[#bd8f2d]/40 px-3 py-0.5 text-xs font-bold text-[#fbf6ef] font-serif">
-            ✨ بشارة لحَفَظَةِ كِتَابِ اللَّهِ ✨
-          </span>
-          <h2 className="text-xl sm:text-3xl font-bold text-[#bd8f2d] font-ruqaa leading-snug tracking-wide">
-            «وَلِحَامِلِ الْقُرْآنِ شَرَفٌ فِي الأُمَمِ ... وَبِهِ يُعْلَى مَقَامُ الْمَرْءِ وَيَرْتَقِي»
-          </h2>
-        </div>
-      </div>
-
-      {/* 📅 Prominent In-Form Date Selector & Confirmation Bar */}
-      <div className="mb-6 rounded-3xl border-2 border-[#bd8f2d] bg-gradient-to-r from-[#0c5c5e] via-[#117073] to-[#0c5c5e] p-4.5 text-white shadow-md space-y-3">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-10 w-10 rounded-2xl bg-white/10 border border-[#bd8f2d]/50 flex items-center justify-center text-xl shrink-0">
-              📅
-            </div>
-            <div>
-              <span className="inline-block rounded-full bg-[#bd8f2d]/30 border border-[#bd8f2d]/60 px-3 py-0.5 text-xs font-bold text-cyan-100 font-serif mb-1">
-                تأكيد اليوم والتاريخ المستهدف
+    <form onSubmit={handleSubmit} className="space-y-4 dir-rtl" dir="rtl">
+      {/* 1️⃣ STUDENT INFO WORKSPACE CARD */}
+      <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-3">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className={`rounded-md px-2.5 py-0.5 text-[11px] font-semibold ${
+                isNoor
+                  ? "bg-[#D97706]/10 text-[#92400E]"
+                  : "bg-[#0C5C5E]/10 text-[#0C5C5E]"
+              }`}>
+                {isNoor ? "📘 طالب نور البيان" : "📖 طالب قرآن كريم"}
               </span>
-              <h3 className="text-base sm:text-lg font-bold text-[#bd8f2d] font-ruqaa leading-snug">
-                أنت تقوم الآن بتعبئة تقرير يوم: <span className="underline decoration-[#bd8f2d] underline-offset-4 text-white">{activeDateLabel}</span>
-              </h3>
+              {student.circleName && (
+                <span className="text-[12px] text-[#6B7280]">
+                  حلقة: {student.circleName}
+                </span>
+              )}
             </div>
+
+            <h2 className="text-xl sm:text-2xl font-bold font-heading text-[#1F2937] mt-1">
+              {student.fullName}
+            </h2>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
-            <label className="text-xs font-bold text-cyan-200 shrink-0 font-serif">
-              تغيير اليوم:
-            </label>
+          {/* Date Selector */}
+          <div className="flex items-center gap-2 bg-[#F7F5F0] px-3 py-1.5 rounded-lg border border-[#E5E3DF] shrink-0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0C5C5E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <select
               value={dateKey}
               onChange={(e) =>
-                router.push(
-                  `/onsite/summer/teacher/reports/${student.id}?dateKey=${e.target.value}`
-                )
+                router.push(`/onsite/summer/teacher/reports/${student.id}?dateKey=${e.target.value}`)
               }
-              className="w-full sm:w-auto rounded-xl border-2 border-[#bd8f2d] bg-white px-3.5 py-2 text-xs font-bold text-[#0c5c5e] outline-none shadow-xs font-mono"
+              className="bg-transparent text-[12px] font-bold text-[#0C5C5E] outline-none cursor-pointer"
             >
               {availableDates.map((d) => (
                 <option key={d.dateKey} value={d.dateKey}>
@@ -397,739 +357,449 @@ export default function SummerReportForm({
             </select>
           </div>
         </div>
-      </div>
 
-      {/* Header Info */}
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-[#d8bf83]/30 pb-4">
-        <div>
-          <span className="inline-block rounded-full bg-[#0c5c5e]/10 px-3 py-1 text-xs font-black text-[#0c5c5e]">
-            {isNoor ? "📘 طالب نور البيان" : "📖 طالب قرآن كريم"}
-          </span>
-          <h2 className="mt-1 text-2xl font-black text-[#0c5c5e]">
-            {student.fullName}
-          </h2>
-          {student.circleName && (
-            <p className="text-sm font-bold text-[#bd8f2d]">
-              الحلقة: {student.circleName}
-            </p>
-          )}
-        </div>
-        <div className="text-left text-sm font-bold text-[#18322a]/60">
-          تاريخ التقرير الحالي: <span className="font-mono font-bold text-[#0c5c5e]">{dateKey}</span>
-        </div>
-      </div>
-
-      {dateKey < new Date().toISOString().split("T")[0] && (
-        <div className="mb-6 rounded-2xl border-2 border-amber-400 bg-amber-50 p-4 space-y-1">
-          <div className="flex items-center gap-2 text-amber-900 font-bold text-sm font-serif">
-            <span>⚠️ تنبيه تعبئة تاريخ سابق:</span>
-            <span className="bg-amber-200 px-2.5 py-0.5 rounded-md font-mono">{dateKey}</span>
-          </div>
-          <p className="text-xs font-bold text-amber-800">
-            أنت تقوم بتعبئة/تعديل تقرير ليوم سابق. سيتم حفظ التقرير وإرسال إشعار وطلب اعتماد للإدارة لمراجعته بالموافقة.
-          </p>
-        </div>
-      )}
-
-      {!existingReport && lastPresentReport && (
-        <div className="mb-6 rounded-2xl border-2 border-emerald-400/80 bg-emerald-50/90 p-4 space-y-2.5 shadow-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-emerald-950 font-bold text-sm font-serif">
-              <span>✨ الاقتراح الذكي استناداً لآخر تقرير حضور ({lastPresentReport.dateKey}):</span>
+        {/* Smart Pre-fill Suggestion info if available */}
+        {!existingReport && lastPresentReport && (
+          <div className="bg-[#EDF5F4] border border-[#0C5C5E]/15 rounded-lg p-3 text-[12px] text-[#0C5C5E] space-y-1">
+            <div className="flex items-center gap-1.5 font-bold">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              <span>تم الاقتراح تلقائياً استناداً لآخر تقرير حضور ({lastPresentReport.dateKey}):</span>
             </div>
-            <span className="text-[11px] font-bold text-emerald-800 bg-emerald-200/80 px-2.5 py-0.5 rounded-full font-mono">
-              تم تعبئة المقترحات تلقائياً ⚡
-            </span>
-          </div>
-
-          <div className="grid gap-2 sm:grid-cols-2 text-xs font-bold text-emerald-900 bg-white/70 p-3 rounded-xl border border-emerald-200">
-            {lastPresentReport.quranTaqeen && (
-              <p>📖 الحفظ الجديد المقترح اليوم: <b className="text-emerald-950">{lastPresentReport.quranTaqeen}</b></p>
-            )}
-            {lastPresentReport.quranNew && (
-              <p>🔄 المراجعة المقترحة اليوم: <b className="text-emerald-950">{lastPresentReport.quranNew}</b></p>
+            {!isNoor ? (
+              <p className="text-[#374151]">
+                الحفظ الجديد المقترح: <b>{lastPresentReport.quranTaqeen || "—"}</b> | المراجعة المقترحة: <b>{lastPresentReport.quranNew || "—"}</b>
+              </p>
+            ) : (
+              <p className="text-[#374151]">
+                الدرس السابق: <b>{lastPresentReport.noorLearned || "—"}</b>
+              </p>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 📌 Optional One-Time Start Point Registration for Quran Students */}
-      {!isNoor && !startSaved && (
-        <div className="mb-6 rounded-2xl border-2 border-dashed border-[#bd8f2d] bg-[#fdf9f0] p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-[#0c5c5e] font-serif flex items-center gap-1.5">
-              📌 تسجيل بداية الطالب مع المعلم (مرة واحدة عند التحاق الطالب):
-            </h3>
-            <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
-              إحصائية الإشراف
-            </span>
-          </div>
-
-          <p className="text-xs font-semibold text-gray-600">
-            حدد أين بدأ الطالب معك في الدورة الصيفية (تختفي هذه الخانة تلقائياً بعد حفظها لمرة واحدة):
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
-            <div>
-              <label className="text-xs font-bold text-[#0c5c5e] block mb-1">اسم السورة:</label>
-              <select
-                value={startSurahId}
-                onChange={(e) => {
-                  setStartSurahId(Number(e.target.value));
-                  setStartFromAyah(1);
-                }}
-                className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
-              >
-                {QURAN_SURAHS.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.id}. سورة {s.name} ({s.versesCount} آية)
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-[#0c5c5e] block mb-1">من الآية رقم:</label>
-              <select
-                value={startFromAyah}
-                onChange={(e) => setStartFromAyah(Number(e.target.value))}
-                className="w-full rounded-xl border border-[#d8bf83] bg-white p-2.5 text-xs font-bold outline-none"
-              >
-                {Array.from({ length: selectedStartSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                  <option key={a} value={a}>
-                    الآية {a}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSaveStartPoint}
-              disabled={savingStart}
-              className="rounded-xl bg-[#bd8f2d] px-4 py-2.5 text-xs font-black text-[#0c5c5e] hover:bg-[#d8bf83] disabled:opacity-50 font-serif"
-            >
-              {savingStart ? "جاري الحفظ..." : "💾 حفظ نقطة البداية"}
-            </button>
-          </div>
-          {startError && <div className="text-xs font-bold text-red-600">{startError}</div>}
-        </div>
-      )}
-
-      {/* 📌 Optional One-Time Start Point Registration for Noor Al-Bayan Students */}
-      {isNoor && !startSaved && (
-        <div className="mb-6 rounded-2xl border-2 border-dashed border-[#2563eb] bg-[#f0f7ff] p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-[#1e3a8a] font-serif flex items-center gap-1.5">
-              📌 تسجيل بداية الطالب مع المعلم في كتاب (نور البيان):
-            </h3>
-            <span className="text-[11px] font-bold text-blue-800 bg-blue-100 px-2.5 py-0.5 rounded-full">
-              إحصائية الإشراف
-            </span>
-          </div>
-
-          <p className="text-xs font-semibold text-gray-600">
-            حدد رقم الصفحة التي بدأ منها الطالب في كتاب نور البيان (تختفي الخانة تلقائياً بعد حفظها لمرة واحدة):
-          </p>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
-            <div>
-              <label className="text-xs font-bold text-[#1e3a8a] block mb-1">رقم صفحة البداية في نور البيان:</label>
-              <select
-                value={noorStartPage}
-                onChange={(e) => setNoorStartPage(Number(e.target.value))}
-                className="w-full rounded-xl border border-blue-300 bg-white p-2.5 text-xs font-bold outline-none"
-              >
-                {Array.from({ length: 100 }, (_, i) => i + 1).map((pg) => (
-                  <option key={pg} value={pg}>
-                    صفحة رقم {pg}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              onClick={handleSaveNoorStartPoint}
-              disabled={savingStart}
-              className="rounded-xl bg-[#2563eb] px-4 py-2.5 text-xs font-black text-white hover:bg-[#1d4ed8] disabled:opacity-50 font-serif"
-            >
-              {savingStart ? "جاري الحفظ..." : `💾 حفظ البداية (صفحة ${noorStartPage})`}
-            </button>
-          </div>
-          {startError && <div className="text-xs font-bold text-red-600">{startError}</div>}
-        </div>
-      )}
-
-      {existingReport && (
-        <div className="mb-6 rounded-2xl border border-[#d8bf83] bg-[#fdfaf3] p-4 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">✏️</span>
-            <div>
-              <h4 className="font-bold text-[#0c5c5e] text-sm font-serif">تعديل التقرير اليومي المباشر</h4>
-              <p className="text-xs text-gray-600 font-semibold">تم رصد هذا التقرير مسبقاً. يمكنك تعديل أي حقل وحفظ التحديثات مباشرة دون الحاجة لموافقة الإدارة.</p>
-            </div>
-          </div>
-          <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800 border border-amber-300 shrink-0 font-serif">
-            وضع التعديل المباشر ✅
-          </span>
-        </div>
-      )}
-
-      {error && (
-        <div className="mb-4 rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-700 border border-red-200">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="mb-4 rounded-2xl bg-emerald-50 p-4 text-sm font-bold text-emerald-800 border border-emerald-200">
-          ✅ تم حفظ التقرير اليومي بنجاح! جاري العودة...
-        </div>
-      )}
-
-      {/* Attendance Toggle Buttons */}
-      <div className="mb-6">
-        <label className="mb-2 block text-sm font-black text-[#18322a]">
-          حالة الحضور اليوم
+      {/* 2️⃣ ATTENDANCE SELECTOR */}
+      <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-3">
+        <label className="block text-[14px] font-bold font-heading text-[#1F2937]">
+          اختيار حالة الحضور والغياب:
         </label>
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setStatus("PRESENT")}
-            className={`flex items-center justify-center gap-2 rounded-2xl py-3.5 text-base font-black transition-all shadow-sm ${
+            className={`h-13 rounded-xl border-2 font-bold text-[14px] transition-all duration-200 ease-out flex items-center justify-center gap-2 ${
               status === "PRESENT"
-                ? "bg-[#0c5c5e] text-white ring-2 ring-[#0c5c5e] ring-offset-2"
-                : "bg-white text-[#0c5c5e] border border-[#d8bf83] hover:bg-[#f6eee7]"
+                ? "border-[#059669] bg-[#D1FAE5] text-[#065F46] shadow-xs"
+                : "border-[#E5E3DF] bg-white text-[#6B7280] hover:bg-[#F7F5F0]"
             }`}
           >
-            <span>✅</span> حاضر
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>🟢 حاضر في الحلقة</span>
           </button>
+
           <button
             type="button"
             onClick={() => setStatus("ABSENT")}
-            className={`flex items-center justify-center gap-2 rounded-2xl py-3.5 text-base font-black transition-all shadow-sm ${
+            className={`h-13 rounded-xl border-2 font-bold text-[14px] transition-all duration-200 ease-out flex items-center justify-center gap-2 ${
               status === "ABSENT"
-                ? "bg-red-600 text-white ring-2 ring-red-600 ring-offset-2"
-                : "bg-white text-red-600 border border-red-200 hover:bg-red-50"
+                ? "border-[#DC2626] bg-[#FEE2E2] text-[#991B1B] shadow-xs"
+                : "border-[#E5E3DF] bg-white text-[#6B7280] hover:bg-[#F7F5F0]"
             }`}
           >
-            <span>❌</span> غائب
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <span>🔴 غائب</span>
           </button>
         </div>
       </div>
 
-      {status === "PRESENT" && (
-        <div className="space-y-5">
-          {/* Dynamic Fields for Quran Students with Dropdown Selectors */}
-          {!isNoor && (
-            <div className="space-y-5 rounded-2xl border border-[#d8bf83]/40 bg-white p-5 shadow-xs">
-              <h3 className="text-base font-black text-[#0c5c5e] font-serif border-b border-gray-100 pb-2">
-                📖 متابعة حفظ وتسميع القرآن الكريم
-              </h3>
-
-              {/* 1. الحفظ الجديد */}
-              <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="block text-xs font-black text-[#0c5c5e] font-serif">
-                    ✨ الحفظ الجديد (من سورة/آية — إلى سورة/آية):
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setNoNewMemorization(!noNewMemorization)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      noNewMemorization
-                        ? "bg-amber-600 text-white shadow-sm ring-1 ring-amber-600"
-                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                    }`}
-                  >
-                    {noNewMemorization ? "✅ تم اختيار: لا يوجد حفظ جديد اليوم" : "❌ لا يوجد حفظ جديد اليوم"}
-                  </button>
+      {/* 3️⃣ LESSON CONTENT CARDS (When PRESENT) */}
+      {status === "PRESENT" ? (
+        !isNoor ? (
+          /* QURAN TRACK LESSON CARDS */
+          <div className="space-y-4">
+            {/* CARD A: NEW MEMORIZATION */}
+            <div className="bg-[#EDF5F4] rounded-xl border border-[#0C5C5E]/20 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-[#0C5C5E] text-white flex items-center justify-center text-[12px] font-bold">📖</span>
+                  <h3 className="text-[15px] font-bold font-heading text-[#0C5C5E]">
+                    الحفظ الجديد (مطلوب)
+                  </h3>
                 </div>
 
-                {!noNewMemorization && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div>
-                      <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">سورة البداية:</span>
-                      <select
-                        value={newSurahId}
-                        onChange={(e) => {
-                          setNewSurahId(Number(e.target.value));
-                          setNewFromAyah(1);
-                        }}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {QURAN_SURAHS.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.id}. {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">من الآية:</span>
-                      <select
-                        value={newFromAyah}
-                        onChange={(e) => setNewFromAyah(Number(e.target.value))}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {Array.from({ length: selectedNewSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                          <option key={a} value={a}>
-                            الآية {a}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-amber-700 block mb-0.5">سورة النهاية:</span>
-                      <select
-                        value={newEndSurahId}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setNewEndSurahId(val);
-                          const endSurah = QURAN_SURAHS.find((s) => s.id === val);
-                          if (endSurah) setNewToAyah(Math.min(newToAyah, endSurah.versesCount));
-                        }}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {QURAN_SURAHS.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.id}. {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-amber-700 block mb-0.5">إلى الآية:</span>
-                      <select
-                        value={newToAyah}
-                        onChange={(e) => setNewToAyah(Number(e.target.value))}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {Array.from({ length: selectedNewEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                          <option key={a} value={a}>
-                            الآية {a}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <div className="rounded-lg bg-[#0c5c5e]/5 border border-[#0c5c5e]/20 px-3.5 py-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#0c5c5e]/60">📝 نص التقرير:</span>
-                  <p className="text-xs font-bold text-[#0c5c5e]">{quranNew || "—"}</p>
-                </div>
-              </div>
-
-              {/* 2. المراجعة اليومية */}
-              <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="block text-xs font-black text-[#0c5c5e] font-serif">
-                    🔄 المراجعة اليومية (من سورة/آية — إلى سورة/آية):
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setNoRevision(!noRevision)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      noRevision
-                        ? "bg-amber-600 text-white shadow-sm ring-1 ring-amber-600"
-                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                    }`}
-                  >
-                    {noRevision ? "✅ تم اختيار: لا يوجد مراجعة اليوم" : "❌ لا يوجد مراجعة اليوم"}
-                  </button>
-                </div>
-
-                {!noRevision && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div>
-                      <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">سورة البداية:</span>
-                      <select
-                        value={revSurahId}
-                        onChange={(e) => {
-                          setRevSurahId(Number(e.target.value));
-                          setRevFromAyah(1);
-                        }}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {QURAN_SURAHS.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.id}. {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">من الآية:</span>
-                      <select
-                        value={revFromAyah}
-                        onChange={(e) => setRevFromAyah(Number(e.target.value))}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {Array.from({ length: selectedRevSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                          <option key={a} value={a}>
-                            الآية {a}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-amber-700 block mb-0.5">سورة النهاية:</span>
-                      <select
-                        value={revEndSurahId}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setRevEndSurahId(val);
-                          const endSurah = QURAN_SURAHS.find((s) => s.id === val);
-                          if (endSurah) setRevToAyah(Math.min(revToAyah, endSurah.versesCount));
-                        }}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {QURAN_SURAHS.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.id}. {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-amber-700 block mb-0.5">إلى الآية:</span>
-                      <select
-                        value={revToAyah}
-                        onChange={(e) => setRevToAyah(Number(e.target.value))}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {Array.from({ length: selectedRevEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                          <option key={a} value={a}>
-                            الآية {a}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <div className="rounded-lg bg-[#0c5c5e]/5 border border-[#0c5c5e]/20 px-3.5 py-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#0c5c5e]/60">📝 نص التقرير:</span>
-                  <p className="text-xs font-bold text-[#0c5c5e]">{quranRevision || "—"}</p>
-                </div>
-              </div>
-
-              {/* 3. التلقين والتحضير */}
-              <div className="rounded-xl border border-[#d8bf83]/50 bg-[#fcf9f4] p-3.5 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <label className="block text-xs font-black text-[#0c5c5e] font-serif">
-                    🗣️ التلقين والتحضير (من سورة/آية — إلى سورة/آية):
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setNoTaqeen(!noTaqeen)}
-                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                      noTaqeen
-                        ? "bg-amber-600 text-white shadow-sm ring-1 ring-amber-600"
-                        : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-300"
-                    }`}
-                  >
-                    {noTaqeen ? "✅ تم اختيار: لا يوجد تلقين اليوم" : "❌ لا يوجد تلقين اليوم"}
-                  </button>
-                </div>
-
-                {!noTaqeen && (
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    <div>
-                      <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">سورة البداية:</span>
-                      <select
-                        value={taqeenSurahId}
-                        onChange={(e) => {
-                          setTaqeenSurahId(Number(e.target.value));
-                          setTaqeenFromAyah(1);
-                        }}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {QURAN_SURAHS.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.id}. {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-emerald-700 block mb-0.5">من الآية:</span>
-                      <select
-                        value={taqeenFromAyah}
-                        onChange={(e) => setTaqeenFromAyah(Number(e.target.value))}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {Array.from({ length: selectedTaqeenSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                          <option key={a} value={a}>
-                            الآية {a}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-amber-700 block mb-0.5">سورة النهاية:</span>
-                      <select
-                        value={taqeenEndSurahId}
-                        onChange={(e) => {
-                          const val = Number(e.target.value);
-                          setTaqeenEndSurahId(val);
-                          const endSurah = QURAN_SURAHS.find((s) => s.id === val);
-                          if (endSurah) setTaqeenToAyah(Math.min(taqeenToAyah, endSurah.versesCount));
-                        }}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {QURAN_SURAHS.map((s) => (
-                          <option key={s.id} value={s.id}>
-                            {s.id}. {s.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div>
-                      <span className="text-[11px] font-bold text-amber-700 block mb-0.5">إلى الآية:</span>
-                      <select
-                        value={taqeenToAyah}
-                        onChange={(e) => setTaqeenToAyah(Number(e.target.value))}
-                        className="w-full rounded-xl border border-[#d8bf83] bg-white p-2 text-xs font-bold outline-none"
-                      >
-                        {Array.from({ length: selectedTaqeenEndSurah.versesCount }, (_, i) => i + 1).map((a) => (
-                          <option key={a} value={a}>
-                            الآية {a}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                )}
-
-                <div className="rounded-lg bg-[#0c5c5e]/5 border border-[#0c5c5e]/20 px-3.5 py-2 mt-1">
-                  <span className="text-[11px] font-bold text-[#0c5c5e]/60">📝 نص التقرير:</span>
-                  <p className="text-xs font-bold text-[#0c5c5e]">{quranTaqeen || "—"}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Dynamic Fields for Noor Al-Bayan Students */}
-          {isNoor && (
-            <>
-            {/* Noor Quran Surahs Section (Juz Amma) */}
-            <div className="space-y-4 rounded-2xl border border-[#0c5c5e]/30 bg-[#f0faf9] p-5 shadow-xs">
-              <h3 className="text-base font-black text-[#0c5c5e] font-serif border-b border-[#0c5c5e]/10 pb-2">
-                📖 متابعة قصار السور (جزء عمّ)
-              </h3>
-              <p className="text-xs font-semibold text-gray-500">
-                اختر اسم السورة فقط لكل قسم — يكفي تحديد سورة واحدة من جزء عمّ
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {/* 1. درس جديد */}
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50/70 p-3 space-y-1.5">
-                  <label className="block text-xs font-black text-emerald-900 font-serif">
-                    ✨ الدرس الجديد
-                  </label>
-                  <select
-                    value={noorQuranNewSurah}
-                    onChange={(e) => setNoorQuranNewSurah(e.target.value)}
-                    className="w-full rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
-                  >
-                    <option value="">-- اختر السورة --</option>
-                    {JUZ_AMMA_SURAHS.map((s) => (
-                      <option key={s.id} value={`سورة ${s.name}`}>
-                        سورة {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* 2. مراجعة */}
-                <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3 space-y-1.5">
-                  <label className="block text-xs font-black text-blue-900 font-serif">
-                    🔄 المراجعة
-                  </label>
-                  <select
-                    value={noorQuranRevisionSurah}
-                    onChange={(e) => setNoorQuranRevisionSurah(e.target.value)}
-                    className="w-full rounded-xl border border-blue-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
-                  >
-                    <option value="">-- اختر السورة --</option>
-                    {JUZ_AMMA_SURAHS.map((s) => (
-                      <option key={s.id} value={`سورة ${s.name}`}>
-                        سورة {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* 3. تلقين */}
-                <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5">
-                  <label className="block text-xs font-black text-amber-900 font-serif">
-                    🎤 التلقين
-                  </label>
-                  <select
-                    value={noorQuranTaqeenSurah}
-                    onChange={(e) => setNoorQuranTaqeenSurah(e.target.value)}
-                    className="w-full rounded-xl border border-amber-300 bg-white px-3 py-2 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
-                  >
-                    <option value="">-- اختر السورة --</option>
-                    {JUZ_AMMA_SURAHS.map((s) => (
-                      <option key={s.id} value={`سورة ${s.name}`}>
-                        سورة {s.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4 rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
-              <h3 className="text-base font-black text-[#0c5c5e]">
-                📘 متابعة نور البيان والتمهيدي
-              </h3>
-              <div>
-                <label className="mb-1 block text-sm font-bold text-[#18322a]">
-                  ماذا تعلم الطالب اليوم؟
+                <label className="flex items-center gap-1.5 text-[12px] font-semibold text-[#6B7280] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={noNewMemorization}
+                    onChange={(e) => setNoNewMemorization(e.target.checked)}
+                    className="w-4 h-4 accent-[#0C5C5E] rounded"
+                  />
+                  <span>لا يوجد حفظ جديد اليوم</span>
                 </label>
+              </div>
+
+              {!noNewMemorization && (
+                <div className="grid gap-3 sm:grid-cols-2 bg-white p-3.5 rounded-lg border border-[#E5E3DF]">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">من سورة:</label>
+                    <select
+                      value={newSurahId}
+                      onChange={(e) => setNewSurahId(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                    >
+                      {QURAN_SURAHS.map((s) => (
+                        <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">من آية:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedNewSurah.versesCount}
+                      value={newFromAyah}
+                      onChange={(e) => setNewFromAyah(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">إلى سورة:</label>
+                    <select
+                      value={newEndSurahId}
+                      onChange={(e) => setNewEndSurahId(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                    >
+                      {QURAN_SURAHS.map((s) => (
+                        <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">إلى آية:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedNewEndSurah.versesCount}
+                      value={newToAyah}
+                      onChange={(e) => setNewToAyah(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* CARD B: REVISION */}
+            <div className="bg-[#FEF3C7]/40 rounded-xl border border-[#D97706]/20 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-[#D97706] text-white flex items-center justify-center text-[12px] font-bold">🔄</span>
+                  <h3 className="text-[15px] font-bold font-heading text-[#92400E]">
+                    المراجعة اليومية
+                  </h3>
+                </div>
+
+                <label className="flex items-center gap-1.5 text-[12px] font-semibold text-[#6B7280] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={noRevision}
+                    onChange={(e) => setNoRevision(e.target.checked)}
+                    className="w-4 h-4 accent-[#D97706] rounded"
+                  />
+                  <span>لا يوجد مراجعة اليوم</span>
+                </label>
+              </div>
+
+              {!noRevision && (
+                <div className="grid gap-3 sm:grid-cols-2 bg-white p-3.5 rounded-lg border border-[#E5E3DF]">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">من سورة:</label>
+                    <select
+                      value={revSurahId}
+                      onChange={(e) => setRevSurahId(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none focus:border-[#D97706]"
+                    >
+                      {QURAN_SURAHS.map((s) => (
+                        <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">من آية:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedRevSurah.versesCount}
+                      value={revFromAyah}
+                      onChange={(e) => setRevFromAyah(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none focus:border-[#D97706]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">إلى سورة:</label>
+                    <select
+                      value={revEndSurahId}
+                      onChange={(e) => setRevEndSurahId(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none focus:border-[#D97706]"
+                    >
+                      {QURAN_SURAHS.map((s) => (
+                        <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">إلى آية:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedRevEndSurah.versesCount}
+                      value={revToAyah}
+                      onChange={(e) => setRevToAyah(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none focus:border-[#D97706]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* CARD C: TALQEEN / PREPARATION */}
+            <div className="bg-[#EFF6FF] rounded-xl border border-[#3B82F6]/20 p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-[#3B82F6] text-white flex items-center justify-center text-[12px] font-bold">🗣️</span>
+                  <h3 className="text-[15px] font-bold font-heading text-[#1E40AF]">
+                    التلقين والتحضير للغد
+                  </h3>
+                </div>
+
+                <label className="flex items-center gap-1.5 text-[12px] font-semibold text-[#6B7280] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={noTaqeen}
+                    onChange={(e) => setNoTaqeen(e.target.checked)}
+                    className="w-4 h-4 accent-[#3B82F6] rounded"
+                  />
+                  <span>لا يوجد تلقين</span>
+                </label>
+              </div>
+
+              {!noTaqeen && (
+                <div className="grid gap-3 sm:grid-cols-2 bg-white p-3.5 rounded-lg border border-[#E5E3DF]">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">من سورة:</label>
+                    <select
+                      value={taqeenSurahId}
+                      onChange={(e) => setTaqeenSurahId(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none focus:border-[#3B82F6]"
+                    >
+                      {QURAN_SURAHS.map((s) => (
+                        <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">من آية:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedTaqeenSurah.versesCount}
+                      value={taqeenFromAyah}
+                      onChange={(e) => setTaqeenFromAyah(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none focus:border-[#3B82F6]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">إلى سورة:</label>
+                    <select
+                      value={taqeenEndSurahId}
+                      onChange={(e) => setTaqeenEndSurahId(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none focus:border-[#3B82F6]"
+                    >
+                      {QURAN_SURAHS.map((s) => (
+                        <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">إلى آية:</label>
+                    <input
+                      type="number"
+                      min={1}
+                      max={selectedTaqeenEndSurah.versesCount}
+                      value={taqeenToAyah}
+                      onChange={(e) => setTaqeenToAyah(Number(e.target.value))}
+                      className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none focus:border-[#3B82F6]"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : (
+          /* NOOR AL-BAYAN TRACK LESSON CARDS */
+          <div className="bg-[#EDF5F4] rounded-xl border border-[#0C5C5E]/20 p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-[#0C5C5E] text-white flex items-center justify-center text-[12px] font-bold">📘</span>
+              <h3 className="text-[15px] font-bold font-heading text-[#0C5C5E]">
+                تفاصيل درس نور البيان اليوم
+              </h3>
+            </div>
+
+            <div className="space-y-3 bg-white p-4 rounded-lg border border-[#E5E3DF]">
+              <div>
+                <label className="block text-[12px] font-bold text-[#1F2937] mb-1">الدرس المشروح اليوم (مطلوب):</label>
                 <input
                   type="text"
+                  placeholder="مثال: الحروف بحركة الفتح ص 12"
                   value={noorLearned}
                   onChange={(e) => setNoorLearned(e.target.value)}
-                  placeholder="مثال: حركة الفتح والكسر مع أمثلة الحروف"
-                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2.5 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
+                  className="w-full rounded-lg border border-[#E5E3DF] p-2.5 text-[13px] font-medium text-[#1F2937] outline-none focus:border-[#0C5C5E]"
                 />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+              <div className="grid gap-3 sm:grid-cols-2 pt-2">
                 <div>
-                  <label className="mb-1 block text-sm font-bold text-[#18322a]">
-                    تسليم الواجب
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setNoorHomework(true)}
-                      className={`flex-1 rounded-xl py-2 text-sm font-black ${
-                        noorHomework ? "bg-[#0c5c5e] text-white" : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      نعم (تم التسليم)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNoorHomework(false)}
-                      className={`flex-1 rounded-xl py-2 text-sm font-black ${
-                        !noorHomework ? "bg-red-600 text-white" : "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      لا (لم يسلم)
-                    </button>
+                  <label className="block text-[12px] font-semibold text-[#374151] mb-1">تقييم الواجب (من 5):</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setNoorHomeworkGrade(star)}
+                        className={`h-9 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out ${
+                          noorHomeworkGrade === star
+                            ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E]"
+                            : "border-[#E5E3DF] bg-white text-[#6B7280]"
+                        }`}
+                      >
+                        {star} ⭐
+                      </button>
+                    ))}
                   </div>
                 </div>
+
                 <div>
-                  <label className="mb-1 block text-sm font-bold text-[#18322a]">
-                    درجة الواجب (من 5)
-                  </label>
-                  <select
-                    value={noorHomeworkGrade}
-                    onChange={(e) => setNoorHomeworkGrade(Number(e.target.value))}
-                    className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2 text-sm font-bold outline-none"
-                  >
-                    {[5, 4, 3, 2, 1, 0].map((val) => (
-                      <option key={val} value={val}>
-                        {val === 0 ? "0 من 5 ❌ (لم ينجز الواجب)" : `${val} من 5 ⭐`}
-                      </option>
+                  <label className="block text-[12px] font-semibold text-[#374151] mb-1">المشاركة والتفاعل (من 5):</label>
+                  <div className="flex gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setNoorParticipation(star)}
+                        className={`h-9 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out ${
+                          noorParticipation === star
+                            ? "border-[#0C5C5E] bg-[#EDF5F4] text-[#0C5C5E]"
+                            : "border-[#E5E3DF] bg-white text-[#6B7280]"
+                        }`}
+                      >
+                        {star} ⭐
+                      </button>
                     ))}
-                  </select>
+                  </div>
                 </div>
               </div>
-              <div>
-                <label className="mb-1 block text-sm font-bold text-[#18322a]">
-                  درجة المشاركة والتفاعل (من 5)
-                </label>
-                <select
-                  value={noorParticipation}
-                  onChange={(e) => setNoorParticipation(Number(e.target.value))}
-                  className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] px-4 py-2 text-sm font-bold outline-none"
-                >
-                  {[5, 4, 3, 2, 1].map((val) => (
-                    <option key={val} value={val}>
-                      {val} من 5 ⭐
-                    </option>
-                  ))}
-                </select>
-              </div>
             </div>
-          </>
-          )}
+          </div>
+        )
+      ) : (
+        /* ABSENT NOTICE CARD */
+        <div className="bg-[#FEE2E2]/30 rounded-xl border border-[#FECACA] p-5 text-center space-y-1">
+          <p className="text-[14px] font-bold text-[#991B1B]">
+            الطالب مسجّل (غائب) عن حلقة اليوم
+          </p>
+          <p className="text-[12px] text-[#7F1D1D]">
+            يمكنك حفظ التقرير مباشرة لتثبيت غياب الطالب في النظام.
+          </p>
+        </div>
+      )}
 
-          {/* Behavior & Discipline */}
-          <div className="rounded-2xl border border-[#d8bf83]/40 bg-white p-4">
-            <h3 className="mb-3 text-base font-black text-[#0c5c5e]">
-              ⭐ السلوك والانضباط والملاحظات
-            </h3>
-            <div className="mb-4">
-              <label className="mb-2 block text-sm font-bold text-[#18322a]">
-                درجة السلوك والانضباط:
-              </label>
-              <div className="grid grid-cols-5 gap-2">
-                {[
-                  { grade: 5, label: "5 - ممتاز ⭐" },
-                  { grade: 4, label: "4 - جيد جداً" },
-                  { grade: 3, label: "3 - جيد" },
-                  { grade: 2, label: "2 - مقبول" },
-                  { grade: 1, label: "1 - متابعة" },
-                ].map((item) => (
-                  <button
-                    key={item.grade}
-                    type="button"
-                    onClick={() => setBehaviorGrade(item.grade)}
-                    className={`rounded-xl py-2.5 text-xs font-black transition-all ${
-                      behaviorGrade === item.grade
-                        ? "bg-[#bd8f2d] text-[#0c5c5e] shadow-md border-2 border-[#0c5c5e]"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+      {/* 4️⃣ EVALUATION & BEHAVIOR NOTES CARD */}
+      <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-4">
+        <h3 className="text-[15px] font-bold font-heading text-[#1F2937]">
+          التقييم السلوكي والملاحظات
+        </h3>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[12px] font-semibold text-[#374151] mb-1">التقييم السلوكي والانضباط:</label>
+            <div className="flex gap-1.5">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() => setBehaviorGrade(star)}
+                  className={`h-10 flex-1 rounded-lg border text-[13px] font-bold transition-all duration-200 ease-out flex items-center justify-center gap-1 ${
+                    behaviorGrade === star
+                      ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E] shadow-xs"
+                      : "border-[#E5E3DF] bg-white text-[#6B7280] hover:bg-[#F7F5F0]"
+                  }`}
+                >
+                  <span>{star}</span>
+                  <span className="text-[11px]">⭐</span>
+                </button>
+              ))}
             </div>
-            <div>
-              <label className="mb-1 block text-sm font-bold text-[#18322a]">
-                ملاحظات المعلم السلوكية والتوجيهية
-              </label>
-              <textarea
-                rows={2}
-                value={behaviorNotes}
-                onChange={(e) => setBehaviorNotes(e.target.value)}
-                placeholder="ملاحظات تشجيعية أو توجيهات للأهل..."
-                className="w-full rounded-xl border border-[#d8bf83] bg-[#fffaf4] p-3 text-sm font-bold outline-none focus:ring-2 focus:ring-[#0c5c5e]"
-              />
-            </div>
+          </div>
+
+          <div>
+            <label className="block text-[12px] font-semibold text-[#374151] mb-1">ملاحظات المعلم ولي الأمر (اختياري):</label>
+            <textarea
+              rows={3}
+              placeholder="اكتب أي ملاحظة أو تنبيه لولي الأمر هنا..."
+              value={behaviorNotes}
+              onChange={(e) => setBehaviorNotes(e.target.value)}
+              className="w-full rounded-lg border border-[#E5E3DF] p-3 text-[13px] text-[#1F2937] outline-none focus:border-[#0C5C5E] resize-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* ERROR DISPLAY */}
+      {error && (
+        <div className="bg-[#FEE2E2] border border-[#FECACA] text-[#991B1B] text-[13px] font-bold p-4 rounded-xl flex items-center gap-2">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span>{error}</span>
+        </div>
+      )}
+
+      {/* SUCCESS ISLAMIC TOAST */}
+      {success && (
+        <div className="bg-[#D1FAE5] border border-[#A7F3D0] text-[#065F46] text-[14px] font-bold p-4 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>جزاك الله خيراً، تم حفظ التقرير بنجاح! جارٍ الانتقال...</span>
           </div>
         </div>
       )}
 
-      {/* Save Submit Button */}
-      <div className="mt-6">
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-2xl bg-[#0c5c5e] py-4 text-base font-black text-white shadow-lg transition hover:bg-[#06484a] disabled:opacity-50"
-        >
-          {loading ? "جاري الحفظ..." : existingReport ? "💾 حفظ التعديلات وتحديث التقرير اليومي" : "💾 حفظ التقرير اليومي"}
-        </button>
-      </div>
+      {/* 5️⃣ PRIMARY SUBMIT ACTION BUTTON */}
+      <button
+        type="submit"
+        disabled={loading || success}
+        className="w-full bg-[#0C5C5E] text-white hover:bg-[#0A4D4F] font-bold py-3.5 rounded-xl shadow-xs transition-all duration-200 ease-out text-[15px] flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+      >
+        {loading ? (
+          <>
+            <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span>جاري حفظ التقرير...</span>
+          </>
+        ) : (
+          <>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <span>حفظ التقرير اليومي ➔</span>
+          </>
+        )}
+      </button>
     </form>
   );
 }
