@@ -319,7 +319,7 @@ export default function SummerReportForm({
       <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className={`rounded-md px-2.5 py-0.5 text-[11px] font-semibold ${
                 isNoor
                   ? "bg-[#D97706]/10 text-[#92400E]"
@@ -330,6 +330,11 @@ export default function SummerReportForm({
               {student.circleName && (
                 <span className="text-[12px] text-[#6B7280]">
                   حلقة: {student.circleName}
+                </span>
+              )}
+              {existingReport && (
+                <span className="bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] text-[11px] font-bold px-2 py-0.5 rounded-md">
+                  تعديل تقرير رُصِد مسبقاً
                 </span>
               )}
             </div>
@@ -377,6 +382,99 @@ export default function SummerReportForm({
           </div>
         )}
       </div>
+
+      {/* 📌 OPTIONAL ONE-TIME START POINT REGISTRATION CARD FOR QURAN TRACK */}
+      {!isNoor && !startSaved && (
+        <div className="bg-[#FEF3C7]/40 rounded-xl border border-[#D97706]/30 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-[#D97706] text-white flex items-center justify-center text-[12px] font-bold">📌</span>
+              <h3 className="text-[14px] font-bold font-heading text-[#92400E]">
+                تسجيل بداية الطالب مع المعلم (اختياري - مرة واحدة):
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-[#D97706] bg-[#FEF3C7] px-2 py-0.5 rounded">
+              لإحصائيات الإشراف
+            </span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2 bg-white p-3 rounded-lg border border-[#E5E3DF]">
+            <div>
+              <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">بداية سورة:</label>
+              <select
+                value={startSurahId}
+                onChange={(e) => setStartSurahId(Number(e.target.value))}
+                className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-semibold text-[#1F2937] outline-none"
+              >
+                {QURAN_SURAHS.map((s) => (
+                  <option key={s.id} value={s.id}>{s.id}. {s.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">بداية آية:</label>
+              <input
+                type="number"
+                min={1}
+                max={selectedStartSurah.versesCount}
+                value={startFromAyah}
+                onChange={(e) => setStartFromAyah(Number(e.target.value))}
+                className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none"
+              />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveStartPoint}
+            disabled={savingStart}
+            className="w-full sm:w-auto bg-[#D97706] text-white text-[12px] font-bold px-4 py-2 rounded-lg hover:bg-[#B45309] transition disabled:opacity-50"
+          >
+            {savingStart ? "جاري الحفظ..." : "💾 حفظ نقطة بداية الطالب"}
+          </button>
+          {startError && <p className="text-[12px] font-bold text-red-600">{startError}</p>}
+        </div>
+      )}
+
+      {/* 📌 OPTIONAL ONE-TIME START POINT REGISTRATION CARD FOR NOOR AL-BAYAN TRACK */}
+      {isNoor && !startSaved && (
+        <div className="bg-[#EFF6FF] rounded-xl border border-[#3B82F6]/30 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="w-7 h-7 rounded-lg bg-[#3B82F6] text-white flex items-center justify-center text-[12px] font-bold">📌</span>
+              <h3 className="text-[14px] font-bold font-heading text-[#1E40AF]">
+                تسجيل بداية الطالب في كتاب (نور البيان):
+              </h3>
+            </div>
+            <span className="text-[11px] font-semibold text-[#3B82F6] bg-blue-50 px-2 py-0.5 rounded">
+              لإحصائيات الإشراف
+            </span>
+          </div>
+
+          <div className="bg-white p-3 rounded-lg border border-[#E5E3DF]">
+            <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">بداية الصفحة بكتاب نور البيان:</label>
+            <input
+              type="number"
+              min={1}
+              max={150}
+              value={noorStartPage}
+              onChange={(e) => setNoorStartPage(Number(e.target.value))}
+              className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[13px] font-bold text-[#1F2937] outline-none"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveNoorStartPoint}
+            disabled={savingStart}
+            className="w-full sm:w-auto bg-[#3B82F6] text-white text-[12px] font-bold px-4 py-2 rounded-lg hover:bg-[#2563EB] transition disabled:opacity-50"
+          >
+            {savingStart ? "جاري الحفظ..." : `💾 حفظ بداية الطالب (صفحة ${noorStartPage})`}
+          </button>
+          {startError && <p className="text-[12px] font-bold text-red-600">{startError}</p>}
+        </div>
+      )}
 
       {/* 2️⃣ ATTENDANCE SELECTOR */}
       <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 shadow-xs space-y-3">
@@ -646,45 +744,126 @@ export default function SummerReportForm({
             </div>
           </div>
         ) : (
-          /* NOOR AL-BAYAN TRACK LESSON CARDS */
-          <div className="bg-[#EDF5F4] rounded-xl border border-[#0C5C5E]/20 p-5 space-y-4">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-[#0C5C5E] text-white flex items-center justify-center text-[12px] font-bold">📘</span>
-              <h3 className="text-[15px] font-bold font-heading text-[#0C5C5E]">
-                تفاصيل درس نور البيان اليوم
-              </h3>
-            </div>
-
-            <div className="space-y-3 bg-white p-4 rounded-lg border border-[#E5E3DF]">
-              <div>
-                <label className="block text-[12px] font-bold text-[#1F2937] mb-1">الدرس المشروح اليوم (مطلوب):</label>
-                <input
-                  type="text"
-                  placeholder="مثال: الحروف بحركة الفتح ص 12"
-                  value={noorLearned}
-                  onChange={(e) => setNoorLearned(e.target.value)}
-                  className="w-full rounded-lg border border-[#E5E3DF] p-2.5 text-[13px] font-medium text-[#1F2937] outline-none focus:border-[#0C5C5E]"
-                />
+          /* NOOR AL-BAYAN TRACK LESSON CARDS (INCLUDING JUZ AMMA SURAH PICKERS) */
+          <div className="space-y-4">
+            {/* JUZ AMMA SURAH PICKERS FOR NOOR AL-BAYAN */}
+            <div className="bg-[#EDF5F4] rounded-xl border border-[#0C5C5E]/20 p-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#0C5C5E] text-white flex items-center justify-center text-[12px] font-bold">📖</span>
+                <h3 className="text-[15px] font-bold font-heading text-[#0C5C5E]">
+                  قرآن جزء عم (لطلاب نور البيان)
+                </h3>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 pt-2">
+              <div className="grid gap-3 sm:grid-cols-3 bg-white p-3.5 rounded-lg border border-[#E5E3DF]">
                 <div>
-                  <label className="block text-[12px] font-semibold text-[#374151] mb-1">تقييم الواجب (من 5):</label>
-                  <div className="flex gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                  <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">📖 حفظ جزء عم:</label>
+                  <select
+                    value={noorQuranNewSurah}
+                    onChange={(e) => setNoorQuranNewSurah(e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[12px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                  >
+                    <option value="">-- اختر السورة --</option>
+                    {JUZ_AMMA_SURAHS.map((s) => (
+                      <option key={s.id} value={`سورة ${s.name}`}>سورة {s.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">🔄 مراجعة جزء عم:</label>
+                  <select
+                    value={noorQuranRevisionSurah}
+                    onChange={(e) => setNoorQuranRevisionSurah(e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[12px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                  >
+                    <option value="">-- اختر السورة --</option>
+                    {JUZ_AMMA_SURAHS.map((s) => (
+                      <option key={s.id} value={`سورة ${s.name}`}>سورة {s.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-[#6B7280] mb-1">🎤 تلقين جزء عم:</label>
+                  <select
+                    value={noorQuranTaqeenSurah}
+                    onChange={(e) => setNoorQuranTaqeenSurah(e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E3DF] p-2 text-[12px] font-semibold text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                  >
+                    <option value="">-- اختر السورة --</option>
+                    {JUZ_AMMA_SURAHS.map((s) => (
+                      <option key={s.id} value={`سورة ${s.name}`}>سورة {s.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* NOOR AL-BAYAN BOOK LESSON DETAILS */}
+            <div className="bg-white rounded-xl border border-[#E5E3DF] p-5 space-y-4 shadow-xs">
+              <div className="flex items-center gap-2">
+                <span className="w-7 h-7 rounded-lg bg-[#D97706] text-white flex items-center justify-center text-[12px] font-bold">📘</span>
+                <h3 className="text-[15px] font-bold font-heading text-[#92400E]">
+                  متابعة كتاب نور البيان والتمهيدي
+                </h3>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[12px] font-bold text-[#1F2937] mb-1">الدرس المشروح اليوم (مطلوب):</label>
+                  <input
+                    type="text"
+                    placeholder="مثال: حركة الفتح والكسر مع أمثلة الحروف ص 12"
+                    value={noorLearned}
+                    onChange={(e) => setNoorLearned(e.target.value)}
+                    className="w-full rounded-lg border border-[#E5E3DF] p-2.5 text-[13px] font-medium text-[#1F2937] outline-none focus:border-[#0C5C5E]"
+                  />
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2 pt-2">
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#374151] mb-1">تسليم الواجب:</label>
+                    <div className="flex gap-2">
                       <button
-                        key={star}
                         type="button"
-                        onClick={() => setNoorHomeworkGrade(star)}
-                        className={`h-9 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out ${
-                          noorHomeworkGrade === star
-                            ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E]"
-                            : "border-[#E5E3DF] bg-white text-[#6B7280]"
+                        onClick={() => setNoorHomework(true)}
+                        className={`flex-1 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 ease-out ${
+                          noorHomework ? "bg-[#0C5C5E] text-white" : "bg-[#F7F5F0] text-[#6B7280] border border-[#E5E3DF]"
                         }`}
                       >
-                        {star} ⭐
+                        نعم (تم التسليم)
                       </button>
-                    ))}
+                      <button
+                        type="button"
+                        onClick={() => setNoorHomework(false)}
+                        className={`flex-1 py-2 rounded-lg text-[12px] font-bold transition-all duration-200 ease-out ${
+                          !noorHomework ? "bg-[#DC2626] text-white" : "bg-[#F7F5F0] text-[#6B7280] border border-[#E5E3DF]"
+                        }`}
+                      >
+                        لا (لم يسلم)
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[12px] font-semibold text-[#374151] mb-1">درجة الواجب (من 5):</label>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setNoorHomeworkGrade(star)}
+                          className={`h-9 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out ${
+                            noorHomeworkGrade === star
+                              ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E]"
+                              : "border-[#E5E3DF] bg-white text-[#6B7280]"
+                          }`}
+                        >
+                          {star} ⭐
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </div>
 
@@ -733,29 +912,34 @@ export default function SummerReportForm({
           <div>
             <label className="block text-[12px] font-semibold text-[#374151] mb-1">التقييم السلوكي والانضباط:</label>
             <div className="flex gap-1.5">
-              {[1, 2, 3, 4, 5].map((star) => (
+              {[
+                { grade: 5, label: "5 - ممتاز ⭐" },
+                { grade: 4, label: "4 - جيد جداً" },
+                { grade: 3, label: "3 - جيد" },
+                { grade: 2, label: "2 - مقبول" },
+                { grade: 1, label: "1 - متابعة" },
+              ].map((item) => (
                 <button
-                  key={star}
+                  key={item.grade}
                   type="button"
-                  onClick={() => setBehaviorGrade(star)}
-                  className={`h-10 flex-1 rounded-lg border text-[13px] font-bold transition-all duration-200 ease-out flex items-center justify-center gap-1 ${
-                    behaviorGrade === star
+                  onClick={() => setBehaviorGrade(item.grade)}
+                  className={`h-10 flex-1 rounded-lg border text-[12px] font-bold transition-all duration-200 ease-out flex items-center justify-center ${
+                    behaviorGrade === item.grade
                       ? "border-[#D97706] bg-[#FEF3C7] text-[#92400E] shadow-xs"
                       : "border-[#E5E3DF] bg-white text-[#6B7280] hover:bg-[#F7F5F0]"
                   }`}
                 >
-                  <span>{star}</span>
-                  <span className="text-[11px]">⭐</span>
+                  <span>{item.label}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <label className="block text-[12px] font-semibold text-[#374151] mb-1">ملاحظات المعلم ولي الأمر (اختياري):</label>
+            <label className="block text-[12px] font-semibold text-[#374151] mb-1">ملاحظات المعلم السلوكية والتوجيهية (اختياري):</label>
             <textarea
               rows={3}
-              placeholder="اكتب أي ملاحظة أو تنبيه لولي الأمر هنا..."
+              placeholder="اكتب أي ملاحظة تشجيعية أو توجيهات للأهل..."
               value={behaviorNotes}
               onChange={(e) => setBehaviorNotes(e.target.value)}
               className="w-full rounded-lg border border-[#E5E3DF] p-3 text-[13px] text-[#1F2937] outline-none focus:border-[#0C5C5E] resize-none"
@@ -796,7 +980,7 @@ export default function SummerReportForm({
         ) : (
           <>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-            <span>حفظ التقرير اليومي ➔</span>
+            <span>{existingReport ? "حفظ التعديلات وتحديث التقرير اليومي ➔" : "حفظ التقرير اليومي ➔"}</span>
           </>
         )}
       </button>
