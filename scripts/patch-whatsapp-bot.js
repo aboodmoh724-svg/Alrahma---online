@@ -7,6 +7,8 @@ const dirs = [
   "/root/whatsapp-bot-syria",
 ];
 
+const chromiumPath = "/snap/bin/chromium";
+
 for (const dir of dirs) {
   const filePath = path.join(dir, "index.js");
   if (!fs.existsSync(filePath)) {
@@ -20,6 +22,14 @@ for (const dir of dirs) {
     code = code.replace(
       'const { Client, LocalAuth } = require("whatsapp-web.js");',
       'const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");'
+    );
+  }
+
+  if (!code.includes("executablePath:")) {
+    code = code.replace(
+      `puppeteer: {`,
+      `puppeteer: {
+    executablePath: process.env.CHROMIUM_PATH || "${chromiumPath}",`
     );
   }
 
@@ -61,10 +71,8 @@ for (const dir of dirs) {
       result = await client.sendMessage(chatId, messageText);
     }`
     );
-
-    fs.writeFileSync(filePath, code, "utf8");
-    console.log(`Successfully patched ${filePath}`);
-  } else {
-    console.log(`Already patched or snippet mismatch in ${filePath}`);
   }
+
+  fs.writeFileSync(filePath, code, "utf8");
+  console.log(`Successfully updated ${filePath}`);
 }
