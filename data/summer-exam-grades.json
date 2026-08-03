@@ -1,0 +1,718 @@
+{
+  "meta": {
+    "importDate": "2026-08-03",
+    "source": "بيانات الطلاب والدرجات.xlsx",
+    "courseStart": "2026-07-09",
+    "courseEnd": "2026-08-07",
+    "weights": {
+      "QURAN": {
+        "quranExam": 0.75,
+        "tarbiya": 0.1,
+        "behavior": 0.08,
+        "attendance": 0.07
+      },
+      "NOOR_AL_BAYAN": {
+        "noorExam": 0.6,
+        "qisarSuwar": 0.15,
+        "tarbiya": 0.1,
+        "behavior": 0.08,
+        "attendance": 0.07
+      }
+    }
+  },
+  "students": [
+    {
+      "studentId": "cmrwmrmhh000115r99t7fcy7j",
+      "studentName": "مصطفى فضيله",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أسامة سليمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 71.5,
+        "tarbiyaExam": 38,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 72.425,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmi4000215r9sc9kngh8",
+      "studentName": "زيد صلاح",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أسامة سليمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 68,
+        "tarbiyaExam": 23,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 68.3,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmie000315r9t8wgzlww",
+      "studentName": "محمد طحان",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أسامة سليمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 71,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 78.25,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmio000415r909jxz5cx",
+      "studentName": "عبدالرحمن عرعور",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أسامة سليمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 76,
+        "tarbiyaExam": 90,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 81,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmix000515r93qekvns2",
+      "studentName": "قصي فضيله",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أسامة سليمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 78,
+        "tarbiyaExam": 27,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 76.2,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmjs000815r9uxv0tg6f",
+      "studentName": "محمد خير حبوب",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أحمد راعي جوخة",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 82,
+        "tarbiyaExam": 28,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 79.3,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrxm210l0002y3r9riuff050",
+      "studentName": "اسلام علاء",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أحمد راعي جوخة",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 81,
+        "tarbiyaExam": 20,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 77.75,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmkd000a15r9zdpoo246",
+      "studentName": "موسى رستم",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أحمد راعي جوخة",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 82,
+        "tarbiyaExam": 6,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 77.1,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmkl000b15r9vwtt5pwq",
+      "studentName": "محمد طاقوت",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أحمد راعي جوخة",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 86,
+        "tarbiyaExam": 30,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 82.5,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmkv000c15r9zn7fo2qc",
+      "studentName": "عبدالغني الأبضال",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "أحمد راعي جوخة",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 58,
+        "tarbiyaExam": 28,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 61.3,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmm3000f15r92ojxzazl",
+      "studentName": "اياد خرفان",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "ريان/ أسامة النعمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 67.5,
+        "tarbiyaExam": 76,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 73.225,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmmd000g15r987xdxp8o",
+      "studentName": "عبدالرحمن العلي",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "ريان/ أسامة النعمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 69,
+        "tarbiyaExam": 88,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 75.55,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmmq000h15r9arhwd8l9",
+      "studentName": "محمود سنده",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "ريان/ أسامة النعمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 79,
+        "tarbiyaExam": 73,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 81.55,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmmz000i15r9uo15s8px",
+      "studentName": "احمد طرقجي",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "ريان/ أسامة النعمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 75,
+        "tarbiyaExam": 5,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 71.75,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrxzb22y0009dpr9y96y7cth",
+      "studentName": "آواب وسام",
+      "matchConfidence": "exact",
+      "track": "QURAN",
+      "teacherName": "ريان/ أسامة النعمان",
+      "circleName": "حلقة القرآن",
+      "examScores": {
+        "quranExam": 86.5,
+        "tarbiyaExam": 4,
+        "noorBayanExam": 0,
+        "qisarSuwarExam": 0,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 80.275,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmoi000m15r9y69mt03d",
+      "studentName": "نوري قاطرجي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "مصطفى محمود",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 75.5,
+        "qisarSuwarExam": 93,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 84.25,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmoy000n15r9ksh0o50s",
+      "studentName": "معصتم قاطرجي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "مصطفى محمود",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 99,
+        "qisarSuwarExam": 95,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 98.65,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmpe000o15r9xy9pkwsp",
+      "studentName": "احمد تشتش",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "أحمد القط",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 55,
+        "qisarSuwarExam": 90,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 71.5,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmpp000p15r95qsvjdw5",
+      "studentName": "زيد فاخوري",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "أحمد القط",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 88,
+        "qisarSuwarExam": 98,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 92.5,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmq6000q15r99vchr8rp",
+      "studentName": "محمد الرحال",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "مصطفى محمود",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 80,
+        "noorBayanExam": 76,
+        "qisarSuwarExam": 83,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 81.05,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmqe000r15r908nspxkl",
+      "studentName": "جواد حبوب",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "أحمد القط",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 92,
+        "qisarSuwarExam": 100,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 95.2,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmqm000s15r9oeqeyzoq",
+      "studentName": "رضوان قاطرجي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "أحمد القط",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 59,
+        "qisarSuwarExam": 95,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 74.65,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmqv000t15r9ri1pdpfp",
+      "studentName": "آدم حبوب",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "أحمد القط",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 55,
+        "qisarSuwarExam": 100,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 73,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmrv000u15r9ek8stl9t",
+      "studentName": "أحمد حميد",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "مصطفى محمود",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 95,
+        "qisarSuwarExam": 90,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 95.5,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmst000x15r9bn2sj5z0",
+      "studentName": "محمد زكي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "عبدالله اليحيى",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 75,
+        "qisarSuwarExam": 90,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 83.5,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrxm219c0007y3r9m7bp9rcb",
+      "studentName": "محمد الواكي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "عبدالله اليحيى",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 75,
+        "qisarSuwarExam": 94,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 84.1,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmtk000z15r93x3ud0xe",
+      "studentName": "حسن سعيد عيسى",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "أحمد القط",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 60,
+        "noorBayanExam": 99,
+        "qisarSuwarExam": 78,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 92.1,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmtu001015r9x251m093",
+      "studentName": "محمد قاطرجي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "عبدالله اليحيى",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 83,
+        "qisarSuwarExam": 90,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 88.3,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmu1001115r9ffs398v4",
+      "studentName": "بلال دقاق",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "عبدالله اليحيى",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 93,
+        "qisarSuwarExam": 95,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 95.05,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmu6001215r9cuy9c4gp",
+      "studentName": "سمير جزماتي",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "عبدالله اليحيى",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 78,
+        "qisarSuwarExam": 95,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 86.05,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrxm21ak0008y3r9m2h0t3tt",
+      "studentName": "سياف عبيد",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "عبدالله اليحيى",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 58,
+        "noorBayanExam": 85,
+        "qisarSuwarExam": 99,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 86.65,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmv3001715r9gbjg7882",
+      "studentName": "عبدالجبار الطويل",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "محسن",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 80,
+        "noorBayanExam": 54,
+        "qisarSuwarExam": 85,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 68.15,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmv9001815r9d128dphc",
+      "studentName": "مصطفى الطويل",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "محسن",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 70,
+        "qisarSuwarExam": 95,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 81.25,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmvk001915r9hcf7h536",
+      "studentName": "يحيى حبوب",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "محسن",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 60,
+        "qisarSuwarExam": 93,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 74.95,
+      "needsCommitment": true
+    },
+    {
+      "studentId": "cmrwmrmvp001a15r95fjsi2ra",
+      "studentName": "احمد حبوب",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "محسن",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 80,
+        "noorBayanExam": 81,
+        "qisarSuwarExam": 100,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 86.6,
+      "needsCommitment": false
+    },
+    {
+      "studentId": "cmrwmrmw5001b15r93pvcus3g",
+      "studentName": "جمعه مصطو",
+      "matchConfidence": "exact",
+      "track": "NOOR_AL_BAYAN",
+      "teacherName": "محسن",
+      "circleName": "حلقة نور البيان",
+      "examScores": {
+        "quranExam": 0,
+        "tarbiyaExam": 100,
+        "noorBayanExam": 75,
+        "qisarSuwarExam": 96,
+        "behaviorScore": 100,
+        "attendanceScore": 100
+      },
+      "finalScore": 84.4,
+      "needsCommitment": false
+    }
+  ],
+  "unmatched": [],
+  "excluded": [
+    {
+      "name": "محمد الشيخ",
+      "reason": "درجات صفرية",
+      "circle": "حلقة نور البيان",
+      "teacher": "محسن"
+    },
+    {
+      "name": "بلال الشيخ",
+      "reason": "درجات صفرية",
+      "circle": "حلقة نور البيان",
+      "teacher": "محسن"
+    },
+    {
+      "name": "خالد آيدن",
+      "reason": "طالب عن بعد بدون درجات",
+      "circle": "حلقة القرآن (عن بعد)",
+      "teacher": "عبدالرحمن العمري"
+    },
+    {
+      "name": "كامل أحمد تشتش",
+      "reason": "طالب عن بعد بدون درجات",
+      "circle": "حلقة القرآن (عن بعد)",
+      "teacher": "عبدالرحمن العمري"
+    },
+    {
+      "name": "عمر أحمد تشتش",
+      "reason": "طالب عن بعد بدون درجات",
+      "circle": "حلقة القرآن (عن بعد)",
+      "teacher": "عبدالرحمن العمري"
+    },
+    {
+      "name": "أرسلان حسام طه ***",
+      "reason": "طالب عن بعد بدون درجات",
+      "circle": "حلقة القرآن (عن بعد)",
+      "teacher": "عبدالرحمن العمري"
+    },
+    {
+      "name": "عبدالملك جمال الدين",
+      "reason": "طالب عن بعد بدون درجات",
+      "circle": "حلقة القرآن (عن بعد)",
+      "teacher": "عبدالرحمن العمري"
+    }
+  ]
+}
