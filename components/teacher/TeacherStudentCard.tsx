@@ -39,7 +39,6 @@ type TeacherStudentCardProps = {
 export default function TeacherStudentCard({
   student,
   selectedDateKey,
-  todayStr,
   reportForSelectedDate,
   lastPresentReport,
   missingDateKeys,
@@ -62,169 +61,137 @@ export default function TeacherStudentCard({
   const stars = (grade: number | null) => {
     if (grade === null) return null;
     const n = Math.min(5, Math.max(1, grade));
-    return <span className="text-[#D97706] tracking-tight">{"★".repeat(n)}{"☆".repeat(5 - n)}</span>;
+    return <span className="text-[#D97706]">{"★".repeat(n)}{"☆".repeat(5 - n)}</span>;
   };
 
   const dotColor = (s: string) => {
     if (s === "present") return "bg-[#059669]";
     if (s === "absent") return "bg-[#DC2626]";
-    if (s === "future") return "bg-[#E5E3DF]";
     return "bg-[#D1D5DB]";
   };
 
   return (
     <>
       <div
-        className={`group relative bg-white rounded-xl border transition-all duration-200 overflow-hidden ${
+        className={`bg-white rounded-xl border transition-all duration-150 ease-out overflow-hidden ${
           isDone
             ? isAbsent ? "border-[#FECACA]" : "border-[#A7F3D0]"
-            : "border-[#E5E3DF] hover:shadow-md hover:-translate-y-0.5"
+            : "border-[#E5E3DF] hover:shadow-md hover:-translate-y-px"
         }`}
-        style={{
-          borderRightWidth: '3px',
-          borderRightColor: isDone ? (isAbsent ? '#DC2626' : '#059669') : '#0C5C5E',
-        }}
+        style={{ borderRightWidth: '3px', borderRightColor: isDone ? (isAbsent ? '#DC2626' : '#059669') : '#0C5C5E' }}
       >
-        <div className="p-3.5">
-          {/* Row 1: Name + Track + Status */}
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <h4 className={`text-[15px] font-bold leading-tight truncate ${
-                  isDone && !isAbsent ? "text-[#374151]/70" : "text-[#1F2937]"
-                }`}>
-                  {isDone && !isAbsent && (
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="inline-block ml-1 -mt-0.5"><polyline points="20 6 9 17 4 12"/></svg>
-                  )}
-                  {student.fullName}
-                </h4>
-                <span className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold ${
-                  isNoor ? "bg-[#D97706]/10 text-[#92400E]" : "bg-[#0C5C5E]/10 text-[#0C5C5E]"
-                }`}>
-                  {isNoor ? "نور البيان" : "قرآن"}
-                </span>
-                {student.studentCode === "7500" && (
-                  <span className="shrink-0 rounded bg-[#DBEAFE] px-1.5 py-0.5 text-[9px] font-semibold text-[#1E40AF]">تجريبي</span>
-                )}
-                {missingDateKeys.length > 0 && (
-                  <span className="shrink-0 text-[9px] font-bold text-[#D97706] bg-[#FEF3C7] px-1.5 py-0.5 rounded">
-                    {missingDateKeys.length} ناقص
-                  </span>
-                )}
-              </div>
+        <div className="px-3.5 py-3">
+          {/* Row 1: Name + badges */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              {isDone && !isAbsent && (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0"><polyline points="20 6 9 17 4 12"/></svg>
+              )}
+              <h4 className={`text-[14px] font-bold leading-tight truncate ${isDone && !isAbsent ? "text-[#374151]/60" : "text-[#1F2937]"}`}>
+                {student.fullName}
+              </h4>
+              <span className={`shrink-0 rounded px-1.5 py-px text-[9px] font-semibold ${
+                isNoor ? "bg-[#D97706]/10 text-[#92400E]" : "bg-[#0C5C5E]/8 text-[#0C5C5E]"
+              }`}>
+                {isNoor ? "نور البيان" : "قرآن"}
+              </span>
+              {student.studentCode === "7500" && (
+                <span className="shrink-0 rounded bg-[#DBEAFE] px-1 py-px text-[8px] font-bold text-[#1E40AF]">تجريبي</span>
+              )}
             </div>
-
-            {/* Status badge */}
-            <span className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold flex items-center gap-1 ${
-              isDone
-                ? isAbsent ? "bg-[#FEE2E2] text-[#DC2626]" : "bg-[#D1FAE5] text-[#059669]"
-                : "bg-[#EDF5F4] text-[#0C5C5E]"
+            {/* Status */}
+            <span className={`shrink-0 text-[10px] font-bold ${
+              isDone ? (isAbsent ? "text-[#DC2626]" : "text-[#059669]") : "text-[#9CA3AF]"
             }`}>
-              {isDone ? (isAbsent ? "غائب" : "تم") : "بانتظار"}
+              {isDone ? (isAbsent ? "غائب" : "تم ✓") : "بانتظار"}
             </span>
           </div>
 
-          {/* Row 2: Micro Stats */}
+          {/* Row 2: Inline micro stats */}
           {hasStats && (
-            <div className="flex items-center gap-2 mt-2 text-[10px] text-[#6B7280]">
-              <span className={`font-semibold ${attColor}`}>{attendanceRate}%</span>
-              <span className="text-[#E5E3DF]">·</span>
+            <p className="text-[10px] text-[#6B7280] mt-1.5 leading-none flex items-center gap-0 flex-wrap">
+              <span className={`font-semibold ${attColor}`}>{attendanceRate}% حضور</span>
+              <span className="text-[#D1D5DB] mx-1">•</span>
               <span>{totalReports} تقرير</span>
-              {lastBehaviorGrade !== null && (
-                <>{" "}<span className="text-[#E5E3DF]">·</span>{" "}{stars(lastBehaviorGrade)}</>
-              )}
-              {absentCount > 0 && (
-                <>{" "}<span className="text-[#E5E3DF]">·</span>{" "}<span className="text-[#DC2626]">{absentCount} غياب</span></>
-              )}
-            </div>
+              {lastBehaviorGrade !== null && (<><span className="text-[#D1D5DB] mx-1">•</span>{stars(lastBehaviorGrade)}</>)}
+              {absentCount > 0 && (<><span className="text-[#D1D5DB] mx-1">•</span><span className="text-[#DC2626]">{absentCount} غياب</span></>)}
+              {missingDateKeys.length > 0 && (<><span className="text-[#D1D5DB] mx-1">•</span><span className="text-[#D97706]">{missingDateKeys.length} ناقص</span></>)}
+            </p>
           )}
 
-          {/* Row 3: Actions */}
-          <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-[#F3F4F6]">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setShowDetails(!showDetails)}
-                className={`text-[11px] font-medium transition-colors duration-200 ${
-                  showDetails ? "text-[#0C5C5E]" : "text-[#9CA3AF] hover:text-[#0C5C5E]"
-                }`}
-              >
+          {/* Row 3: Actions — CTA is prominent */}
+          <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-[#F3F4F6]">
+            <div className="flex items-center gap-1.5">
+              <button type="button" onClick={() => setShowDetails(!showDetails)}
+                className={`text-[10px] font-medium transition-colors duration-150 ${showDetails ? "text-[#0C5C5E]" : "text-[#C4C4C4] hover:text-[#0C5C5E]"}`}>
                 {showDetails ? "إخفاء" : "التفاصيل"}
               </button>
-              <span className="text-[#E5E3DF]">·</span>
-              <button
-                type="button"
-                onClick={() => setShowHistoryModal(true)}
-                className="text-[11px] font-medium text-[#9CA3AF] hover:text-[#0C5C5E] transition-colors duration-200"
-              >
+              <span className="text-[#E5E3DF] text-[10px]">·</span>
+              <button type="button" onClick={() => setShowHistoryModal(true)}
+                className="text-[10px] font-medium text-[#C4C4C4] hover:text-[#0C5C5E] transition-colors duration-150">
                 السجل
               </button>
             </div>
 
             <Link
               href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
-              className={`rounded-lg px-3 py-1.5 text-[12px] font-bold transition-all duration-200 ease-out ${
+              className={`rounded-lg px-4 py-[7px] text-[13px] font-bold transition-all duration-150 ease-out ${
                 isDone
-                  ? "bg-[#EDF5F4] text-[#0C5C5E] hover:bg-[#D4ECEB]"
-                  : "bg-[#0C5C5E] text-white hover:bg-[#0A4D4F] shadow-xs"
+                  ? "bg-[#F3F4F6] text-[#6B7280] hover:bg-[#E5E7EB]"
+                  : "bg-[#0C5C5E] text-white hover:bg-[#0A4D4F] shadow-sm hover:shadow"
               }`}
             >
               {isDone ? "تعديل" : "رصد التقرير"}
             </Link>
           </div>
 
-          {/* Expandable Quick Summary */}
+          {/* Expandable details */}
           {showDetails && (
-            <div className="mt-2.5 pt-2.5 border-t border-[#F3F4F6] space-y-2 animate-fadeIn">
-              {/* Recent 7 Days Dots */}
+            <div className="mt-2 pt-2 border-t border-[#F3F4F6] space-y-2 animate-fadeIn">
+              {/* 7-day dots */}
               {recentDots.length > 0 && (
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-[#9CA3AF] font-medium ml-1">آخر 7 أيام:</span>
+                  <span className="text-[9px] text-[#9CA3AF] ml-1">آخر 7 أيام</span>
                   {recentDots.map((dot, i) => (
-                    <div key={i} className="flex flex-col items-center gap-0.5">
-                      <div className={`w-4 h-4 rounded-full ${dotColor(dot)} flex items-center justify-center`}>
-                        {dot === "present" && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
-                        {dot === "absent" && <svg width="6" height="6" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
+                    <div key={i} className="flex flex-col items-center">
+                      <div className={`w-3.5 h-3.5 rounded-full ${dotColor(dot)} flex items-center justify-center`}>
+                        {dot === "present" && <svg width="7" height="7" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                        {dot === "absent" && <svg width="5" height="5" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>}
                       </div>
-                      <span className="text-[8px] text-[#D1D5DB]">{recentDotLabels[i]}</span>
+                      <span className="text-[7px] text-[#D1D5DB] mt-px">{recentDotLabels[i]}</span>
                     </div>
                   ))}
                 </div>
               )}
 
-              {/* Info row */}
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#6B7280]">
-                <span><strong className="text-[#374151]">آخر حضور:</strong> {lastPresentReport?.dateKey || "—"}</span>
-                {absentCount > 0 && <span className="text-[#DC2626]"><strong>الغياب:</strong> {absentCount} مرات</span>}
-              </div>
-
               {/* Last lesson */}
               {lastPresentReport && (
-                <div className="text-[11px] text-[#374151] space-y-0.5">
+                <div className="text-[10px] text-[#374151] space-y-0.5">
+                  <p><span className="text-[#9CA3AF]">آخر حضور:</span> {lastPresentReport.dateKey}</p>
                   {!isNoor ? (
                     <>
-                      {lastPresentReport.quranNew && <p className="truncate"><span className="text-[#059669] font-semibold">الحفظ:</span> {lastPresentReport.quranNew}</p>}
-                      {lastPresentReport.quranRevision && <p className="truncate"><span className="text-[#D97706] font-semibold">المراجعة:</span> {lastPresentReport.quranRevision}</p>}
+                      {lastPresentReport.quranNew && <p className="truncate"><span className="text-[#059669]">الحفظ:</span> {lastPresentReport.quranNew}</p>}
+                      {lastPresentReport.quranRevision && <p className="truncate"><span className="text-[#D97706]">المراجعة:</span> {lastPresentReport.quranRevision}</p>}
                     </>
                   ) : (
-                    lastPresentReport.noorLearned && <p className="truncate"><span className="text-[#059669] font-semibold">الدرس:</span> {lastPresentReport.noorLearned}</p>
+                    lastPresentReport.noorLearned && <p className="truncate"><span className="text-[#059669]">الدرس:</span> {lastPresentReport.noorLearned}</p>
                   )}
                 </div>
               )}
 
-              {/* Missing days shortcuts */}
+              {/* Missing day links */}
               {missingDateKeys.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {missingDateKeys.slice(0, 4).map((dKey) => (
+                  {missingDateKeys.slice(0, 5).map((dKey) => (
                     <Link key={dKey} href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${dKey}`}
-                      className="rounded border border-[#FDE68A] bg-[#FEF3C7] px-1.5 py-0.5 text-[10px] font-semibold text-[#92400E] hover:bg-[#FDE68A] transition">
+                      className="rounded border border-[#FDE68A] bg-[#FFFBEB] px-1.5 py-px text-[9px] font-semibold text-[#92400E] hover:bg-[#FDE68A] transition-colors duration-150">
                       {dKey.slice(5)}
                     </Link>
                   ))}
-                  {missingDateKeys.length > 4 && (
+                  {missingDateKeys.length > 5 && (
                     <button type="button" onClick={() => setShowHistoryModal(true)}
-                      className="rounded bg-[#F3F4F6] px-1.5 py-0.5 text-[10px] font-medium text-[#6B7280] hover:bg-[#E5E7EB] transition">
-                      +{missingDateKeys.length - 4}
+                      className="rounded bg-[#F3F4F6] px-1.5 py-px text-[9px] text-[#9CA3AF] hover:bg-[#E5E7EB] transition-colors duration-150">
+                      +{missingDateKeys.length - 5}
                     </button>
                   )}
                 </div>
