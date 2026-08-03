@@ -14,7 +14,8 @@ async function run() {
       select: { id: true },
     });
 
-    console.log("Sending test progress reports for 3 students to +90 546 492 45 10...");
+    console.log("Sending test progress reports with high-quality PNG image attachments to +90 546 492 45 10...");
+
     const res = await fetch("http://127.0.0.1:3005/api/summer/admin/send-progress-reports", {
       method: "POST",
       headers: {
@@ -25,6 +26,7 @@ async function run() {
         overridePhone: "905464924510",
         limit: 3,
         sendAsDocument: true,
+        mediaFormat: "png",
       }),
     });
 

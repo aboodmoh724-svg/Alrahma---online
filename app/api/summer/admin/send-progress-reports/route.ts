@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, sendWhatsAppText, sendWhatsAppDocument } from "@/lib/whatsapp";
 import { smartDelay, canSendMore, incrementDailySendCount, addMessageVariation } from "@/lib/smart-sender";
 import { loadExamGrades } from "@/lib/summer-evaluation";
-import { generateStudentProgressReportPdf } from "@/lib/student-progress-report-pdf";
+import { generateStudentProgressReportPdf, generateStudentProgressReportMedia } from "@/lib/student-progress-report-pdf";
 
 async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -151,20 +151,23 @@ export async function POST(req: Request) {
 
       let success = false;
 
+    const mediaFormat = (body.mediaFormat === "png" ? "png" : "pdf") as "png" | "pdf";
+
       if (sendAsDocument) {
         try {
-          const pdfResult = await generateStudentProgressReportPdf(student.id);
-          if (pdfResult && pdfResult.pdfUrl) {
+          const mediaResult = await generateStudentProgressReportMedia(student.id, mediaFormat);
+          if (mediaResult && mediaResult.mediaUrl) {
+            const fileName = `تقرير_إنجاز_${student.fullName.replace(/\s+/g, "_")}.${mediaFormat}`;
             success = await sendWhatsAppDocument({
               to: phone,
-              documentUrl: pdfResult.pdfUrl,
-              fileName: `تقرير_إنجاز_${student.fullName.replace(/\s+/g, "_")}.pdf`,
+              documentUrl: mediaResult.mediaUrl,
+              fileName,
               caption: msg,
               channel: "ONSITE_SUMMER",
             });
           }
-        } catch (pdfErr) {
-          console.warn(`PDF document send failed for ${student.fullName}, falling back to text:`, pdfErr);
+        } catch (mediaErr) {
+          console.warn(`Media document send failed for ${student.fullName}, falling back to text:`, mediaErr);
         }
       }
 

@@ -35,20 +35,19 @@ async function resolveChromiumPath() {
     }
   }
 
-  throw new Error("لم يتم العثور على متصفح Chromium/Chrome لتوليد PDF.");
+  throw new Error("لم يتم العثور على متصفح Chromium/Chrome لتوليد التقارير.");
 }
 
-export async function generateStudentProgressReportPdf(studentId: string, pageHtml?: string) {
+export async function generateStudentProgressReportMedia(studentId: string, format: "pdf" | "png" = "pdf", pageHtml?: string) {
   const uploadsDir = getLocalUploadsDir();
   const reportDir = path.join(uploadsDir, "summer-progress-reports");
   const htmlPath = path.join(reportDir, `report-${studentId}.html`);
-  const pdfPath = path.join(reportDir, `report-${studentId}.pdf`);
+  const targetPath = path.join(reportDir, `report-${studentId}.${format}`);
 
   await fs.mkdir(reportDir, { recursive: true });
 
   let htmlToSave = pageHtml;
   if (!htmlToSave) {
-    // Fetch directly from running app server
     const port = process.env.PORT || 3005;
     const res = await fetch(`http://127.0.0.1:${port}/onsite/summer/parent-report/${studentId}`, { cache: "no-store" }).catch(() => null);
     if (res && res.ok) {
@@ -59,34 +58,62 @@ export async function generateStudentProgressReportPdf(studentId: string, pageHt
   if (htmlToSave) {
     await fs.writeFile(htmlPath, htmlToSave, "utf8");
   } else {
-    // Return direct link if HTML fetch isn't available
     return {
-      pdfUrl: appUrl(`/onsite/summer/parent-report/${studentId}`),
-      pdfPath: null,
+      mediaUrl: appUrl(`/onsite/summer/parent-report/${studentId}`),
+      mediaPath: null,
     };
   }
 
   try {
     const chromiumPath = await resolveChromiumPath();
-    await execFileAsync(chromiumPath, [
-      "--headless=new",
-      "--disable-gpu",
-      "--no-sandbox",
-      "--allow-file-access-from-files",
-      "--print-to-pdf-no-header",
-      `--print-to-pdf=${pdfPath}`,
-      pathToFileURL(htmlPath).href,
-    ]);
+
+    if (format === "png") {
+      await execFileAsync(chromiumPath, [
+        "--headless=new",
+        "--disable-gpu",
+        "--no-sandbox",
+        "--hide-scrollbars",
+        "--window-size=680,1050",
+        `--screenshot=${targetPath}`,
+        pathToFileURL(htmlPath).href,
+      ]);
+    } else {
+      await execFileAsync(chromiumPath, [
+        "--headless=new",
+        "--disable-gpu",
+        "--no-sandbox",
+        "--allow-file-access-from-files",
+        "--print-to-pdf-no-header",
+        `--print-to-pdf=${targetPath}`,
+        pathToFileURL(htmlPath).href,
+      ]);
+    }
 
     return {
-      pdfUrl: appUrl(`/uploads/summer-progress-reports/report-${studentId}.pdf`),
-      pdfPath: `/uploads/summer-progress-reports/report-${studentId}.pdf`,
+      mediaUrl: appUrl(`/uploads/summer-progress-reports/report-${studentId}.${format}`),
+      mediaPath: `/uploads/summer-progress-reports/report-${studentId}.${format}`,
     };
   } catch (error) {
-    console.error("Chromium PDF Generation Error:", error);
+    console.error(`Chromium ${format.toUpperCase()} Generation Error:`, error);
     return {
-      pdfUrl: appUrl(`/onsite/summer/parent-report/${studentId}`),
-      pdfPath: null,
+      mediaUrl: appUrl(`/onsite/summer/parent-report/${studentId}`),
+      mediaPath: null,
     };
   }
+}
+
+export async function generateStudentProgressReportPdf(studentId: string, pageHtml?: string) {
+  const result = await generateStudentProgressReportMedia(studentId, "pdf", pageHtml);
+  return {
+    pdfUrl: result.mediaUrl,
+    pdfPath: result.mediaPath,
+  };
+}
+
+export async function generateStudentProgressReportPng(studentId: string, pageHtml?: string) {
+  const result = await generateStudentProgressReportMedia(studentId, "png", pageHtml);
+  return {
+    pngUrl: result.mediaUrl,
+    pngPath: result.mediaPath,
+  };
 }
