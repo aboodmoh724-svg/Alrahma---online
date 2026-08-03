@@ -119,8 +119,8 @@ export async function POST(req: Request) {
       const reportUrl = `${appUrl}/onsite/summer/parent-report/${student.id}`;
 
       let msg = `السلام عليكم ورحمة الله وبركاته 🌿\n\n`;
-      msg += `يسر إدارة *تحفيظ الرحمة للقرآن الكريم* أن تشارككم تقرير إنجاز ابنكم في الدورة الصيفية 2026.\n\n`;
-      msg += `📖 الطالب/ـة: *${student.fullName}*\n`;
+      msg += `يسر إدارة *تحفيظ الرحمة للقرآن الكريم* أن تشارككم تقرير إنجاز ابنكم في الدورة الصيفية 2026 - الفترة الأولى.\n\n`;
+      msg += `📖 الطالب: *${student.fullName}*\n`;
       msg += `الحلقة: ${student.circle?.name || "—"}\n`;
       msg += `النتيجة النهائية: *${evalData.finalScore}%*\n\n`;
       msg += `نسأل الله أن يبارك فيه وأن يجعله من أهل القرآن وخاصته.\n\n`;

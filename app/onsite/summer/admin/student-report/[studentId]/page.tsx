@@ -146,11 +146,11 @@ export default async function AdminStudentReportPage({ params }: Props) {
             <Image src="/images/alrahma_tahfeez_logo.png" alt="تحفيظ الرحمة" width={48} height={48} className="h-12 w-12 rounded-xl object-contain print:h-10 print:w-10" />
             <div>
               <h1 className="text-[20px] sm:text-[24px] font-bold font-heading text-[#0C5C5E] print:text-[18px]">تحفيظ الرحمة للقرآن الكريم</h1>
-              <p className="text-[11px] text-[#6B7280] print:text-[9px]">الدورة الصيفية — تركيا 2026</p>
+              <p className="text-[11px] text-[#6B7280] print:text-[9px]">الدورة الصيفية 2026 - الفترة الأولى</p>
             </div>
           </div>
           <div className="inline-block bg-[#0C5C5E] text-white rounded-lg px-4 py-1.5 text-[13px] font-bold print:text-[11px]">
-            تقرير تقدم الطالب الشامل (إدارة)
+            تقرير تقدم الطالب الشامل (إدارة) - الفترة الأولى
           </div>
         </header>
 
