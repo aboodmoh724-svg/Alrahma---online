@@ -73,7 +73,8 @@ export async function generateStudentProgressReportMedia(studentId: string, form
         "--disable-gpu",
         "--no-sandbox",
         "--hide-scrollbars",
-        "--window-size=680,1050",
+        "--window-size=680,1100",
+        "--device-scale-factor=2",
         `--screenshot=${targetPath}`,
         pathToFileURL(htmlPath).href,
       ]);
@@ -82,6 +83,8 @@ export async function generateStudentProgressReportMedia(studentId: string, form
         "--headless=new",
         "--disable-gpu",
         "--no-sandbox",
+        "--no-margins",
+        "--prefer-css-page-size",
         "--allow-file-access-from-files",
         "--print-to-pdf-no-header",
         `--print-to-pdf=${targetPath}`,

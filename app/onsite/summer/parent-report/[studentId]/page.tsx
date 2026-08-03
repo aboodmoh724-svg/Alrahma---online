@@ -108,34 +108,40 @@ export default async function ParentReportPage({ params }: Props) {
         @media print {
           @page {
             size: A4 portrait;
-            margin: 0.5cm 0.8cm;
+            margin: 0;
           }
-          body {
+          html, body {
             background: white !important;
             color: black !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          * {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           .print-1page-container {
             width: 100% !important;
-            max-width: 640px !important;
+            max-width: 660px !important;
             margin: 0 auto !important;
-            border: 1px solid #E5DEC9 !important;
-            border-radius: 16px !important;
+            border: none !important;
+            border-radius: 0 !important;
             box-shadow: none !important;
-            overflow: hidden !important;
+            overflow: visible !important;
           }
           .print-header {
-            padding-top: 1.25rem !important;
+            padding-top: 1.5rem !important;
             padding-bottom: 3.5rem !important;
             background-color: #0C5C5E !important;
           }
           .print-score-card {
-            margin-top: -3rem !important;
+            margin-top: -2.75rem !important;
             padding: 0.75rem 1.25rem !important;
           }
           .print-main-space {
-            padding: 1rem 1.25rem !important;
+            padding: 1rem 1.5rem !important;
             row-gap: 0.75rem !important;
           }
         }
