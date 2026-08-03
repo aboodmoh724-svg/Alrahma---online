@@ -14,25 +14,18 @@ async function run() {
       select: { id: true },
     });
 
-    console.log("Testing API fetch...");
-    const res = await fetch("http://127.0.0.1:3005/api/summer/admin/send-progress-reports", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Cookie: `alrahma_user_id=${admin.id}`,
-      },
-      body: JSON.stringify({
-        overridePhone: "905464924510",
-        limit: 3,
-        sendAsDocument: false, // first test text send
-      }),
+    console.log("Checking WhatsApp status...");
+    const statusRes = await fetch("http://127.0.0.1:3005/api/summer/admin/whatsapp-status", {
+      headers: { Cookie: `alrahma_user_id=${admin.id}` },
     });
+    const statusData = await statusRes.json();
+    console.log("WhatsApp Status:", JSON.stringify(statusData, null, 2));
 
-    const text = await res.text();
-    console.log("Response status:", res.status);
-    console.log("Response text:", text);
+    if (!statusData.ready) {
+      console.log("\n⚠️ WhatsApp Client is NOT ready. QR code required or WhatsApp session needs to be authenticated in Admin Dashboard!");
+    }
   } catch (err) {
-    console.error("Error running test send script:", err);
+    console.error("Error checking WhatsApp status:", err);
   } finally {
     await prisma.$disconnect();
     await pool.end();
