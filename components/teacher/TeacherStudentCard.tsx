@@ -114,6 +114,12 @@ export default function TeacherStudentCard({
                 className="text-[10px] font-medium text-[#6B7280]/70 hover:text-[#0C5C5E] transition-colors duration-150">
                 السجل
               </button>
+              <span className="text-[#E5E3DF] text-[10px]">·</span>
+              <Link href={`/onsite/summer/parent-report/${student.studentCode || student.id}`} target="_blank"
+                className="text-[10px] font-medium text-[#0C5C5E]/80 hover:text-[#0C5C5E] transition-colors duration-150 flex items-center gap-0.5">
+                <span>التقرير</span>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </Link>
             </div>
             <Link href={`/onsite/summer/teacher/reports/${student.id}?dateKey=${selectedDateKey}`}
               className={`rounded-lg px-4 py-[7px] text-[13px] font-bold transition-all duration-150 ease-out ${

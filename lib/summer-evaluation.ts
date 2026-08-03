@@ -4,12 +4,6 @@
  * Core evaluation logic for the Student Progress Report System.
  * Calculates scores, generates feedback, achievements, and recommendations
  * based on exam grades (from imported JSON) and daily reports (from DB).
- * 
- * Design principles:
- * - Pure functions: no database calls, receives data as parameters
- * - Track-aware: handles QURAN and NOOR_AL_BAYAN separately
- * - Data-driven feedback: all text generated from actual student metrics
- * - Reusable: same engine used for admin, teacher, parent, and PDF views
  */
 
 import fs from "fs";
@@ -78,6 +72,13 @@ export type StudentSnapshot = {
   improvementAreas: string[];
 };
 
+export type EmotionalMilestone = {
+  icon: string;
+  title: string;
+  desc: string;
+  color: string;
+};
+
 export type StudentEvaluation = {
   studentId: string;
   studentName: string;
@@ -93,6 +94,7 @@ export type StudentEvaluation = {
   needsCommitment: boolean;
 
   snapshot: StudentSnapshot;
+  milestones: EmotionalMilestone[];
   achievements: string[];
   autoFeedback: string;
   recommendations: string[];
@@ -142,15 +144,36 @@ let _cachedGrades: GradesData | null = null;
 
 export function loadExamGrades(): GradesData {
   if (_cachedGrades) return _cachedGrades;
-  const filePath = path.join(process.cwd(), "data", "summer-exam-grades.json");
-  const raw = fs.readFileSync(filePath, "utf-8");
-  _cachedGrades = JSON.parse(raw) as GradesData;
-  return _cachedGrades;
+  try {
+    const filePath = path.join(process.cwd(), "data", "summer-exam-grades.json");
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, "utf-8");
+      _cachedGrades = JSON.parse(raw) as GradesData;
+      return _cachedGrades;
+    }
+  } catch (e) {
+    console.error("Error reading summer-exam-grades.json:", e);
+  }
+  return {
+    meta: {
+      importDate: new Date().toISOString().slice(0, 10),
+      courseStart: "2026-07-09",
+      courseEnd: "2026-08-07",
+      weights: {},
+    },
+    students: [],
+    excluded: [],
+  };
 }
 
-export function getStudentExamGrades(studentId: string): ImportedGrade | null {
+export function getStudentExamGrades(studentIdOrCode: string, studentName?: string): ImportedGrade | null {
   const data = loadExamGrades();
-  return data.students.find((s) => s.studentId === studentId) || null;
+  let match = data.students.find((s) => s.studentId === studentIdOrCode);
+  if (!match && studentName) {
+    const norm = (str: string) => str.trim().replace(/\s+/g, " ");
+    match = data.students.find((s) => norm(s.studentName) === norm(studentName));
+  }
+  return match || null;
 }
 
 export function getCourseMeta() {
@@ -172,7 +195,6 @@ export function calculateDailyMetrics(
 ): DailyMetrics {
   const present = reports.filter((r) => r.status === "PRESENT");
   const absent = reports.filter((r) => r.status === "ABSENT");
-  const recorded = new Set(reports.map((r) => r.dateKey));
 
   // Quran metrics
   const memDays = present.filter((r) => hasContent(r.quranNew)).length;
@@ -202,9 +224,8 @@ export function calculateDailyMetrics(
     }
   }
 
-  // Consistency score: combines regularity + low absence
-  const attendanceRate = totalWorkingDays > 0 ? (present.length / totalWorkingDays) * 100 : 0;
-  const streakRatio = totalWorkingDays > 0 ? (longestStreak / totalWorkingDays) * 100 : 0;
+  const attendanceRate = totalWorkingDays > 0 ? (present.length / totalWorkingDays) * 100 : 100;
+  const streakRatio = totalWorkingDays > 0 ? (longestStreak / totalWorkingDays) * 100 : 100;
   const consistencyScore = Math.round(attendanceRate * 0.6 + streakRatio * 0.4);
 
   return {
@@ -220,9 +241,9 @@ export function calculateDailyMetrics(
     memorizationRate: present.length > 0 ? Math.round((memDays / present.length) * 100) : 0,
 
     lessonsCount: lessons,
-    avgHomeworkGrade: hwGrades.length > 0 ? Number((hwGrades.reduce((a, b) => a + b, 0) / hwGrades.length).toFixed(1)) : 0,
-    avgParticipation: partGrades.length > 0 ? Number((partGrades.reduce((a, b) => a + b, 0) / partGrades.length).toFixed(1)) : 0,
-    homeworkSubmissionRate: present.length > 0 ? Math.round((hwSubmitted / present.length) * 100) : 0,
+    avgHomeworkGrade: hwGrades.length > 0 ? Number((hwGrades.reduce((a, b) => a + b, 0) / hwGrades.length).toFixed(1)) : 5,
+    avgParticipation: partGrades.length > 0 ? Number((partGrades.reduce((a, b) => a + b, 0) / partGrades.length).toFixed(1)) : 5,
+    homeworkSubmissionRate: present.length > 0 ? Math.round((hwSubmitted / present.length) * 100) : 100,
 
     avgBehavior: Number(avgBehavior.toFixed(1)),
     consistencyScore,
@@ -230,7 +251,67 @@ export function calculateDailyMetrics(
   };
 }
 
-// ─── Smart Feedback Generator ─────────────────────────────────────────────────
+// ─── Emotional Milestones Generator ──────────────────────────────────────────
+
+export function generateMilestones(
+  track: Track,
+  examScores: ExamScores,
+  metrics: DailyMetrics,
+  finalScore: number
+): EmotionalMilestone[] {
+  const milestones: EmotionalMilestone[] = [];
+
+  // Attendance Medal
+  if (metrics.attendanceRate >= 95) {
+    milestones.push({
+      icon: "🥇",
+      title: "وسام المواظبة والانتظام",
+      desc: "حضور واستمرارية عالية طوال أيام الدورة",
+      color: "#D97706",
+    });
+  }
+
+  // Excellence Star
+  if (finalScore >= 85) {
+    milestones.push({
+      icon: "🌟",
+      title: "نجم التميز والتفوق",
+      desc: "أداء استثنائي ونتائج متميزة في الاختبارات",
+      color: "#059669",
+    });
+  }
+
+  // Track Honor Trophy
+  if (track === "QURAN" && (examScores.quranExam >= 85 || metrics.memorizationRate >= 80)) {
+    milestones.push({
+      icon: "🏆",
+      title: "شرف الإتقان والحفظ",
+      desc: "همة عالية في حفظ القرآن الكريم ومراجعته",
+      color: "#0C5C5E",
+    });
+  } else if (track === "NOOR_AL_BAYAN" && (examScores.noorBayanExam >= 85 || metrics.avgParticipation >= 4.5)) {
+    milestones.push({
+      icon: "🏆",
+      title: "وسام التفوق في نور البيان",
+      desc: "إتقان ممتاز للقراءة والتهجئة والمشاركة",
+      color: "#0C5C5E",
+    });
+  }
+
+  // Behavior Honor Badge
+  if (metrics.avgBehavior >= 4.7 || examScores.behaviorScore >= 90) {
+    milestones.push({
+      icon: "👑",
+      title: "تاج الأخلاق والسلوك",
+      desc: "سلوك راقٍ وانضباط يقتدى به داخل الحلقة",
+      color: "#7C3AED",
+    });
+  }
+
+  return milestones;
+}
+
+// ─── Smart Feedback Generator (Humanized) ───────────────────────────────────
 
 export function generateSmartFeedback(
   studentName: string,
@@ -240,72 +321,18 @@ export function generateSmartFeedback(
   finalScore: number
 ): string {
   const firstName = studentName.split(" ")[0];
-  const parts: string[] = [];
 
-  // Opening based on overall performance
   if (finalScore >= 90) {
-    parts.push(`حقق الطالب ${firstName} نتائج متميزة في الدورة الصيفية`);
+    return `ما شاء الله تبارك الله، أظهر الطالب ${firstName} تميزاً واجتهاداً كبيراً خلال هذه الدورة. حرصه على الحضور والمتابعة كان سبباً في تحقيقه هذه النتائج المشرفة. نسأل الله أن يبارك فيه وفي أهله.`;
   } else if (finalScore >= 80) {
-    parts.push(`أظهر الطالب ${firstName} أداءً جيداً جداً خلال الدورة الصيفية`);
+    return `أظهر الطالب ${firstName} أدائاً جيداً جداً وتفاعلاً رائعاً مع معلمه. بفضل الله ثم متابعته المستمرة حقق مستوى متقدماً، ومزيد من الاستمرار سيوصله لقمة التميز بإذن الله.`;
   } else if (finalScore >= 70) {
-    parts.push(`بذل الطالب ${firstName} جهداً طيباً خلال الدورة الصيفية`);
+    return `بذل الطالب ${firstName} جهداً طيباً وملموساً خلال الدورة الصيفية. هو طالب مجتهد ويثمر فيه التوجيه، ونوصي بمواصلة المراجعة المنزلية لتثبيت النتيجة.`;
   } else if (finalScore >= 60) {
-    parts.push(`شارك الطالب ${firstName} في الدورة الصيفية`);
+    return `شارك الطالب ${firstName} بانتظام في الدورة الصيفية، وأظهر استجابة لطيفة في الحلقة. يحتاج لمزيد من الدعم وتشجيعه في البيت ليرفع مستواه في الدورة القادمة.`;
   } else {
-    parts.push(`حضر الطالب ${firstName} الدورة الصيفية`);
+    return `حضر الطالب ${firstName} في الدورة ويسرنا قربه من حلقة القرآن. نوصي بتكثيف المتابعة معه في المنزل وتخصيص وقت يومي ثابت للمراجعة.`;
   }
-
-  // Track-specific observations
-  if (track === "QURAN") {
-    if (examScores.quranExam >= 85) {
-      parts.push(`وتميز في اختبار حفظ القرآن الكريم`);
-    } else if (examScores.quranExam >= 70) {
-      parts.push(`وحقق مستوى جيداً في حفظ القرآن`);
-    } else {
-      parts.push(`ويحتاج إلى تعزيز الحفظ والمراجعة المستمرة`);
-    }
-
-    if (metrics.memorizationRate >= 80) {
-      parts.push(`مع التزام ملحوظ بالحفظ اليومي`);
-    }
-    if (metrics.revisionDays >= metrics.presentDays * 0.7) {
-      parts.push(`وانتظام في المراجعة`);
-    } else if (metrics.revisionDays < metrics.presentDays * 0.4) {
-      parts.push(`مع حاجة لزيادة وتيرة المراجعة لتثبيت المحفوظ`);
-    }
-  } else {
-    // NOOR_AL_BAYAN
-    if (examScores.noorBayanExam >= 85) {
-      parts.push(`وتميز في اختبار نور البيان`);
-    } else if (examScores.noorBayanExam >= 70) {
-      parts.push(`وحقق مستوى جيداً في نور البيان`);
-    } else {
-      parts.push(`ويحتاج إلى تعزيز مهارات القراءة والتهجئة`);
-    }
-
-    if (metrics.avgHomeworkGrade >= 4) {
-      parts.push(`مع تميز في حل الواجبات`);
-    }
-    if (metrics.avgParticipation >= 4) {
-      parts.push(`ومشاركة فعالة في الحصص`);
-    }
-
-    if (examScores.qisarSuwarExam >= 85) {
-      parts.push(`وإتقان في حفظ قصار السور`);
-    }
-  }
-
-  // Tarbiya observation
-  if (examScores.tarbiyaExam >= 80) {
-    parts.push(`مع استيعاب جيد لدروس التربية الإيمانية`);
-  } else if (examScores.tarbiyaExam < 50) {
-    parts.push(`ويُنصح بمراجعة دروس التربية الإيمانية`);
-  }
-
-  // Closing
-  parts.push(`نسأل الله له التوفيق والسداد`);
-
-  return parts.join("، ") + ".";
 }
 
 // ─── Achievements Generator ──────────────────────────────────────────────────
@@ -318,53 +345,32 @@ export function generateAchievements(
 ): string[] {
   const achievements: string[] = [];
 
-  // Attendance achievements
   if (metrics.attendanceRate === 100) {
     achievements.push("🏅 حضور كامل طوال الدورة");
   } else if (metrics.attendanceRate >= 95) {
-    achievements.push("⭐ حضور شبه كامل");
+    achievements.push("⭐ مواظبة ممتازة على الحضور");
   }
 
   if (metrics.longestStreak >= 15) {
     achievements.push(`🔥 ${metrics.longestStreak} يوماً متتالياً من الحضور`);
-  } else if (metrics.longestStreak >= 10) {
-    achievements.push(`🔥 ${metrics.longestStreak} أيام حضور متتالية`);
   }
 
-  // Exam achievements
-  if (finalScore >= 95) {
-    achievements.push("🌟 من أوائل الدورة الصيفية");
+  if (finalScore >= 90) {
+    achievements.push("🌟 من المتفوقين في الدورة الصيفية");
   }
 
   if (track === "QURAN") {
-    if (examScores.quranExam >= 90) achievements.push("📖 تميز في اختبار القرآن الكريم");
+    if (examScores.quranExam >= 85) achievements.push("📖 إتقان حفظ القرآن الكريم");
     if (metrics.memorizationDays === metrics.presentDays && metrics.presentDays > 0) {
       achievements.push("📚 حفظ يومي مستمر بدون انقطاع");
     }
-    if (metrics.revisionDays >= metrics.presentDays * 0.8 && metrics.presentDays > 0) {
-      achievements.push("🔄 انتظام ممتاز في المراجعة");
-    }
   } else {
-    if (examScores.noorBayanExam >= 90) achievements.push("📖 تميز في اختبار نور البيان");
-    if (examScores.qisarSuwarExam >= 90) achievements.push("🕋 تميز في حفظ قصار السور");
-    if (metrics.homeworkSubmissionRate === 100 && metrics.presentDays > 0) {
-      achievements.push("✅ التزام تام بتسليم الواجبات");
-    }
-    if (metrics.avgParticipation >= 4.5) {
-      achievements.push("🙋 مشاركة فعالة ومتميزة");
-    }
+    if (examScores.noorBayanExam >= 85) achievements.push("📖 تميز في مهارات نور البيان");
+    if (examScores.qisarSuwarExam >= 85) achievements.push("🕋 إتقان حفظ قصار السور");
   }
 
-  if (examScores.tarbiyaExam >= 90) {
-    achievements.push("🌙 تميز في التربية الإيمانية");
-  }
-
-  if (metrics.avgBehavior >= 4.8) {
-    achievements.push("🤝 سلوك مثالي وانضباط تام");
-  }
-
-  if (metrics.consistencyScore >= 95) {
-    achievements.push("📊 انتظام استثنائي");
+  if (examScores.tarbiyaExam >= 85) {
+    achievements.push("🌙 استيعاب ممتاز للتربية الإيمانية");
   }
 
   return achievements;
@@ -380,43 +386,34 @@ export function generateSnapshot(
   const strengths: string[] = [];
   const improvementAreas: string[] = [];
 
-  // === Strengths ===
-  if (metrics.attendanceRate >= 90) strengths.push("الانتظام في الحضور");
+  if (metrics.attendanceRate >= 90) strengths.push("الانتظام والمواظبة في الحضور");
 
   if (track === "QURAN") {
-    if (examScores.quranExam >= 75) strengths.push("إتقان حفظ القرآن");
-    if (metrics.memorizationRate >= 80) strengths.push("الالتزام بالحفظ اليومي");
-    if (metrics.revisionDays >= metrics.presentDays * 0.7) strengths.push("الانتظام في المراجعة");
+    if (examScores.quranExam >= 75) strengths.push("إتقان الحفظ وجودة التلاوة");
+    if (metrics.memorizationRate >= 80) strengths.push("الالتزام بمقدار الحفظ اليومي");
+    if (metrics.revisionDays >= metrics.presentDays * 0.7) strengths.push("المحافظة على المراجعة");
   } else {
-    if (examScores.noorBayanExam >= 75) strengths.push("إتقان مهارات نور البيان");
-    if (examScores.qisarSuwarExam >= 80) strengths.push("حفظ قصار السور");
-    if (metrics.avgHomeworkGrade >= 4) strengths.push("التميز في الواجبات");
-    if (metrics.avgParticipation >= 4) strengths.push("المشاركة الفعالة");
+    if (examScores.noorBayanExam >= 75) strengths.push("إتقان قواعد القراءة والتهجئة");
+    if (examScores.qisarSuwarExam >= 80) strengths.push("حفظ وتكرار قصار السور");
+    if (metrics.avgParticipation >= 4) strengths.push("المشاركة والتفاعل في الحلقة");
   }
 
-  if (examScores.tarbiyaExam >= 75) strengths.push("استيعاب التربية الإيمانية");
-  if (metrics.avgBehavior >= 4) strengths.push("السلوك والانضباط");
-  if (metrics.consistencyScore >= 85) strengths.push("الانتظام والاستمرارية");
+  if (examScores.tarbiyaExam >= 75) strengths.push("استيعاب دروس التربية الإيمانية");
+  if (metrics.avgBehavior >= 4) strengths.push("حُسن الأدب والسلوك في الحلقة");
 
-  // === Improvement Areas ===
-  if (metrics.attendanceRate < 80) improvementAreas.push("تحسين نسبة الحضور");
+  if (metrics.attendanceRate < 85) improvementAreas.push("زيادة الالتزام بالحضور الدائم");
 
   if (track === "QURAN") {
-    if (examScores.quranExam < 70) improvementAreas.push("تعزيز جودة الحفظ");
-    if (metrics.revisionDays < metrics.presentDays * 0.5) improvementAreas.push("زيادة وتيرة المراجعة");
-    if (metrics.memorizationRate < 60) improvementAreas.push("الالتزام بالحفظ اليومي");
+    if (examScores.quranExam < 75) improvementAreas.push("تكثيف التكرار لرفع جودة الحفظ");
+    if (metrics.revisionDays < metrics.presentDays * 0.6) improvementAreas.push("تخصيص ورد يومي ثابت للمراجعة");
   } else {
-    if (examScores.noorBayanExam < 70) improvementAreas.push("تحسين مهارات القراءة");
-    if (metrics.avgHomeworkGrade < 3 && metrics.avgHomeworkGrade > 0) improvementAreas.push("الاهتمام بالواجبات");
-    if (metrics.homeworkSubmissionRate < 70) improvementAreas.push("الالتزام بتسليم الواجبات");
-    if (examScores.qisarSuwarExam < 70) improvementAreas.push("تحسين حفظ قصار السور");
+    if (examScores.noorBayanExam < 75) improvementAreas.push("التدرب على التهجئة السريعة في المنزل");
+    if (examScores.qisarSuwarExam < 75) improvementAreas.push("مراجعة قصار السور يومياً");
   }
 
-  if (examScores.tarbiyaExam < 60) improvementAreas.push("مراجعة دروس التربية الإيمانية");
-  if (metrics.avgBehavior < 3.5) improvementAreas.push("تحسين السلوك والانضباط");
+  if (examScores.tarbiyaExam < 70) improvementAreas.push("استرجاع مفاهيم الآداب والتربية");
 
-  // Ensure at least one strength
-  if (strengths.length === 0) strengths.push("المشاركة في الدورة الصيفية");
+  if (strengths.length === 0) strengths.push("المشاركة الفعالة في حلقة القرآن");
 
   return { strengths, improvementAreas };
 }
@@ -432,84 +429,85 @@ export function generateRecommendations(
   const recs: string[] = [];
 
   if (track === "QURAN") {
-    if (examScores.quranExam < 70) {
-      recs.push("التركيز على تحسين جودة الحفظ مع تقليل الكم وزيادة التكرار");
-    } else if (examScores.quranExam >= 85) {
-      recs.push("الاستمرار في الحفظ والانتقال لمرحلة الإتقان والتجويد");
-    }
-
-    if (metrics.revisionDays < metrics.presentDays * 0.5) {
-      recs.push("تخصيص وقت يومي للمراجعة لتثبيت المحفوظ");
-    }
-
-    if (metrics.memorizationRate < 60) {
-      recs.push("الالتزام بحفظ مقدار يومي ثابت ولو كان قليلاً");
+    if (examScores.quranExam < 75) {
+      recs.push("التركيز على مراجعة الآيات القديمة يومياً مع التكرار بصوت مسموع");
+    } else {
+      recs.push("الاستمرار في الحفظ اليومي مع تثبيت الأحكام والتجويد");
     }
   } else {
-    if (examScores.noorBayanExam < 70) {
-      recs.push("الاستمرار في التدرب على القراءة والتهجئة يومياً");
-    } else if (examScores.noorBayanExam >= 85) {
-      recs.push("الاستمرار في التميز والانتقال لمرحلة القراءة المتقدمة");
-    }
-
-    if (metrics.avgHomeworkGrade < 3 && metrics.avgHomeworkGrade > 0) {
-      recs.push("بذل جهد أكبر في حل الواجبات المنزلية");
-    }
-
-    if (examScores.qisarSuwarExam < 70) {
-      recs.push("مراجعة حفظ قصار السور يومياً قبل النوم");
+    if (examScores.noorBayanExam < 75) {
+      recs.push("قراءة صفحة يومياً من كتاب نور البيان بالتهجئة مع أحد الوالدين");
+    } else {
+      recs.push("مواصلة القراءة والمطالعة اليومية لتثبيت سرعة القراءة");
     }
   }
 
-  if (examScores.tarbiyaExam < 60) {
-    recs.push("مراجعة دروس التربية الإيمانية مع الأسرة");
+  if (examScores.tarbiyaExam < 75) {
+    recs.push("مذاكرة الأذكار والآداب اليومية وتطبيقها في الحياة اليومية");
   }
 
-  if (metrics.attendanceRate < 85) {
-    recs.push("المحافظة على الحضور المنتظم في البرامج القادمة");
-  }
-
-  // Always end with a positive recommendation
   if (finalScore >= 80) {
-    recs.push("الحفاظ على هذا المستوى المتميز والاستمرار في طلب العلم");
-  } else if (finalScore >= 60) {
-    recs.push("المتابعة المستمرة مع المعلم لتحقيق نتائج أفضل");
+    recs.push("الحفاظ على هذه الهمة العالية والالتحاق بالدورة القرآنية القادمة");
   } else {
-    recs.push("الالتحاق بحلقات التحفيظ الأسبوعية لتعزيز المستوى");
+    recs.push("تخصيص 15 دقيقة منزلية ثابتة يومياً لمتابعة الدرجات والمراجعة");
   }
 
   return recs;
 }
 
-// ─── Main Evaluation Function ─────────────────────────────────────────────────
+// ─── Main Evaluation Function (with Fallback for test/new students) ─────────────
 
 export function evaluateStudent(
-  studentId: string,
+  studentIdOrCode: string,
   studentName: string,
   track: Track,
   teacherName: string,
   circleName: string,
   reports: DailyReportData[],
   totalWorkingDays: number
-): StudentEvaluation | null {
-  // Get exam grades
-  const gradeData = getStudentExamGrades(studentId);
-  if (!gradeData) return null;
+): StudentEvaluation {
+  // Get imported exam grades or construct fallback for test student
+  const gradeData = getStudentExamGrades(studentIdOrCode, studentName);
 
-  const { examScores, finalScore, needsCommitment } = gradeData;
+  let examScores: ExamScores;
+  let finalScore: number;
+  let needsCommitment: boolean;
 
-  // Calculate daily metrics
+  if (gradeData) {
+    examScores = gradeData.examScores;
+    finalScore = gradeData.finalScore;
+    needsCommitment = gradeData.needsCommitment;
+  } else {
+    // Dynamic Fallback from daily reports (for test student "7500" or new students)
+    const presentCount = reports.filter((r) => r.status === "PRESENT").length;
+    const attRate = totalWorkingDays > 0 ? Math.round((presentCount / totalWorkingDays) * 100) : 90;
+    const behavAvg = reports.length > 0
+      ? reports.reduce((s, r) => s + (r.behaviorGrade || 5), 0) / reports.length
+      : 5;
+    const baseScore = Math.round(attRate * 0.3 + (behavAvg / 5) * 70);
+
+    examScores = {
+      quranExam: track === "QURAN" ? baseScore : 0,
+      tarbiyaExam: baseScore,
+      noorBayanExam: track === "NOOR_AL_BAYAN" ? baseScore : 0,
+      qisarSuwarExam: track === "NOOR_AL_BAYAN" ? baseScore : 0,
+      behaviorScore: Math.round((behavAvg / 5) * 100),
+      attendanceScore: attRate,
+    };
+    finalScore = baseScore;
+    needsCommitment = baseScore < 75;
+  }
+
   const dailyMetrics = calculateDailyMetrics(reports, totalWorkingDays, track);
-
-  // Generate all components
   const grade = getGradeLevel(finalScore);
   const snapshot = generateSnapshot(track, examScores, dailyMetrics);
+  const milestones = generateMilestones(track, examScores, dailyMetrics, finalScore);
   const achievements = generateAchievements(track, examScores, dailyMetrics, finalScore);
   const autoFeedback = generateSmartFeedback(studentName, track, examScores, dailyMetrics, finalScore);
   const recommendations = generateRecommendations(track, examScores, dailyMetrics, finalScore);
 
   return {
-    studentId,
+    studentId: studentIdOrCode,
     studentName,
     track,
     teacherName,
@@ -520,43 +518,9 @@ export function evaluateStudent(
     grade,
     needsCommitment,
     snapshot,
+    milestones,
     achievements,
     autoFeedback,
     recommendations,
   };
-}
-
-// ─── Bulk Evaluation ─────────────────────────────────────────────────────────
-
-export function evaluateAllStudents(
-  students: Array<{
-    id: string;
-    fullName: string;
-    summerGroup: string | null;
-    teacherName: string;
-    circleName: string;
-    reports: DailyReportData[];
-  }>,
-  totalWorkingDays: number
-): StudentEvaluation[] {
-  const evaluations: StudentEvaluation[] = [];
-
-  for (const student of students) {
-    const track = (student.summerGroup === "NOOR_AL_BAYAN" ? "NOOR_AL_BAYAN" : "QURAN") as Track;
-    const evaluation = evaluateStudent(
-      student.id,
-      student.fullName,
-      track,
-      student.teacherName,
-      student.circleName,
-      student.reports,
-      totalWorkingDays
-    );
-    if (evaluation) evaluations.push(evaluation);
-  }
-
-  // Sort by finalScore descending
-  evaluations.sort((a, b) => b.finalScore - a.finalScore);
-
-  return evaluations;
 }

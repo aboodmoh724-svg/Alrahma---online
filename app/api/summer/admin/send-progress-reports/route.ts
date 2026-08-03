@@ -118,14 +118,15 @@ export async function POST(req: Request) {
 
       const reportUrl = `${appUrl}/onsite/summer/parent-report/${student.id}`;
 
-      let msg = `*إدارة تحفيظ الرحمة للقرآن الكريم*\n`;
-      msg += `*تقرير تقدم الطالب — الدورة الصيفية 2026*\n\n`;
-      msg += `المكرم ولي أمر الطالب/ة: *${student.fullName}*\n`;
-      msg += `الحلقة: ${student.circle?.name || "—"}\n\n`;
+      let msg = `السلام عليكم ورحمة الله وبركاته 🌿\n\n`;
+      msg += `يسر إدارة *تحفيظ الرحمة للقرآن الكريم* أن تشارككم تقرير إنجاز ابنكم في الدورة الصيفية 2026.\n\n`;
+      msg += `📖 الطالب/ـة: *${student.fullName}*\n`;
+      msg += `الحلقة: ${student.circle?.name || "—"}\n`;
       msg += `النتيجة النهائية: *${evalData.finalScore}%*\n\n`;
-      msg += `يسرنا إطلاعكم على تقرير التقدم الشامل عبر الرابط التفاعلي التالي:\n`;
+      msg += `نسأل الله أن يبارك فيه وأن يجعله من أهل القرآن وخاصته.\n\n`;
+      msg += `يمكنكم مشاهدة التقرير التفاعلي من هنا:\n`;
       msg += `${reportUrl}\n\n`;
-      msg += `«خيركم من تعلم القرآن وعلمه»`;
+      msg += `مع تحيات إدارة تحفيظ الرحمة`;
 
       msg = addMessageVariation(msg);
 
