@@ -133,11 +133,11 @@ export default async function ParentReportPage({ params }: Props) {
           }
           .print-header {
             padding-top: 1.5rem !important;
-            padding-bottom: 3.5rem !important;
+            padding-bottom: 4.5rem !important;
             background-color: #0C5C5E !important;
           }
           .print-score-card {
-            margin-top: -2.75rem !important;
+            margin-top: -3.25rem !important;
             padding: 0.75rem 1.25rem !important;
           }
           .print-main-space {
@@ -187,7 +187,7 @@ export default async function ParentReportPage({ params }: Props) {
               
               {/* Progress Ring with percentage */}
               <div className="relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center">
-                <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
+                <svg viewBox="0 0 100 100" width="128" height="128" className="w-28 h-28 sm:w-32 sm:h-32 -rotate-90">
                   <circle cx="50" cy="50" r="42" fill="none" stroke="#F3F4F6" strokeWidth="7" />
                   <circle cx="50" cy="50" r="42" fill="none" stroke={grade.color} strokeWidth="7"
                     strokeDasharray={`${(finalScore / 100) * 264} 264`} strokeLinecap="round" />
