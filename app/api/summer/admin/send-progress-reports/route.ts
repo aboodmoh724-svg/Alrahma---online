@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { normalizeWhatsAppNumber, sendWhatsAppText, sendWhatsAppDocument } from "@/lib/whatsapp";
 import { smartDelay, canSendMore, incrementDailySendCount, addMessageVariation } from "@/lib/smart-sender";
 import { loadExamGrades } from "@/lib/summer-evaluation";
-import { generateStudentProgressReportPdf, generateStudentProgressReportMedia } from "@/lib/student-progress-report-pdf";
+import { generateStudentProgressReportMedia } from "@/lib/student-progress-report-pdf";
 
 async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -18,7 +18,7 @@ async function verifyAdmin() {
   });
 }
 
-// GET: Pre-send inspection
+// GET: Pre-send inspection & link verification
 export async function GET() {
   try {
     const admin = await verifyAdmin();
@@ -32,6 +32,7 @@ export async function GET() {
       select: {
         id: true,
         fullName: true,
+        studentCode: true,
         parentWhatsapp: true,
         circle: { select: { name: true } },
       },
@@ -46,7 +47,7 @@ export async function GET() {
       const phone = s.parentWhatsapp ? normalizeWhatsAppNumber(s.parentWhatsapp, "90") : null;
       if (phone) {
         readyCount++;
-        readyStudents.push(s.fullName);
+        readyStudents.push(`${s.fullName} (${s.studentCode || s.id})`);
       } else {
         missingPhoneCount++;
         missingPhoneStudents.push(s.fullName);
@@ -67,7 +68,7 @@ export async function GET() {
   }
 }
 
-// POST: Bulk send progress reports to parents via WhatsApp (with overridePhone, sendAsDocument support)
+// POST: Bulk send progress reports to parents via WhatsApp (Text + Link only by default, with pre-send URL check & Smart Anti-Ban)
 export async function POST(req: Request) {
   try {
     const admin = await verifyAdmin();
@@ -77,7 +78,8 @@ export async function POST(req: Request) {
     const targetStudentId = body.studentId as string | undefined;
     const overridePhoneInput = body.overridePhone as string | undefined;
     const limitInput = typeof body.limit === "number" ? body.limit : undefined;
-    const sendAsDocument = body.sendAsDocument !== false; // default true for high quality document
+    const sendAsDocument = body.sendAsDocument === true; // default false as requested
+    const mediaFormat = (body.mediaFormat === "png" ? "png" : "pdf") as "png" | "pdf";
 
     const normalizedOverridePhone = overridePhoneInput
       ? normalizeWhatsAppNumber(overridePhoneInput, "90")
@@ -107,8 +109,11 @@ export async function POST(req: Request) {
 
     let sent = 0;
     let skippedNoPhone = 0;
+    let skippedBrokenLink = 0;
     let failed = 0;
     const errors: string[] = [];
+
+    const port = process.env.PORT || 3005;
 
     for (const student of students) {
       const evalData = studentMap.get(student.id);
@@ -127,7 +132,23 @@ export async function POST(req: Request) {
         break;
       }
 
-      const reportUrl = appUrl(`/onsite/summer/parent-report/${student.studentCode || student.id}`);
+      const reportCode = student.studentCode || student.id;
+      const reportUrl = appUrl(`/onsite/summer/parent-report/${reportCode}`);
+
+      // PRE-SEND LINK VERIFICATION: Verify internal URL returns HTTP 200 OK before sending to parent
+      try {
+        const linkCheck = await fetch(`http://127.0.0.1:${port}/onsite/summer/parent-report/${reportCode}`, {
+          method: "HEAD",
+          cache: "no-store",
+        });
+        if (!linkCheck.ok && linkCheck.status !== 200) {
+          skippedBrokenLink++;
+          errors.push(`رابط التقرير غير متوفر للطالب ${student.fullName} (كود: ${reportCode})`);
+          continue;
+        }
+      } catch (linkErr) {
+        console.warn(`Link pre-verification warning for ${student.fullName}:`, linkErr);
+      }
 
       const msgLines = [
         "السلام عليكم ورحمة الله وبركاته 🌿",
@@ -151,8 +172,6 @@ export async function POST(req: Request) {
 
       let success = false;
 
-    const mediaFormat = (body.mediaFormat === "png" ? "png" : "pdf") as "png" | "pdf";
-
       if (sendAsDocument) {
         try {
           const mediaResult = await generateStudentProgressReportMedia(student.id, mediaFormat);
@@ -171,7 +190,7 @@ export async function POST(req: Request) {
         }
       }
 
-      // Fallback to text if document sending was disabled or failed
+      // Default: Text message + verified interactive link only
       if (!success) {
         success = await sendWhatsAppText({ to: phone, body: msg, channel: "ONSITE_SUMMER" });
       }
@@ -202,6 +221,7 @@ export async function POST(req: Request) {
       success: true,
       sent,
       skippedNoPhone,
+      skippedBrokenLink,
       failed,
       targetPhone: normalizedOverridePhone || "الأرقام المسجلة للطلاب",
       errors,
