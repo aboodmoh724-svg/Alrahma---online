@@ -7,7 +7,7 @@ const dirs = [
   "/root/whatsapp-bot-syria",
 ];
 
-const chromiumPath = "/snap/bin/chromium";
+const chromiumPath = "/root/chrome-bin/chrome/linux-151.0.7922.71/chrome-linux64/chrome";
 
 for (const dir of dirs) {
   const filePath = path.join(dir, "index.js");
@@ -36,11 +36,14 @@ for (const dir of dirs) {
     );
   }
 
-  if (!code.includes("executablePath:")) {
+  // Replace any existing executablePath
+  if (code.includes("executablePath:")) {
+    code = code.replace(/executablePath:[^,\n]+,/g, `executablePath: "${chromiumPath}",`);
+  } else {
     code = code.replace(
       `puppeteer: {`,
       `puppeteer: {
-    executablePath: process.env.CHROMIUM_PATH || "${chromiumPath}",`
+    executablePath: "${chromiumPath}",`
     );
   }
 
