@@ -2,9 +2,10 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { appUrl } from "@/lib/app-url";
 import { prisma } from "@/lib/prisma";
-import { normalizeWhatsAppNumber, sendWhatsAppText } from "@/lib/whatsapp";
+import { normalizeWhatsAppNumber, sendWhatsAppText, sendWhatsAppDocument } from "@/lib/whatsapp";
 import { smartDelay, canSendMore, incrementDailySendCount, addMessageVariation } from "@/lib/smart-sender";
 import { loadExamGrades } from "@/lib/summer-evaluation";
+import { generateStudentProgressReportPdf } from "@/lib/student-progress-report-pdf";
 
 async function verifyAdmin() {
   const cookieStore = await cookies();
@@ -66,7 +67,7 @@ export async function GET() {
   }
 }
 
-// POST: Bulk send progress reports to parents via WhatsApp
+// POST: Bulk send progress reports to parents via WhatsApp (with overridePhone, sendAsDocument support)
 export async function POST(req: Request) {
   try {
     const admin = await verifyAdmin();
@@ -74,11 +75,18 @@ export async function POST(req: Request) {
 
     const body = await req.json().catch(() => ({}));
     const targetStudentId = body.studentId as string | undefined;
+    const overridePhoneInput = body.overridePhone as string | undefined;
+    const limitInput = typeof body.limit === "number" ? body.limit : undefined;
+    const sendAsDocument = body.sendAsDocument !== false; // default true for high quality document
+
+    const normalizedOverridePhone = overridePhoneInput
+      ? normalizeWhatsAppNumber(overridePhoneInput, "90")
+      : null;
 
     const gradeData = loadExamGrades();
     const studentMap = new Map(gradeData.students.map((s) => [s.studentId, s]));
 
-    const students = await prisma.student.findMany({
+    let students = await prisma.student.findMany({
       where: {
         studyMode: "ONSITE_SUMMER",
         isActive: true,
@@ -92,6 +100,10 @@ export async function POST(req: Request) {
       },
     });
 
+    if (limitInput && limitInput > 0) {
+      students = students.slice(0, limitInput);
+    }
+
     let sent = 0;
     let skippedNoPhone = 0;
     let failed = 0;
@@ -101,9 +113,7 @@ export async function POST(req: Request) {
       const evalData = studentMap.get(student.id);
       if (!evalData) continue;
 
-      const phone = student.parentWhatsapp
-        ? normalizeWhatsAppNumber(student.parentWhatsapp, "90")
-        : null;
+      const phone = normalizedOverridePhone || (student.parentWhatsapp ? normalizeWhatsAppNumber(student.parentWhatsapp, "90") : null);
 
       if (!phone) {
         skippedNoPhone++;
@@ -130,7 +140,29 @@ export async function POST(req: Request) {
 
       msg = addMessageVariation(msg);
 
-      const success = await sendWhatsAppText({ to: phone, body: msg, channel: "ONSITE_SUMMER" });
+      let success = false;
+
+      if (sendAsDocument) {
+        try {
+          const pdfResult = await generateStudentProgressReportPdf(student.id);
+          if (pdfResult && pdfResult.pdfUrl) {
+            success = await sendWhatsAppDocument({
+              to: phone,
+              documentUrl: pdfResult.pdfUrl,
+              fileName: `تقرير_إنجاز_${student.fullName.replace(/\s+/g, "_")}.pdf`,
+              caption: msg,
+              channel: "ONSITE_SUMMER",
+            });
+          }
+        } catch (pdfErr) {
+          console.warn(`PDF document send failed for ${student.fullName}, falling back to text:`, pdfErr);
+        }
+      }
+
+      // Fallback to text if document sending was disabled or failed
+      if (!success) {
+        success = await sendWhatsAppText({ to: phone, body: msg, channel: "ONSITE_SUMMER" });
+      }
 
       if (success) {
         sent++;
@@ -159,6 +191,7 @@ export async function POST(req: Request) {
       sent,
       skippedNoPhone,
       failed,
+      targetPhone: normalizedOverridePhone || "الأرقام المسجلة للطلاب",
       errors,
     });
   } catch (error) {
