@@ -14,13 +14,7 @@ async function run() {
       select: { id: true },
     });
 
-    if (!admin) {
-      console.error("No active admin user found in database");
-      process.exit(1);
-    }
-
-    console.log(`Sending test progress reports for 3 students to +90 546 492 45 10 (Admin ID: ${admin.id})...`);
-
+    console.log("Testing API fetch...");
     const res = await fetch("http://127.0.0.1:3005/api/summer/admin/send-progress-reports", {
       method: "POST",
       headers: {
@@ -30,13 +24,13 @@ async function run() {
       body: JSON.stringify({
         overridePhone: "905464924510",
         limit: 3,
-        sendAsDocument: true,
+        sendAsDocument: false, // first test text send
       }),
     });
 
-    const data = await res.json();
-    console.log("Broadcast Test Result:");
-    console.log(JSON.stringify(data, null, 2));
+    const text = await res.text();
+    console.log("Response status:", res.status);
+    console.log("Response text:", text);
   } catch (err) {
     console.error("Error running test send script:", err);
   } finally {
