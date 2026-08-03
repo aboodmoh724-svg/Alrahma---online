@@ -524,3 +524,5 @@ export function evaluateStudent(
     recommendations,
   };
 }
+
+export type EvaluationResult = ReturnType<typeof evaluateStudent>;

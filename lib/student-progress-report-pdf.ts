@@ -4,6 +4,10 @@ import { execFile } from "child_process";
 import { promisify } from "util";
 import { pathToFileURL } from "url";
 import { appUrl } from "@/lib/app-url";
+import { prisma } from "@/lib/prisma";
+import { evaluateStudent, getCourseMeta, type DailyReportData, type Track } from "@/lib/summer-evaluation";
+import { getLocalDayOfWeek, toLocalDateKey } from "@/lib/date-utils";
+import { generateStudentReportPdfHtml } from "@/lib/student-progress-report-pdf-template";
 
 const execFileAsync = promisify(execFile);
 const DEFAULT_LOCAL_UPLOADS_DIR = path.join(process.cwd(), "uploads");
@@ -38,7 +42,20 @@ async function resolveChromiumPath() {
   throw new Error("لم يتم العثور على متصفح Chromium/Chrome لتوليد التقارير.");
 }
 
-export async function generateStudentProgressReportMedia(studentId: string, format: "pdf" | "png" = "pdf", pageHtml?: string) {
+function countWorkingDays(start: string, end: string): number {
+  let count = 0;
+  const s = new Date(start);
+  const e = new Date(end);
+  const cur = new Date(s);
+  while (cur <= e) {
+    const dow = getLocalDayOfWeek(cur);
+    if (dow !== 1) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+}
+
+export async function generateStudentProgressReportMedia(studentId: string, format: "pdf" | "png" = "pdf") {
   const uploadsDir = getLocalUploadsDir();
   const reportDir = path.join(uploadsDir, "summer-progress-reports");
   const htmlPath = path.join(reportDir, `report-${studentId}.html`);
@@ -46,23 +63,72 @@ export async function generateStudentProgressReportMedia(studentId: string, form
 
   await fs.mkdir(reportDir, { recursive: true });
 
-  let htmlToSave = pageHtml;
-  if (!htmlToSave) {
-    const port = process.env.PORT || 3005;
-    const res = await fetch(`http://127.0.0.1:${port}/onsite/summer/parent-report/${studentId}`, { cache: "no-store" }).catch(() => null);
-    if (res && res.ok) {
-      htmlToSave = await res.text();
-    }
-  }
+  const student = await prisma.student.findFirst({
+    where: {
+      OR: [{ id: studentId }, { studentCode: studentId }],
+      isActive: true,
+      studyMode: "ONSITE_SUMMER",
+    },
+    select: {
+      id: true,
+      fullName: true,
+      summerGroup: true,
+      teacher: { select: { fullName: true } },
+      circle: { select: { name: true } },
+      summerReports: {
+        where: { dateKey: { gte: "2026-07-09" } },
+        select: {
+          dateKey: true, status: true,
+          quranNew: true, quranRevision: true, quranTaqeen: true,
+          noorLearned: true, noorHomework: true, noorHomeworkGrade: true, noorParticipation: true,
+          behaviorGrade: true, createdAt: true,
+        },
+        orderBy: { dateKey: "asc" },
+      },
+    },
+  });
 
-  if (htmlToSave) {
-    await fs.writeFile(htmlPath, htmlToSave, "utf8");
-  } else {
+  if (!student) {
     return {
       mediaUrl: appUrl(`/onsite/summer/parent-report/${studentId}`),
       mediaPath: null,
     };
   }
+
+  const courseMeta = getCourseMeta();
+  const todayStr = toLocalDateKey(new Date());
+  const effectiveEnd = todayStr < courseMeta.courseEnd ? todayStr : courseMeta.courseEnd;
+  const totalWorkingDays = countWorkingDays(courseMeta.courseStart, effectiveEnd);
+  const track: Track = student.summerGroup === "NOOR_AL_BAYAN" ? "NOOR_AL_BAYAN" : "QURAN";
+
+  const reports: DailyReportData[] = student.summerReports.map((r) => ({
+    dateKey: r.dateKey,
+    status: r.status as "PRESENT" | "ABSENT",
+    quranNew: r.quranNew, quranRevision: r.quranRevision, quranTaqeen: r.quranTaqeen,
+    noorLearned: r.noorLearned, noorHomework: r.noorHomework,
+    noorHomeworkGrade: r.noorHomeworkGrade, noorParticipation: r.noorParticipation,
+    behaviorGrade: r.behaviorGrade, createdAt: r.createdAt,
+  }));
+
+  const evaluation = evaluateStudent(
+    student.id, student.fullName, track,
+    student.teacher?.fullName || "", student.circle?.name || "",
+    reports, totalWorkingDays
+  );
+
+  const trackLabel = track === "QURAN" ? "مسار القرآن الكريم" : "مسار نور البيان والتمهيدي";
+  const teacherName = student.teacher?.fullName || "—";
+  const circleName = student.circle?.name || "حلقة القرآن";
+
+  const html = await generateStudentReportPdfHtml(
+    student.fullName,
+    trackLabel,
+    circleName,
+    teacherName,
+    evaluation
+  );
+
+  await fs.writeFile(htmlPath, html, "utf8");
 
   try {
     const chromiumPath = await resolveChromiumPath();
@@ -73,7 +139,7 @@ export async function generateStudentProgressReportMedia(studentId: string, form
         "--disable-gpu",
         "--no-sandbox",
         "--hide-scrollbars",
-        "--window-size=680,1100",
+        "--window-size=794,1123",
         "--device-scale-factor=2",
         `--screenshot=${targetPath}`,
         pathToFileURL(htmlPath).href,
@@ -105,16 +171,16 @@ export async function generateStudentProgressReportMedia(studentId: string, form
   }
 }
 
-export async function generateStudentProgressReportPdf(studentId: string, pageHtml?: string) {
-  const result = await generateStudentProgressReportMedia(studentId, "pdf", pageHtml);
+export async function generateStudentProgressReportPdf(studentId: string) {
+  const result = await generateStudentProgressReportMedia(studentId, "pdf");
   return {
     pdfUrl: result.mediaUrl,
     pdfPath: result.mediaPath,
   };
 }
 
-export async function generateStudentProgressReportPng(studentId: string, pageHtml?: string) {
-  const result = await generateStudentProgressReportMedia(studentId, "png", pageHtml);
+export async function generateStudentProgressReportPng(studentId: string) {
+  const result = await generateStudentProgressReportMedia(studentId, "png");
   return {
     pngUrl: result.mediaUrl,
     pngPath: result.mediaPath,
