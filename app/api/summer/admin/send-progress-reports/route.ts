@@ -95,6 +95,7 @@ export async function POST(req: Request) {
       select: {
         id: true,
         fullName: true,
+        studentCode: true,
         parentWhatsapp: true,
         circle: { select: { name: true } },
       },
@@ -126,17 +127,25 @@ export async function POST(req: Request) {
         break;
       }
 
-      const reportUrl = `${appUrl}/onsite/summer/parent-report/${student.id}`;
+      const reportUrl = appUrl(`/onsite/summer/parent-report/${student.studentCode || student.id}`);
 
-      let msg = `السلام عليكم ورحمة الله وبركاته 🌿\n\n`;
-      msg += `يسر إدارة *تحفيظ الرحمة للقرآن الكريم* أن تشارككم تقرير إنجاز ابنكم في الدورة الصيفية 2026 - الفترة الأولى.\n\n`;
-      msg += `📖 الطالب: *${student.fullName}*\n`;
-      msg += `الحلقة: ${student.circle?.name || "—"}\n`;
-      msg += `النتيجة النهائية: *${evalData.finalScore}%*\n\n`;
-      msg += `نسأل الله أن يبارك فيه وأن يجعله من أهل القرآن وخاصته.\n\n`;
-      msg += `يمكنكم مشاهدة التقرير التفاعلي من هنا:\n`;
-      msg += `${reportUrl}\n\n`;
-      msg += `مع تحيات إدارة تحفيظ الرحمة`;
+      const msgLines = [
+        "السلام عليكم ورحمة الله وبركاته 🌿",
+        "",
+        "يسر إدارة *تحفيظ الرحمة للقرآن الكريم* أن تشارككم تقرير إنجاز ابنكم في الدورة الصيفية 2026 - الفترة الأولى.",
+        "",
+        `📖 الطالب: *${student.fullName}*`,
+        `الحلقة: ${student.circle?.name || "—"}`,
+        `النتيجة النهائية: *${evalData.finalScore}%*`,
+        "",
+        "نسأل الله أن يبارك فيه وأن يجعله من أهل القرآن وخاصته.",
+        "",
+        "يمكنكم مشاهدة التقرير التفاعلي من هنا:",
+        reportUrl,
+        "",
+        "مع تحيات إدارة تحفيظ الرحمة",
+      ];
+      let msg = msgLines.join("\n");
 
       msg = addMessageVariation(msg);
 
