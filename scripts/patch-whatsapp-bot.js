@@ -25,6 +25,17 @@ for (const dir of dirs) {
     );
   }
 
+  if (!code.includes("webVersionCache")) {
+    code = code.replace(
+      `const client = new Client({`,
+      `const client = new Client({
+  webVersionCache: {
+    type: "remote",
+    remotePath: "https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.html",
+  },`
+    );
+  }
+
   if (!code.includes("executablePath:")) {
     code = code.replace(
       `puppeteer: {`,
