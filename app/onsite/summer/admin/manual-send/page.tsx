@@ -1,18 +1,20 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { loadExamGrades } from "@/lib/summer-evaluation";
 
-export default async function ManualSendPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("alrahma_user_id")?.value;
-  if (!userId) redirect("/onsite/summer/admin/login");
+const ACCESS_KEY = "rahma2026";
 
-  const admin = await prisma.user.findFirst({
-    where: { id: userId, role: "ADMIN", isActive: true },
-    select: { id: true },
-  });
-  if (!admin) redirect("/onsite/summer/admin/login");
+export default async function ManualSendPage({ searchParams }: { searchParams: Promise<{ key?: string }> }) {
+  const params = await searchParams;
+  if (params.key !== ACCESS_KEY) {
+    return (
+      <div dir="rtl" style={{ fontFamily: "Segoe UI, Tahoma, sans-serif", background: "#f8fafc", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ background: "#fff", borderRadius: "16px", padding: "40px", textAlign: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.08)", maxWidth: "400px" }}>
+          <h2 style={{ color: "#dc2626", marginBottom: "12px" }}>غير مصرح بالدخول</h2>
+          <p style={{ color: "#6b7280", fontSize: "14px" }}>يرجى استخدام الرابط الصحيح مع مفتاح الدخول.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Load exam grades
   const gradeData = loadExamGrades();
