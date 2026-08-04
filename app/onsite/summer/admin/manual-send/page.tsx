@@ -52,11 +52,11 @@ export default async function ManualSendPage() {
     const validPhone = phone.length >= 10 && phone.length <= 13;
 
     const msg = [
-      "السلام عليكم ورحمة الله وبركاته 🌿",
+      "السلام عليكم ورحمة الله وبركاته",
       "",
       "يسر إدارة *تحفيظ الرحمة للقرآن الكريم* أن تشارككم تقرير إنجاز ابنكم في الدورة الصيفية 2026 - الفترة الأولى.",
       "",
-      `📖 الطالب: *${s.fullName}*`,
+      `الطالب: *${s.fullName}*`,
       `الحلقة: ${s.circle?.name || "—"}`,
       ...(evalData ? [`النتيجة النهائية: *${evalData.finalScore}%*`] : []),
       "",
